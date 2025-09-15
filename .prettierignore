@@ -1,0 +1,10 @@
+node_modules
+.next
+dist
+build
+.turbo
+.vercel
+pnpm-lock.yaml
+*.svg
+public/uploads
+

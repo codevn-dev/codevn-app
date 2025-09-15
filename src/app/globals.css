@@ -1,0 +1,742 @@
+@import 'tailwindcss';
+
+/* React Resizable Styles */
+.react-resizable {
+  position: relative;
+}
+
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNiIgaGVpZ2h0PSI2IiB2aWV3Qm94PSIwIDAgNiA2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMSAxTDUgNU01IDFMMSA1IiBzdHJva2U9IiM0QjQ5NTMiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=');
+  background-position: bottom right;
+  padding: 0 3px 3px 0;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  box-sizing: border-box;
+  cursor: se-resize;
+}
+
+.react-resizable-handle-se {
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+
+/* Dracula Theme for Code Blocks */
+.dracula-code-block {
+  background: var(--dracula-background) !important;
+  color: var(--dracula-foreground) !important;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  position: relative;
+  margin: 1rem 0;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--dracula-current-line);
+}
+
+.dracula-code-block pre {
+  background: transparent !important;
+  color: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.dracula-code-block code {
+  background: transparent !important;
+  color: inherit !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Dracula Theme - Complete Syntax Highlighting */
+.dracula-code-block {
+  /* Base colors */
+  --dracula-background: #282a36;
+  --dracula-current-line: #44475a;
+  --dracula-foreground: #f8f8f2;
+  --dracula-comment: #6272a4;
+  --dracula-cyan: #8be9fd;
+  --dracula-green: #50fa7b;
+  --dracula-orange: #ffb86c;
+  --dracula-pink: #ff79c6;
+  --dracula-purple: #bd93f9;
+  --dracula-red: #ff5555;
+  --dracula-yellow: #f1fa8c;
+}
+
+/* Allow token colors to show inside code blocks (do not override token spans) */
+
+/* Override with Dracula colors */
+.dracula-code-block .hljs-comment,
+.dracula-code-block .hljs-quote,
+.dracula-code-block .hljs-doctag {
+  color: var(--dracula-comment) !important;
+  font-style: italic;
+}
+
+.dracula-code-block .hljs-keyword,
+.dracula-code-block .hljs-selector-tag,
+.dracula-code-block .hljs-selector-pseudo,
+.dracula-code-block .hljs-operator {
+  color: var(--dracula-pink) !important;
+  font-weight: bold;
+}
+
+.dracula-code-block .hljs-string,
+.dracula-code-block .hljs-symbol,
+.dracula-code-block .hljs-bullet,
+.dracula-code-block .hljs-addition,
+.dracula-code-block .hljs-code {
+  color: var(--dracula-yellow) !important;
+}
+
+.dracula-code-block .hljs-number,
+.dracula-code-block .hljs-literal,
+.dracula-code-block .hljs-built_in,
+.dracula-code-block .hljs-builtin-name {
+  color: var(--dracula-purple) !important;
+}
+
+.dracula-code-block .hljs-function,
+.dracula-code-block .hljs-title.function_,
+.dracula-code-block .hljs-attr {
+  color: var(--dracula-green) !important;
+}
+
+.dracula-code-block .hljs-class,
+.dracula-code-block .hljs-title.class_,
+.dracula-code-block .hljs-type {
+  color: var(--dracula-cyan) !important;
+}
+
+.dracula-code-block .hljs-variable,
+.dracula-code-block .hljs-template-variable,
+.dracula-code-block .hljs-subst {
+  color: var(--dracula-foreground) !important;
+}
+
+.dracula-code-block .hljs-property,
+.dracula-code-block .hljs-attribute,
+.dracula-code-block .hljs-value {
+  color: var(--dracula-yellow) !important;
+}
+
+.dracula-code-block .hljs-tag,
+.dracula-code-block .hljs-name,
+.dracula-code-block .hljs-selector-id,
+.dracula-code-block .hljs-selector-class,
+.dracula-code-block .hljs-selector-attr {
+  color: var(--dracula-red) !important;
+}
+
+.dracula-code-block .hljs-title,
+.dracula-code-block .hljs-section {
+  color: var(--dracula-green) !important;
+  font-weight: bold;
+}
+
+.dracula-code-block .hljs-meta,
+.dracula-code-block .hljs-link,
+.dracula-code-block .hljs-formula {
+  color: var(--dracula-purple) !important;
+}
+
+.dracula-code-block .hljs-regexp {
+  color: var(--dracula-orange) !important;
+}
+
+.dracula-code-block .hljs-deletion {
+  color: var(--dracula-red) !important;
+  background-color: rgba(255, 85, 85, 0.1);
+}
+
+.dracula-code-block .hljs-addition {
+  color: var(--dracula-green) !important;
+  background-color: rgba(80, 250, 123, 0.1);
+}
+
+.dracula-code-block .hljs-variable.constant_ {
+  color: var(--dracula-purple) !important;
+  font-weight: bold;
+}
+
+.dracula-code-block .hljs-emphasis {
+  font-style: italic;
+}
+
+.dracula-code-block .hljs-strong {
+  font-weight: bold;
+}
+
+/* Keywords and control flow */
+.dracula-code-block .hljs-keyword,
+.dracula-code-block .hljs-selector-tag,
+.dracula-code-block .hljs-selector-pseudo,
+.dracula-code-block .hljs-operator {
+  color: var(--dracula-pink) !important;
+  font-weight: bold;
+}
+
+/* Strings and text */
+.dracula-code-block .hljs-string,
+.dracula-code-block .hljs-symbol,
+.dracula-code-block .hljs-bullet,
+.dracula-code-block .hljs-addition,
+.dracula-code-block .hljs-code {
+  color: var(--dracula-yellow) !important;
+}
+
+/* Numbers and literals */
+.dracula-code-block .hljs-number,
+.dracula-code-block .hljs-literal,
+.dracula-code-block .hljs-built_in,
+.dracula-code-block .hljs-builtin-name {
+  color: var(--dracula-purple) !important;
+}
+
+/* Functions and methods */
+.dracula-code-block .hljs-function,
+.dracula-code-block .hljs-title.function_,
+.dracula-code-block .hljs-attr {
+  color: var(--dracula-green) !important;
+}
+
+/* Classes and types */
+.dracula-code-block .hljs-class,
+.dracula-code-block .hljs-title.class_,
+.dracula-code-block .hljs-type {
+  color: var(--dracula-cyan) !important;
+}
+
+/* Variables and identifiers */
+.dracula-code-block .hljs-variable,
+.dracula-code-block .hljs-template-variable,
+.dracula-code-block .hljs-subst {
+  color: var(--dracula-foreground) !important;
+}
+
+/* Properties and attributes */
+.dracula-code-block .hljs-property,
+.dracula-code-block .hljs-attribute,
+.dracula-code-block .hljs-value {
+  color: var(--dracula-yellow) !important;
+}
+
+/* Tags and selectors */
+.dracula-code-block .hljs-tag,
+.dracula-code-block .hljs-name,
+.dracula-code-block .hljs-selector-id,
+.dracula-code-block .hljs-selector-class,
+.dracula-code-block .hljs-selector-attr {
+  color: var(--dracula-red) !important;
+}
+
+/* Titles and sections */
+.dracula-code-block .hljs-title,
+.dracula-code-block .hljs-section {
+  color: var(--dracula-green) !important;
+  font-weight: bold;
+}
+
+/* Meta and special */
+.dracula-code-block .hljs-meta,
+.dracula-code-block .hljs-link,
+.dracula-code-block .hljs-formula {
+  color: var(--dracula-purple) !important;
+}
+
+/* Regex and patterns */
+.dracula-code-block .hljs-regexp {
+  color: var(--dracula-orange) !important;
+}
+
+/* Deletions and additions */
+.dracula-code-block .hljs-deletion {
+  color: var(--dracula-red) !important;
+  background-color: rgba(255, 85, 85, 0.1);
+}
+
+.dracula-code-block .hljs-addition {
+  color: var(--dracula-green) !important;
+  background-color: rgba(80, 250, 123, 0.1);
+}
+
+/* Constants */
+.dracula-code-block .hljs-variable.constant_ {
+  color: var(--dracula-purple) !important;
+  font-weight: bold;
+}
+
+/* Emphasis and strong */
+.dracula-code-block .hljs-emphasis {
+  font-style: italic;
+}
+
+.dracula-code-block .hljs-strong {
+  font-weight: bold;
+}
+
+/* Language-specific enhancements */
+.dracula-code-block .hljs-params {
+  color: var(--dracula-foreground) !important;
+}
+
+.dracula-code-block .hljs-imports,
+.dracula-code-block .hljs-exports {
+  color: var(--dracula-cyan) !important;
+}
+
+/* JSON specific */
+.dracula-code-block .hljs-attr {
+  color: var(--dracula-green) !important;
+}
+
+/* CSS specific */
+.dracula-code-block .hljs-selector-tag {
+  color: var(--dracula-pink) !important;
+}
+
+.dracula-code-block .hljs-selector-id {
+  color: var(--dracula-cyan) !important;
+}
+
+.dracula-code-block .hljs-selector-class {
+  color: var(--dracula-yellow) !important;
+}
+
+/* HTML specific */
+.dracula-code-block .hljs-tag {
+  color: var(--dracula-red) !important;
+}
+
+.dracula-code-block .hljs-name {
+  color: var(--dracula-pink) !important;
+}
+
+/* SQL specific */
+.dracula-code-block .hljs-keyword {
+  color: var(--dracula-pink) !important;
+  font-weight: bold;
+}
+
+/* Markdown specific */
+.dracula-code-block .hljs-section {
+  color: var(--dracula-cyan) !important;
+  font-weight: bold;
+}
+
+/* YAML specific */
+.dracula-code-block .hljs-attr {
+  color: var(--dracula-green) !important;
+}
+
+/* Dockerfile specific */
+.dracula-code-block .hljs-keyword {
+  color: var(--dracula-pink) !important;
+  font-weight: bold;
+}
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221.2 83.2% 53.3%;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --radius: var(--radius);
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 222.2 84% 4.9%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 224.3 76.3% 94.1%;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+}
+
+/* Smooth transitions for custom elements */
+.custom-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom hover effects for non-HeroUI elements */
+.card-hover {
+  transition: all 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-hover:hover {
+  opacity: 0.9;
+}
+
+/* HeroUI components handle their own styling */
+
+/* Hide scrollbar for category selector */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+/* Code highlighting styles - Dracula Theme */
+.hljs {
+  background: #282a36 !important;
+  color: #f8f8f2 !important;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  margin: 1rem 0;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #44475a;
+}
+
+/* Code blocks in articles */
+.prose pre {
+  background: #282a36 !important;
+  color: #f8f8f2 !important;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  margin: 1rem 0;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #44475a;
+}
+
+.prose code {
+  background: #282a36 !important;
+  color: #f8f8f2 !important;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 0.85em;
+  border: 1px solid #44475a;
+}
+
+.prose pre code {
+  background: transparent !important;
+  color: inherit;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+}
+
+/* Dracula Theme Syntax Highlighting - Direct Colors */
+.hljs-comment,
+.hljs-quote,
+.hljs-doctag {
+  color: #6272a4 !important;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-selector-pseudo,
+.hljs-operator {
+  color: #ff79c6 !important;
+  font-weight: bold;
+}
+
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition,
+.hljs-code {
+  color: #f1fa8c !important;
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-built_in,
+.hljs-builtin-name {
+  color: #bd93f9 !important;
+}
+
+.hljs-function,
+.hljs-title.function_,
+.hljs-attr {
+  color: #50fa7b !important;
+}
+
+.hljs-class,
+.hljs-title.class_,
+.hljs-type {
+  color: #8be9fd !important;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-subst {
+  color: #f8f8f2 !important;
+}
+
+.hljs-property,
+.hljs-attribute,
+.hljs-value {
+  color: #f1fa8c !important;
+}
+
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-selector-attr {
+  color: #ff5555 !important;
+}
+
+.hljs-title,
+.hljs-section {
+  color: #50fa7b !important;
+  font-weight: bold;
+}
+
+.hljs-meta,
+.hljs-link,
+.hljs-formula {
+  color: #bd93f9 !important;
+}
+
+.hljs-regexp {
+  color: #ffb86c !important;
+}
+
+.hljs-deletion {
+  color: #ff5555 !important;
+  background-color: rgba(255, 85, 85, 0.1);
+}
+
+.hljs-addition {
+  color: #50fa7b !important;
+  background-color: rgba(80, 250, 123, 0.1);
+}
+
+.hljs-variable.constant_ {
+  color: #bd93f9 !important;
+  font-weight: bold;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+/* Language-specific enhancements */
+.hljs-params {
+  color: #f8f8f2 !important;
+}
+
+.hljs-imports,
+.hljs-exports {
+  color: #8be9fd !important;
+}
+
+/* JSON specific */
+.hljs-attr {
+  color: #50fa7b !important;
+}
+
+/* CSS specific */
+.hljs-selector-tag {
+  color: #ff79c6 !important;
+}
+
+.hljs-selector-id {
+  color: #8be9fd !important;
+}
+
+.hljs-selector-class {
+  color: #f1fa8c !important;
+}
+
+/* HTML specific */
+.hljs-tag {
+  color: #ff5555 !important;
+}
+
+.hljs-name {
+  color: #ff79c6 !important;
+}
+
+/* SQL specific */
+.hljs-keyword {
+  color: #ff79c6 !important;
+  font-weight: bold;
+}
+
+/* Markdown specific */
+.hljs-section {
+  color: #8be9fd !important;
+  font-weight: bold;
+}
+
+/* YAML specific */
+.hljs-attr {
+  color: #50fa7b !important;
+}
+
+/* Dockerfile specific */
+.hljs-keyword {
+  color: #ff79c6 !important;
+  font-weight: bold;
+}
