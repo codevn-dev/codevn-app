@@ -1,10 +1,11 @@
-name: Release to server
+name: Release to codevn.dev
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
+    paths-ignore:
+      - .github/workflows/**
 
 jobs:
   release:
@@ -22,3 +23,9 @@ jobs:
             git reset --hard origin/main
             git clean -f -d
             docker compose up -d --build
+      - name: Purge Cloudflare cache for codevn.dev
+        run: |
+          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}'
