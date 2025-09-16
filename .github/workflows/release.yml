@@ -15,6 +15,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /data/codevn-app
-            git pull
-            make docker-up
-
+            git fetch
+            git reset --hard origin/main
+            git clean -f -d
+            docker compose up -d --build
