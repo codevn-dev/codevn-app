@@ -78,17 +78,6 @@ export const reactions = pgTable('reactions', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-// Track article views to deduplicate per user/IP within a time window
-export const articleViews = pgTable('article_views', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  articleId: uuid('article_id')
-    .notNull()
-    .references(() => articles.id),
-  userId: uuid('user_id').references(() => users.id),
-  ip: text('ip'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-});
-
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   articles: many(articles),
@@ -124,7 +113,6 @@ export const articlesRelations = relations(articles, ({ one, many }) => ({
   }),
   comments: many(comments),
   reactions: many(reactions),
-  views: many(articleViews),
 }));
 
 export const commentsRelations = relations(comments, ({ one, many }) => ({
@@ -155,17 +143,6 @@ export const reactionsRelations = relations(reactions, ({ one }) => ({
   }),
   user: one(users, {
     fields: [reactions.userId],
-    references: [users.id],
-  }),
-}));
-
-export const articleViewsRelations = relations(articleViews, ({ one }) => ({
-  article: one(articles, {
-    fields: [articleViews.articleId],
-    references: [articles.id],
-  }),
-  user: one(users, {
-    fields: [articleViews.userId],
     references: [users.id],
   }),
 }));

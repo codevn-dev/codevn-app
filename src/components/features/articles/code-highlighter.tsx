@@ -108,6 +108,17 @@ interface CodeHighlighterProps {
 
 export function CodeHighlighter({ content, className = '' }: CodeHighlighterProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Heuristic: if content lacks common block tags, treat it as plain text and
+  // convert newlines to <br/> so line breaks are preserved in the article detail.
+  const hasBlockHtml = /<(p|br|ul|ol|li|pre|h[1-6]|blockquote|img|code|div|table|tr|td|th)\b/i.test(
+    content || ''
+  );
+  // Ensure empty paragraphs still create visible spacing
+  const normalizedHtml = (content || '').replace(/<p>\s*<\/p>/gi, '<p><br/></p>');
+  const htmlToRender = hasBlockHtml
+    ? normalizedHtml
+    : (content || '').replace(/\n/g, '<br/>');
 
   useLayoutEffect(() => {
     const container = contentRef.current;
@@ -179,8 +190,8 @@ export function CodeHighlighter({ content, className = '' }: CodeHighlighterProp
   return (
     <div
       ref={contentRef}
-      className={`prose max-w-none ${className}`}
-      dangerouslySetInnerHTML={{ __html: content }}
+      className={`prose max-w-none whitespace-pre-line ${className}`}
+      dangerouslySetInnerHTML={{ __html: htmlToRender }}
     />
   );
 }

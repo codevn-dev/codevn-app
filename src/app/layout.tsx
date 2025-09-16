@@ -14,8 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'CodeVN',
-  description: 'A community for developers',
+  title: 'CodeVN - Home sweet home for developers',
 };
 
 export default function RootLayout({

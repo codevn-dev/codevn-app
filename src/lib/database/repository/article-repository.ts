@@ -1,5 +1,5 @@
 import { getDb } from '..';
-import { articles, comments, reactions, articleViews } from '../schema';
+import { articles, comments, reactions } from '../schema';
 import { and, eq, or, like, isNull, gt, sql, count } from 'drizzle-orm';
 
 export interface ArticleFilters {
@@ -81,44 +81,6 @@ export class ArticleRepository {
       .update(articles)
       .set({ views: sql`${articles.views} + 1` })
       .where(eq(articles.id, id));
-  }
-
-  /**
-   * Record a view with deduplication window (per user or per IP) to avoid double counting.
-   * If a view exists in the last windowMinutes, do not increment.
-   */
-  async recordView({
-    articleId,
-    userId,
-    ip,
-    windowMinutes = 720,
-  }: {
-    articleId: string;
-    userId?: string;
-    ip?: string;
-    windowMinutes?: number;
-  }) {
-    const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000);
-    const whereConds = [
-      eq(articleViews.articleId, articleId),
-      gt(articleViews.createdAt, windowStart),
-    ];
-    if (userId) {
-      whereConds.push(eq(articleViews.userId, userId));
-    } else if (ip) {
-      whereConds.push(eq(articleViews.ip, ip));
-    } else {
-      // If neither userId nor ip, treat as unique per request: just increment once
-      return this.incrementViewsById(articleId);
-    }
-
-    const existing = await getDb().query.articleViews.findFirst({
-      where: and(...(whereConds as any)),
-    });
-    if (existing) return; // already counted within window
-
-    await getDb().insert(articleViews).values({ articleId, userId, ip });
-    await this.incrementViewsById(articleId);
   }
 
   async findManyWithPagination(filters: ArticleFilters): Promise<PaginatedArticles> {

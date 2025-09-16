@@ -15,6 +15,7 @@ import { User, Settings, LogOut, FileText, Menu as MenuIcon, X as CloseIcon } fr
 import { useAuthStore, useUIStore } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -64,10 +65,15 @@ export function Navigation() {
               onClick={handleHomeClick}
               className="flex items-center space-x-3 transition-opacity hover:opacity-80"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg">
-                <span className="text-lg font-bold text-white">D</span>
-              </div>
-              <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-xl font-bold text-transparent">
+              <Image
+                src="/logo.svg"
+                alt="CodeVN Logo"
+                width={40}
+                height={40}
+                className="h-10 w-10"
+                priority
+              />
+              <span className="bg-gradient-to-r from-[#4ECDC4] to-[#FF6B6B] bg-clip-text text-[22px] sm:text-2xl font-semibold tracking-tight leading-tight text-transparent">
                 CodeVN
               </span>
             </button>
