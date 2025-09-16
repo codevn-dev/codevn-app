@@ -37,14 +37,6 @@ export async function middleware(request: NextRequest) {
       if (!session?.user) {
         return NextResponse.next();
       }
-
-      // Admin routes require admin role only
-      if (pathname.startsWith('/admin')) {
-        const userRole = session.user.role;
-        if (userRole !== 'admin') {
-          return NextResponse.redirect(new URL('/', request.url));
-        }
-      }
     } catch {
       // If auth check fails, let client-side handle it
       return NextResponse.next();

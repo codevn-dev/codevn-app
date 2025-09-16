@@ -21,6 +21,11 @@ fi
 echo "📦 Installing dependencies..."
 pnpm install
 
+# Create uploads directory and set proper permissions
+echo "📁 Setting up uploads directory..."
+mkdir -p public/uploads
+chmod 755 public/uploads
+
 # Start PostgreSQL with Docker Compose
 echo "🐘 Starting PostgreSQL..."
 docker-compose up -d postgres

@@ -865,11 +865,11 @@ function ArticlesContent() {
                   <label className="text-sm font-medium">Thumbnail Image</label>
                   {articleForm.thumbnail ? (
                     <div className="space-y-2">
-                      <div className="relative">
+                      <div className="relative w-full max-w-sm">
                         <img
                           src={articleForm.thumbnail}
                           alt="Thumbnail preview"
-                          className="h-24 w-36 rounded-lg border object-cover"
+                          className="h-40 w-full rounded-lg border object-cover"
                         />
                         <Button
                           type="button"
@@ -885,23 +885,24 @@ function ArticlesContent() {
                         type="button"
                         variant="outline"
                         onClick={() => setShowImageUpload(true)}
-                        className="w-full"
+                        className="w-full max-w-sm"
                       >
                         <Upload className="mr-2 h-4 w-4" />
                         Change Image
                       </Button>
                     </div>
                   ) : (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowImageUpload(true)}
-                      className="flex h-24 w-36 flex-col items-center justify-center space-y-2 border-2 border-dashed border-gray-300 hover:border-gray-400"
-                    >
-                      <Upload className="h-8 w-8 text-gray-400" />
-                      <span className="text-sm text-gray-600">Click to upload thumbnail</span>
-                      <span className="text-xs text-gray-400">PNG, JPG, GIF, WebP up to 5MB</span>
-                    </Button>
+                    <div className="w-full max-w-sm">
+                      <button
+                        type="button"
+                        onClick={() => setShowImageUpload(true)}
+                        className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg border-2 border-dashed border-gray-300 bg-white transition-colors hover:border-gray-400"
+                      >
+                        <Upload className="h-8 w-8 text-gray-400" />
+                        <span className="text-sm font-medium text-gray-700">Click to upload thumbnail</span>
+                      </button>
+                      <p className="mt-2 text-xs text-gray-400">PNG, JPG, GIF, WebP up to 5MB</p>
+                    </div>
                   )}
                 </div>
 

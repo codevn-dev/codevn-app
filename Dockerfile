@@ -36,12 +36,10 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy the public folder
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Ensure the uploads directory exists and has proper permissions
+RUN mkdir -p /app/public/uploads && chown -R nextjs:nodejs /app/public/uploads
 
 # Copy the complete .next directory for server chunks
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
