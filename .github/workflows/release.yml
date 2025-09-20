@@ -31,12 +31,12 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             🚀 **Deployment Started**
-            
+
             📝 **Commit:** `${{ steps.commit_info.outputs.commit_hash }}`
             📄 **Message:** ${{ steps.commit_info.outputs.commit_message }}
             👤 **Author:** ${{ steps.commit_info.outputs.author }}
             🌿 **Branch:** ${{ steps.commit_info.outputs.branch }}
-            
+
             ⏳ Building and deploying to codevn.dev...
 
       - name: Release over SSH
@@ -66,12 +66,12 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             ✅ **Deployment Successful!**
-            
+
             🌐 **Site:** https://codevn.dev
             📝 **Commit:** `${{ steps.commit_info.outputs.commit_hash }}`
             📄 **Message:** ${{ steps.commit_info.outputs.commit_message }}
             👤 **Author:** ${{ steps.commit_info.outputs.author }}
-            
+
             🚀 Site is now live with the latest changes!
 
       - name: Send deployment failure notification
@@ -82,9 +82,9 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             ❌ **Deployment Failed!**
-            
+
             📝 **Commit:** `${{ steps.commit_info.outputs.commit_hash }}`
             📄 **Message:** ${{ steps.commit_info.outputs.commit_message }}
             👤 **Author:** ${{ steps.commit_info.outputs.author }}
-            
+
             🔍 Please check the GitHub Actions logs for details.
