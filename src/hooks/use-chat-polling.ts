@@ -1,21 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from './use-auth';
 import { useUIStore } from '@/stores/ui-store';
 import { useChat } from '@/components/features/chat/chat-context';
-
-interface Message {
-  id: string;
-  chatId: string;
-  fromUserId: string;
-  toUserId: string;
-  text: string;
-  type: string;
-  seen: boolean;
-  seenAt?: string | null;
-  createdAt: string;
-}
 
 interface Conversation {
   userId: string;
@@ -51,12 +39,13 @@ export function useChatPolling() {
   });
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const isPollingRef = useRef(false);
+  const lastCheckTimeRef = useRef(lastCheckTime);
 
-  const checkForNewMessages = async () => {
+  const checkForNewMessages = useCallback(async () => {
     if (!user?.id || isPollingRef.current) return;
-    
+
     isPollingRef.current = true;
-    
+
     try {
       // Get all conversations
       const conversationsResponse = await fetch('/api/chat/conversations');
@@ -71,20 +60,22 @@ export function useChatPolling() {
         // Check for new messages in each conversation
         for (const conversation of newConversations) {
           // Check if the last message is from others and not seen
-          if (conversation.lastMessage && 
-              conversation.lastMessage.fromUserId !== user.id && 
-              !conversation.lastMessage.seen) {
-            
+          if (
+            conversation.lastMessage &&
+            conversation.lastMessage.fromUserId !== user.id &&
+            !conversation.lastMessage.seen
+          ) {
             const messageTime = new Date(conversation.lastMessage.createdAt).getTime();
-            
+
             // Only show notification if message is newer than last check time
-            if (messageTime > lastCheckTime) {
+            if (messageTime > lastCheckTimeRef.current) {
               addNotification({
                 type: 'info',
                 title: `New message from ${conversation.userName || 'User'}`,
-                message: conversation.lastMessage.text.length > 50 
-                  ? `${conversation.lastMessage.text.substring(0, 50)}...` 
-                  : conversation.lastMessage.text,
+                message:
+                  conversation.lastMessage.text.length > 50
+                    ? `${conversation.lastMessage.text.substring(0, 50)}...`
+                    : conversation.lastMessage.text,
                 duration: 6000,
                 action: {
                   onClick: () => {
@@ -93,8 +84,8 @@ export function useChatPolling() {
                       conversation.userName,
                       conversation.userAvatar
                     );
-                  }
-                }
+                  },
+                },
               });
             }
           }
@@ -103,7 +94,8 @@ export function useChatPolling() {
 
       const newCheckTime = Date.now();
       setLastCheckTime(newCheckTime);
-      
+      lastCheckTimeRef.current = newCheckTime;
+
       // Save to localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('chat-last-check-time', newCheckTime.toString());
@@ -113,7 +105,7 @@ export function useChatPolling() {
     } finally {
       isPollingRef.current = false;
     }
-  };
+  }, [user?.id, addNotification, chatWindowOpen, chatPopupOpen, handleStartChat]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -121,8 +113,8 @@ export function useChatPolling() {
     // Check immediately
     checkForNewMessages();
 
-    // Poll every 15 seconds (reduced frequency)
-    pollingRef.current = setInterval(checkForNewMessages, 15000);
+    // Poll every 5 seconds for notifications
+    pollingRef.current = setInterval(checkForNewMessages, 5000);
 
     return () => {
       if (pollingRef.current) {
@@ -130,14 +122,15 @@ export function useChatPolling() {
         pollingRef.current = null;
       }
     };
-  }, [user?.id]);
+  }, [user?.id, checkForNewMessages]);
 
   // Update lastCheckTime when chat window or popup opens to avoid notifications for old messages
   useEffect(() => {
     if (chatWindowOpen || chatPopupOpen) {
       const newCheckTime = Date.now();
       setLastCheckTime(newCheckTime);
-      
+      lastCheckTimeRef.current = newCheckTime;
+
       // Save to localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('chat-last-check-time', newCheckTime.toString());
@@ -148,6 +141,6 @@ export function useChatPolling() {
   return {
     conversations,
     checkForNewMessages,
-    isPolling: isPollingRef.current
+    isPolling: isPollingRef.current,
   };
 }

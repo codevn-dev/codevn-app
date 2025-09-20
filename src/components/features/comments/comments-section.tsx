@@ -58,6 +58,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
     const lastCommentIdRef = useRef<string | null>(null);
     const commentFormRef = useRef<HTMLDivElement>(null);
     const [visibleTopCount, setVisibleTopCount] = useState(5);
+    const fetchCommentsRef = useRef<typeof fetchComments | null>(null);
 
     // Expose scroll function to parent component
     useImperativeHandle(ref, () => ({
@@ -124,12 +125,15 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
       [articleId]
     );
 
+    // Update ref when fetchComments changes
+    useEffect(() => {
+      fetchCommentsRef.current = fetchComments;
+    }, [fetchComments]);
+
     // Function to check for new comments
     const checkForNewComments = useCallback(async () => {
       try {
-        const response = await fetch(
-          `/api/articles/${articleId}/comments?sortOrder=desc&limit=1`
-        );
+        const response = await fetch(`/api/articles/${articleId}/comments?sortOrder=desc&limit=1`);
 
         if (response.ok) {
           const data = await response.json();
@@ -138,14 +142,14 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
             // Check if this is a new comment by comparing with our last known comment
             if (!lastCommentIdRef.current || latestComment.id !== lastCommentIdRef.current) {
               // New comments found, refresh the entire list
-              fetchComments(false, 1, false);
+              fetchCommentsRef.current?.(false, 1, false);
             }
           }
         }
       } catch (error) {
         console.error('Error checking for new comments:', error);
       }
-    }, [articleId, fetchComments]);
+    }, [articleId]);
 
     const handleCommentAdded = (_newComment: Comment) => {
       // Auto refresh comments to get the latest data
@@ -181,9 +185,8 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
     // Set up polling for new comments
     usePolling({
       enabled: isAuthenticated && lastCommentId !== null,
-      interval: 5000, // Poll every 5 seconds
+      interval: 3000, // Poll every 3 seconds
       onPoll: checkForNewComments,
-      dependencies: [articleId],
     });
 
     // Load comments on mount if not provided initially
@@ -198,7 +201,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           lastCommentIdRef.current = newLastCommentId;
         }
       }
-    }, [articleId, initialComments.length]); // Removed fetchComments and initialComments from dependencies
+    }, [articleId, fetchComments]);
 
     // Only show top-level comments (parentId is null)
     const topLevelComments = comments.filter((comment) => comment.parentId === null);

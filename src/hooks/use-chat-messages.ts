@@ -51,7 +51,7 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
   // Fetch messages when component becomes active
   useEffect(() => {
     if (!isActive || !canChat) return;
-    
+
     const fetchMessages = async () => {
       try {
         setLoading(true);
@@ -60,7 +60,7 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
           const data = await response.json();
           const uiMessages = transformMessages(data.messages || []);
           setMessages(uiMessages);
-          
+
           // Update last message time for polling
           if (uiMessages.length > 0) {
             setLastMessageTime(uiMessages[uiMessages.length - 1].timestamp);
@@ -82,7 +82,7 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
 
     const pollForUpdates = async () => {
       if (isPollingRef.current) return; // Prevent concurrent polling
-      
+
       isPollingRef.current = true;
       try {
         // Always fetch all messages to get updated seen status
@@ -91,40 +91,40 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
           const data = await response.json();
           if (data.messages && data.messages.length > 0) {
             const allMessages = transformMessages(data.messages);
-            
-            setMessages(prev => {
+
+            setMessages((prev) => {
               // Create a map of existing messages for faster lookup
-              const existingMessages = new Map(prev.map(msg => [msg.id, msg]));
-              
+              const existingMessages = new Map(prev.map((msg) => [msg.id, msg]));
+
               // Check if there are any new messages or seen status changes
               const newMessages: UiMessage[] = [];
-              const hasSeenUpdates = allMessages.some(newMsg => {
+              const hasSeenUpdates = allMessages.some((newMsg) => {
                 const prevMsg = existingMessages.get(newMsg.id);
                 return prevMsg && prevMsg.seen !== newMsg.seen;
               });
-              
+
               // Find truly new messages
-              allMessages.forEach(newMsg => {
+              allMessages.forEach((newMsg) => {
                 if (!existingMessages.has(newMsg.id)) {
                   newMessages.push(newMsg);
                 }
               });
-              
+
               if (newMessages.length > 0 || hasSeenUpdates) {
                 // Update last message time for new messages
                 if (newMessages.length > 0) {
                   const latestMessage = allMessages[allMessages.length - 1];
                   setLastMessageTime(latestMessage.timestamp);
-                  
+
                   // Callback for new messages
                   if (onNewMessage) {
-                    newMessages.forEach(msg => onNewMessage(msg));
+                    newMessages.forEach((msg) => onNewMessage(msg));
                   }
                 }
-                
+
                 return allMessages;
               }
-              
+
               return prev;
             });
           }
@@ -136,8 +136,8 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
       }
     };
 
-    // Start polling every 5 seconds for both new messages and seen status updates
-    pollingRef.current = setInterval(pollForUpdates, 5000);
+    // Start polling every 2 seconds for both new messages and seen status updates
+    pollingRef.current = setInterval(pollForUpdates, 2000);
 
     return () => {
       if (pollingRef.current) {
@@ -146,13 +146,13 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
       }
       isPollingRef.current = false;
     };
-  }, [isActive, canChat, peerId, onNewMessage]);
+  }, [isActive, canChat, peerId]);
 
   return {
     messages,
     loading,
     setMessages,
     lastMessageTime,
-    setLastMessageTime
+    setLastMessageTime,
   };
 }

@@ -52,7 +52,7 @@ export function AuthModal() {
           throw new Error(data.error || 'Registration failed');
         }
 
-        const registrationData = await response.json();
+        const _registrationData = await response.json();
 
         // Wait a moment to ensure user is properly created in database
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -63,7 +63,6 @@ export function AuthModal() {
           password: formData.password,
           redirect: false,
         });
-
 
         if (result?.error) {
           console.error('[AUTH] Sign-in error:', result.error);
@@ -152,7 +151,7 @@ export function AuthModal() {
       setError('');
       const callbackUrl = typeof window !== 'undefined' ? window.location.href : '/';
       await signIn('google', { callbackUrl });
-    } catch (e) {
+    } catch {
       setError('Google sign-in failed. Please try again.');
     } finally {
       setIsOauthLoading(false);
@@ -206,10 +205,22 @@ export function AuthModal() {
                   aria-hidden="true"
                 >
                   {/* Google G logo */}
-                  <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.602 31.91 29.197 35 24 35c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.84 1.154 7.961 3.039l5.657-5.657C34.869 5.053 29.702 3 24 3 12.955 3 4 11.955 4 23s8.955 20 20 20c11.045 0 20-8.955 20-20 0-1.341-.138-2.651-.389-3.917z"/>
-                  <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.464 16.108 18.861 13 24 13c3.059 0 5.84 1.154 7.961 3.039l5.657-5.657C34.869 5.053 29.702 3 24 3 16.318 3 9.656 7.337 6.306 14.691z"/>
-                  <path fill="#4CAF50" d="M24 43c5.132 0 9.81-1.97 13.328-5.178l-6.157-5.205C29.122 34.488 26.671 35 24 35c-5.179 0-9.594-3.108-11.292-7.444l-6.5 5.017C9.525 39.982 16.227 43 24 43z"/>
-                  <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-1.084 3.087-3.353 5.485-6.132 6.939l.001-.001 6.157 5.205C37.004 38.864 40 33.5 40 27c0-1.341-.138-2.651-.389-3.917z"/>
+                  <path
+                    fill="#FFC107"
+                    d="M43.611 20.083H42V20H24v8h11.303C33.602 31.91 29.197 35 24 35c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.84 1.154 7.961 3.039l5.657-5.657C34.869 5.053 29.702 3 24 3 12.955 3 4 11.955 4 23s8.955 20 20 20c11.045 0 20-8.955 20-20 0-1.341-.138-2.651-.389-3.917z"
+                  />
+                  <path
+                    fill="#FF3D00"
+                    d="M6.306 14.691l6.571 4.819C14.464 16.108 18.861 13 24 13c3.059 0 5.84 1.154 7.961 3.039l5.657-5.657C34.869 5.053 29.702 3 24 3 16.318 3 9.656 7.337 6.306 14.691z"
+                  />
+                  <path
+                    fill="#4CAF50"
+                    d="M24 43c5.132 0 9.81-1.97 13.328-5.178l-6.157-5.205C29.122 34.488 26.671 35 24 35c-5.179 0-9.594-3.108-11.292-7.444l-6.5 5.017C9.525 39.982 16.227 43 24 43z"
+                  />
+                  <path
+                    fill="#1976D2"
+                    d="M43.611 20.083H42V20H24v8h11.303c-1.084 3.087-3.353 5.485-6.132 6.939l.001-.001 6.157 5.205C37.004 38.864 40 33.5 40 27c0-1.341-.138-2.651-.389-3.917z"
+                  />
                 </svg>
                 Continue with Google
               </>
@@ -219,7 +230,7 @@ export function AuthModal() {
           <div className="my-1">
             <div className="flex items-center">
               <span className="h-px flex-1 bg-gray-200" />
-              <span className="px-3 text-xs uppercase tracking-wide text-gray-500">or</span>
+              <span className="px-3 text-xs tracking-wide text-gray-500 uppercase">or</span>
               <span className="h-px flex-1 bg-gray-200" />
             </div>
           </div>

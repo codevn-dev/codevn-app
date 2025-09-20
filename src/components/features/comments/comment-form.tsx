@@ -45,7 +45,6 @@ export function CommentForm({
     }
   }, [initialContent, autoFocus]);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

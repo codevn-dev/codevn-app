@@ -22,7 +22,7 @@ export function CategorySelector({
   selectedCategoryId,
   onCategorySelect,
 }: CategorySelectorProps) {
-  const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
+  const [_expandedCategoryId, _setExpandedCategoryId] = useState<string | null>(null);
 
   const isCategorySelected = (category: Category) => {
     if (selectedCategoryId === category.id) return true;
@@ -52,7 +52,9 @@ export function CategorySelector({
                     <div className="flex items-center">
                       <div
                         className="mr-2 h-2 w-2 rounded-full"
-                        style={{ backgroundColor: isCategorySelected(category) ? 'white' : category.color }}
+                        style={{
+                          backgroundColor: isCategorySelected(category) ? 'white' : category.color,
+                        }}
                       ></div>
                       <span>{category.name}</span>
                       {category._count && (
@@ -84,13 +86,18 @@ export function CategorySelector({
                       <div className="flex items-center">
                         <div
                           className="mr-2 h-2 w-2 rounded-full"
-                          style={{ backgroundColor: selectedCategoryId === child.id ? 'white' : child.color }}
+                          style={{
+                            backgroundColor:
+                              selectedCategoryId === child.id ? 'white' : child.color,
+                          }}
                         ></div>
                         <span className="ml-2">{child.name}</span>
                         {child._count && (
                           <span
                             className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              selectedCategoryId === child.id ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'
+                              selectedCategoryId === child.id
+                                ? 'bg-white/20 text-white'
+                                : 'bg-gray-200 text-gray-600'
                             }`}
                           >
                             {child._count.articles}
@@ -117,7 +124,9 @@ export function CategorySelector({
                 <div className="flex items-center">
                   <div
                     className="mr-2 h-2 w-2 rounded-full"
-                    style={{ backgroundColor: isCategorySelected(category) ? 'white' : category.color }}
+                    style={{
+                      backgroundColor: isCategorySelected(category) ? 'white' : category.color,
+                    }}
                   ></div>
                   <span>{category.name}</span>
                   {category._count && (

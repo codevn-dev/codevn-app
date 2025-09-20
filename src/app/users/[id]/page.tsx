@@ -50,7 +50,7 @@ function UserProfileContent() {
 
         // Use the same API - it will handle role-based masking
         const response = await fetch(`/api/users/${userId}`);
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             setError('User not found');
@@ -62,7 +62,7 @@ function UserProfileContent() {
 
         const data = await response.json();
         setProfile(data.user);
-      } catch (err) {
+      } catch {
         setError('Failed to load user profile');
       } finally {
         setLoading(false);
@@ -96,11 +96,11 @@ function UserProfileContent() {
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <Card className="shadow-lg">
           <CardBody className="py-12 text-center">
-            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <User className="h-6 w-6 text-red-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">User Not Found</h2>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <h2 className="mb-2 text-xl font-semibold text-gray-900">User Not Found</h2>
+            <p className="mb-6 text-gray-600">{error}</p>
             <Button onClick={handleBack} variant="outline">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Go Back
@@ -135,15 +135,13 @@ function UserProfileContent() {
           <div className="flex items-center">
             <Avatar className="h-20 w-20">
               <AvatarImage src={profile.avatar || undefined} alt={profile.name} />
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-2xl">
+              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-2xl text-white">
                 {profile.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="ml-6">
               <h1 className="text-3xl font-bold text-gray-900">{profile.name}</h1>
-              <p className="mt-2 text-gray-600">
-                {isOwnProfile ? 'Your Profile' : 'User Profile'}
-              </p>
+              <p className="mt-2 text-gray-600">{isOwnProfile ? 'Your Profile' : 'User Profile'}</p>
             </div>
           </div>
         </CardHeader>
@@ -154,7 +152,7 @@ function UserProfileContent() {
                 <label className="text-sm font-medium text-gray-700">Full Name</label>
                 <div className="relative">
                   <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-                  <div className="pl-10 py-2 text-gray-900">{profile.name}</div>
+                  <div className="py-2 pl-10 text-gray-900">{profile.name}</div>
                 </div>
               </div>
 
@@ -162,9 +160,7 @@ function UserProfileContent() {
                 <label className="text-sm font-medium text-gray-700">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-                  <div className="pl-10 py-2 text-gray-900">
-                    {profile.email}
-                  </div>
+                  <div className="py-2 pl-10 text-gray-900">{profile.email}</div>
                 </div>
               </div>
             </div>

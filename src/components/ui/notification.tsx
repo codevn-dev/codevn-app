@@ -1,16 +1,9 @@
 'use client';
 
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Card, CardBody } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useUIStore } from '@/stores/ui-store';
-
-const iconMap = {
-  success: CheckCircle,
-  error: AlertCircle,
-  warning: AlertTriangle,
-  info: Info,
-};
 
 const colorMap = {
   success: 'bg-green-50 border-green-200 text-green-800',
@@ -27,20 +20,19 @@ export function Notification() {
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2">
       {notifications.map((notification) => {
-        const Icon = iconMap[notification.type];
         return (
           <Card
             key={notification.id}
             className={`animate-slide-in max-w-sm ${colorMap[notification.type]} ${
-              notification.action ? 'cursor-pointer hover:shadow-md transition-shadow' : ''
+              notification.action ? 'cursor-pointer transition-shadow hover:shadow-md' : ''
             }`}
             onClick={notification.action ? notification.action.onClick : undefined}
           >
             <CardBody className="p-3">
               <div className="flex items-center">
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm truncate">{notification.title}</h4>
-                  <p className="text-xs text-gray-600 truncate">{notification.message}</p>
+                <div className="min-w-0 flex-1">
+                  <h4 className="truncate text-sm font-medium">{notification.title}</h4>
+                  <p className="truncate text-xs text-gray-600">{notification.message}</p>
                 </div>
                 <Button
                   size="sm"

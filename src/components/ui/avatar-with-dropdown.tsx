@@ -23,11 +23,11 @@ interface AvatarWithDropdownProps {
   className?: string;
 }
 
-export function AvatarWithDropdown({ 
-  user, 
-  size = 'md', 
-  showName = false, 
-  className = '' 
+export function AvatarWithDropdown({
+  user,
+  size = 'md',
+  showName = false,
+  className = '',
 }: AvatarWithDropdownProps) {
   const { user: currentUser, isAuthenticated } = useAuth();
   const { handleStartChat } = useChat();
@@ -38,18 +38,18 @@ export function AvatarWithDropdown({
 
   // Don't show dropdown for current user
   const isCurrentUser = currentUser?.id === user.id;
-  
+
   // Size classes
   const sizeClasses = {
     sm: 'h-6 w-6',
-    md: 'h-8 w-8', 
-    lg: 'h-10 w-10'
+    md: 'h-8 w-8',
+    lg: 'h-10 w-10',
   };
 
   const textSizeClasses = {
     sm: 'text-xs',
     md: 'text-sm',
-    lg: 'text-base'
+    lg: 'text-base',
   };
 
   // Close dropdown when clicking outside
@@ -94,7 +94,7 @@ export function AvatarWithDropdown({
       <div className={`relative ${className}`} ref={dropdownRef}>
         <Button
           variant="ghost"
-          className="p-0 h-auto hover:bg-transparent"
+          className="h-auto p-0 hover:bg-transparent"
           onClick={() => setIsOpen(!isOpen)}
         >
           <div className="flex items-center gap-2">
@@ -105,21 +105,19 @@ export function AvatarWithDropdown({
               </AvatarFallback>
             </Avatar>
             {showName && (
-              <span className={`font-medium ${textSizeClasses[size]}`}>
-                {user.name}
-              </span>
+              <span className={`font-medium ${textSizeClasses[size]}`}>{user.name}</span>
             )}
           </div>
         </Button>
 
         {isOpen && (
-          <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+          <div className="absolute top-full left-0 z-50 mt-2 w-40 rounded-md border border-gray-200 bg-white shadow-lg">
             <div className="py-1">
               {/* View Profile button for current user */}
               <div className="py-1">
                 <button
                   onClick={handleViewProfile}
-                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
                 >
                   <User className="h-4 w-4 text-green-600" />
                   <span>View Profile</span>
@@ -136,7 +134,7 @@ export function AvatarWithDropdown({
     <div className={`relative ${className}`} ref={dropdownRef}>
       <Button
         variant="ghost"
-        className="p-0 h-auto hover:bg-transparent"
+        className="h-auto p-0 hover:bg-transparent"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-2">
@@ -146,22 +144,18 @@ export function AvatarWithDropdown({
               {user.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          {showName && (
-            <span className={`font-medium ${textSizeClasses[size]}`}>
-              {user.name}
-            </span>
-          )}
+          {showName && <span className={`font-medium ${textSizeClasses[size]}`}>{user.name}</span>}
         </div>
       </Button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+        <div className="absolute top-full left-0 z-50 mt-2 w-40 rounded-md border border-gray-200 bg-white shadow-lg">
           <div className="py-1">
             {/* View Profile button */}
             <div className="py-1">
               <button
                 onClick={handleViewProfile}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
               >
                 <User className="h-4 w-4 text-green-600" />
                 <span>View Profile</span>
@@ -171,7 +165,7 @@ export function AvatarWithDropdown({
             <div className="py-1">
               <button
                 onClick={handleChat}
-                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
               >
                 <MessageCircle className="h-4 w-4 text-blue-600" />
                 <span>Chat</span>

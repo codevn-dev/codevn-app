@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
+import Credentials from '@auth/core/providers/credentials';
+import Google from '@auth/core/providers/google';
 import { userRepository } from '../database/repository';
 import bcrypt from 'bcryptjs';
 import { authConfig, jwtConfig } from '@/config';
@@ -18,7 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: authConfig.secret,
   trustHost: authConfig.trustHost,
   providers: [
-    CredentialsProvider({
+    Credentials({
       name: authConfig.providers.credentials.name,
       credentials: authConfig.providers.credentials.credentials,
       async authorize(credentials) {
@@ -54,12 +54,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
       },
-    }),
-    GoogleProvider({
+    }) as any,
+    Google({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
       allowDangerousEmailAccountLinking: true,
-    }),
+    }) as any,
   ],
   session: {
     strategy: 'jwt',

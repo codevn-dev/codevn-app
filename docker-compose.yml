@@ -7,7 +7,7 @@ services:
     container_name: codevn-app
     env_file: .env
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./public/uploads:/app/public/uploads
     depends_on:
@@ -26,6 +26,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    command: >
+      postgres
+      -c max_connections=100
+      -c shared_buffers=1536MB
+      -c effective_cache_size=4GB
+      -c maintenance_work_mem=128MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U $POSTGRES_USER -d $POSTGRES_DB']
       interval: 10s
@@ -42,15 +53,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: "no"
+    restart: 'no'
 
   redis:
     image: redis:8-alpine
     container_name: codevn-redis
     env_file: .env
     ports:
-      - "6379:6379"
-    command: ["redis-server", "--appendonly", "yes"]
+      - '6379:6379'
+    command: ['redis-server', '--appendonly', 'yes']
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -60,7 +71,7 @@ services:
     container_name: codevn-pgadmin
     env_file: .env
     ports:
-      - "8080:80"
+      - '8080:80'
     depends_on:
       postgres:
         condition: service_healthy
@@ -72,7 +83,7 @@ services:
     image: nginx:1.29-alpine
     container_name: codevn-nginx
     ports:
-      - "80:80"
+      - '80:80'
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./public:/app/public:ro

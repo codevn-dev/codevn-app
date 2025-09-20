@@ -6,7 +6,6 @@ export default {
   dialect: 'postgresql',
   dbCredentials: {
     url:
-      process.env.DATABASE_URL ||
-      'postgresql://codevn_user:codevn_password@localhost:5432/codevn',
+      process.env.DATABASE_URL || 'postgresql://codevn_user:codevn_password@localhost:5432/codevn',
   },
 } satisfies Config;

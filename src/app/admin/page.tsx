@@ -570,7 +570,7 @@ function AdminPageContent() {
                                 <div className="line-clamp-1 max-w-[160px] text-sm font-semibold text-gray-900 sm:max-w-none">
                                   <button
                                     onClick={() => router.push(`/users/${user.id}`)}
-                                    className="hover:text-blue-600 hover:underline transition-colors"
+                                    className="transition-colors hover:text-blue-600 hover:underline"
                                   >
                                     {user.name}
                                   </button>

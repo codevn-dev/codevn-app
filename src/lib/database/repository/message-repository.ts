@@ -36,17 +36,12 @@ export const messageRepository = {
 
   async findByUserPair(userId1: string, userId2: string, limit = 50) {
     const db = getDb();
-    const chatId1 = [userId1, userId2].sort().join('|');
-    const chatId2 = [userId2, userId1].sort().join('|');
-    
+    const chatId = [userId1, userId2].sort().join('|');
+
     return await db
       .select()
       .from(messages)
-      .where(
-        and(
-          eq(messages.chatId, chatId1)
-        )
-      )
+      .where(and(eq(messages.chatId, chatId)))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
   },
@@ -58,39 +53,28 @@ export const messageRepository = {
     return await db
       .select()
       .from(messages)
-      .where(
-        and(
-          eq(messages.fromUserId, userId)
-        )
-      )
+      .where(and(eq(messages.fromUserId, userId)))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
   },
 
   async getConversations(userId: string) {
     const db = getDb();
-    
+
     // Get all messages for the current user
     const userMessages = await db
       .select()
       .from(messages)
-      .where(
-        or(
-          eq(messages.fromUserId, userId),
-          eq(messages.toUserId, userId)
-        )
-      )
+      .where(or(eq(messages.fromUserId, userId), eq(messages.toUserId, userId)))
       .orderBy(desc(messages.createdAt));
 
     // Group by chatId and get the latest message for each chat
     const chatMap = new Map();
-    
+
     for (const message of userMessages) {
       if (!chatMap.has(message.chatId)) {
-        const otherUserId = message.fromUserId === userId 
-          ? message.toUserId 
-          : message.fromUserId;
-        
+        const otherUserId = message.fromUserId === userId ? message.toUserId : message.fromUserId;
+
         chatMap.set(message.chatId, {
           chatId: message.chatId,
           otherUserId,
@@ -105,7 +89,7 @@ export const messageRepository = {
 
     // Get user details for all other users
     const conversations = [];
-    for (const [chatId, chat] of chatMap) {
+    for (const [, chat] of chatMap) {
       const userDetails = await db
         .select({
           id: users.id,
@@ -141,11 +125,7 @@ export const messageRepository = {
         updatedAt: new Date(),
       })
       .where(
-        and(
-          eq(messages.chatId, chatId),
-          eq(messages.toUserId, userId),
-          eq(messages.seen, false)
-        )
+        and(eq(messages.chatId, chatId), eq(messages.toUserId, userId), eq(messages.seen, false))
       )
       .returning();
   },
@@ -156,12 +136,7 @@ export const messageRepository = {
     const result = await db
       .select({ count: messages.id })
       .from(messages)
-      .where(
-        and(
-          eq(messages.toUserId, userId),
-          eq(messages.seen, false)
-        )
-      );
+      .where(and(eq(messages.toUserId, userId), eq(messages.seen, false)));
     return result.length;
   },
 
@@ -172,11 +147,7 @@ export const messageRepository = {
       .select({ count: messages.id })
       .from(messages)
       .where(
-        and(
-          eq(messages.chatId, chatId),
-          eq(messages.toUserId, userId),
-          eq(messages.seen, false)
-        )
+        and(eq(messages.chatId, chatId), eq(messages.toUserId, userId), eq(messages.seen, false))
       );
     return result.length;
   },
@@ -188,11 +159,7 @@ export const messageRepository = {
       .select()
       .from(messages)
       .where(
-        and(
-          eq(messages.chatId, chatId),
-          eq(messages.toUserId, userId),
-          eq(messages.seen, true)
-        )
+        and(eq(messages.chatId, chatId), eq(messages.toUserId, userId), eq(messages.seen, true))
       )
       .orderBy(desc(messages.seenAt))
       .limit(1);

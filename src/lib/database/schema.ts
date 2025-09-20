@@ -1,6 +1,5 @@
-
-import { pgTable, text, timestamp, uuid, boolean, pgEnum, integer, index } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { pgTable, text, timestamp, uuid, boolean, pgEnum, integer } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm/relations';
 
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin']);
 
@@ -85,7 +84,9 @@ export const messages = pgTable('messages', {
   fromUserId: text('from_user_id').notNull(),
   toUserId: text('to_user_id').notNull(),
   text: text('text').notNull(),
-  type: text('type', { enum: ['message', 'system'] }).notNull().default('message'),
+  type: text('type', { enum: ['message', 'system'] })
+    .notNull()
+    .default('message'),
   seen: boolean('seen').notNull().default(false),
   seenAt: timestamp('seen_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),

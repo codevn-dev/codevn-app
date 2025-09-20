@@ -28,7 +28,7 @@ interface UiMessage {
 
 export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupProps) {
   const { user } = useAuth();
-  const { addNotification } = useUIStore();
+  const {} = useUIStore();
   const { setChatPopupOpen } = useChat();
   const [text, setText] = useState('');
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -45,12 +45,12 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
   }, [open, setChatPopupOpen]);
 
   // Use the centralized chat messages hook
-  const { messages, loading, setMessages, lastMessageTime, setLastMessageTime } = useChatMessages({
+  const { messages, loading, setMessages, setLastMessageTime } = useChatMessages({
     peerId,
     isActive: open,
     onNewMessage: () => {
       // No notification here - handled by useChatPolling
-    }
+    },
   });
 
   // Mark messages as seen when popup is open
@@ -81,12 +81,10 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
     return () => clearInterval(interval);
   }, [open, canChat, peerId, user?.id]);
 
-
-
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (!listRef.current || messages.length === 0) return;
-    
+
     // Check if there's a new message (different last message ID)
     const currentLastMessage = messages[messages.length - 1];
     if (currentLastMessage && currentLastMessage.id !== lastMessageId) {
@@ -127,11 +125,11 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
           seen: data.message.seen || false,
           seenAt: data.message.seenAt,
         };
-        
+
         setLastMessageTime(newMessage.timestamp);
-        setMessages(prev => {
+        setMessages((prev) => {
           // Check if message already exists to prevent duplicates
-          const exists = prev.some(msg => msg.id === newMessage.id);
+          const exists = prev.some((msg) => msg.id === newMessage.id);
           if (exists) return prev;
           return [...prev, newMessage];
         });
@@ -148,32 +146,33 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 w-[360px] max-w-[90vw]">
+      <DialogContent className="w-[360px] max-w-[90vw] p-0">
         <DialogTitle className="sr-only">Chat with {peerName || 'User'}</DialogTitle>
-        <div className="flex flex-col h-[420px]">
-          <div className="border-b px-4 py-3 text-sm font-semibold">
-            {peerName || 'Chat'}
-          </div>
-          <div ref={listRef} className="flex-1 overflow-y-auto space-y-2 px-4 py-3">
+        <div className="flex h-[420px] flex-col">
+          <div className="border-b px-4 py-3 text-sm font-semibold">{peerName || 'Chat'}</div>
+          <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto px-4 py-3">
             {loading && messages.length === 0 ? (
-              <div className="text-center text-sm text-gray-500 py-4">
-                Đang tải tin nhắn...
-              </div>
+              <div className="py-4 text-center text-sm text-gray-500">Đang tải tin nhắn...</div>
             ) : (
               messages.map((m) => (
-                <div key={m.id} className={`text-sm ${m.type === 'system' ? 'text-muted-foreground text-center' : ''}`}>
+                <div
+                  key={m.id}
+                  className={`text-sm ${m.type === 'system' ? 'text-muted-foreground text-center' : ''}`}
+                >
                   {m.type === 'system' ? (
                     <span>{m.text}</span>
                   ) : (
-                    <div className={`max-w-[80%] px-3 py-2 rounded-md ${m.from === userId ? 'bg-primary text-primary-foreground ml-auto' : 'bg-accent text-accent-foreground mr-auto'}`}>
+                    <div
+                      className={`max-w-[80%] rounded-md px-3 py-2 ${m.from === userId ? 'bg-primary text-primary-foreground ml-auto' : 'bg-accent text-accent-foreground mr-auto'}`}
+                    >
                       <div>{m.text}</div>
                       {m.from === userId && (
-                        <div className="flex items-center justify-end mt-1">
+                        <div className="mt-1 flex items-center justify-end">
                           <div className="flex items-center">
                             {m.seen ? (
                               <div className="flex items-center text-gray-400">
                                 <span className="text-xs">✓</span>
-                                <span className="text-xs -ml-1">✓</span>
+                                <span className="-ml-1 text-xs">✓</span>
                               </div>
                             ) : (
                               <div className="flex items-center text-gray-400">
@@ -189,7 +188,7 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
               ))
             )}
           </div>
-          <div className="border-t p-3 flex gap-2">
+          <div className="flex gap-2 border-t p-3">
             <Input
               value={text}
               onChange={(e) => setText(e.target.value)}

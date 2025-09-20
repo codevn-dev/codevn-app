@@ -8,7 +8,7 @@ export function useAbortController() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     // Create new controller
     abortControllerRef.current = new AbortController();
     return abortControllerRef.current;

@@ -9,7 +9,8 @@ import { ChatSidebar, ChatWindow } from './index';
 
 export function FloatingChatButton() {
   const { user } = useAuth();
-  const { handleStartChat, chatWindowOpen, setChatWindowOpen, peerId, peerName, peerAvatar } = useChat();
+  const { handleStartChat, chatWindowOpen, setChatWindowOpen, peerId, peerName, peerAvatar } =
+    useChat();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [wasChatWindowOpen, setWasChatWindowOpen] = useState(false);
   const [closingViaFloatingButton, setClosingViaFloatingButton] = useState(false);
@@ -43,7 +44,7 @@ export function FloatingChatButton() {
   return (
     <>
       {/* Floating Chat Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed right-6 bottom-6 z-50">
         <Button
           onClick={() => {
             if (chatWindowOpen) {
@@ -58,7 +59,7 @@ export function FloatingChatButton() {
               setIsSidebarOpen(true);
             }
           }}
-          className="h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 p-0"
+          className="h-14 w-14 rounded-full bg-blue-600 p-0 shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl"
           size="lg"
         >
           <MessageCircle className="h-6 w-6 text-white" />
@@ -66,15 +67,14 @@ export function FloatingChatButton() {
       </div>
 
       {/* Chat Sidebar */}
-      <ChatSidebar 
-        isOpen={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
+      <ChatSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
         onCloseAll={() => {
           setIsSidebarOpen(false);
           setChatWindowOpen(false);
         }}
         onStartChat={handleStartChatSimple}
-        chatWindowOpen={chatWindowOpen}
       />
 
       {/* Chat Window */}
@@ -84,7 +84,6 @@ export function FloatingChatButton() {
         peerAvatar={peerAvatar}
         isOpen={chatWindowOpen}
         onClose={() => setChatWindowOpen(false)}
-        onMinimize={() => setChatWindowOpen(false)}
       />
     </>
   );

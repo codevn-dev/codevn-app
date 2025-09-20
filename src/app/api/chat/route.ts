@@ -29,38 +29,46 @@ export async function GET(request: NextRequest) {
     if (action === 'get') {
       // Get messages for this chat from database
       const chatMessages = await messageRepository.findByChatId(chatId);
-      
+
       let filteredMessages = chatMessages;
-      
+
       // Filter messages since the given timestamp (for polling)
       const sinceTimestamp = parseInt(since);
       if (sinceTimestamp > 0) {
-        filteredMessages = chatMessages.filter(msg => new Date(msg.createdAt).getTime() > sinceTimestamp);
+        filteredMessages = chatMessages.filter(
+          (msg) => new Date(msg.createdAt).getTime() > sinceTimestamp
+        );
       }
-      
+
       // Filter messages before the given timestamp (for load more)
       const beforeTimestamp = parseInt(before);
       if (beforeTimestamp > 0) {
-        filteredMessages = chatMessages.filter(msg => new Date(msg.createdAt).getTime() < beforeTimestamp);
+        filteredMessages = chatMessages.filter(
+          (msg) => new Date(msg.createdAt).getTime() < beforeTimestamp
+        );
       }
-      
+
       // Sort by timestamp descending (newest first)
-      filteredMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      
+      filteredMessages.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
       // Apply limit
       const hasMore = filteredMessages.length > limit;
       const limitedMessages = filteredMessages.slice(0, limit);
-      
+
       // Sort by timestamp ascending (oldest first) for display
-      limitedMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-        
-      return NextResponse.json({ 
-        messages: limitedMessages.map(msg => ({
+      limitedMessages.sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+
+      return NextResponse.json({
+        messages: limitedMessages.map((msg) => ({
           ...msg,
           seen: msg.seen,
           seenAt: msg.seenAt,
         })),
-        hasMore: hasMore
+        hasMore: hasMore,
       });
     }
 
@@ -95,8 +103,8 @@ export async function POST(request: NextRequest) {
       type: 'message',
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: {
         id: message.id,
         type: message.type,
@@ -107,7 +115,7 @@ export async function POST(request: NextRequest) {
         seen: message.seen,
         seenAt: message.seenAt,
         timestamp: message.createdAt.getTime(),
-      }
+      },
     });
   } catch (error) {
     console.error('Error in chat POST:', error);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,20 +24,19 @@ interface ChatSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onStartChat: (userId: string, userName: string, userAvatar?: string) => void;
-  chatWindowOpen?: boolean;
   onCloseAll?: () => void; // New prop to close both sidebar and chat windows
 }
 
-export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = false, onCloseAll }: ChatSidebarProps) {
+export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSidebarProps) {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       const response = await fetch('/api/chat/conversations');
@@ -54,14 +53,14 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   // Fetch conversations when sidebar opens
   useEffect(() => {
     if (isOpen) {
       fetchConversations();
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, fetchConversations]);
 
   // Poll for conversation updates when sidebar is open
   useEffect(() => {
@@ -101,7 +100,7 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
     return timeB - timeA; // Descending order (newest first)
   });
 
-  const filteredConversations = sortedConversations.filter(conv =>
+  const filteredConversations = sortedConversations.filter((conv) =>
     conv.userName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -111,23 +110,24 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
       if (isNaN(date.getTime())) {
         return 'Just now';
       }
-      
+
       const now = new Date();
       const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-      
+
       if (diffInHours < 1) {
         return 'Just now';
       } else if (diffInHours < 24) {
-        return date.toLocaleTimeString('vi-VN', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
+        return date.toLocaleTimeString('vi-VN', {
+          hour: '2-digit',
+          minute: '2-digit',
         });
-      } else if (diffInHours < 168) { // 7 days
+      } else if (diffInHours < 168) {
+        // 7 days
         return date.toLocaleDateString('vi-VN', { weekday: 'short' });
       } else {
-        return date.toLocaleDateString('vi-VN', { 
-          day: '2-digit', 
-          month: '2-digit' 
+        return date.toLocaleDateString('vi-VN', {
+          day: '2-digit',
+          month: '2-digit',
         });
       }
     } catch {
@@ -138,24 +138,29 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-[100]"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (onCloseAll) {
-          onCloseAll();
-        } else {
-          onClose();
-        }
-      }}
-    >
-      <div 
-        className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out"
+    <>
+      {/* Overlay - chỉ chặn click bên ngoài sidebar */}
+      <div
+        className="fixed inset-0 z-[100]"
+        style={{ pointerEvents: 'none' }}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (onCloseAll) {
+            onCloseAll();
+          } else {
+            onClose();
+          }
+        }}
+      />
+      {/* Sidebar */}
+      <div
+        className="fixed top-0 right-0 z-[101] h-full w-80 transform bg-white shadow-xl transition-transform duration-300 ease-in-out"
+        style={{ pointerEvents: 'auto' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b pointer-events-auto">
+        <div className="pointer-events-auto flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-blue-600" />
             <h2 className="text-lg font-semibold">Chat</h2>
@@ -164,16 +169,16 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
             variant="ghost"
             size="sm"
             onClick={onCloseAll || onClose}
-            className="h-8 w-8 p-0 pointer-events-auto"
+            className="pointer-events-auto h-8 w-8 p-0"
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Search */}
-        <div className="p-4 border-b">
+        <div className="border-b p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <Input
               placeholder="Find a conversation..."
               value={searchTerm}
@@ -191,7 +196,7 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
             </div>
           ) : filteredConversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <MessageCircle className="h-12 w-12 text-gray-300 mb-2" />
+              <MessageCircle className="mb-2 h-12 w-12 text-gray-300" />
               <div className="text-sm text-gray-500">
                 {searchTerm ? 'No conversation found' : 'No conversation found'}
               </div>
@@ -201,9 +206,13 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
               {filteredConversations.map((conversation) => (
                 <div
                   key={conversation.userId}
-                  className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-gray-50"
                   onClick={() => {
-                    onStartChat(conversation.userId, conversation.userName, conversation.userAvatar);
+                    onStartChat(
+                      conversation.userId,
+                      conversation.userName,
+                      conversation.userAvatar
+                    );
                     // Don't close sidebar when starting a chat - let the floating chat button handle it
                   }}
                 >
@@ -215,23 +224,21 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
                       </AvatarFallback>
                     </Avatar>
                     {/* Unread indicator */}
-                    {conversation.lastMessage && 
-                     conversation.lastMessage.fromUserId !== user?.id && 
-                     !conversation.lastMessage.seen && (
-                      <div className="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full border-2 border-white"></div>
-                    )}
+                    {conversation.lastMessage &&
+                      conversation.lastMessage.fromUserId !== user?.id &&
+                      !conversation.lastMessage.seen && (
+                        <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-white bg-blue-500"></div>
+                      )}
                   </div>
-                  
-                  <div className="flex-1 min-w-0">
+
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <div className="font-medium text-sm truncate">
-                        {conversation.userName}
-                      </div>
-                      <div className="text-xs text-gray-500 ml-2">
+                      <div className="truncate text-sm font-medium">{conversation.userName}</div>
+                      <div className="ml-2 text-xs text-gray-500">
                         {formatTime(conversation.lastMessage.createdAt)}
                       </div>
                     </div>
-                    <div className="text-sm text-gray-600 truncate">
+                    <div className="truncate text-sm text-gray-600">
                       {conversation.lastMessage.text}
                     </div>
                   </div>
@@ -241,6 +248,6 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

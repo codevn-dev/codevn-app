@@ -229,7 +229,6 @@ export function CommentItem({
     }
   };
 
-
   const emphasizeMentions = (text: string) => text;
 
   return (

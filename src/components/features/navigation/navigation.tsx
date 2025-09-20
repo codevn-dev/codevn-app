@@ -56,7 +56,6 @@ export function Navigation() {
     }
   };
 
-
   return (
     <>
       <nav className="sticky top-0 z-50 border-b border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-md">
@@ -75,7 +74,7 @@ export function Navigation() {
                 className="h-10 w-10"
                 priority
               />
-              <span className="bg-gradient-to-r from-[#4ECDC4] to-[#FF6B6B] bg-clip-text text-[22px] sm:text-2xl font-semibold tracking-tight leading-tight text-transparent">
+              <span className="bg-gradient-to-r from-[#4ECDC4] to-[#FF6B6B] bg-clip-text text-[22px] leading-tight font-semibold tracking-tight text-transparent sm:text-2xl">
                 CodeVN
               </span>
             </button>

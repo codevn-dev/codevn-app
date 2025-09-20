@@ -1,6 +1,6 @@
 import { getDb } from '..';
 import { articles, comments, reactions } from '../schema';
-import { and, eq, or, like, isNull, gt, sql, count } from 'drizzle-orm';
+import { and, eq, or, like, isNull, sql, count } from 'drizzle-orm';
 
 export interface ArticleFilters {
   search?: string;

@@ -27,17 +27,9 @@ interface ChatWindowProps {
   peerAvatar?: string;
   isOpen: boolean;
   onClose: () => void;
-  onMinimize?: () => void;
 }
 
-export function ChatWindow({ 
-  peerId, 
-  peerName, 
-  peerAvatar, 
-  isOpen, 
-  onClose,
-  onMinimize
-}: ChatWindowProps) {
+export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: ChatWindowProps) {
   const { user } = useAuth();
   const [text, setText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -47,6 +39,7 @@ export function ChatWindow({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const { createAbortController } = useAbortController();
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -57,12 +50,12 @@ export function ChatWindow({
   const [lastMessageId, setLastMessageId] = useState<string>('');
 
   // Use the centralized chat messages hook
-  const { messages, loading, setMessages, lastMessageTime, setLastMessageTime } = useChatMessages({
+  const { messages, loading, setMessages, setLastMessageTime } = useChatMessages({
     peerId,
     isActive: isOpen && canChat,
     onNewMessage: () => {
       // No notification here - handled by useChatPolling
-    }
+    },
   });
 
   // Mark messages as seen when chat window is open
@@ -111,14 +104,6 @@ export function ChatWindow({
       .sort((a: UiMessage, b: UiMessage) => a.timestamp - b.timestamp);
   };
 
-
-  // Helper function to check if user is near bottom of chat
-  const isNearBottom = (): boolean => {
-    if (!listRef.current) return false;
-    const { scrollHeight, scrollTop, clientHeight } = listRef.current;
-    return scrollHeight - scrollTop - clientHeight < 100;
-  };
-
   // Helper function to scroll to bottom
   const scrollToBottom = () => {
     if (listRef.current) {
@@ -138,26 +123,25 @@ export function ChatWindow({
     }, 0);
   };
 
-
-
-
   // Load more messages
   const loadMoreMessages = async () => {
     if (loadingMore || !hasMoreMessages) return;
-    
+
     setLoadingMore(true);
     setIsLoadingMore(true);
-    
+
     const currentScrollHeight = listRef.current?.scrollHeight || 0;
-    
+
     try {
-      const response = await fetch(`/api/chat?peerId=${encodeURIComponent(peerId)}&action=get&limit=${chatConfig.maxMessagesPerPage}&before=${oldestMessageTime}`);
+      const response = await fetch(
+        `/api/chat?peerId=${encodeURIComponent(peerId)}&action=get&limit=${chatConfig.maxMessagesPerPage}&before=${oldestMessageTime}`
+      );
       if (response.ok) {
         const data = await response.json();
         const olderMessages = transformMessages(data.messages);
-        
+
         if (olderMessages.length > 0) {
-          setMessages(prev => [...olderMessages, ...prev]);
+          setMessages((prev) => [...olderMessages, ...prev]);
           setOldestMessageTime(olderMessages[0].timestamp);
           setHasMoreMessages(data.hasMore || false);
           restoreScrollPosition(currentScrollHeight);
@@ -172,7 +156,6 @@ export function ChatWindow({
       setLoadingMore(false);
     }
   };
-
 
   // Handle typing indicators
   const handleTyping = () => {
@@ -192,7 +175,7 @@ export function ChatWindow({
   // Auto-scroll to bottom when new messages arrive (but not when loading more)
   useEffect(() => {
     if (!listRef.current || isLoadingMore || messages.length === 0) return;
-    
+
     // Check if there's a new message (different last message ID)
     const currentLastMessage = messages[messages.length - 1];
     if (currentLastMessage && currentLastMessage.id !== lastMessageId) {
@@ -205,7 +188,7 @@ export function ChatWindow({
   // Force scroll to bottom on initial load only
   useLayoutEffect(() => {
     if (!listRef.current || messages.length === 0) return;
-    
+
     if (isInitialLoad && !loading && messages.length > 0) {
       setTimeout(() => {
         scrollToBottom();
@@ -217,7 +200,18 @@ export function ChatWindow({
         }
       }, 0);
     }
-  }, [messages.length, isInitialLoad, loading]);
+  }, [messages, isInitialLoad, loading]);
+
+  // Auto focus input when chat window opens
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 500);
+    }
+  }, [isOpen]);
 
   // Send message
   const send = async () => {
@@ -226,7 +220,7 @@ export function ChatWindow({
 
     try {
       // Loading is handled by the hook
-      
+
       const controller = createAbortController();
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -251,11 +245,11 @@ export function ChatWindow({
           seen: data.message.seen || false,
           seenAt: data.message.seenAt,
         };
-        
+
         setLastMessageTime(newMessage.timestamp);
-        setMessages(prev => {
+        setMessages((prev) => {
           // Check if message already exists to prevent duplicates
-          const exists = prev.some(msg => msg.id === newMessage.id);
+          const exists = prev.some((msg) => msg.id === newMessage.id);
           if (exists) return prev;
           return [...prev, newMessage];
         });
@@ -272,22 +266,21 @@ export function ChatWindow({
     }
   };
 
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-0 right-80 w-80 h-96 bg-white shadow-lg border border-gray-200 rounded-lg flex flex-col z-[60] pointer-events-auto">
+    <div className="pointer-events-auto fixed right-80 bottom-0 z-[60] flex h-96 w-80 flex-col rounded-lg border border-gray-200 bg-white shadow-lg">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900 text-white rounded-t-lg">
+      <div className="flex items-center justify-between rounded-t-lg bg-gray-900 p-4 text-white">
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src={peerAvatar || undefined} />
-            <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-800 text-white text-xs">
+            <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-800 text-xs text-white">
               {peerName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
-            <div className="font-medium text-sm">{peerName}</div>
+            <div className="text-sm font-medium">{peerName}</div>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -303,16 +296,14 @@ export function ChatWindow({
       </div>
 
       {/* Messages */}
-      <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
+      <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto bg-white p-4">
         {loading && messages.length === 0 ? (
-          <div className="text-center text-sm text-gray-500 py-4">
-            Loading messages...
-          </div>
+          <div className="py-4 text-center text-sm text-gray-500">Loading messages...</div>
         ) : (
           <>
             {/* Load More Button */}
             {hasMoreMessages && (
-              <div className="text-center py-2">
+              <div className="py-2 text-center">
                 <Button
                   variant="outline"
                   size="sm"
@@ -324,45 +315,45 @@ export function ChatWindow({
                 </Button>
               </div>
             )}
-            
+
             {messages.map((m, index) => {
               const previousMessage = index > 0 ? messages[index - 1] : null;
               const showDateSeparator = isNewDay(m.timestamp, previousMessage?.timestamp);
-              
+
               return (
                 <div key={m.id}>
                   {/* Date separator */}
                   {showDateSeparator && (
-                    <div className="flex justify-center my-4">
-                      <div className="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">
+                    <div className="my-4 flex justify-center">
+                      <div className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
                         {formatChatDate(m.timestamp)}
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Message */}
                   <div className={`flex ${m.from === userId ? 'justify-end' : 'justify-start'}`}>
                     {m.type === 'system' ? (
-                      <div className="text-center text-xs text-gray-500 w-full">
-                        {m.text}
-                      </div>
+                      <div className="w-full text-center text-xs text-gray-500">{m.text}</div>
                     ) : (
-                      <div className={`max-w-[70%] px-4 py-3 rounded-lg ${
-                        m.from === userId 
-                          ? 'bg-gray-900 text-white' 
-                          : 'bg-gray-100 text-gray-900'
-                      }`}>
+                      <div
+                        className={`max-w-[70%] rounded-lg px-4 py-3 ${
+                          m.from === userId ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'
+                        }`}
+                      >
                         <div className="text-sm">{m.text}</div>
-                        <div className={`text-xs mt-1 flex items-center gap-1 ${
-                          m.from === userId ? 'text-gray-300' : 'text-gray-500'
-                        }`}>
+                        <div
+                          className={`mt-1 flex items-center gap-1 text-xs ${
+                            m.from === userId ? 'text-gray-300' : 'text-gray-500'
+                          }`}
+                        >
                           <span>{formatChatTime(m.timestamp)}</span>
                           {m.from === userId && (
                             <div className="flex items-center">
                               {m.seen ? (
                                 <div className="flex items-center text-gray-400">
                                   <span className="text-xs">✓</span>
-                                  <span className="text-xs -ml-1">✓</span>
+                                  <span className="-ml-1 text-xs">✓</span>
                                 </div>
                               ) : (
                                 <div className="flex items-center text-gray-400">
@@ -383,9 +374,17 @@ export function ChatWindow({
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
+      <div
+        className="border-t border-gray-200 bg-gray-50 p-4"
+        onMouseEnter={() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }}
+      >
         <div className="flex gap-2">
           <Input
+            ref={inputRef}
             value={text}
             onChange={(e) => {
               setText(e.target.value);
@@ -397,15 +396,14 @@ export function ChatWindow({
                 send();
               }
             }}
+            onClick={() => {
+              inputRef.current?.focus();
+            }}
             placeholder="Type a message..."
             disabled={!canChat || loading}
             className="flex-1"
           />
-          <Button 
-            onClick={send} 
-            disabled={!canChat || !text.trim() || loading}
-            size="sm"
-          >
+          <Button onClick={send} disabled={!canChat || !text.trim() || loading} size="sm">
             {loading ? '...' : 'Send'}
           </Button>
         </div>

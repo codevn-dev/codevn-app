@@ -19,9 +19,9 @@ export async function POST(request: NextRequest) {
     // Mark messages as seen
     const updatedMessages = await messageRepository.markAsSeen(chatId, session.user.id);
 
-    return NextResponse.json({ 
-      success: true, 
-      updatedCount: updatedMessages.length 
+    return NextResponse.json({
+      success: true,
+      updatedCount: updatedMessages.length,
     });
   } catch (error) {
     console.error('Error marking messages as seen:', error);
@@ -46,8 +46,8 @@ export async function GET(request: NextRequest) {
     // Get unread count for this chat
     const unreadCount = await messageRepository.getUnreadCountForChat(chatId, session.user.id);
 
-    return NextResponse.json({ 
-      unreadCount 
+    return NextResponse.json({
+      unreadCount,
     });
   } catch (error) {
     console.error('Error getting unread count:', error);

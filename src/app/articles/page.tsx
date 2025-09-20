@@ -899,7 +899,9 @@ function ArticlesContent() {
                         className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg border-2 border-dashed border-gray-300 bg-white transition-colors hover:border-gray-400"
                       >
                         <Upload className="h-8 w-8 text-gray-400" />
-                        <span className="text-sm font-medium text-gray-700">Click to upload thumbnail</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Click to upload thumbnail
+                        </span>
                       </button>
                       <p className="mt-2 text-xs text-gray-400">PNG, JPG, GIF, WebP up to 5MB</p>
                     </div>

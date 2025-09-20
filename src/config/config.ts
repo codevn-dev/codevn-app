@@ -124,12 +124,10 @@ export function validateEnv() {
     'DB_PASSWORD',
   ];
 
-  const missingVars = requiredVars.filter(varName => !process.env[varName]);
+  const missingVars = requiredVars.filter((varName) => !process.env[varName]);
 
   if (missingVars.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missingVars.join(', ')}`
-    );
+    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
   }
 }
 
