@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MessageCircle, User } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useChat } from '@/components/features/chat/chat-context';
+import { useUIStore } from '@/stores/ui-store';
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -28,8 +29,9 @@ export function AvatarWithDropdown({
   showName = false, 
   className = '' 
 }: AvatarWithDropdownProps) {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, isAuthenticated } = useAuth();
   const { handleStartChat } = useChat();
+  const { setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -65,11 +67,23 @@ export function AvatarWithDropdown({
   }, []);
 
   const handleChat = () => {
+    if (!isAuthenticated) {
+      setAuthMode('signin');
+      setAuthModalOpen(true);
+      setIsOpen(false);
+      return;
+    }
     handleStartChat(user.id, user.name, user.avatar);
     setIsOpen(false);
   };
 
   const handleViewProfile = () => {
+    if (!isAuthenticated) {
+      setAuthMode('signin');
+      setAuthModalOpen(true);
+      setIsOpen(false);
+      return;
+    }
     router.push(`/users/${user.id}`);
     setIsOpen(false);
   };
