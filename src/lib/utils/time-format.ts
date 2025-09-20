@@ -6,6 +6,7 @@
  * Format a timestamp to relative time (e.g., "Just now" for < 5s, then date time)
  */
 export function formatRelativeTime(timestamp: number | string | Date): string {
+  // Use a more stable approach to avoid hydration mismatch
   const date = new Date(timestamp);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -13,7 +14,7 @@ export function formatRelativeTime(timestamp: number | string | Date): string {
   
   // Only show "Just now" for messages less than 5 seconds old
   if (diffSec < 5) return 'Just now';
-
+  
   // For everything else, show date time
   return formatDateTime(timestamp);
 }

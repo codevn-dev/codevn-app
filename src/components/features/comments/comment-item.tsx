@@ -19,6 +19,8 @@ import { useUIStore } from '@/stores';
 import { CommentForm } from './comment-form';
 import { CodeHighlighter } from '../articles/code-highlighter';
 import { formatRelativeTime } from '@/lib/utils';
+import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
+import { useClientOnly } from '@/hooks/use-client-only';
 
 interface Comment {
   id: string;
@@ -92,6 +94,7 @@ export function CommentItem({
   const canEdit = isAuthor;
   const canDelete = isAuthor || user?.role === 'admin';
   const maxDepth = 1; // Only allow one level of replies
+  const isClient = useClientOnly();
 
   // Sync state with prop changes
   useEffect(() => {
@@ -235,24 +238,22 @@ export function CommentItem({
         <CardBody className="p-3">
           <div className="mb-2 flex items-start justify-between">
             <div className="flex items-start space-x-2">
-              <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-sm font-bold text-white">
-                {comment.author.avatar ? (
-                  <img
-                    src={comment.author.avatar}
-                    alt={comment.author.name}
-                    className="h-9 w-9 rounded-full object-cover"
-                  />
-                ) : (
-                  comment.author.name.charAt(0).toUpperCase()
-                )}
-              </div>
+              <AvatarWithDropdown
+                user={{
+                  id: comment.author.id,
+                  name: comment.author.name,
+                  avatar: comment.author.avatar,
+                }}
+                size="lg"
+                className="mt-0.5"
+              />
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-900">{comment.author.name}</span>
                 </div>
                 <div className="flex items-center text-xs text-gray-500">
                   <Calendar className="mr-1 h-3 w-3" />
-                  {formatRelativeTime(comment.createdAt)}
+                  {isClient ? formatRelativeTime(comment.createdAt) : 'Loading...'}
                   {comment.updatedAt && (
                     <Badge variant="secondary" className="ml-2 px-1 py-0 text-xs">
                       edited

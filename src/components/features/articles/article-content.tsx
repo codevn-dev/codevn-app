@@ -11,6 +11,7 @@ import { CommentsSection } from '@/features/comments';
 import type { CommentsSectionRef } from '@/features/comments';
 import { useAuth } from '@/hooks/use-auth';
 import { useUIStore } from '@/stores';
+import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 
 interface Article {
   id: string;
@@ -21,6 +22,7 @@ interface Article {
   categoryId: string;
   createdAt: Date | string;
   author: {
+    id: string;
     name: string;
     avatar?: string;
   };
@@ -146,18 +148,16 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center space-x-4 text-sm text-gray-500">
             <div className="flex items-center">
-              <div className="mr-2 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-[10px] font-bold text-white sm:h-9 sm:w-9 sm:text-xs">
-                {article.author.avatar ? (
-                  <img
-                    src={article.author.avatar}
-                    alt={article.author.name}
-                    className="h-8 w-8 rounded-full object-cover sm:h-9 sm:w-9"
-                  />
-                ) : (
-                  article.author.name.charAt(0).toUpperCase()
-                )}
-              </div>
-              {article.author.name}
+              <AvatarWithDropdown
+                user={{
+                  id: article.author.id,
+                  name: article.author.name,
+                  avatar: article.author.avatar,
+                }}
+                size="md"
+                showName={true}
+                className="mr-2"
+              />
             </div>
             <div className="flex items-center">
               <Calendar className="mr-1 h-4 w-4" />

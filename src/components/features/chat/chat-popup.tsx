@@ -45,7 +45,7 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
           const data = await response.json();
           const uiMessages: UiMessage[] = data.messages
             .map((msg: any) => ({
-              id: `${msg.timestamp}-${Math.random().toString(36).slice(2)}`,
+              id: `${msg.timestamp}-${Date.now()}`,
               type: msg.type,
               from: msg.fromUserId || msg.from,
               text: msg.text,
@@ -82,7 +82,7 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
             const newMessages: UiMessage[] = data.messages
               .filter((msg: any) => new Date(msg.createdAt || msg.timestamp).getTime() > lastMessageTime)
               .map((msg: any) => ({
-                id: `${msg.timestamp}-${Math.random().toString(36).slice(2)}`,
+                id: `${msg.timestamp}-${Date.now()}`,
                 type: msg.type,
                 from: msg.fromUserId || msg.from,
                 text: msg.text,
@@ -145,7 +145,7 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
       if (response.ok) {
         const data = await response.json();
         const newMessage: UiMessage = {
-          id: `${data.message.timestamp}-${Math.random().toString(36).slice(2)}`,
+          id: `${data.message.timestamp}-${Date.now()}`,
           type: data.message.type,
           from: data.message.fromUserId || data.message.from,
           text: data.message.text,

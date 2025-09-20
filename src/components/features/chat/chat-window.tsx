@@ -56,13 +56,16 @@ export function ChatWindow({
   // Helper function to transform API messages to UI messages
   const transformMessages = (apiMessages: any[]): UiMessage[] => {
     return apiMessages
-      .map((msg: any) => ({
-        id: `${msg.timestamp}-${Math.random().toString(36).slice(2)}`,
-        type: msg.type || 'message',
-        from: msg.fromUserId || msg.from,
-        text: msg.text,
-        timestamp: new Date(msg.createdAt || msg.timestamp).getTime(),
-      }))
+      .map((msg: any) => {
+        const timestamp = new Date(msg.createdAt || msg.timestamp).getTime();
+        return {
+          id: `${msg.id || msg.timestamp}-${timestamp}`,
+          type: msg.type || 'message',
+          from: msg.fromUserId || msg.from,
+          text: msg.text,
+          timestamp,
+        };
+      })
       .sort((a: UiMessage, b: UiMessage) => a.timestamp - b.timestamp);
   };
 
@@ -110,6 +113,12 @@ export function ChatWindow({
     let isActive = true;
     setIsInitialLoad(true);
     
+    // Reset state when peerId changes
+    setMessages([]);
+    setLastMessageTime(0);
+    setOldestMessageTime(0);
+    setHasMoreMessages(false);
+    
     const fetchMessages = async () => {
       try {
         if (!isActive) return;
@@ -153,7 +162,7 @@ export function ChatWindow({
   
   // Polling for new messages
   useEffect(() => {
-    if (!isOpen || !canChat) return;
+    if (!isOpen || !canChat || lastMessageTime === 0) return;
     
     let pollInterval: NodeJS.Timeout;
     let pollCount = 0;
@@ -297,7 +306,7 @@ export function ChatWindow({
       if (response.ok) {
         const data = await response.json();
         const newMessage: UiMessage = {
-          id: `${data.message.timestamp}-${Math.random().toString(36).slice(2)}`,
+          id: `${data.message.timestamp}-${Date.now()}`,
           type: data.message.type,
           from: data.message.fromUserId || data.message.from,
           text: data.message.text,

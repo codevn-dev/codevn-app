@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 import {
   Select,
   SelectContent,
@@ -554,12 +554,16 @@ function AdminPageContent() {
                           <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
                             <div className="flex items-center">
                               <div className="h-10 w-10 flex-shrink-0 sm:h-12 sm:w-12">
-                                <Avatar className="h-10 w-10 shadow-sm ring-2 ring-white sm:h-12 sm:w-12">
-                                  <AvatarImage src={user.avatar || undefined} />
-                                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-sm font-semibold text-white">
-                                    {user.name.charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
+                                <AvatarWithDropdown
+                                  user={{
+                                    id: user.id,
+                                    name: user.name,
+                                    avatar: user.avatar || undefined,
+                                    role: user.role,
+                                  }}
+                                  size="lg"
+                                  className="shadow-sm ring-2 ring-white"
+                                />
                               </div>
                               <div className="ml-3 sm:ml-4">
                                 <div className="line-clamp-1 max-w-[160px] text-sm font-semibold text-gray-900 sm:max-w-none">
