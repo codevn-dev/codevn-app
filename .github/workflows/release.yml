@@ -11,6 +11,34 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit info
+        id: commit_info
+        run: |
+          echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "commit_message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
+          echo "author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+          echo "branch=$(git branch --show-current)" >> $GITHUB_OUTPUT
+
+      - name: Send deployment start notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            🚀 **Deployment Started**
+            
+            📝 **Commit:** `${{ steps.commit_info.outputs.commit_hash }}`
+            📄 **Message:** ${{ steps.commit_info.outputs.commit_message }}
+            👤 **Author:** ${{ steps.commit_info.outputs.author }}
+            🌿 **Branch:** ${{ steps.commit_info.outputs.branch }}
+            
+            ⏳ Building and deploying to codevn.dev...
+
       - name: Release over SSH
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -23,9 +51,40 @@ jobs:
             git reset --hard origin/main
             git clean -f -d
             docker compose up -d --build
+
       - name: Purge Cloudflare cache for codevn.dev
         run: |
           curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -H "Content-Type: application/json" \
             --data '{"purge_everything":true}'
+
+      - name: Send deployment success notification
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            ✅ **Deployment Successful!**
+            
+            🌐 **Site:** https://codevn.dev
+            📝 **Commit:** `${{ steps.commit_info.outputs.commit_hash }}`
+            📄 **Message:** ${{ steps.commit_info.outputs.commit_message }}
+            👤 **Author:** ${{ steps.commit_info.outputs.author }}
+            
+            🚀 Site is now live with the latest changes!
+
+      - name: Send deployment failure notification
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            ❌ **Deployment Failed!**
+            
+            📝 **Commit:** `${{ steps.commit_info.outputs.commit_hash }}`
+            📄 **Message:** ${{ steps.commit_info.outputs.commit_message }}
+            👤 **Author:** ${{ steps.commit_info.outputs.author }}
+            
+            🔍 Please check the GitHub Actions logs for details.
