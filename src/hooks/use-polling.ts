@@ -18,11 +18,7 @@ let lastErrorTime = 0;
 const maxErrors = 5;
 const errorResetTime = 60000; // Reset error count after 1 minute
 
-export function usePolling({
-  enabled,
-  interval,
-  onPoll
-}: UsePollingOptions) {
+export function usePolling({ enabled, interval, onPoll }: UsePollingOptions) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isActiveRef = useRef(true);
   const isPollingRef = useRef(false);

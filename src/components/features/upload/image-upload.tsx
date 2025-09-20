@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { imageCompressionUtils } from '@/lib/utils/image-compression';
 
 interface ImageUploadProps {
   onImageUploaded: (imageUrl: string) => void;
@@ -12,6 +13,7 @@ interface ImageUploadProps {
 
 export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,10 +28,10 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
       return;
     }
 
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    // Validate file size (10MB max before compression)
+    const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      alert('File too large. Maximum size is 5MB.');
+      alert('File too large. Maximum size is 10MB.');
       return;
     }
 
@@ -40,11 +42,28 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
     };
     reader.readAsDataURL(file);
 
+    // Compress image if needed
+    let fileToUpload = file;
+    setIsCompressing(true);
+
+    try {
+      if (true) {
+        // Always compress when enabled
+        const compressionResult = await imageCompressionUtils.compressForArticle(file);
+        fileToUpload = compressionResult.compressedFile;
+      }
+    } catch (error) {
+      console.error('Compression failed:', error);
+      alert('Failed to compress image. Uploading original file.');
+    } finally {
+      setIsCompressing(false);
+    }
+
     // Upload file
     setIsUploading(true);
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', fileToUpload);
 
       const response = await fetch('/api/upload/image', {
         method: 'POST',
@@ -131,10 +150,19 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
           {preview ? (
             <div className="space-y-4">
               <img src={preview} alt="Preview" className="mx-auto max-h-48 rounded-lg" />
-              {isUploading && (
+
+              {/* Loading states */}
+              {isCompressing && (
                 <div className="flex items-center justify-center space-x-2">
                   <Spinner size="sm" color="primary" />
-                  <span className="text-sm text-gray-600">UpLoading</span>
+                  <span className="text-sm text-gray-600">Compressing image...</span>
+                </div>
+              )}
+
+              {isUploading && !isCompressing && (
+                <div className="flex items-center justify-center space-x-2">
+                  <Spinner size="sm" color="primary" />
+                  <span className="text-sm text-gray-600">Uploading...</span>
                 </div>
               )}
             </div>
@@ -148,13 +176,24 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
                   {isUploading ? 'UpLoading' : 'Drop your image here'}
                 </p>
                 <p className="mt-1 text-sm text-gray-500">or click to browse files</p>
-                <p className="mt-2 text-xs text-gray-400">PNG, JPG, GIF, WebP up to 5MB</p>
+                <p className="mt-2 text-xs text-gray-400">
+                  PNG, JPG, GIF, WebP up to 10MB (auto-compressed)
+                </p>
               </div>
-              <Button onClick={onButtonClick} disabled={isUploading} className="mt-4">
-                {isUploading ? (
+              <Button
+                onClick={onButtonClick}
+                disabled={isUploading || isCompressing}
+                className="mt-4"
+              >
+                {isCompressing ? (
                   <>
                     <Spinner size="sm" color="primary" className="mr-2" />
-                    UpLoading
+                    Compressing...
+                  </>
+                ) : isUploading ? (
+                  <>
+                    <Spinner size="sm" color="primary" className="mr-2" />
+                    Uploading...
                   </>
                 ) : (
                   <>

@@ -163,12 +163,7 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
             <MessageCircle className="h-5 w-5 text-blue-600" />
             <h2 className="text-lg font-semibold">Chat</h2>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCloseAll || onClose}
-            className="h-8 w-8 p-0"
-          >
+          <Button variant="ghost" size="sm" onClick={onCloseAll || onClose} className="h-8 w-8 p-0">
             <X className="h-4 w-4" />
           </Button>
         </div>
