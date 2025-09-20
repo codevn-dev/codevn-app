@@ -25,9 +25,10 @@ interface ChatSidebarProps {
   onClose: () => void;
   onStartChat: (userId: string, userName: string, userAvatar?: string) => void;
   chatWindowOpen?: boolean;
+  onCloseAll?: () => void; // New prop to close both sidebar and chat windows
 }
 
-export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = false }: ChatSidebarProps) {
+export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = false, onCloseAll }: ChatSidebarProps) {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -138,15 +139,23 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
 
   return (
     <div 
-      className={`fixed inset-0 z-50 ${chatWindowOpen ? 'pointer-events-none' : 'bg-black/50'}`}
-      onClick={chatWindowOpen ? undefined : onClose}
+      className="fixed inset-0 z-[100]"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onCloseAll) {
+          onCloseAll();
+        } else {
+          onClose();
+        }
+      }}
     >
       <div 
-        className={`fixed right-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${chatWindowOpen ? 'pointer-events-auto' : ''}`}
+        className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b pointer-events-auto">
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-blue-600" />
             <h2 className="text-lg font-semibold">Chat</h2>
@@ -154,8 +163,8 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
           <Button
             variant="ghost"
             size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
+            onClick={onCloseAll || onClose}
+            className="h-8 w-8 p-0 pointer-events-auto"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -195,7 +204,7 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
                   className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                   onClick={() => {
                     onStartChat(conversation.userId, conversation.userName, conversation.userAvatar);
-                    onClose();
+                    // Don't close sidebar when starting a chat - let the floating chat button handle it
                   }}
                 >
                   <div className="relative">

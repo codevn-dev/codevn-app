@@ -6,6 +6,7 @@ import { MessageSquare, Loader2 } from 'lucide-react';
 import { CommentItem } from './comment-item';
 import { CommentForm } from './comment-form';
 import { useAuth } from '@/hooks/use-auth';
+import { usePolling } from '@/hooks/use-polling';
 import { useUIStore } from '@/stores';
 
 interface Comment {
@@ -53,6 +54,8 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMoreComments, setHasMoreComments] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [lastCommentId, setLastCommentId] = useState<string | null>(null);
+    const lastCommentIdRef = useRef<string | null>(null);
     const commentFormRef = useRef<HTMLDivElement>(null);
     const [visibleTopCount, setVisibleTopCount] = useState(5);
 
@@ -98,6 +101,12 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
             } else {
               setComments(data.comments || []);
               setVisibleTopCount(5);
+              // Update last comment ID for polling (use the first comment as it's the most recent)
+              if (data.comments && data.comments.length > 0) {
+                const newLastCommentId = data.comments[0].id;
+                setLastCommentId(newLastCommentId);
+                lastCommentIdRef.current = newLastCommentId;
+              }
             }
             setHasMoreComments(data.pagination.hasNextPage);
             setCurrentPage(page);
@@ -114,6 +123,29 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
       },
       [articleId]
     );
+
+    // Function to check for new comments
+    const checkForNewComments = useCallback(async () => {
+      try {
+        const response = await fetch(
+          `/api/articles/${articleId}/comments?sortOrder=desc&limit=1`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.comments && data.comments.length > 0) {
+            const latestComment = data.comments[0];
+            // Check if this is a new comment by comparing with our last known comment
+            if (!lastCommentIdRef.current || latestComment.id !== lastCommentIdRef.current) {
+              // New comments found, refresh the entire list
+              fetchComments(false, 1, false);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking for new comments:', error);
+      }
+    }, [articleId, fetchComments]);
 
     const handleCommentAdded = (_newComment: Comment) => {
       // Auto refresh comments to get the latest data
@@ -146,12 +178,27 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
       );
     };
 
+    // Set up polling for new comments
+    usePolling({
+      enabled: isAuthenticated && lastCommentId !== null,
+      interval: 5000, // Poll every 5 seconds
+      onPoll: checkForNewComments,
+      dependencies: [articleId],
+    });
+
     // Load comments on mount if not provided initially
     useEffect(() => {
       if (initialComments.length === 0) {
         fetchComments(true, 1, false);
+      } else {
+        // Set last comment ID from initial comments (use first comment as it's most recent)
+        if (initialComments.length > 0) {
+          const newLastCommentId = initialComments[0].id;
+          setLastCommentId(newLastCommentId);
+          lastCommentIdRef.current = newLastCommentId;
+        }
       }
-    }, [articleId, fetchComments, initialComments.length]);
+    }, [articleId, initialComments.length]); // Removed fetchComments and initialComments from dependencies
 
     // Only show top-level comments (parentId is null)
     const topLevelComments = comments.filter((comment) => comment.parentId === null);

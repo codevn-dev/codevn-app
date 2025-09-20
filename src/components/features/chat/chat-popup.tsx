@@ -119,7 +119,7 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
       if (response.ok) {
         const data = await response.json();
         const newMessage: UiMessage = {
-          id: `${data.message.timestamp}-${Date.now()}`,
+          id: data.message.id || `${data.message.timestamp}-${Date.now()}`,
           type: data.message.type,
           from: data.message.fromUserId || data.message.from,
           text: data.message.text,
@@ -129,7 +129,12 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
         };
         
         setLastMessageTime(newMessage.timestamp);
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => {
+          // Check if message already exists to prevent duplicates
+          const exists = prev.some(msg => msg.id === newMessage.id);
+          if (exists) return prev;
+          return [...prev, newMessage];
+        });
         setText('');
       } else {
         console.error('Failed to send message');

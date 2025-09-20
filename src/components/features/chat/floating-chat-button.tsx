@@ -26,17 +26,13 @@ export function FloatingChatButton() {
     }
   }, [chatWindowOpen, isSidebarOpen]);
 
-  // Track when chat window was open and auto-close sidebar when it closes via X button
+  // Track when chat window was open - don't auto-close sidebar
   useEffect(() => {
     if (chatWindowOpen) {
       setWasChatWindowOpen(true);
       setClosingViaFloatingButton(false);
-    } else if (wasChatWindowOpen && !chatWindowOpen && !closingViaFloatingButton) {
-      // Chat window was closed via X button, auto-close sidebar
-      setIsSidebarOpen(false);
-      setWasChatWindowOpen(false);
-    } else if (wasChatWindowOpen && !chatWindowOpen && closingViaFloatingButton) {
-      // Chat window was closed via floating button, don't auto-close sidebar
+    } else if (wasChatWindowOpen && !chatWindowOpen) {
+      // Chat window was closed, but keep sidebar open
       setWasChatWindowOpen(false);
       setClosingViaFloatingButton(false);
     }
@@ -73,6 +69,10 @@ export function FloatingChatButton() {
       <ChatSidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
+        onCloseAll={() => {
+          setIsSidebarOpen(false);
+          setChatWindowOpen(false);
+        }}
         onStartChat={handleStartChatSimple}
         chatWindowOpen={chatWindowOpen}
       />

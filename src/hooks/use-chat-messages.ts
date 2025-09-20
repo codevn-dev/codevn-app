@@ -25,6 +25,7 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
   const [loading, setLoading] = useState(false);
   const [lastMessageTime, setLastMessageTime] = useState<number>(0);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const isPollingRef = useRef(false);
 
   const userId = user?.id || '';
   const canChat = Boolean(userId && peerId && userId !== peerId);
@@ -35,7 +36,7 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
       .map((msg: any) => {
         const timestamp = new Date(msg.createdAt || msg.timestamp).getTime();
         return {
-          id: `${msg.id || msg.timestamp}-${timestamp}`,
+          id: msg.id || `${msg.fromUserId || msg.from}-${timestamp}`, // Use actual message ID if available
           type: msg.type || 'message',
           from: msg.fromUserId || msg.from,
           text: msg.text,
@@ -80,6 +81,9 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
     if (!isActive || !canChat) return;
 
     const pollForUpdates = async () => {
+      if (isPollingRef.current) return; // Prevent concurrent polling
+      
+      isPollingRef.current = true;
       try {
         // Always fetch all messages to get updated seen status
         const response = await fetch(`/api/chat?peerId=${encodeURIComponent(peerId)}&action=get`);
@@ -89,27 +93,31 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
             const allMessages = transformMessages(data.messages);
             
             setMessages(prev => {
-              // Check if there are any new messages or seen status changes
-              const hasNewMessages = allMessages.some(newMsg => 
-                !prev.find(prevMsg => prevMsg.id === newMsg.id)
-              );
+              // Create a map of existing messages for faster lookup
+              const existingMessages = new Map(prev.map(msg => [msg.id, msg]));
               
+              // Check if there are any new messages or seen status changes
+              const newMessages: UiMessage[] = [];
               const hasSeenUpdates = allMessages.some(newMsg => {
-                const prevMsg = prev.find(prevMsg => prevMsg.id === newMsg.id);
+                const prevMsg = existingMessages.get(newMsg.id);
                 return prevMsg && prevMsg.seen !== newMsg.seen;
               });
               
-              if (hasNewMessages || hasSeenUpdates) {
+              // Find truly new messages
+              allMessages.forEach(newMsg => {
+                if (!existingMessages.has(newMsg.id)) {
+                  newMessages.push(newMsg);
+                }
+              });
+              
+              if (newMessages.length > 0 || hasSeenUpdates) {
                 // Update last message time for new messages
-                if (hasNewMessages) {
+                if (newMessages.length > 0) {
                   const latestMessage = allMessages[allMessages.length - 1];
                   setLastMessageTime(latestMessage.timestamp);
                   
                   // Callback for new messages
                   if (onNewMessage) {
-                    const newMessages = allMessages.filter(newMsg => 
-                      !prev.find(prevMsg => prevMsg.id === newMsg.id)
-                    );
                     newMessages.forEach(msg => onNewMessage(msg));
                   }
                 }
@@ -123,17 +131,20 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
         }
       } catch (error) {
         console.error('Error polling for updates:', error);
+      } finally {
+        isPollingRef.current = false;
       }
     };
 
-    // Start polling every 3 seconds for both new messages and seen status updates
-    pollingRef.current = setInterval(pollForUpdates, 3000);
+    // Start polling every 5 seconds for both new messages and seen status updates
+    pollingRef.current = setInterval(pollForUpdates, 5000);
 
     return () => {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
         pollingRef.current = null;
       }
+      isPollingRef.current = false;
     };
   }, [isActive, canChat, peerId, onNewMessage]);
 
