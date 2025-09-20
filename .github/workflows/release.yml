@@ -33,7 +33,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             🚀 Deployment Started
-            
+
             📝 Commit: ${{ steps.commit_info.outputs.commit_hash }}
             👤 Author: ${{ steps.commit_info.outputs.author }}
             🌿 Branch: ${{ steps.commit_info.outputs.branch }}
@@ -51,11 +51,11 @@ jobs:
             git fetch
             git reset --hard origin/main
             git clean -f -d
-            
+
             # Clean up Docker to free space
             echo "Cleaning up Docker system..."
             docker system prune -f
-            
+
             # Build and deploy
             echo "Building and deploying application..."
             docker compose up -d --build
@@ -74,7 +74,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             ✅ Deployment Successful!
-            
+
             🌐 Site: https://codevn.dev
             📝 Commit: ${{ steps.commit_info.outputs.commit_hash }}
             👤 Author: ${{ steps.commit_info.outputs.author }}
@@ -89,7 +89,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             ❌ Deployment Failed!
-            
+
             📝 Commit: ${{ steps.commit_info.outputs.commit_hash }}
             👤 Author: ${{ steps.commit_info.outputs.author }}
                         

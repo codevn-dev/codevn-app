@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -25,11 +25,26 @@ export function AuthModal() {
     email: '',
     name: '',
     password: '',
+    confirmPassword: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isOauthLoading, setIsOauthLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [passwordMatch, setPasswordMatch] = useState<boolean | null>(null);
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const emailCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (emailCheckTimeoutRef.current) {
+        clearTimeout(emailCheckTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +54,18 @@ export function AuthModal() {
 
     try {
       if (authMode === 'signup') {
+        // Validate email availability and format
+        if (emailError) {
+          throw new Error(emailError);
+        }
+        if (emailAvailable === false) {
+          throw new Error('Email already exists');
+        }
+
+        // Validate password confirmation
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
         const response = await fetch('/api/auth/register', {
           method: 'POST',
           headers: {
@@ -113,14 +140,86 @@ export function AuthModal() {
     }
   };
 
+  const checkEmailAvailability = async (email: string) => {
+    if (!email) {
+      setEmailAvailable(null);
+      setEmailError(null);
+      return;
+    }
+
+    setIsCheckingEmail(true);
+    setEmailError(null);
+    try {
+      const response = await fetch('/api/auth/check-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setEmailAvailable(data.available);
+        setEmailError(null);
+      } else {
+        // Handle API errors (like invalid email format)
+        setEmailAvailable(false);
+        setEmailError(data.message || 'Invalid email');
+      }
+    } catch (error) {
+      console.error('Error checking email availability:', error);
+      setEmailAvailable(null);
+      setEmailError(null);
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
+    const newFormData = {
+      ...formData,
       [e.target.name]: e.target.value,
-    }));
+    };
+    setFormData(newFormData);
+
     // Clear error and success when user starts typing
     if (error) setError('');
     if (success) setSuccess('');
+
+    // Real-time email availability check (only for signup)
+    if (e.target.name === 'email' && authMode === 'signup') {
+      if (newFormData.email) {
+        // Clear previous timeout
+        if (emailCheckTimeoutRef.current) {
+          clearTimeout(emailCheckTimeoutRef.current);
+        }
+
+        // Set new timeout for email availability check (debounce 500ms)
+        emailCheckTimeoutRef.current = setTimeout(() => {
+          checkEmailAvailability(newFormData.email);
+        }, 500);
+      } else {
+        setEmailAvailable(null);
+        setEmailError(null);
+        if (emailCheckTimeoutRef.current) {
+          clearTimeout(emailCheckTimeoutRef.current);
+        }
+      }
+    }
+
+    // Real-time password validation for signup mode
+    if (
+      authMode === 'signup' &&
+      (e.target.name === 'password' || e.target.name === 'confirmPassword')
+    ) {
+      if (newFormData.password && newFormData.confirmPassword) {
+        setPasswordMatch(newFormData.password === newFormData.confirmPassword);
+      } else {
+        setPasswordMatch(null);
+      }
+    }
   };
 
   const resetForm = () => {
@@ -128,20 +227,41 @@ export function AuthModal() {
       email: '',
       name: '',
       password: '',
+      confirmPassword: '',
     });
     setError('');
     setSuccess('');
+    setPasswordMatch(null);
+    setEmailAvailable(null);
+    setEmailError(null);
+    setIsCheckingEmail(false);
+    if (emailCheckTimeoutRef.current) {
+      clearTimeout(emailCheckTimeoutRef.current);
+    }
   };
 
   const handleModeSwitch = (newMode: 'signin' | 'signup') => {
     setAuthMode(newMode);
     setError('');
     setSuccess('');
+    setPasswordMatch(null);
+
+    // Clear email availability check when switching to signin
+    if (newMode === 'signin') {
+      setEmailAvailable(null);
+      setEmailError(null);
+      setIsCheckingEmail(false);
+      if (emailCheckTimeoutRef.current) {
+        clearTimeout(emailCheckTimeoutRef.current);
+      }
+    }
+
     // Keep email if switching modes, but clear other fields
     setFormData((prev) => ({
       email: prev.email,
       name: '',
       password: '',
+      confirmPassword: '',
     }));
   };
 
@@ -241,15 +361,34 @@ export function AuthModal() {
             <label htmlFor="email" className="text-sm font-medium text-gray-700">
               Email Address
             </label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="Enter your email"
-              required
-            />
+            <div className="relative">
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Enter your email"
+                required
+                className={`pr-8 ${authMode === 'signup' && (emailAvailable === false || emailError) ? 'border-red-500 focus:border-red-500' : authMode === 'signup' && emailAvailable === true ? 'border-green-500 focus:border-green-500' : ''}`}
+              />
+              {authMode === 'signup' && isCheckingEmail && (
+                <div className="absolute top-1/2 right-2 -translate-y-1/2 transform">
+                  <Spinner size="sm" />
+                </div>
+              )}
+            </div>
+            {authMode === 'signup' && (emailAvailable !== null || emailError) && (
+              <div
+                className={`text-xs ${emailAvailable === true ? 'text-green-600' : 'text-red-600'}`}
+              >
+                {emailError
+                  ? `✗ ${emailError}`
+                  : emailAvailable
+                    ? '✓ Email is available!'
+                    : '✗ Email already exists'}
+              </div>
+            )}
           </div>
 
           {authMode === 'signup' && (
@@ -284,8 +423,40 @@ export function AuthModal() {
             />
           </div>
 
+          {authMode === 'signup' && (
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                placeholder="Confirm your password"
+                required
+                className={
+                  passwordMatch === false
+                    ? 'border-red-500 focus:border-red-500'
+                    : passwordMatch === true
+                      ? 'border-green-500 focus:border-green-500'
+                      : ''
+                }
+              />
+              {passwordMatch !== null && (
+                <div className={`text-xs ${passwordMatch ? 'text-green-600' : 'text-red-600'}`}>
+                  {passwordMatch ? '✓ Perfect match!' : "✗ Passwords don't match"}
+                </div>
+              )}
+            </div>
+          )}
+
           {error && (
-            <Badge variant="destructive" className="w-full justify-center">
+            <Badge
+              variant="outline"
+              className="w-full justify-center border-red-200 bg-red-50 text-red-600"
+            >
               {error}
             </Badge>
           )}

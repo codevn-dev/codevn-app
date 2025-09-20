@@ -1,0 +1,11 @@
+# Run linting
+echo "🔍 Running ESLint..."
+pnpm lint
+
+# Check formatting
+echo "🎨 Checking code formatting..."
+pnpm format:check
+
+# Run TypeScript type checking
+echo "🔧 Running TypeScript type check..."
+pnpm type-check

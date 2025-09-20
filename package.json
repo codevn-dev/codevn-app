@@ -9,11 +9,13 @@
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "type-check": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:seed": "tsx scripts/seed-categories.ts",
-    "create-mock-users": "tsx scripts/create-mock-users.ts"
+    "create-mock-users": "tsx scripts/create-mock-users.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",
@@ -71,6 +73,7 @@
     "eslint-config-next": "15.5.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-unused-imports": "^4.2.0",
+    "husky": "^9.1.7",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "tailwindcss": "^4.1.13",
