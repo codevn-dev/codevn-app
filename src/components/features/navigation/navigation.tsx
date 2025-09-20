@@ -55,6 +55,7 @@ export function Navigation() {
     }
   };
 
+
   return (
     <>
       <nav className="sticky top-0 z-50 border-b border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-md">
@@ -104,38 +105,40 @@ export function Navigation() {
                     </Button>
                   )}
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatar || undefined} />
-                          <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-                            {user.name?.charAt(0).toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="w-56 rounded-md border border-gray-200 bg-white shadow-lg"
-                      align="end"
-                      forceMount
-                    >
-                      <DropdownMenuItem
-                        onClick={() => router.push('/profile')}
-                        className="cursor-pointer bg-white hover:bg-gray-50 focus:bg-gray-50"
+                  <div className="flex items-center gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.avatar || undefined} />
+                            <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                              {user.name?.charAt(0).toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="w-56 rounded-md border border-gray-200 bg-white shadow-lg"
+                        align="end"
+                        forceMount
                       >
-                        <User className="mr-2 h-4 w-4" />
-                        Edit Profile
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={handleSignOut}
-                        className="cursor-pointer bg-white text-red-600 hover:bg-gray-50 focus:bg-gray-50 focus:text-red-600"
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <DropdownMenuItem
+                          onClick={() => router.push('/profile')}
+                          className="cursor-pointer bg-white hover:bg-gray-50 focus:bg-gray-50"
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          Edit Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={handleSignOut}
+                          className="cursor-pointer bg-white text-red-600 hover:bg-gray-50 focus:bg-gray-50 focus:text-red-600"
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Sign Out
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </>
               ) : (
                 <>

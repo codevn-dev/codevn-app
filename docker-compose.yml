@@ -13,6 +13,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_started
     restart: unless-stopped
 
   postgres:
@@ -42,6 +44,17 @@ services:
         condition: service_healthy
     restart: "no"
 
+  redis:
+    image: redis:8-alpine
+    container_name: codevn-redis
+    env_file: .env
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
   pgadmin:
     image: dpage/pgadmin4:9
     container_name: codevn-pgadmin
@@ -70,3 +83,4 @@ services:
 volumes:
   postgres_data:
   pgadmin_data:
+  redis_data:

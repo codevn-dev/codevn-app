@@ -53,20 +53,17 @@ export function AuthModal() {
         }
 
         const registrationData = await response.json();
-        console.log('[AUTH] Registration successful:', registrationData);
 
         // Wait a moment to ensure user is properly created in database
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         // After successful registration, sign in the user
-        console.log('[AUTH] Attempting automatic sign-in after registration...');
         const result = await signIn('credentials', {
           email: formData.email,
           password: formData.password,
           redirect: false,
         });
 
-        console.log('[AUTH] Sign-in result:', result);
 
         if (result?.error) {
           console.error('[AUTH] Sign-in error:', result.error);

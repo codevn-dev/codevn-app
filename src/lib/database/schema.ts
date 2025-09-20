@@ -1,5 +1,5 @@
 
-import { pgTable, text, timestamp, uuid, boolean, pgEnum, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, boolean, pgEnum, integer, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin']);
@@ -78,6 +78,18 @@ export const reactions = pgTable('reactions', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// Chat messages table
+export const messages = pgTable('messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  chatId: text('chat_id').notNull(), // userA|userB format
+  fromUserId: text('from_user_id').notNull(),
+  toUserId: text('to_user_id').notNull(),
+  text: text('text').notNull(),
+  type: text('type', { enum: ['message', 'system'] }).notNull().default('message'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   articles: many(articles),
@@ -143,6 +155,17 @@ export const reactionsRelations = relations(reactions, ({ one }) => ({
   }),
   user: one(users, {
     fields: [reactions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  fromUser: one(users, {
+    fields: [messages.fromUserId],
+    references: [users.id],
+  }),
+  toUser: one(users, {
+    fields: [messages.toUserId],
     references: [users.id],
   }),
 }));

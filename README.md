@@ -84,7 +84,7 @@ A modern, full-featured forum application built with Next.js 15, TypeScript, and
    # Database Configuration
    DATABASE_URL="postgresql://codevn_user:codevn_password@localhost:5432/codevn"
 
-   # Redis Configuration (for caching, sessions, rate limiting)
+   # Redis Configuration (for caching, sessions, rate limiting, and chat)
    REDIS_URL="redis://localhost:6379"
    # OR use individual Redis settings:
    # REDIS_HOST=localhost

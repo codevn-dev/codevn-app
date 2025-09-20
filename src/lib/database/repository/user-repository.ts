@@ -1,6 +1,6 @@
 import { getDb } from '..';
 import { users } from '../schema';
-import { eq, and, or, ilike, count, desc, asc, isNull } from 'drizzle-orm';
+import { eq, and, or, ilike, count, desc, asc, isNull, ne } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
 export interface UserFilters {
@@ -175,6 +175,20 @@ export class UserRepository {
         hasPrevPage,
       },
     };
+  }
+
+  async findAllExcept(excludeId: string, limit: number = 50) {
+    return await getDb()
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        avatar: users.avatar,
+        role: users.role,
+      })
+      .from(users)
+      .where(and(ne(users.id, excludeId), isNull(users.deletedAt)))
+      .limit(limit);
   }
 
   async delete(id: string) {

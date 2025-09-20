@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { userRepository } from '../database/repository';
 import bcrypt from 'bcryptjs';
+import { authConfig, jwtConfig } from '@/config';
 
 function generateRandomHexString(byteLength: number): string {
   const array = new Uint8Array(byteLength);
@@ -15,40 +16,32 @@ function generateRandomHexString(byteLength: number): string {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true, // Allow localhost in development
+  secret: authConfig.secret,
   providers: [
     CredentialsProvider({
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
+      name: authConfig.providers.credentials.name,
+      credentials: authConfig.providers.credentials.credentials,
       async authorize(credentials) {
         try {
           if (!credentials?.email || !credentials?.password) {
-            console.log('[AUTH] Missing email or password');
             return null;
           }
 
-          console.log('[AUTH] Attempting login for:', credentials.email);
           const user = await userRepository.findByEmail(credentials.email as string);
 
           if (!user) {
-            console.log('[AUTH] User not found:', credentials.email);
             return null;
           }
 
-          console.log('[AUTH] User found, checking password...');
           const isPasswordValid = await bcrypt.compare(
             credentials.password as string,
             user.password
           );
 
           if (!isPasswordValid) {
-            console.log('[AUTH] Invalid password for:', credentials.email);
             return null;
           }
 
-          console.log('[AUTH] Login successful for:', credentials.email);
           return {
             id: user.id,
             email: user.email,
@@ -70,12 +63,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: jwtConfig.maxAge,
   },
   jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: jwtConfig.maxAge,
   },
-  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
   callbacks: {
     async jwt({ token, user, trigger, account }) {
       // On initial sign-in, ensure token reflects our DB user
