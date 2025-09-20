@@ -96,6 +96,8 @@ export const messageRepository = {
           otherUserId,
           lastMessage: message.text,
           lastMessageTime: message.createdAt,
+          lastMessageFromUserId: message.fromUserId,
+          lastMessageSeen: message.seen,
           unreadCount: 0, // We'll calculate this separately if needed
         });
       }
@@ -126,5 +128,74 @@ export const messageRepository = {
     }
 
     return conversations;
+  },
+
+  // Mark messages as seen
+  async markAsSeen(chatId: string, userId: string) {
+    const db = getDb();
+    return await db
+      .update(messages)
+      .set({
+        seen: true,
+        seenAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(messages.chatId, chatId),
+          eq(messages.toUserId, userId),
+          eq(messages.seen, false)
+        )
+      )
+      .returning();
+  },
+
+  // Get unread message count for a user
+  async getUnreadCount(userId: string) {
+    const db = getDb();
+    const result = await db
+      .select({ count: messages.id })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.toUserId, userId),
+          eq(messages.seen, false)
+        )
+      );
+    return result.length;
+  },
+
+  // Get unread count for specific chat
+  async getUnreadCountForChat(chatId: string, userId: string) {
+    const db = getDb();
+    const result = await db
+      .select({ count: messages.id })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.chatId, chatId),
+          eq(messages.toUserId, userId),
+          eq(messages.seen, false)
+        )
+      );
+    return result.length;
+  },
+
+  // Get last seen message for a chat
+  async getLastSeenMessage(chatId: string, userId: string) {
+    const db = getDb();
+    const result = await db
+      .select()
+      .from(messages)
+      .where(
+        and(
+          eq(messages.chatId, chatId),
+          eq(messages.toUserId, userId),
+          eq(messages.seen, true)
+        )
+      )
+      .orderBy(desc(messages.seenAt))
+      .limit(1);
+    return result[0] || null;
   },
 };

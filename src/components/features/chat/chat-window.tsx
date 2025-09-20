@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useAbortController } from '@/hooks/use-abort-controller';
+import { useChatMessages } from '@/hooks/use-chat-messages';
 import { formatChatTime, isNewDay, formatChatDate } from '@/lib/utils';
 import { chatConfig } from '@/config';
 
@@ -16,6 +17,8 @@ interface UiMessage {
   from: string;
   text: string;
   timestamp: number;
+  seen: boolean;
+  seenAt?: string | null;
 }
 
 interface ChatWindowProps {
@@ -36,10 +39,7 @@ export function ChatWindow({
   onMinimize
 }: ChatWindowProps) {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<UiMessage[]>([]);
   const [text, setText] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [lastMessageTime, setLastMessageTime] = useState<number>(0);
   const [isTyping, setIsTyping] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -53,6 +53,46 @@ export function ChatWindow({
   const userId = user?.id || '';
   const canChat = Boolean(userId && peerId && userId !== peerId);
 
+  // Track last message to detect new messages
+  const [lastMessageId, setLastMessageId] = useState<string>('');
+
+  // Use the centralized chat messages hook
+  const { messages, loading, setMessages, lastMessageTime, setLastMessageTime } = useChatMessages({
+    peerId,
+    isActive: isOpen && canChat,
+    onNewMessage: () => {
+      // No notification here - handled by useChatPolling
+    }
+  });
+
+  // Mark messages as seen when chat window is open
+  useEffect(() => {
+    if (!isOpen || !canChat || !peerId) return;
+
+    const markAsSeen = async () => {
+      try {
+        const chatId = [user?.id, peerId].sort().join('|');
+        await fetch('/api/chat/seen', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ chatId }),
+        });
+      } catch (error) {
+        console.error('Error marking messages as seen:', error);
+      }
+    };
+
+    // Mark as seen immediately when chat opens
+    markAsSeen();
+
+    // Mark as seen every 5 seconds while chat is open
+    const interval = setInterval(markAsSeen, 5000);
+
+    return () => clearInterval(interval);
+  }, [isOpen, canChat, peerId, user?.id]);
+
   // Helper function to transform API messages to UI messages
   const transformMessages = (apiMessages: any[]): UiMessage[] => {
     return apiMessages
@@ -64,10 +104,13 @@ export function ChatWindow({
           from: msg.fromUserId || msg.from,
           text: msg.text,
           timestamp,
+          seen: msg.seen || false,
+          seenAt: msg.seenAt,
         };
       })
       .sort((a: UiMessage, b: UiMessage) => a.timestamp - b.timestamp);
   };
+
 
   // Helper function to check if user is near bottom of chat
   const isNearBottom = (): boolean => {
@@ -95,123 +138,8 @@ export function ChatWindow({
     }, 0);
   };
 
-  // Helper function to get adaptive polling interval
-  const getPollingInterval = (hasNewMessages: boolean, pollCount: number): number => {
-    if (hasNewMessages) return 1000;
-    return Math.min(5000, 2000 + pollCount * 500);
-  };
 
-  // Helper function to get error polling interval
-  const getErrorPollingInterval = (pollCount: number): number => {
-    return Math.min(10000, 2000 * Math.pow(1.5, pollCount));
-  };
 
-  // Fetch messages when window opens
-  useEffect(() => {
-    if (!isOpen || !canChat) return;
-    
-    let isActive = true;
-    setIsInitialLoad(true);
-    
-    // Reset state when peerId changes
-    setMessages([]);
-    setLastMessageTime(0);
-    setOldestMessageTime(0);
-    setHasMoreMessages(false);
-    
-    const fetchMessages = async () => {
-      try {
-        if (!isActive) return;
-        setLoading(true);
-        
-        const response = await fetch(`/api/chat?peerId=${encodeURIComponent(peerId)}&action=get&limit=${chatConfig.maxMessagesPerPage}`);
-        if (!isActive || !response.ok) return;
-        
-        const data = await response.json();
-        if (!isActive) return;
-        
-        const uiMessages = transformMessages(data.messages);
-        
-        if (isActive) {
-          setMessages(uiMessages);
-          setHasMoreMessages(data.hasMore || false);
-          
-          if (uiMessages.length > 0) {
-            setLastMessageTime(uiMessages[uiMessages.length - 1].timestamp);
-            setOldestMessageTime(uiMessages[0].timestamp);
-          }
-        }
-      } catch (error) {
-        if (isActive) {
-          console.error('Error fetching messages:', error);
-        }
-      } finally {
-        if (isActive) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchMessages();
-    
-    return () => {
-      isActive = false;
-    };
-  }, [isOpen, canChat, peerId]);
-
-  
-  // Polling for new messages
-  useEffect(() => {
-    if (!isOpen || !canChat || lastMessageTime === 0) return;
-    
-    let pollInterval: NodeJS.Timeout;
-    let pollCount = 0;
-    let hasNewMessages = false;
-    
-    const poll = async () => {
-      try {
-        const response = await fetch(`/api/chat?peerId=${encodeURIComponent(peerId)}&action=get&since=${lastMessageTime}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.messages?.length > 0) {
-            const newMessages = transformMessages(data.messages)
-              .filter((msg: UiMessage) => msg.timestamp > lastMessageTime);
-            
-            if (newMessages.length > 0) {
-              hasNewMessages = true;
-              setMessages(prev => {
-                const allMessages = [...prev, ...newMessages];
-                const uniqueMessages = allMessages.filter((msg, index, self) => 
-                  index === self.findIndex(m => m.id === msg.id)
-                );
-                return uniqueMessages.sort((a, b) => a.timestamp - b.timestamp);
-              });
-              
-              setLastMessageTime(newMessages[newMessages.length - 1].timestamp);
-            }
-          }
-        }
-        
-        pollCount++;
-        const nextInterval = getPollingInterval(hasNewMessages, pollCount);
-        pollInterval = setTimeout(poll, nextInterval);
-        hasNewMessages = false;
-        
-      } catch (error) {
-        console.error('Polling error:', error);
-        const errorInterval = getErrorPollingInterval(pollCount);
-        pollInterval = setTimeout(poll, errorInterval);
-      }
-    };
-    
-    pollInterval = setTimeout(poll, chatConfig.pollingInterval);
-    
-    return () => {
-      if (pollInterval) {
-        clearTimeout(pollInterval);
-      }
-    };
-  }, [isOpen, canChat, peerId, lastMessageTime]);
 
   // Load more messages
   const loadMoreMessages = async () => {
@@ -263,12 +191,16 @@ export function ChatWindow({
 
   // Auto-scroll to bottom when new messages arrive (but not when loading more)
   useEffect(() => {
-    if (!listRef.current || isLoadingMore) return;
+    if (!listRef.current || isLoadingMore || messages.length === 0) return;
     
-    if (isNearBottom()) {
+    // Check if there's a new message (different last message ID)
+    const currentLastMessage = messages[messages.length - 1];
+    if (currentLastMessage && currentLastMessage.id !== lastMessageId) {
+      // New message detected, scroll to bottom
       scrollToBottom();
+      setLastMessageId(currentLastMessage.id);
     }
-  }, [messages.length, isLoadingMore]);
+  }, [messages, isLoadingMore, lastMessageId]);
 
   // Force scroll to bottom on initial load only
   useLayoutEffect(() => {
@@ -278,6 +210,11 @@ export function ChatWindow({
       setTimeout(() => {
         scrollToBottom();
         setIsInitialLoad(false);
+        // Set the last message ID for tracking
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage) {
+          setLastMessageId(lastMessage.id);
+        }
       }, 0);
     }
   }, [messages.length, isInitialLoad, loading]);
@@ -288,7 +225,7 @@ export function ChatWindow({
     if (!msg || !canChat) return;
 
     try {
-      setLoading(true);
+      // Loading is handled by the hook
       
       const controller = createAbortController();
       const response = await fetch('/api/chat', {
@@ -311,6 +248,8 @@ export function ChatWindow({
           from: data.message.fromUserId || data.message.from,
           text: data.message.text,
           timestamp: new Date(data.message.timestamp).getTime(),
+          seen: data.message.seen || false,
+          seenAt: data.message.seenAt,
         };
         
         setLastMessageTime(newMessage.timestamp);
@@ -324,7 +263,7 @@ export function ChatWindow({
         console.error('Error sending message:', error);
       }
     } finally {
-      setLoading(false);
+      // Loading is handled by the hook
     }
   };
 
@@ -409,10 +348,24 @@ export function ChatWindow({
                           : 'bg-gray-100 text-gray-900'
                       }`}>
                         <div className="text-sm">{m.text}</div>
-                        <div className={`text-xs mt-1 ${
+                        <div className={`text-xs mt-1 flex items-center gap-1 ${
                           m.from === userId ? 'text-gray-300' : 'text-gray-500'
                         }`}>
-                          {formatChatTime(m.timestamp)}
+                          <span>{formatChatTime(m.timestamp)}</span>
+                          {m.from === userId && (
+                            <div className="flex items-center">
+                              {m.seen ? (
+                                <div className="flex items-center text-gray-400">
+                                  <span className="text-xs">✓</span>
+                                  <span className="text-xs -ml-1">✓</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center text-gray-400">
+                                  <span className="text-xs">✓</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}

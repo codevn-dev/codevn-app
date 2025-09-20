@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,14 +8,16 @@ import { MessageCircle, Search, X } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 interface Conversation {
-  chatId: string;
-  otherUserId: string;
-  otherUserName: string;
-  otherUserEmail: string;
-  otherUserAvatar: string | null;
-  lastMessage: string;
-  lastMessageTime: string;
-  unreadCount: number;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  lastMessage: {
+    text: string;
+    createdAt: string;
+    fromUserId: string;
+    seen?: boolean;
+  };
+  unreadCount?: number;
 }
 
 interface ChatSidebarProps {
@@ -30,6 +32,7 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchConversations = async () => {
     if (!user) return;
@@ -39,7 +42,11 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
       const response = await fetch('/api/chat/conversations');
       if (response.ok) {
         const data = await response.json();
-        setConversations(data.conversations || []);
+        const conversationsWithUnread = (data.conversations || []).map((conv: any) => ({
+          ...conv,
+          unreadCount: 0, // Will be calculated based on seen status
+        }));
+        setConversations(conversationsWithUnread);
       }
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -48,15 +55,53 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
     }
   };
 
+  // Fetch conversations when sidebar opens
   useEffect(() => {
     if (isOpen) {
       fetchConversations();
     }
   }, [isOpen, user]);
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.otherUserName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    conv.otherUserEmail.toLowerCase().includes(searchTerm.toLowerCase())
+  // Poll for conversation updates when sidebar is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const pollConversations = async () => {
+      try {
+        const response = await fetch('/api/chat/conversations');
+        if (response.ok) {
+          const data = await response.json();
+          const conversationsWithUnread = (data.conversations || []).map((conv: any) => ({
+            ...conv,
+            unreadCount: 0, // Will be calculated based on seen status
+          }));
+          setConversations(conversationsWithUnread);
+        }
+      } catch (error) {
+        console.error('Error polling conversations:', error);
+      }
+    };
+
+    // Poll every 10 seconds when sidebar is open
+    pollingRef.current = setInterval(pollConversations, 10000);
+
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [isOpen]);
+
+  // Sort conversations by last message time (newest first)
+  const sortedConversations = conversations.sort((a, b) => {
+    const timeA = new Date(a.lastMessage.createdAt).getTime();
+    const timeB = new Date(b.lastMessage.createdAt).getTime();
+    return timeB - timeA; // Descending order (newest first)
+  });
+
+  const filteredConversations = sortedConversations.filter(conv =>
+    conv.userName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatTime = (timestamp: string) => {
@@ -146,38 +191,39 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, chatWindowOpen = fal
             <div className="space-y-1">
               {filteredConversations.map((conversation) => (
                 <div
-                  key={conversation.chatId}
+                  key={conversation.userId}
                   className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                   onClick={() => {
-                    onStartChat(conversation.otherUserId, conversation.otherUserName, conversation.otherUserAvatar || undefined);
+                    onStartChat(conversation.userId, conversation.userName, conversation.userAvatar);
                     onClose();
                   }}
                 >
                   <div className="relative">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={conversation.otherUserAvatar || undefined} />
+                      <AvatarImage src={conversation.userAvatar || undefined} />
                       <AvatarFallback className="bg-gradient-to-br from-blue-500 to-green-500 text-white">
-                        {conversation.otherUserName.charAt(0).toUpperCase()}
+                        {conversation.userName.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    {conversation.unreadCount > 0 && (
-                      <div className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                        {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
-                      </div>
+                    {/* Unread indicator */}
+                    {conversation.lastMessage && 
+                     conversation.lastMessage.fromUserId !== user?.id && 
+                     !conversation.lastMessage.seen && (
+                      <div className="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full border-2 border-white"></div>
                     )}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="font-medium text-sm truncate">
-                        {conversation.otherUserName}
+                        {conversation.userName}
                       </div>
                       <div className="text-xs text-gray-500 ml-2">
-                        {formatTime(conversation.lastMessageTime)}
+                        {formatTime(conversation.lastMessage.createdAt)}
                       </div>
                     </div>
                     <div className="text-sm text-gray-600 truncate">
-                      {conversation.lastMessage}
+                      {conversation.lastMessage.text}
                     </div>
                   </div>
                 </div>

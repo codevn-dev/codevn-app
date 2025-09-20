@@ -17,6 +17,10 @@ interface UIState {
     title: string;
     message: string;
     duration?: number;
+    action?: {
+      label?: string;
+      onClick: () => void;
+    };
   }>;
 
   // Actions

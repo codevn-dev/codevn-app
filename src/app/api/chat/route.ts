@@ -55,7 +55,11 @@ export async function GET(request: NextRequest) {
       limitedMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         
       return NextResponse.json({ 
-        messages: limitedMessages,
+        messages: limitedMessages.map(msg => ({
+          ...msg,
+          seen: msg.seen,
+          seenAt: msg.seenAt,
+        })),
         hasMore: hasMore
       });
     }
@@ -100,6 +104,8 @@ export async function POST(request: NextRequest) {
         from: message.fromUserId,
         to: message.toUserId,
         text: message.text,
+        seen: message.seen,
+        seenAt: message.seenAt,
         timestamp: message.createdAt.getTime(),
       }
     });

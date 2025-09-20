@@ -5,6 +5,8 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 interface ChatContextType {
   chatWindowOpen: boolean;
   setChatWindowOpen: (open: boolean) => void;
+  chatPopupOpen: boolean;
+  setChatPopupOpen: (open: boolean) => void;
   peerId: string;
   setPeerId: (id: string) => void;
   peerName: string;
@@ -18,6 +20,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [chatWindowOpen, setChatWindowOpen] = useState(false);
+  const [chatPopupOpen, setChatPopupOpen] = useState(false);
   const [peerId, setPeerId] = useState('');
   const [peerName, setPeerName] = useState('');
   const [peerAvatar, setPeerAvatar] = useState('');
@@ -34,6 +37,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       value={{
         chatWindowOpen,
         setChatWindowOpen,
+        chatPopupOpen,
+        setChatPopupOpen,
         peerId,
         setPeerId,
         peerName,

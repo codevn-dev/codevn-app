@@ -86,6 +86,8 @@ export const messages = pgTable('messages', {
   toUserId: text('to_user_id').notNull(),
   text: text('text').notNull(),
   type: text('type', { enum: ['message', 'system'] }).notNull().default('message'),
+  seen: boolean('seen').notNull().default(false),
+  seenAt: timestamp('seen_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
