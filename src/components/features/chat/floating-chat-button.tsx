@@ -11,6 +11,8 @@ export function FloatingChatButton() {
   const { user } = useAuth();
   const { handleStartChat, chatWindowOpen, setChatWindowOpen, peerId, peerName, peerAvatar } = useChat();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [wasChatWindowOpen, setWasChatWindowOpen] = useState(false);
+  const [closingViaFloatingButton, setClosingViaFloatingButton] = useState(false);
 
   // Simple handleStartChat - just start chat, don't touch sidebar
   const handleStartChatSimple = (userId: string, userName: string, userAvatar?: string) => {
@@ -24,6 +26,22 @@ export function FloatingChatButton() {
     }
   }, [chatWindowOpen, isSidebarOpen]);
 
+  // Track when chat window was open and auto-close sidebar when it closes via X button
+  useEffect(() => {
+    if (chatWindowOpen) {
+      setWasChatWindowOpen(true);
+      setClosingViaFloatingButton(false);
+    } else if (wasChatWindowOpen && !chatWindowOpen && !closingViaFloatingButton) {
+      // Chat window was closed via X button, auto-close sidebar
+      setIsSidebarOpen(false);
+      setWasChatWindowOpen(false);
+    } else if (wasChatWindowOpen && !chatWindowOpen && closingViaFloatingButton) {
+      // Chat window was closed via floating button, don't auto-close sidebar
+      setWasChatWindowOpen(false);
+      setClosingViaFloatingButton(false);
+    }
+  }, [chatWindowOpen, wasChatWindowOpen, closingViaFloatingButton]);
+
   if (!user) return null;
 
   return (
@@ -33,7 +51,8 @@ export function FloatingChatButton() {
         <Button
           onClick={() => {
             if (chatWindowOpen) {
-              // If chat window is open, close it
+              // If chat window is open, close it but keep sidebar open
+              setClosingViaFloatingButton(true);
               setChatWindowOpen(false);
             } else if (isSidebarOpen) {
               // If sidebar is open, close it

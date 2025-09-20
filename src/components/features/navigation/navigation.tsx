@@ -11,11 +11,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AuthModal } from '@/features/auth';
-import { User, Settings, LogOut, FileText, Menu as MenuIcon, X as CloseIcon } from 'lucide-react';
+import { User, Settings, LogOut, FileText, Users, Menu as MenuIcon, X as CloseIcon } from 'lucide-react';
 import { useAuthStore, useUIStore } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { useState } from 'react';
 import Image from 'next/image';
+import { isAdmin } from '@/lib/utils';
 
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -93,7 +94,17 @@ export function Navigation() {
                     Articles
                   </Button>
 
-                  {user.role === 'admin' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="cursor-pointer hover:bg-gray-100"
+                    onClick={() => router.push('/users')}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Users
+                  </Button>
+
+                  {isAdmin(user.role) && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -200,7 +211,16 @@ export function Navigation() {
               >
                 <FileText className="mr-2 h-4 w-4" /> Articles
               </button>
-              {user.role === 'admin' && (
+              <button
+                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                onClick={() => {
+                  setIsMobileOpen(false);
+                  router.push('/users');
+                }}
+              >
+                <Users className="mr-2 h-4 w-4" /> Users
+              </button>
+              {isAdmin(user.role) && (
                 <button
                   className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
                   onClick={() => {

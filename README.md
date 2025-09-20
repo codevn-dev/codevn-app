@@ -21,9 +21,12 @@ A modern, full-featured forum application built with Next.js 15, TypeScript, and
 ### 👤 User Management
 
 - User profile pages with edit capabilities
+- **View other users' profiles** with privacy protection
+- **User discovery page** with search functionality
 - Avatar upload support
 - Role management for admins
 - User statistics and activity tracking
+- **Email privacy masking** for non-admin users
 
 ### 📝 Content Management
 
@@ -38,6 +41,10 @@ A modern, full-featured forum application built with Next.js 15, TypeScript, and
 - Like/unlike functionality
 - Nested comment support
 - Real-time interactions
+- **Real-time chat system** with floating chat button
+- **Chat sidebar** for conversation management
+- **Direct messaging** between users
+- **Chat window** with message history
 
 ### 🛠 Admin Panel
 
@@ -45,6 +52,9 @@ A modern, full-featured forum application built with Next.js 15, TypeScript, and
 - Content moderation
 - Article management
 - System statistics
+- **Advanced user management** with pagination and search
+- **Role-based email visibility** (admins see full emails)
+- **User profile access** with admin privileges
 
 ## Tech Stack
 
@@ -163,10 +173,18 @@ The application uses the following main entities:
 
 - `GET /api/profile` - Get user profile
 - `PUT /api/profile` - Update user profile
+- `GET /api/users` - List all users (with role-based email masking)
+- `GET /api/users/[id]` - Get user profile by ID (with role-based email masking)
 
 ### Content
 
 - `GET /api/articles` - List published articles
+
+### Chat System
+
+- `GET /api/chat` - Get chat messages
+- `POST /api/chat` - Send chat message
+- `GET /api/chat/conversations` - Get user conversations
 
 ### Admin
 
@@ -181,6 +199,9 @@ The application uses the following main entities:
 - Comment on articles
 - Like articles
 - Edit own profile
+- **View other users' profiles** (with masked email)
+- **Discover and search users**
+- **Send direct messages** via chat system
 
 ### Moderator
 
@@ -194,6 +215,9 @@ The application uses the following main entities:
 - Manage user roles
 - Full system access
 - User management
+- **View full user information** (unmasked emails)
+- **Access all user profiles** with admin privileges
+- **Advanced user management** with search and pagination
 
 ## Docker Setup
 
@@ -215,6 +239,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For support, email support@codevn.dev or create an issue in the repository.
 
+## Recent Updates
+
+### ✅ Completed Features
+
+- **User Profile System**: View other users' profiles with privacy protection
+- **Real-time Chat**: Direct messaging system with floating chat interface
+- **User Discovery**: Search and browse users in the community
+- **Email Privacy**: Role-based email masking for user protection
+- **Admin Enhancements**: Advanced user management with full privileges
+- **Chat Management**: Auto-hide chat sidebar when windows are closed
+
 ## Roadmap
 
 - [ ] Real-time notifications
@@ -225,6 +260,9 @@ For support, email support@codevn.dev or create an issue in the repository.
 - [ ] API rate limiting
 - [ ] Content versioning
 - [ ] Advanced analytics
+- [ ] Chat message encryption
+- [ ] User online status
+- [ ] Group chat functionality
 
 ---
 

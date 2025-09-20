@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, User } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useChat } from '@/components/features/chat/chat-context';
+import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -29,6 +30,7 @@ export function AvatarWithDropdown({
 }: AvatarWithDropdownProps) {
   const { user: currentUser } = useAuth();
   const { handleStartChat } = useChat();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -67,20 +69,50 @@ export function AvatarWithDropdown({
     setIsOpen(false);
   };
 
+  const handleViewProfile = () => {
+    router.push(`/users/${user.id}`);
+    setIsOpen(false);
+  };
+
   if (isCurrentUser) {
-    // Show simple avatar for current user
+    // Show avatar with dropdown for current user (only View Profile option)
     return (
-      <div className={`flex items-center gap-2 ${className}`}>
-        <Avatar className={sizeClasses[size]}>
-          <AvatarImage src={user.avatar || undefined} />
-          <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-            {user.name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        {showName && (
-          <span className={`font-medium ${textSizeClasses[size]}`}>
-            {user.name}
-          </span>
+      <div className={`relative ${className}`} ref={dropdownRef}>
+        <Button
+          variant="ghost"
+          className="p-0 h-auto hover:bg-transparent"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div className="flex items-center gap-2">
+            <Avatar className={sizeClasses[size]}>
+              <AvatarImage src={user.avatar || undefined} />
+              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                {user.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            {showName && (
+              <span className={`font-medium ${textSizeClasses[size]}`}>
+                {user.name}
+              </span>
+            )}
+          </div>
+        </Button>
+
+        {isOpen && (
+          <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+            <div className="py-1">
+              {/* View Profile button for current user */}
+              <div className="py-1">
+                <button
+                  onClick={handleViewProfile}
+                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <User className="h-4 w-4 text-green-600" />
+                  <span>View Profile</span>
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );
@@ -111,6 +143,16 @@ export function AvatarWithDropdown({
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-50">
           <div className="py-1">
+            {/* View Profile button */}
+            <div className="py-1">
+              <button
+                onClick={handleViewProfile}
+                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <User className="h-4 w-4 text-green-600" />
+                <span>View Profile</span>
+              </button>
+            </div>
             {/* Chat button */}
             <div className="py-1">
               <button

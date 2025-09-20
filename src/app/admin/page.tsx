@@ -18,6 +18,7 @@ import {
 import { Plus, Users, Tag, Edit, Trash2, Search, ArrowUpDown, User } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { ClientOnly } from '@/components/layout';
+import { isAdmin } from '@/lib/utils';
 
 interface Category {
   id: string;
@@ -130,7 +131,7 @@ function AdminPageContent() {
 
   // Fetch data when any relevant state changes
   useEffect(() => {
-    if (stableUser && stableUser.role === 'admin') {
+    if (stableUser && isAdmin(stableUser.role)) {
       fetchData();
     }
   }, [activeTab, searchTerm, sortBy, sortOrder, currentPage, stableUser, fetchData]);
@@ -284,7 +285,7 @@ function AdminPageContent() {
     }
 
     // Prevent admin from updating another admin's role
-    if (targetUser.role === 'admin' && userId !== currentUserId) {
+    if (isAdmin(targetUser.role) && userId !== currentUserId) {
       alert('You cannot change the role of another admin');
       return;
     }
@@ -567,7 +568,12 @@ function AdminPageContent() {
                               </div>
                               <div className="ml-3 sm:ml-4">
                                 <div className="line-clamp-1 max-w-[160px] text-sm font-semibold text-gray-900 sm:max-w-none">
-                                  {user.name}
+                                  <button
+                                    onClick={() => router.push(`/users/${user.id}`)}
+                                    className="hover:text-blue-600 hover:underline transition-colors"
+                                  >
+                                    {user.name}
+                                  </button>
                                 </div>
                                 <div className="line-clamp-1 max-w-[200px] text-xs text-gray-500 sm:max-w-none sm:text-sm">
                                   {user.email}
@@ -583,13 +589,13 @@ function AdminPageContent() {
                               }}
                               disabled={
                                 user.id === currentUserId ||
-                                (user.role === 'admin' && user.id !== currentUserId)
+                                (isAdmin(user.role) && user.id !== currentUserId)
                               }
                             >
                               <SelectTrigger
                                 className={`h-9 w-36 border-gray-300 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:h-10 sm:w-40 ${
                                   user.id === currentUserId ||
-                                  (user.role === 'admin' && user.id !== currentUserId)
+                                  (isAdmin(user.role) && user.id !== currentUserId)
                                     ? 'cursor-not-allowed bg-gray-100 opacity-60'
                                     : 'bg-white hover:border-gray-400'
                                 }`}
