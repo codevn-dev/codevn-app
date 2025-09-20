@@ -17,6 +17,7 @@ export const dbConfig = {
 export const authConfig = {
   secret: process.env.NEXTAUTH_SECRET || 'your-secret-key',
   url: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+  trustHost: process.env.NODE_ENV === 'production' || process.env.NEXTAUTH_URL?.includes('codevn.dev'),
   providers: {
     credentials: {
       name: 'credentials',
