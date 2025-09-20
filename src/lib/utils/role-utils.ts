@@ -7,7 +7,7 @@
  * @param role - User role
  * @returns True if user is admin
  */
-export function isAdmin(role: string): boolean {
+export function isAdmin(role: string | undefined): boolean {
   return role === 'admin';
 }
 
@@ -16,7 +16,7 @@ export function isAdmin(role: string): boolean {
  * @param role - User role
  * @returns True if user is regular user
  */
-export function isUser(role: string): boolean {
+export function isUser(role: string | undefined): boolean {
   return role === 'user';
 }
 
@@ -25,6 +25,6 @@ export function isUser(role: string): boolean {
  * @param user - User object with role property
  * @returns True if user is admin
  */
-export function hasAdminPrivileges(user: { role: string }): boolean {
+export function hasAdminPrivileges(user: { role: string | undefined }): boolean {
   return isAdmin(user.role);
 }

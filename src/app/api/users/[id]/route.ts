@@ -31,9 +31,8 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: { 
   };
 
   // Mask email for privacy unless user is admin or viewing own profile
-  const userIsAdmin = isAdmin(session.user.role);
   const isOwnProfile = session.user.id === userId;
-  const finalUserProfile = (userIsAdmin || isOwnProfile) ? userProfile : maskUserEmail(userProfile);
+  const finalUserProfile = (isAdmin(session.user.role) || isOwnProfile) ? userProfile : maskUserEmail(userProfile);
 
   return NextResponse.json({ user: finalUserProfile });
 });

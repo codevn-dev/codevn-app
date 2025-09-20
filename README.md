@@ -173,7 +173,6 @@ The application uses the following main entities:
 
 - `GET /api/profile` - Get user profile
 - `PUT /api/profile` - Update user profile
-- `GET /api/users` - List all users (with role-based email masking)
 - `GET /api/users/[id]` - Get user profile by ID (with role-based email masking)
 
 ### Content

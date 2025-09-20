@@ -15,7 +15,6 @@ function generateRandomHexString(byteLength: number): string {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustHost: true, // Allow localhost in development
   secret: authConfig.secret,
   providers: [
     CredentialsProvider({
