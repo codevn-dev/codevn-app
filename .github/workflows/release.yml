@@ -32,13 +32,12 @@ jobs:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            🚀 *Deployment Started*
+            🚀 Deployment Started
             
-            📝 *Commit:* [${{ steps.commit_info.outputs.commit_hash }}](${{ steps.commit_info.outputs.commit_url }})
-            📄 *Message:* ${{ steps.commit_info.outputs.commit_message }}
-            👤 *Author:* ${{ steps.commit_info.outputs.author }}
-            🌿 *Branch:* ${{ steps.commit_info.outputs.branch }}
-            
+            📝 Commit: ${{ steps.commit_info.outputs.commit_hash }}
+            👤 Author: ${{ steps.commit_info.outputs.author }}
+            🌿 Branch: ${{ steps.commit_info.outputs.branch }}
+                        
             ⏳ Building and deploying to codevn.dev...
 
       - name: Release over SSH
@@ -67,13 +66,12 @@ jobs:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            ✅ *Deployment Successful!*
+            ✅ Deployment Successful!
             
-            🌐 *Site:* https://codevn.dev
-            📝 *Commit:* [${{ steps.commit_info.outputs.commit_hash }}](${{ steps.commit_info.outputs.commit_url }})
-            📄 *Message:* ${{ steps.commit_info.outputs.commit_message }}
-            👤 *Author:* ${{ steps.commit_info.outputs.author }}
-            
+            🌐 Site: https://codevn.dev
+            📝 Commit: ${{ steps.commit_info.outputs.commit_hash }}
+            👤 Author: ${{ steps.commit_info.outputs.author }}
+                        
             🚀 Site is now live with the latest changes!
 
       - name: Send deployment failure notification
@@ -83,10 +81,9 @@ jobs:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            ❌ *Deployment Failed!*
+            ❌ Deployment Failed!
             
-            📝 *Commit:* [${{ steps.commit_info.outputs.commit_hash }}](${{ steps.commit_info.outputs.commit_url }})
-            📄 *Message:* ${{ steps.commit_info.outputs.commit_message }}
-            👤 *Author:* ${{ steps.commit_info.outputs.author }}
-            
+            📝 Commit: ${{ steps.commit_info.outputs.commit_hash }}
+            👤 Author: ${{ steps.commit_info.outputs.author }}
+                        
             🔍 Please check the GitHub Actions logs for details.
