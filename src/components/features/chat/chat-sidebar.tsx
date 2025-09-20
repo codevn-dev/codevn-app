@@ -139,10 +139,9 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
 
   return (
     <>
-      {/* Overlay - chỉ chặn click bên ngoài sidebar */}
+      {/* Overlay - click outside to close sidebar */}
       <div
         className="fixed inset-0 z-[100]"
-        style={{ pointerEvents: 'none' }}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -156,11 +155,10 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
       {/* Sidebar */}
       <div
         className="fixed top-0 right-0 z-[101] h-full w-80 transform bg-white shadow-xl transition-transform duration-300 ease-in-out"
-        style={{ pointerEvents: 'auto' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="pointer-events-auto flex items-center justify-between border-b p-4">
+        <div className="flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-blue-600" />
             <h2 className="text-lg font-semibold">Chat</h2>
@@ -169,7 +167,7 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
             variant="ghost"
             size="sm"
             onClick={onCloseAll || onClose}
-            className="pointer-events-auto h-8 w-8 p-0"
+            className="h-8 w-8 p-0"
           >
             <X className="h-4 w-4" />
           </Button>
