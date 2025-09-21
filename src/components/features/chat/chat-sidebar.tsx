@@ -139,7 +139,7 @@ export function ChatSidebar({
       if (diffInHours < 1) {
         return 'Just now';
       } else if (diffInHours < 24) {
-        return date.toLocaleTimeString('vi-VN', {
+        return date.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
         });

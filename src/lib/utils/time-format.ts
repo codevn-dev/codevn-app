@@ -24,7 +24,7 @@ export function formatRelativeTime(timestamp: number | string | Date): string {
  */
 export function formatTime(timestamp: number | string | Date): string {
   const date = new Date(timestamp);
-  return date.toLocaleTimeString('vi-VN', {
+  return date.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -112,11 +112,11 @@ export function formatDate(timestamp: number | string | Date): string {
 
   // This week
   if (diffDays < 7) {
-    return date.toLocaleDateString('vi-VN', { weekday: 'long' });
+    return date.toLocaleDateString('en-US', { weekday: 'long' });
   }
 
   // Older dates
-  return date.toLocaleDateString('vi-VN', {
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
