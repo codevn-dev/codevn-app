@@ -7,7 +7,7 @@ import { CommentItem } from './comment-item';
 import { CommentForm } from './comment-form';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
-import { useCommentWebSocketContext } from './comment-websocket-context';
+import { useCommentWebSocketContext } from './websocket-context';
 import { Comment } from '@/types/shared';
 
 interface CommentsSectionProps {
@@ -37,7 +37,6 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
     const commentFormRef = useRef<HTMLDivElement>(null);
     const [visibleTopCount, setVisibleTopCount] = useState(5);
     const fetchCommentsRef = useRef<typeof fetchComments | null>(null);
-    const _lastPollTimeRef = useRef<number>(0);
     const articleIdRef = useRef(articleId);
     const _hasLoadedRef = useRef(false);
 
@@ -83,7 +82,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
             } else {
               setComments(data.comments || []);
               setVisibleTopCount(5);
-              // Update last comment ID for polling (use the first comment as it's the most recent)
+              // Update last comment ID (use the first comment as it's the most recent)
               if (data.comments && data.comments.length > 0) {
                 const newLastCommentId = data.comments[0].id;
                 setLastCommentId(newLastCommentId);
@@ -130,7 +129,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
         // Auto-expand visible count to show new comment
         setVisibleTopCount((c) => c + 1);
       }
-      // Update last comment ID immediately to prevent unnecessary polling
+      // Update last comment ID immediately
       lastCommentIdRef.current = newComment.id;
       setLastCommentId(newComment.id);
     };

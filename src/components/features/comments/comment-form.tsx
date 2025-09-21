@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2 } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
-import { useCommentWebSocketContext } from './comment-websocket-context';
+import { useCommentWebSocketContext } from './websocket-context';
 
 interface CommentFormProps {
   articleId: string;
