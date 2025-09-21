@@ -67,7 +67,7 @@ function ProfilePageContent() {
 
   const refreshProfileData = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/profile', {
+      const response = await fetch('/api/profile', {
         credentials: 'include',
       });
 
@@ -108,7 +108,7 @@ function ProfilePageContent() {
     setMessage('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/profile', {
+      const response = await fetch('/api/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
