@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { db } from '../src/lib/database';
 import { users } from '../src/lib/database/schema';
 import bcrypt from 'bcryptjs';
@@ -243,6 +244,11 @@ function generateRandomUser() {
 async function createMockUsers() {
   try {
     console.log('🚀 Creating 100 mock users...');
+
+    // Test database connection first
+    console.log('🔍 Testing database connection...');
+    await db().select().from(users).limit(1);
+    console.log('✅ Database connection successful!');
 
     const mockUsers = [];
     const hashedPassword = await bcrypt.hash('password123', 12);
