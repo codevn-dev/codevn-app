@@ -7,7 +7,7 @@ import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { User, Mail, Calendar, Shield, ArrowLeft, MessageCircle } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useChat } from '@/components/features/chat/chat-context';
@@ -24,7 +24,7 @@ interface UserProfile {
 function UserProfileContent() {
   const params = useParams();
   const router = useRouter();
-  const { user: currentUser, isAuthenticated, isLoading } = useAuth();
+  const { user: currentUser, isAuthenticated, isLoading } = useAuthState();
   const { handleStartChat } = useChat();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);

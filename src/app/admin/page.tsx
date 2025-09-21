@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Users, Tag, Edit, Trash2, Search, ArrowUpDown, User } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { isAdmin } from '@/lib/utils';
 
@@ -49,7 +49,7 @@ interface User {
 }
 
 function AdminPageContent() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuthState();
   const router = useRouter();
   const currentUserId = user?.id;
   const [activeTab, setActiveTab] = useState<'categories' | 'users' | 'articles'>('users');

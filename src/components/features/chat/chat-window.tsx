@@ -5,10 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { useAbortController } from '@/hooks/use-abort-controller';
 import { useChatMessages } from '@/hooks/use-chat-messages';
-import { formatChatTime, isNewDay, formatChatDate } from '@/lib/utils';
+import { formatChatTime, isNewDay, formatChatDate, apiPost } from '@/lib/utils';
 import { chatConfig } from '@/config';
 
 interface UiMessage {
@@ -30,7 +30,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: ChatWindowProps) {
-  const { user } = useAuth();
+  const { user } = useAuthState();
   const [text, setText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
@@ -65,13 +65,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
     const markAsSeen = async () => {
       try {
         const chatId = [user?.id, peerId].sort().join('|');
-        await fetch('/api/chat/seen', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ chatId }),
-        });
+        await apiPost('/api/chat/seen', { chatId });
       } catch (error) {
         console.error('Error marking messages as seen:', error);
       }
@@ -222,41 +216,35 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
       // Loading is handled by the hook
 
       const controller = createAbortController();
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const data = await apiPost(
+        '/api/chat',
+        {
           peerId,
           text: msg,
-        }),
-        signal: controller.signal,
+        },
+        {
+          signal: controller.signal,
+        }
+      );
+
+      const newMessage: UiMessage = {
+        id: data.message.id || `${data.message.timestamp}-${Date.now()}`,
+        type: data.message.type,
+        from: data.message.fromUserId || data.message.from,
+        text: data.message.text,
+        timestamp: new Date(data.message.timestamp).getTime(),
+        seen: data.message.seen || false,
+        seenAt: data.message.seenAt,
+      };
+
+      setLastMessageTime(newMessage.timestamp);
+      setMessages((prev) => {
+        // Check if message already exists to prevent duplicates
+        const exists = prev.some((msg) => msg.id === newMessage.id);
+        if (exists) return prev;
+        return [...prev, newMessage];
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        const newMessage: UiMessage = {
-          id: data.message.id || `${data.message.timestamp}-${Date.now()}`,
-          type: data.message.type,
-          from: data.message.fromUserId || data.message.from,
-          text: data.message.text,
-          timestamp: new Date(data.message.timestamp).getTime(),
-          seen: data.message.seen || false,
-          seenAt: data.message.seenAt,
-        };
-
-        setLastMessageTime(newMessage.timestamp);
-        setMessages((prev) => {
-          // Check if message already exists to prevent duplicates
-          const exists = prev.some((msg) => msg.id === newMessage.id);
-          if (exists) return prev;
-          return [...prev, newMessage];
-        });
-        setText('');
-      } else {
-        console.error('Failed to send message');
-      }
+      setText('');
     } catch (error) {
       if (error instanceof Error && error.name !== 'AbortError') {
         console.error('Error sending message:', error);

@@ -14,7 +14,7 @@ import {
   ThumbsUp,
   ThumbsDown,
 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { CommentForm } from './comment-form';
 import { CodeHighlighter } from '../articles/code-highlighter';
@@ -69,7 +69,7 @@ export function CommentItem({
   depth = 0,
   onRequestParentReply,
 }: CommentItemProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);

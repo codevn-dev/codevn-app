@@ -9,6 +9,7 @@ import { Search, MessageSquare, BookOpen, Calendar } from 'lucide-react';
 import { useForumStore } from '@/stores';
 import { CategorySelector } from '@/features/articles';
 import { findCategoryById } from '@/features/articles';
+import { apiGet } from '@/lib/utils';
 
 export function DashboardContent() {
   const {
@@ -32,18 +33,9 @@ export function DashboardContent() {
       setError(null);
 
       try {
-        const [categoriesRes, articlesRes] = await Promise.all([
-          fetch('/api/categories'),
-          fetch('/api/articles?publishedOnly=true'),
-        ]);
-
-        if (!categoriesRes.ok || !articlesRes.ok) {
-          throw new Error('Failed to fetch data');
-        }
-
         const [categoriesData, articlesResponse] = await Promise.all([
-          categoriesRes.json(),
-          articlesRes.json(),
+          apiGet('/api/categories'),
+          apiGet('/api/articles?publishedOnly=true'),
         ]);
 
         setCategories(categoriesData);

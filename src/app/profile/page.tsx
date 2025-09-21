@@ -8,8 +8,8 @@ import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { User, Mail, Calendar, Shield, Save } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 import { useFastifyAuthStore } from '@/stores';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { AvatarUpload } from '@/features/upload';
 
@@ -23,7 +23,7 @@ interface UserProfile {
 }
 
 function ProfilePageContent() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuthState();
   const { updateUser } = useFastifyAuthStore();
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);

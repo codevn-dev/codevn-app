@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, User } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { useChat } from '@/components/features/chat/chat-context';
 import { useUIStore } from '@/stores/ui-store';
 import { useRouter } from 'next/navigation';
@@ -29,7 +29,7 @@ export function AvatarWithDropdown({
   showName = false,
   className = '',
 }: AvatarWithDropdownProps) {
-  const { user: currentUser, isAuthenticated } = useAuth();
+  const { user: currentUser, isAuthenticated } = useAuthState();
   const { handleStartChat } = useChat();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();

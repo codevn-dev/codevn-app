@@ -30,7 +30,7 @@ import {
   X,
   MoreVertical,
 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { TiptapRichTextEditor, CodeHighlighter } from '@/features/articles';
 import { ImageUpload } from '@/features/upload';
@@ -70,7 +70,7 @@ interface Category {
 }
 
 function ArticlesContent() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuthState();
   const router = useRouter();
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '@/types/auth';
 import { useFastifyAuthStore } from '@/stores';
+import { apiPost, apiGet } from '@/lib/utils';
 
 interface AuthState {
   user: User | null;
@@ -8,9 +9,7 @@ interface AuthState {
   error: string | null;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-export function useFastifyAuth() {
+export function useAuthActions() {
   const { user, setUser, setLoading } = useFastifyAuthStore();
   const [state, setState] = useState<AuthState>({
     user,
@@ -23,21 +22,7 @@ export function useFastifyAuth() {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       setLoading(true);
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
-      }
-
-      const data = await response.json();
+      const data = await apiPost('/api/auth/sign-in', { email, password });
       setUser(data.user);
       setState({
         user: data.user,
@@ -63,21 +48,7 @@ export function useFastifyAuth() {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       setLoading(true);
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, name, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
-      }
-
-      const data = await response.json();
+      const data = await apiPost('/api/auth/sign-up', { email, name, password });
       setUser(data.user);
       setState({
         user: data.user,
@@ -100,10 +71,7 @@ export function useFastifyAuth() {
 
   const logout = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await apiGet('/api/auth/sign-out');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -121,27 +89,13 @@ export function useFastifyAuth() {
       setState((prev) => ({ ...prev, loading: true }));
       setLoading(true);
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        method: 'GET',
-        credentials: 'include',
+      const data = await apiGet('/api/auth/me');
+      setUser(data.user);
+      setState({
+        user: data.user,
+        loading: false,
+        error: null,
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        setState({
-          user: data.user,
-          loading: false,
-          error: null,
-        });
-      } else {
-        setUser(null);
-        setState({
-          user: null,
-          loading: false,
-          error: null,
-        });
-      }
     } catch {
       setUser(null);
       setState({
@@ -156,20 +110,7 @@ export function useFastifyAuth() {
 
   const checkEmail = async (email: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/check-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Email check failed');
-      }
-
-      return await response.json();
+      return await apiPost('/api/auth/check-email', { email });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Email check failed';
       throw new Error(errorMessage);

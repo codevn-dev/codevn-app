@@ -3,6 +3,7 @@ import { userRepository } from '@/lib/database/repository';
 import { generateToken } from '../jwt';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import fastifyPassport from '@fastify/passport';
+import { config } from '@/config';
 
 // interface LoginBody {
 //   email: string;
@@ -20,9 +21,9 @@ interface CheckEmailBody {
 }
 
 export async function authRoutes(fastify: FastifyInstance) {
-  // Login endpoint
+  // Sign-in endpoint
   fastify.post(
-    '/login',
+    '/sign-in',
     {
       preHandler: fastifyPassport.authenticate('local', { session: false }),
     },
@@ -40,7 +41,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
 
       return reply.send({
-        message: 'Login successful',
+        message: 'Sign-in successful',
         user: {
           id: user.id,
           email: user.email,
@@ -52,9 +53,9 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // Register endpoint
+  // Sign-up endpoint
   fastify.post(
-    '/register',
+    '/sign-up',
     async (request: FastifyRequest<{ Body: RegisterBody }>, reply: FastifyReply) => {
       try {
         const { email, name, password } = request.body;
@@ -79,7 +80,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         });
 
         return reply.status(201).send({
-          message: 'User created successfully',
+          message: 'Sign-up successful',
           user: { id: newUser[0].id, email: newUser[0].email, name: newUser[0].name },
         });
       } catch (error) {
@@ -155,15 +156,15 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
 
       // Redirect to frontend
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      return reply.redirect(frontendUrl);
+      const appUrl = config.api.clientUrl;
+      return reply.redirect(appUrl);
     }
   );
 
-  // Logout endpoint
-  fastify.post('/logout', async (request: FastifyRequest, reply: FastifyReply) => {
+  // Sign-out endpoint
+  fastify.get('/sign-out', async (request: FastifyRequest, reply: FastifyReply) => {
     reply.clearCookie('auth-token');
-    return reply.send({ message: 'Logout successful' });
+    return reply.send({ message: 'Sign-out successful' });
   });
 
   // Get current user

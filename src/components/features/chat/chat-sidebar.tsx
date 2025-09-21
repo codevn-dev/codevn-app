@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, Search, X } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 
 interface Conversation {
   userId: string;
@@ -28,7 +28,7 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSidebarProps) {
-  const { user } = useAuth();
+  const { user } = useAuthState();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

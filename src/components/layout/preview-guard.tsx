@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { useFastifyAuth } from '@/hooks/use-fastify-auth';
+import { useAuthActions } from '@/hooks/use-auth-actions';
 
 interface PreviewGuardProps {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ interface PreviewGuardProps {
 }
 
 export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGuardProps) {
-  const { user, loading } = useFastifyAuth();
+  const { user, loading } = useAuthActions();
   const isAuthenticated = !!user;
   const isLoading = loading;
   const router = useRouter();

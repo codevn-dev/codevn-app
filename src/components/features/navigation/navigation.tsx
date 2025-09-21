@@ -12,7 +12,7 @@ import {
 import { AuthModal } from '@/features/auth';
 import { User, Settings, LogOut, FileText, Menu as MenuIcon, X as CloseIcon } from 'lucide-react';
 import { useFastifyAuthStore, useUIStore } from '@/stores';
-import { useFastifyAuth } from '@/hooks/use-fastify-auth';
+import { useAuthActions } from '@/hooks/use-auth-actions';
 import { useState } from 'react';
 import Image from 'next/image';
 import { isAdmin } from '@/lib/utils';
@@ -20,17 +20,15 @@ import { isAdmin } from '@/lib/utils';
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user, isAuthenticated, logout } = useFastifyAuthStore();
+  const { logout: authLogout } = useAuthActions();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Use Fastify auth
-  const { logout: fastifyLogout } = useFastifyAuth();
-
   const handleSignOut = async () => {
     try {
-      // Use Fastify logout
-      await fastifyLogout();
+      // Use auth actions logout
+      await authLogout();
       // Clear local state
       logout();
       // Redirect to home page

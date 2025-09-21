@@ -15,12 +15,12 @@ import { Spinner } from '@/components/ui/spinner';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import { useUIStore } from '@/stores';
-import { useFastifyAuth } from '@/hooks/use-fastify-auth';
+import { useAuthActions } from '@/hooks/use-auth-actions';
 
 export function AuthModal() {
   const { authModalOpen, authMode, setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();
-  const { login, register, checkEmail } = useFastifyAuth();
+  const { login, register, checkEmail } = useAuthActions();
 
   const [formData, setFormData] = useState({
     email: '',

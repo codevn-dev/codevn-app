@@ -12,14 +12,14 @@ export interface JWTPayload {
 }
 
 export function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.maxAge,
+  return jwt.sign(payload, config.auth.secret, {
+    expiresIn: config.auth.maxAge,
   });
 }
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, config.jwt.secret) as JWTPayload;
+    return jwt.verify(token, config.auth.secret) as JWTPayload;
   } catch {
     return null;
   }

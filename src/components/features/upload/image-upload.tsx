@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { imageCompressionUtils } from '@/lib/utils/image-compression';
+import { apiUpload } from '@/lib/utils';
 
 interface ImageUploadProps {
   onImageUploaded: (imageUrl: string) => void;
@@ -65,21 +66,13 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
       const formData = new FormData();
       formData.append('file', fileToUpload);
 
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        onImageUploaded(result.imageUrl);
-        onClose();
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to upload image');
-      }
-    } catch {
-      alert('Error uploading image. Please try again.');
+      const result = await apiUpload('/api/upload/image', formData);
+      onImageUploaded(result.imageUrl);
+      onClose();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error uploading image. Please try again.';
+      alert(errorMessage);
     } finally {
       setIsUploading(false);
       setPreview(null);

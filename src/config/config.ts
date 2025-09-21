@@ -13,16 +13,11 @@ export const dbConfig = {
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 } as const;
 
-// Fastify Auth configuration
+// Auth configuration (includes JWT settings)
 export const authConfig = {
   secret: process.env.JWT_SECRET || 'your-super-secret-key-that-is-at-least-32-characters-long',
-  url: process.env.API_BASE_URL || 'http://localhost:3000',
+  url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   trustHost: true,
-} as const;
-
-// JWT configuration
-export const jwtConfig = {
-  secret: process.env.JWT_SECRET || 'your-super-secret-key-that-is-at-least-32-characters-long',
   maxAge: 30 * 24 * 60 * 60, // 30 days
 } as const;
 
@@ -37,7 +32,10 @@ export const uploadConfig = {
 
 // API configuration
 export const apiConfig = {
-  baseUrl: process.env.API_BASE_URL || 'http://localhost:3000',
+  // Server-side API URL (internal calls)
+  serverUrl: process.env.API_URL || 'http://localhost:3001',
+  // Client-side API URL (public, accessible from browser)
+  clientUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   timeout: parseInt(process.env.API_TIMEOUT || '10000'), // 10 seconds
   retryAttempts: parseInt(process.env.API_RETRY_ATTEMPTS || '3'),
 } as const;
@@ -119,7 +117,6 @@ export function validateEnv() {
 export const config = {
   db: dbConfig,
   auth: authConfig,
-  jwt: jwtConfig,
   upload: uploadConfig,
   api: apiConfig,
   chat: chatConfig,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useAuth } from './use-auth';
+import { useAuthState } from './use-auth-state';
 import { useUIStore } from '@/stores/ui-store';
 import { useChat } from '@/components/features/chat/chat-context';
 
@@ -18,7 +18,7 @@ interface Conversation {
 }
 
 export function useChatPolling() {
-  const { user } = useAuth();
+  const { user } = useAuthState();
   const { addNotification } = useUIStore();
   const { handleStartChat, chatWindowOpen, chatPopupOpen } = useChat();
   const [conversations, setConversations] = useState<Conversation[]>([]);

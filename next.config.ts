@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   },
   output: 'standalone',
   async rewrites() {
-    const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
+    const apiBaseUrl = process.env.API_URL || 'http://localhost:3001';
     return [
       {
         source: '/api/:path*',

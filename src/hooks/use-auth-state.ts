@@ -3,7 +3,7 @@
 import { useFastifyAuthStore } from '@/stores';
 import { useEffect, useRef, useState } from 'react';
 
-export function useAuth() {
+export function useAuthState() {
   const { user, isAuthenticated, isLoading } = useFastifyAuthStore();
   const isInitializedRef = useRef(false);
   const [isReady, setIsReady] = useState(false);

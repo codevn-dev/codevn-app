@@ -1,6 +1,6 @@
 # CodeVN
 
-A modern, full-featured forum application built with Next.js 15, TypeScript, and Tailwind CSS, designed specifically for the Vietnamese developer community.
+A modern, full-featured forum application built with Next.js 15, TypeScript, and Tailwind CSS, designed for the developer community.
 
 ## Features
 
@@ -165,9 +165,9 @@ The application uses the following main entities:
 
 ### Authentication
 
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/signin` - User sign in
-- `POST /api/auth/signout` - User sign out
+- `POST /api/auth/sign-up` - User registration
+- `POST /api/auth/sign-in` - User sign in
+- `GET /api/auth/sign-out` - User sign out
 
 ### Profile Management
 
@@ -265,4 +265,4 @@ For support, email support@codevn.dev or create an issue in the repository.
 
 ---
 
-Built with ❤️ for the Vietnamese developer community
+Built with ❤️ for the developer community

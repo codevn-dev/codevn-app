@@ -9,7 +9,7 @@ import { ThumbsUp, ThumbsDown, MessageSquare, Calendar, ArrowLeft, Eye } from 'l
 import { CodeHighlighter } from '@/features/articles';
 import { CommentsSection } from '@/features/comments';
 import type { CommentsSectionRef } from '@/features/comments';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 
@@ -46,7 +46,7 @@ interface ArticleContentProps {
 }
 
 export function ArticleContent({ article, isPreview = false }: ArticleContentProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const [isLiked, setIsLiked] = useState(article.userHasLiked || false);
   const [isUnliked, setIsUnliked] = useState(article.userHasUnliked || false);

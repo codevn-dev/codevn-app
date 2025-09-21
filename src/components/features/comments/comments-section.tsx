@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { MessageSquare, Loader2 } from 'lucide-react';
 import { CommentItem } from './comment-item';
 import { CommentForm } from './comment-form';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 
 interface Comment {
@@ -44,7 +44,7 @@ export interface CommentsSectionRef {
 
 export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
   ({ articleId, initialComments = [], commentCount = 0 }, ref) => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuthState();
     const { setAuthModalOpen, setAuthMode } = useUIStore();
     const [comments, setComments] = useState<Comment[]>(initialComments);
     const [isLoading, setIsLoading] = useState(false);

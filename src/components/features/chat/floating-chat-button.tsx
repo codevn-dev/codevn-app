@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { useChat } from './chat-context';
 import { ChatSidebar, ChatWindow } from './index';
 
 export function FloatingChatButton() {
-  const { user } = useAuth();
+  const { user } = useAuthState();
   const { handleStartChat, chatWindowOpen, setChatWindowOpen, peerId, peerName, peerAvatar } =
     useChat();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

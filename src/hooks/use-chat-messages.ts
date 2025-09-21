@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 
 interface UiMessage {
   id: string;
@@ -20,7 +20,7 @@ interface UseChatMessagesProps {
 }
 
 export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessagesProps) {
-  const { user } = useAuth();
+  const { user } = useAuthState();
   const [messages, setMessages] = useState<UiMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastMessageTime, setLastMessageTime] = useState<number>(0);

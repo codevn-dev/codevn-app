@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores/ui-store';
 import { useChatMessages } from '@/hooks/use-chat-messages';
 import { useChat } from './chat-context';
+import { apiPost } from '@/lib/utils';
 
 interface ChatPopupProps {
   peerId: string;
@@ -27,7 +28,7 @@ interface UiMessage {
 }
 
 export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupProps) {
-  const { user } = useAuth();
+  const { user } = useAuthState();
   const {} = useUIStore();
   const { setChatPopupOpen } = useChat();
   const [text, setText] = useState('');
@@ -103,40 +104,29 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
     if (!msg || !canChat) return;
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          peerId,
-          text: msg,
-        }),
+      const data = await apiPost('/api/chat', {
+        peerId,
+        text: msg,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const newMessage: UiMessage = {
-          id: data.message.id || `${data.message.timestamp}-${Date.now()}`,
-          type: data.message.type,
-          from: data.message.fromUserId || data.message.from,
-          text: data.message.text,
-          timestamp: new Date(data.message.timestamp).getTime(),
-          seen: data.message.seen || false,
-          seenAt: data.message.seenAt,
-        };
+      const newMessage: UiMessage = {
+        id: data.message.id || `${data.message.timestamp}-${Date.now()}`,
+        type: data.message.type,
+        from: data.message.fromUserId || data.message.from,
+        text: data.message.text,
+        timestamp: new Date(data.message.timestamp).getTime(),
+        seen: data.message.seen || false,
+        seenAt: data.message.seenAt,
+      };
 
-        setLastMessageTime(newMessage.timestamp);
-        setMessages((prev) => {
-          // Check if message already exists to prevent duplicates
-          const exists = prev.some((msg) => msg.id === newMessage.id);
-          if (exists) return prev;
-          return [...prev, newMessage];
-        });
-        setText('');
-      } else {
-        console.error('Failed to send message');
-      }
+      setLastMessageTime(newMessage.timestamp);
+      setMessages((prev) => {
+        // Check if message already exists to prevent duplicates
+        const exists = prev.some((msg) => msg.id === newMessage.id);
+        if (exists) return prev;
+        return [...prev, newMessage];
+      });
+      setText('');
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -152,7 +142,7 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
           <div className="border-b px-4 py-3 text-sm font-semibold">{peerName || 'Chat'}</div>
           <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto px-4 py-3">
             {loading && messages.length === 0 ? (
-              <div className="py-4 text-center text-sm text-gray-500">Đang tải tin nhắn...</div>
+              <div className="py-4 text-center text-sm text-gray-500">Loading messages...</div>
             ) : (
               messages.map((m) => (
                 <div
@@ -198,11 +188,11 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
                   send();
                 }
               }}
-              placeholder={canChat ? 'Nhập tin nhắn…' : 'Không thể chat'}
+              placeholder={canChat ? 'Type a message...' : 'Cannot chat'}
               disabled={!canChat || loading}
             />
             <Button onClick={send} disabled={!canChat || !text.trim() || loading}>
-              {loading ? '...' : 'Gửi'}
+              {loading ? '...' : 'Send'}
             </Button>
           </div>
         </div>

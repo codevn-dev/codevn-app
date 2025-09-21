@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 
 interface CommentFormProps {
@@ -30,7 +30,7 @@ export function CommentForm({
   commentId,
   autoFocus = false,
 }: CommentFormProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const [content, setContent] = useState(initialContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
