@@ -4,9 +4,11 @@ import {
   categoryRepository,
   likeRepository,
   commentRepository,
+  userRepository,
 } from '@/lib/database/repository';
 // import { Errors } from '@/lib/utils/errors';
 import { authMiddleware, optionalAuthMiddleware, AuthenticatedRequest } from '../middleware';
+import { logger } from '@/lib/utils/logger';
 
 interface CreateArticleBody {
   title: string;
@@ -94,8 +96,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const authorId = query.authorId || '';
         const publishedOnlyParam = query.publishedOnly;
 
+        const user = await userRepository.findById(authRequest.user!.id);
         // Determine if user is admin
-        const isAdmin = authRequest.user?.role === 'admin';
+        const isAdmin = user?.role === 'admin';
 
         // Respect explicit client intent for publishedOnly even for admin.
         // Default behavior: if not specified, admins see all, others see only published.
@@ -117,7 +120,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         return reply.send(result);
       } catch (error) {
-        console.error('Get articles error:', error);
+        logger.error('Get articles error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -171,7 +174,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         return reply.status(201).send(createdArticle);
       } catch (error) {
-        console.error('Create article error:', error);
+        logger.error('Create article error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -230,7 +233,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         return reply.send(updatedArticle);
       } catch (error) {
-        console.error('Update article error:', error);
+        logger.error('Update article error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -266,7 +269,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         return reply.send({ message: 'Article deleted successfully' });
       } catch (error) {
-        console.error('Delete article error:', error);
+        logger.error('Delete article error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -347,7 +350,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
           });
         }
       } catch (error) {
-        console.error('Article reaction error:', error);
+        logger.error('Article reaction error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -388,7 +391,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
           reaction: reaction ? { type: reaction.type } : null,
         });
       } catch (error) {
-        console.error('Get article reaction error:', error);
+        logger.error('Get article reaction error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -438,7 +441,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
           reaction: null,
         });
       } catch (error) {
-        console.error('Delete article reaction error:', error);
+        logger.error('Delete article reaction error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -490,7 +493,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
           pagination: result.pagination,
         });
       } catch (error) {
-        console.error('Get article comments error:', error);
+        logger.error('Get article comments error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -560,7 +563,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         return reply.status(201).send(createdComment);
       } catch (error) {
-        console.error('Create comment error:', error);
+        logger.error('Create comment error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

@@ -8,7 +8,7 @@ import { X } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useAbortController } from '@/hooks/use-abort-controller';
 import { useChatMessages } from '@/hooks/use-chat-messages';
-import { formatChatTime, isNewDay, formatChatDate, apiPost } from '@/lib/utils';
+import { formatChatTime, isNewDay, formatDate, apiPost } from '@/lib/utils';
 import { chatConfig } from '@/config';
 
 interface UiMessage {
@@ -331,7 +331,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
                   {showDateSeparator && (
                     <div className="my-4 flex justify-center">
                       <div className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                        {formatChatDate(m.timestamp)}
+                        {formatDate(m.timestamp)}
                       </div>
                     </div>
                   )}

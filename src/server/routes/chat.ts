@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { messageRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
+import { logger } from '@/lib/utils/logger';
 // import { Errors } from '@/lib/utils/errors';
 
 interface ChatQuery {
@@ -51,7 +52,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
           })),
         });
       } catch (error) {
-        console.error('Error in conversations GET:', error);
+        logger.error('Error in conversations GET', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -130,7 +131,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
 
         return reply.status(400).send({ error: 'Invalid action' });
       } catch (error) {
-        console.error('Error in chat GET:', error);
+        logger.error('Error in chat GET', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -156,7 +157,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
 
         return reply.send({ success: true });
       } catch (error) {
-        console.error('Error in chat seen POST:', error);
+        logger.error('Error in chat seen POST', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -202,7 +203,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
           },
         });
       } catch (error) {
-        console.error('Error in chat POST:', error);
+        logger.error('Error in chat POST', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

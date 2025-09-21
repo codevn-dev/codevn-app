@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { userRepository } from '@/lib/database/repository';
 import { maskUserEmail, isAdmin } from '@/lib/utils';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
+import { logger } from '@/lib/utils/logger';
 
 export async function userRoutes(fastify: FastifyInstance) {
   // GET /api/users/:id - Get user profile
@@ -38,13 +39,11 @@ export async function userRoutes(fastify: FastifyInstance) {
         // Mask email for privacy unless user is admin or viewing own profile
         const isOwnProfile = authRequest.user!.id === userId;
         const finalUserProfile =
-          isAdmin(authRequest.user!.role) || isOwnProfile
-            ? userProfile
-            : maskUserEmail(userProfile);
+          isAdmin(user.role) || isOwnProfile ? userProfile : maskUserEmail(userProfile);
 
         return reply.send({ user: finalUserProfile });
       } catch (error) {
-        console.error('Get user error:', error);
+        logger.error('Get user error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

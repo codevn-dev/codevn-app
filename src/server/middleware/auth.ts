@@ -1,13 +1,11 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { verifyToken, extractTokenFromHeader } from '../jwt';
+import { logger } from '@/lib/utils/logger';
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user?: {
     id: string;
     email: string;
-    name: string;
-    role: string;
-    avatar?: string;
   };
 }
 
@@ -26,21 +24,19 @@ export async function authMiddleware(request: FastifyRequest, reply: FastifyRepl
       return reply.status(401).send({ error: 'Unauthorized' });
     }
 
-    const payload = verifyToken(token);
+    // Use Redis-verified token validation
+    const payload = await verifyToken(token);
     if (!payload) {
-      return reply.status(401).send({ error: 'Invalid token' });
+      return reply.status(401).send({ error: 'Invalid or expired token' });
     }
 
-    // Attach user info to request
+    // Attach minimal user info to request (id, email, and role from JWT)
     (request as AuthenticatedRequest).user = {
       id: payload.id,
       email: payload.email,
-      name: payload.name,
-      role: payload.role,
-      avatar: payload.avatar,
     };
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    logger.error('Auth middleware error', undefined, error as Error);
     return reply.status(401).send({ error: 'Unauthorized' });
   }
 }
@@ -60,21 +56,19 @@ export async function optionalAuthMiddleware(
     }
 
     if (token) {
-      const payload = verifyToken(token);
+      // Use Redis-verified token validation
+      const payload = await verifyToken(token);
       if (payload) {
-        // Attach user info to request if token is valid
+        // Attach minimal user info to request if token is valid
         (request as AuthenticatedRequest).user = {
           id: payload.id,
           email: payload.email,
-          name: payload.name,
-          role: payload.role,
-          avatar: payload.avatar,
         };
       }
     }
     // If no token or invalid token, continue without user info
   } catch (error) {
-    console.error('Optional auth middleware error:', error);
+    logger.error('Optional auth middleware error', undefined, error as Error);
     // Continue without user info
   }
 }

@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { categoryRepository } from '@/lib/database/repository';
+import { logger } from '@/lib/utils/logger';
 
 export async function categoryRoutes(fastify: FastifyInstance) {
   // GET /api/categories - Get all categories with counts
@@ -8,7 +9,7 @@ export async function categoryRoutes(fastify: FastifyInstance) {
       const rootCategories = await categoryRepository.findAllWithCounts();
       return reply.send(rootCategories);
     } catch (error) {
-      console.error('Get categories error:', error);
+      logger.error('Get categories error', undefined, error as Error);
       return reply.status(500).send({ error: 'Internal server error' });
     }
   });

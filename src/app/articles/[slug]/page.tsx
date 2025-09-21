@@ -28,7 +28,7 @@ export default async function ArticlePage({
     const token = cookieStore.get('auth-token')?.value;
 
     if (token) {
-      const decoded = verifyToken(token);
+      const decoded = await verifyToken(token);
       if (decoded) {
         currentUserId = decoded.id;
         userRole = decoded.role;

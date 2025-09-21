@@ -9,6 +9,7 @@ export function getRedis(): Redis {
       lazyConnect: false,
       maxRetriesPerRequest: 3,
       enableReadyCheck: true,
+      db: 0, // Explicitly use database 0
     });
   }
   return redisClient;

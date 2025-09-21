@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { fileUpload } from '@/lib/server';
 import { authMiddleware } from '../middleware';
+import { logger } from '@/lib/utils/logger';
 
 export async function uploadRoutes(fastify: FastifyInstance) {
   // POST /api/upload/image - Upload image
@@ -28,7 +29,7 @@ export async function uploadRoutes(fastify: FastifyInstance) {
           type: uploadResult.type,
         });
       } catch (error) {
-        console.error('Upload image error:', error);
+        logger.error('Upload image error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

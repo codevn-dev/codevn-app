@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { userRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { fileUpload } from '@/lib/server';
+import { logger } from '@/lib/utils/logger';
 
 interface UpdateProfileBody {
   name: string;
@@ -9,6 +10,37 @@ interface UpdateProfileBody {
 }
 
 export async function profileRoutes(fastify: FastifyInstance) {
+  // GET /api/profile - Get current user profile
+  fastify.get(
+    '/',
+    {
+      preHandler: authMiddleware,
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const authRequest = request as AuthenticatedRequest;
+
+        // Get fresh user data from database
+        const user = await userRepository.findById(authRequest.user!.id);
+        if (!user) {
+          return reply.status(404).send({ error: 'User not found' });
+        }
+
+        return reply.send({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          role: user.role,
+          createdAt: user.createdAt,
+        });
+      } catch (error) {
+        logger.error('Get profile error', undefined, error as Error);
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+
   // PUT /api/profile - Update user profile
   fastify.put<{ Body: UpdateProfileBody }>(
     '/',
@@ -38,7 +70,7 @@ export async function profileRoutes(fastify: FastifyInstance) {
 
         return reply.send(updatedUser[0]);
       } catch (error) {
-        console.error('Update profile error:', error);
+        logger.error('Update profile error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -73,7 +105,7 @@ export async function profileRoutes(fastify: FastifyInstance) {
           user: updatedUser[0],
         });
       } catch (error) {
-        console.error('Upload avatar error:', error);
+        logger.error('Upload avatar error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

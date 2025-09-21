@@ -12,6 +12,7 @@ import { useFastifyAuthStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { AvatarUpload } from '@/features/upload';
+import { formatDate } from '@/lib/utils';
 
 interface UserProfile {
   id: string;
@@ -212,13 +213,7 @@ function ProfilePageContent() {
                 <CardBody className="flex flex-row items-center p-4">
                   <Calendar className="mr-3 h-5 w-5 text-green-500" />
                   <div>
-                    <p className="font-semibold text-green-800">
-                      {new Date(profile.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </p>
+                    <p className="font-semibold text-green-800">{formatDate(profile.createdAt)}</p>
                     <p className="text-sm text-green-700">Account creation date</p>
                   </div>
                 </CardBody>

@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { config } from '@/config';
+import { RedisAuthService } from './redis';
 
 export interface JWTPayload {
   id: string;
@@ -11,17 +12,62 @@ export interface JWTPayload {
   exp?: number;
 }
 
-export function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, config.auth.secret, {
-    expiresIn: config.auth.maxAge,
-  });
+// Global Redis service instance - will be set during server initialization
+let redisService: RedisAuthService | null = null;
+
+export function setRedisService(service: RedisAuthService): void {
+  redisService = service;
 }
 
-export function verifyToken(token: string): JWTPayload | null {
+export async function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): Promise<string> {
+  const token = jwt.sign(payload, config.auth.secret, {
+    expiresIn: config.auth.maxAge,
+  });
+
+  // Store minimal data in Redis (only id and email)
+  if (redisService) {
+    try {
+      const redisPayload = {
+        id: payload.id,
+        email: payload.email,
+      };
+      await redisService.storeToken(token, redisPayload);
+    } catch (error) {
+      console.error('[JWT] Error storing token in Redis:', error);
+    }
+  }
+
+  return token;
+}
+
+export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    return jwt.verify(token, config.auth.secret) as JWTPayload;
+    // First verify JWT signature and expiration
+    const payload = jwt.verify(token, config.auth.secret) as JWTPayload;
+
+    // Then check if token exists in Redis (for logout functionality)
+    if (redisService) {
+      const isValid = await redisService.isTokenValid(token);
+      if (!isValid) {
+        return null;
+      }
+    }
+
+    return payload;
   } catch {
     return null;
+  }
+}
+
+export async function revokeToken(token: string): Promise<void> {
+  if (redisService) {
+    await redisService.deleteToken(token);
+  }
+}
+
+export async function refreshToken(token: string): Promise<void> {
+  if (redisService) {
+    await redisService.refreshToken(token);
   }
 }
 

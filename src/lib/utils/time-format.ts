@@ -31,18 +31,6 @@ export function formatTime(timestamp: number | string | Date): string {
 }
 
 /**
- * Format a timestamp to date string (e.g., "15/12/2023")
- */
-export function formatDate(timestamp: number | string | Date): string {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-}
-
-/**
  * Format a timestamp to full datetime string (e.g., "15/12/2023 14:30")
  */
 export function formatDateTime(timestamp: number | string | Date): string {
@@ -108,9 +96,9 @@ export function isNewDay(
 }
 
 /**
- * Format date for chat day separators (like Telegram)
+ * Format date with smart relative display (Today, Yesterday, Weekday, or Date)
  */
-export function formatChatDate(timestamp: number | string | Date): string {
+export function formatDate(timestamp: number | string | Date): string {
   const date = new Date(timestamp);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();

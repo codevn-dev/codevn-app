@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import fastifyPassport from '@fastify/passport';
+import { logger } from '@/lib/utils/logger';
 
 export async function setupPassport(fastify: FastifyInstance) {
   await fastify.register(fastifyPassport.initialize());
@@ -41,7 +42,7 @@ export async function setupPassport(fastify: FastifyInstance) {
             role: user.role,
           });
         } catch (error) {
-          console.error('[AUTH] Local strategy error:', error);
+          logger.error('[AUTH] Local strategy error', undefined, error as Error);
           return done(error, false);
         }
       }
@@ -96,7 +97,7 @@ export async function setupPassport(fastify: FastifyInstance) {
               role: user.role,
             });
           } catch (error) {
-            console.error('[AUTH] Google strategy error:', error);
+            logger.error('[AUTH] Google strategy error', undefined, error as Error);
             return done(error, false);
           }
         }

@@ -1,9 +1,11 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { userRepository } from '@/lib/database/repository';
-import { generateToken } from '../jwt';
+import { generateToken, revokeToken, refreshToken } from '../jwt';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import fastifyPassport from '@fastify/passport';
 import { config } from '@/config';
+import { createRedisAuthService } from '../redis';
+import { logger } from '@/lib/utils/logger';
 
 // interface LoginBody {
 //   email: string;
@@ -29,7 +31,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const user = (request as any).user;
-      const token = generateToken(user);
+      const token = await generateToken(user);
 
       reply.cookie('auth-token', token, {
         httpOnly: true,
@@ -87,7 +89,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           user: { id: newUser[0].id, email: newUser[0].email, name: newUser[0].name },
         });
       } catch (error) {
-        console.error('Registration error:', error);
+        logger.error('Registration error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -121,7 +123,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           message: existingUser ? 'Email already exists' : 'Email is available',
         });
       } catch (error) {
-        console.error('Email check error:', error);
+        logger.error('Email check error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -145,32 +147,56 @@ export async function authRoutes(fastify: FastifyInstance) {
       preHandler: fastifyPassport.authenticate('google', { session: false }),
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const user = (request as any).user;
-      const token = generateToken(user);
+      try {
+        const user = (request as any).user;
+        const token = await generateToken(user);
 
-      // Set token in cookie
-      reply.cookie('auth-token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        domain:
-          process.env.NODE_ENV === 'production'
-            ? process.env.COOKIE_DOMAIN || undefined
-            : 'localhost',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      });
+        // Set token in cookie
+        reply.cookie('auth-token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          domain:
+            process.env.NODE_ENV === 'production'
+              ? process.env.COOKIE_DOMAIN || undefined
+              : 'localhost',
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        });
 
-      // Redirect to frontend
-      const appUrl = config.api.clientUrl;
-      return reply.redirect(appUrl);
+        // Redirect to frontend
+        const appUrl = config.api.clientUrl;
+        return reply.redirect(appUrl);
+      } catch (error) {
+        console.error('[AUTH] Google OAuth callback error:', error);
+        return reply.status(500).send({ error: 'Authentication failed' });
+      }
     }
   );
 
   // Sign-out endpoint
   fastify.get('/sign-out', async (request: FastifyRequest, reply: FastifyReply) => {
-    reply.clearCookie('auth-token');
-    return reply.send({ message: 'Sign-out successful' });
+    try {
+      // Get token from cookie or header
+      const token =
+        request.cookies['auth-token'] ||
+        (request.headers.authorization?.startsWith('Bearer ')
+          ? request.headers.authorization.substring(7)
+          : null);
+
+      if (token) {
+        // Revoke token from Redis
+        await revokeToken(token);
+      }
+
+      reply.clearCookie('auth-token');
+      return reply.send({ message: 'Sign-out successful' });
+    } catch (error) {
+      logger.error('Sign-out error', undefined, error as Error);
+      // Still clear cookie even if Redis operation fails
+      reply.clearCookie('auth-token');
+      return reply.send({ message: 'Sign-out successful' });
+    }
   });
 
   // Get current user
@@ -182,17 +208,76 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
+
+        // Get fresh user data from database
+        const user = await userRepository.findById(authRequest.user!.id);
+        if (!user) {
+          return reply.status(404).send({ error: 'User not found' });
+        }
+
         return reply.send({
           user: {
-            id: authRequest.user!.id,
-            email: authRequest.user!.email,
-            name: authRequest.user!.name,
-            avatar: authRequest.user!.avatar,
-            role: authRequest.user!.role,
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar: user.avatar,
+            role: user.role,
+            createdAt: user.createdAt,
           },
         });
       } catch (error) {
-        console.error('Get user error:', error);
+        logger.error('Get user error', undefined, error as Error);
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+
+  // Logout from all devices (Redis-powered)
+  fastify.post(
+    '/logout-all-devices',
+    {
+      preHandler: authMiddleware,
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const authRequest = request as AuthenticatedRequest;
+        const redisService = createRedisAuthService();
+
+        // Logout from all devices
+        await redisService.logoutAllDevices(authRequest.user!.id);
+
+        // Clear current session cookie
+        reply.clearCookie('auth-token');
+
+        return reply.send({ message: 'Logged out from all devices successfully' });
+      } catch (error) {
+        logger.error('Logout all devices error', undefined, error as Error);
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+
+  // Refresh token (extend TTL in Redis)
+  fastify.post(
+    '/refresh-token',
+    {
+      preHandler: authMiddleware,
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const token =
+          request.cookies['auth-token'] ||
+          (request.headers.authorization?.startsWith('Bearer ')
+            ? request.headers.authorization.substring(7)
+            : null);
+
+        if (token) {
+          await refreshToken(token);
+        }
+
+        return reply.send({ message: 'Token refreshed successfully' });
+      } catch (error) {
+        logger.error('Refresh token error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

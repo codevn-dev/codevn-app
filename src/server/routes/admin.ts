@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { userRepository, categoryRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
+import { logger } from '@/lib/utils/logger';
 
 interface UpdateUserRoleBody {
   userId: string;
@@ -65,7 +66,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
       async (request: FastifyRequest, reply: FastifyReply) => {
         try {
           const authRequest = request as AuthenticatedRequest;
-          requireAdmin(authRequest.user!);
+
+          const user = await userRepository.findById(authRequest.user!.id);
+          requireAdmin(user!);
 
           // Extract query parameters
           const query = request.query as any;
@@ -93,7 +96,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
           return reply.send(result);
         } catch (error) {
-          console.error('Get admin users error:', error);
+          logger.error('Get admin users error', undefined, error as Error);
           return reply.status(500).send({ error: 'Internal server error' });
         }
       }
@@ -108,7 +111,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
       async (request: FastifyRequest<{ Body: UpdateUserRoleBody }>, reply: FastifyReply) => {
         try {
           const authRequest = request as AuthenticatedRequest;
-          requireAdmin(authRequest.user!);
+
+          const user = await userRepository.findById(authRequest.user!.id);
+          requireAdmin(user!);
 
           const { userId, role } = request.body;
 
@@ -136,7 +141,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
           return reply.send(updatedUser[0]);
         } catch (error) {
-          console.error('Update user role error:', error);
+          logger.error('Update user role error', undefined, error as Error);
           return reply.status(500).send({ error: 'Internal server error' });
         }
       }
@@ -154,12 +159,14 @@ export async function adminRoutes(fastify: FastifyInstance) {
       async (request: FastifyRequest, reply: FastifyReply) => {
         try {
           const authRequest = request as AuthenticatedRequest;
-          requireAdmin(authRequest.user!);
+
+          const user = await userRepository.findById(authRequest.user!.id);
+          requireAdmin(user!);
 
           const rootCategories = await categoryRepository.findAllForAdmin();
           return reply.send(rootCategories);
         } catch (error) {
-          console.error('Get admin categories error:', error);
+          logger.error('Get admin categories error', undefined, error as Error);
           return reply.status(500).send({ error: 'Internal server error' });
         }
       }
@@ -174,7 +181,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
       async (request: FastifyRequest<{ Body: CreateCategoryBody }>, reply: FastifyReply) => {
         try {
           const authRequest = request as AuthenticatedRequest;
-          requireAdmin(authRequest.user!);
+
+          const user = await userRepository.findById(authRequest.user!.id);
+          requireAdmin(user!);
 
           const { name, description, color, parentId } = request.body;
 
@@ -201,7 +210,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
           return reply.status(201).send(newCategory[0]);
         } catch (error: any) {
-          console.error('Create category error:', error);
+          logger.error('Create category error', undefined, error as Error);
 
           // Handle duplicate key constraint errors
           if (
@@ -234,7 +243,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
       async (request: FastifyRequest<{ Body: UpdateCategoryBody }>, reply: FastifyReply) => {
         try {
           const authRequest = request as AuthenticatedRequest;
-          requireAdmin(authRequest.user!);
+
+          const user = await userRepository.findById(authRequest.user!.id);
+          requireAdmin(user!);
 
           const { id, name, description, color, parentId } = request.body;
 
@@ -272,7 +283,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
           return reply.send(updatedCategory[0]);
         } catch (error: any) {
-          console.error('Update category error:', error);
+          logger.error('Update category error', undefined, error as Error);
 
           // Handle duplicate key constraint errors
           if (
@@ -305,7 +316,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
       async (request: FastifyRequest, reply: FastifyReply) => {
         try {
           const authRequest = request as AuthenticatedRequest;
-          requireAdmin(authRequest.user!);
+
+          const user = await userRepository.findById(authRequest.user!.id);
+          requireAdmin(user!);
 
           const query = request.query as any;
           const id = query.id;
@@ -345,7 +358,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
           return reply.send({ message: 'Category deleted successfully' });
         } catch (error) {
-          console.error('Delete category error:', error);
+          logger.error('Delete category error', undefined, error as Error);
           return reply.status(500).send({ error: 'Internal server error' });
         }
       }

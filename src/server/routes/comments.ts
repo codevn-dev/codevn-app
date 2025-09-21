@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { commentRepository, likeRepository } from '@/lib/database/repository';
+import { commentRepository, likeRepository, userRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
+import { logger } from '@/lib/utils/logger';
 
 interface UpdateCommentBody {
   content: string;
@@ -32,7 +33,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
 
         return reply.send(comment);
       } catch (error) {
-        console.error('Get comment error:', error);
+        logger.error('Get comment error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -83,7 +84,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
 
         return reply.send(comment);
       } catch (error) {
-        console.error('Update comment error:', error);
+        logger.error('Update comment error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -108,17 +109,20 @@ export async function commentRoutes(fastify: FastifyInstance) {
         }
 
         const isAuthor = existingComment.authorId === authRequest.user!.id;
-        const isAdmin = authRequest.user!.role === 'admin';
 
-        if (!isAuthor && !isAdmin) {
-          return reply.status(403).send({ error: 'You can only delete your own comments' });
+        if (!isAuthor) {
+          const user = await userRepository.findById(authRequest.user!.id);
+          const isAdmin = user?.role === 'admin';
+          if (!isAdmin) {
+            return reply.status(403).send({ error: 'You can only delete your own comments' });
+          }
         }
 
         await commentRepository.delete(id);
 
         return reply.send({ success: true });
       } catch (error) {
-        console.error('Delete comment error:', error);
+        logger.error('Delete comment error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -199,7 +203,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
           });
         }
       } catch (error) {
-        console.error('Comment reaction error:', error);
+        logger.error('Comment reaction error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -240,7 +244,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
           reaction: reaction ? { type: reaction.type } : null,
         });
       } catch (error) {
-        console.error('Get comment reaction error:', error);
+        logger.error('Get comment reaction error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -290,7 +294,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
           reaction: null,
         });
       } catch (error) {
-        console.error('Delete comment reaction error:', error);
+        logger.error('Delete comment reaction error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

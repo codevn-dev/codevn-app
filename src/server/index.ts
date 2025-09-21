@@ -4,6 +4,9 @@ import { config } from '@/config';
 import { setupPassport } from './passport';
 import { setupRoutes } from './routes';
 import { setupPlugins } from './plugins';
+import { createRedisAuthService } from './redis';
+import { setRedisService } from './jwt';
+import { logger } from '@/lib/utils/logger';
 
 async function buildServer() {
   const fastify = Fastify({
@@ -14,6 +17,12 @@ async function buildServer() {
 
   // Setup plugins
   await setupPlugins(fastify);
+
+  // Initialize Redis service for authentication
+  console.log('[SERVER] Initializing Redis service...');
+  const redisService = createRedisAuthService();
+  setRedisService(redisService);
+  console.log('[SERVER] Redis service initialized and set');
 
   // Setup passport authentication
   await setupPassport(fastify);
@@ -32,11 +41,11 @@ async function start() {
     const host = process.env.HOST || '0.0.0.0';
 
     await fastify.listen({ port, host });
-    console.log(`🚀 Fastify server running on http://${host}:${port}`);
+    logger.info(`🚀 Fastify server running on http://${host}:${port}`);
 
     // Graceful shutdown
     const shutdown = async () => {
-      console.log('Shutting down server...');
+      logger.info('Shutting down server...');
       await fastify.close();
       process.exit(0);
     };
@@ -44,7 +53,7 @@ async function start() {
     process.on('SIGINT', shutdown);
     process.on('SIGTERM', shutdown);
   } catch (err) {
-    console.error(err);
+    logger.error('Server startup error', undefined, err as Error);
     process.exit(1);
   }
 }

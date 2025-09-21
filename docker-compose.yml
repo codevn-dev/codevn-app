@@ -67,6 +67,19 @@ services:
       timeout: 5s
       retries: 5
 
+  pgadmin:
+    image: dpage/pgadmin4:9
+    container_name: codevn-pgadmin
+    env_file: .env
+    ports:
+      - '5433:80'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
   migrate:
     build:
       context: .
@@ -89,19 +102,6 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
-
-  pgadmin:
-    image: dpage/pgadmin4:9
-    container_name: codevn-pgadmin
-    env_file: .env
-    ports:
-      - '8080:80'
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
 
   nginx:
     image: nginx:1.29-alpine
