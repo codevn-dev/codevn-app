@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   async rewrites() {
     // Only use rewrites in development for API proxy
-    // In production, API client handles URL resolution automatically
+    // In production with nginx, nginx handles the API proxying
     const isDevelopment = process.env.NODE_ENV !== 'production';
 
     if (isDevelopment) {
@@ -29,7 +29,8 @@ const nextConfig: NextConfig = {
       ];
     }
 
-    // In production, no rewrites needed
+    // In production with nginx, no rewrites needed
+    // nginx handles /api/* → api:3001 and /* → web:3000
     return [];
   },
 };
