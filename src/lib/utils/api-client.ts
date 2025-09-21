@@ -26,9 +26,16 @@ export function getApiUrl(): string {
  * - Server-side: Uses API_URL (internal server-to-server calls)
  */
 export function createApiUrl(endpoint: string): string {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
+  if (isDevelopment) {
+    // In development, use relative URL (proxied by Next.js)
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return cleanEndpoint;
+  }
+
+  // In production, use full URL based on client/server context
   // getApiUrl() already handles client vs server detection
-  // - Client-side: Uses NEXT_PUBLIC_API_URL
-  // - Server-side: Uses API_URL
   const baseUrl = getApiUrl();
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   return `${baseUrl}${cleanEndpoint}`;
