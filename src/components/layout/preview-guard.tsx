@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { useAuthActions } from '@/hooks/use-auth-actions';
+import { useFastifyAuthStore } from '@/stores';
 
 interface PreviewGuardProps {
   children: React.ReactNode;
@@ -12,17 +12,42 @@ interface PreviewGuardProps {
 }
 
 export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGuardProps) {
-  const { user, loading } = useAuthActions();
+  const { user, isLoading } = useFastifyAuthStore();
   const isAuthenticated = !!user;
-  const isLoading = loading;
   const router = useRouter();
+  const [hasWaited, setHasWaited] = useState(false);
+
+  console.log('PreviewGuard render:', {
+    isPreview,
+    user: !!user,
+    isLoading,
+    isAuthenticated,
+    articleAuthorId,
+    hasWaited,
+  });
+
+  // Wait for AuthProvider to complete authentication
+  useEffect(() => {
+    if (isPreview && !isLoading && !hasWaited) {
+      // If not loading and no user, wait a bit more
+      if (!user) {
+        const timer = setTimeout(() => {
+          setHasWaited(true);
+        }, 500); // Wait 500ms for auth to complete
+        return () => clearTimeout(timer);
+      } else {
+        setHasWaited(true);
+      }
+    }
+  }, [isPreview, isLoading, user, hasWaited]);
 
   useEffect(() => {
-    // Only redirect after loading is complete
-    if (isLoading) return;
+    // Only redirect after loading is complete and we've waited
+    if (isLoading || !hasWaited) return;
 
     if (isPreview && !isAuthenticated) {
       // Redirect to login if trying to preview without being logged in
+      console.log('PreviewGuard: redirecting to login');
       router.push('/?login=true');
       return;
     }
@@ -33,11 +58,12 @@ export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGu
 
       if (!isAuthor && !isAdmin) {
         // Redirect to home if not author or admin
+        console.log('PreviewGuard: redirecting to home - no permission');
         router.push('/');
         return;
       }
     }
-  }, [isPreview, isAuthenticated, isLoading, user, articleAuthorId, router]);
+  }, [isPreview, isAuthenticated, isLoading, user, articleAuthorId, router, hasWaited]);
 
   // Show loading while checking authentication
   if (isPreview && isLoading) {

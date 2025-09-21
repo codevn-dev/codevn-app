@@ -117,10 +117,6 @@ export function useAuthActions() {
     }
   };
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
   return {
     ...state,
     login,
