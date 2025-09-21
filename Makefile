@@ -13,7 +13,13 @@ install: ## Install dependencies
 	pnpm install
 
 dev: ## Start development server
-	pnpm dev
+	pnpm dev --turbopack
+
+dev-server:
+	pnpm dev:server
+
+dev-full:
+	pnpm dev:full
 
 build: ## Build for production
 	pnpm build
@@ -85,9 +91,6 @@ health: ## Check if all services are running
 	@docker-compose ps
 	@echo "Checking database connection..."
 	@pnpm db:push --dry-run
-
-# Development workflow
-dev-full: docker-up db-push dev ## Start full development environment
 
 # Quick start for new developers
 quick-start: install docker-up

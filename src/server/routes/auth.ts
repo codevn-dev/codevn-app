@@ -1,0 +1,193 @@
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { userRepository } from '@/lib/database/repository';
+import { generateToken } from '../jwt';
+import { authMiddleware, AuthenticatedRequest } from '../middleware';
+import fastifyPassport from '@fastify/passport';
+
+// interface LoginBody {
+//   email: string;
+//   password: string;
+// }
+
+interface RegisterBody {
+  email: string;
+  name: string;
+  password: string;
+}
+
+interface CheckEmailBody {
+  email: string;
+}
+
+export async function authRoutes(fastify: FastifyInstance) {
+  // Login endpoint
+  fastify.post(
+    '/login',
+    {
+      preHandler: fastifyPassport.authenticate('local', { session: false }),
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = (request as any).user;
+      const token = generateToken(user);
+
+      reply.cookie('auth-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        domain: 'localhost',
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      });
+
+      return reply.send({
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          role: user.role,
+        },
+      });
+    }
+  );
+
+  // Register endpoint
+  fastify.post(
+    '/register',
+    async (request: FastifyRequest<{ Body: RegisterBody }>, reply: FastifyReply) => {
+      try {
+        const { email, name, password } = request.body;
+
+        if (!email || !name || !password) {
+          return reply.status(400).send({ error: 'Email, name, and password are required' });
+        }
+
+        // Check if user already exists
+        const existingUser = await userRepository.findByEmail(email);
+
+        if (existingUser) {
+          return reply.status(400).send({ error: 'User with this email already exists' });
+        }
+
+        // Create user
+        const newUser = await userRepository.create({
+          email,
+          name,
+          password,
+          role: 'user',
+        });
+
+        return reply.status(201).send({
+          message: 'User created successfully',
+          user: { id: newUser[0].id, email: newUser[0].email, name: newUser[0].name },
+        });
+      } catch (error) {
+        console.error('Registration error:', error);
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+
+  // Check email availability
+  fastify.post(
+    '/check-email',
+    async (request: FastifyRequest<{ Body: CheckEmailBody }>, reply: FastifyReply) => {
+      try {
+        const { email } = request.body;
+
+        if (!email) {
+          return reply.status(400).send({ available: false, message: 'Email is required' });
+        }
+
+        // Check if email format is valid
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          return reply.status(400).send({
+            available: false,
+            message: 'Invalid email format',
+          });
+        }
+
+        // Check if email already exists
+        const existingUser = await userRepository.findByEmail(email);
+
+        return reply.send({
+          available: !existingUser,
+          message: existingUser ? 'Email already exists' : 'Email is available',
+        });
+      } catch (error) {
+        console.error('Email check error:', error);
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+
+  // Google OAuth login
+  fastify.get(
+    '/google',
+    {
+      preHandler: fastifyPassport.authenticate('google', { scope: ['profile', 'email'] }),
+    },
+    async (_request: FastifyRequest, _reply: FastifyReply) => {
+      // This will redirect to Google
+    }
+  );
+
+  // Google OAuth callback
+  fastify.get(
+    '/google/callback',
+    {
+      preHandler: fastifyPassport.authenticate('google', { session: false }),
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = (request as any).user;
+      const token = generateToken(user);
+
+      // Set token in cookie
+      reply.cookie('auth-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        domain: 'localhost',
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      });
+
+      // Redirect to frontend
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return reply.redirect(frontendUrl);
+    }
+  );
+
+  // Logout endpoint
+  fastify.post('/logout', async (request: FastifyRequest, reply: FastifyReply) => {
+    reply.clearCookie('auth-token');
+    return reply.send({ message: 'Logout successful' });
+  });
+
+  // Get current user
+  fastify.get(
+    '/me',
+    {
+      preHandler: authMiddleware,
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const authRequest = request as AuthenticatedRequest;
+        return reply.send({
+          user: {
+            id: authRequest.user!.id,
+            email: authRequest.user!.email,
+            name: authRequest.user!.name,
+            avatar: authRequest.user!.avatar,
+            role: authRequest.user!.role,
+          },
+        });
+      } catch (error) {
+        console.error('Get user error:', error);
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+}

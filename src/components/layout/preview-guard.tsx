@@ -1,9 +1,9 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { LoadingScreen } from '@/components/ui/loading-screen';
+import { useFastifyAuth } from '@/hooks/use-fastify-auth';
 
 interface PreviewGuardProps {
   children: React.ReactNode;
@@ -12,19 +12,24 @@ interface PreviewGuardProps {
 }
 
 export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGuardProps) {
-  const { data: session, status } = useSession();
+  const { user, loading } = useFastifyAuth();
+  const isAuthenticated = !!user;
+  const isLoading = loading;
   const router = useRouter();
 
   useEffect(() => {
-    if (isPreview && status === 'unauthenticated') {
+    // Only redirect after loading is complete
+    if (isLoading) return;
+
+    if (isPreview && !isAuthenticated) {
       // Redirect to login if trying to preview without being logged in
       router.push('/?login=true');
       return;
     }
 
-    if (isPreview && status === 'authenticated' && session?.user?.id) {
-      const isAuthor = session.user.id === articleAuthorId;
-      const isAdmin = session.user.role === 'admin';
+    if (isPreview && isAuthenticated && user?.id) {
+      const isAuthor = user.id === articleAuthorId;
+      const isAdmin = user.role === 'admin';
 
       if (!isAuthor && !isAdmin) {
         // Redirect to home if not author or admin
@@ -32,11 +37,11 @@ export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGu
         return;
       }
     }
-  }, [isPreview, status, session, articleAuthorId, router]);
+  }, [isPreview, isAuthenticated, isLoading, user, articleAuthorId, router]);
 
   // Show loading while checking authentication
-  if (isPreview && status === 'loading') {
-    return <LoadingScreen message="Checking access..." />;
+  if (isPreview && isLoading) {
+    return <LoadingScreen />;
   }
 
   // If not preview mode, show content normally
@@ -45,9 +50,9 @@ export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGu
   }
 
   // If preview mode and authenticated with proper access, show content
-  if (isPreview && status === 'authenticated' && session?.user?.id) {
-    const isAuthor = session.user.id === articleAuthorId;
-    const isAdmin = session.user.role === 'admin';
+  if (isPreview && isAuthenticated && user?.id) {
+    const isAuthor = user.id === articleAuthorId;
+    const isAdmin = user.role === 'admin';
 
     if (isAuthor || isAdmin) {
       return <>{children}</>;

@@ -6,7 +6,6 @@ import { MessageSquare, Loader2 } from 'lucide-react';
 import { CommentItem } from './comment-item';
 import { CommentForm } from './comment-form';
 import { useAuth } from '@/hooks/use-auth';
-import { usePolling } from '@/hooks/use-polling';
 import { useUIStore } from '@/stores';
 
 interface Comment {
@@ -54,11 +53,14 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
     const [currentPage, setCurrentPage] = useState(1);
     const [hasMoreComments, setHasMoreComments] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [lastCommentId, setLastCommentId] = useState<string | null>(null);
+    const [_lastCommentId, setLastCommentId] = useState<string | null>(null);
     const lastCommentIdRef = useRef<string | null>(null);
     const commentFormRef = useRef<HTMLDivElement>(null);
     const [visibleTopCount, setVisibleTopCount] = useState(5);
     const fetchCommentsRef = useRef<typeof fetchComments | null>(null);
+    const _lastPollTimeRef = useRef<number>(0);
+    const articleIdRef = useRef(articleId);
+    const _hasLoadedRef = useRef(false);
 
     // Expose scroll function to parent component
     useImperativeHandle(ref, () => ({
@@ -122,38 +124,22 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           setLoadingMore(false);
         }
       },
-      [articleId]
+      [articleId] // Keep articleId dependency but manage it properly
     );
 
-    // Update ref when fetchComments changes
+    // Update refs when they change
     useEffect(() => {
       fetchCommentsRef.current = fetchComments;
-    }, [fetchComments]);
+      articleIdRef.current = articleId;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [articleId]); // fetchComments is intentionally excluded to prevent infinite loop
 
-    // Function to check for new comments
-    const checkForNewComments = useCallback(async () => {
-      try {
-        const response = await fetch(`/api/articles/${articleId}/comments?sortOrder=desc&limit=1`);
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.comments && data.comments.length > 0) {
-            const latestComment = data.comments[0];
-            // Check if this is a new comment by comparing with our last known comment
-            if (!lastCommentIdRef.current || latestComment.id !== lastCommentIdRef.current) {
-              // New comments found, refresh the entire list
-              fetchCommentsRef.current?.(false, 1, false);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error checking for new comments:', error);
-      }
-    }, [articleId]);
-
-    const handleCommentAdded = (_newComment: Comment) => {
+    const handleCommentAdded = (newComment: Comment) => {
       // Auto refresh comments to get the latest data
       fetchComments(false, 1, false);
+      // Update last comment ID immediately to prevent unnecessary polling
+      lastCommentIdRef.current = newComment.id;
+      setLastCommentId(newComment.id);
     };
 
     const handleCommentUpdated = (updatedComment: Comment) => {
@@ -182,13 +168,6 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
       );
     };
 
-    // Set up polling for new comments
-    usePolling({
-      enabled: isAuthenticated && lastCommentId !== null,
-      interval: 3000, // Poll every 3 seconds
-      onPoll: checkForNewComments,
-    });
-
     // Load comments on mount if not provided initially
     useEffect(() => {
       if (initialComments.length === 0) {
@@ -201,7 +180,18 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           lastCommentIdRef.current = newLastCommentId;
         }
       }
-    }, [articleId, fetchComments]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [articleId, initialComments.length]); // fetchComments is intentionally excluded to prevent infinite loop
+
+    // Reset comments when articleId changes
+    useEffect(() => {
+      setComments([]);
+      setLastCommentId(null);
+      lastCommentIdRef.current = null;
+      setCurrentPage(1);
+      setHasMoreComments(true);
+      setVisibleTopCount(5);
+    }, [articleId]);
 
     // Only show top-level comments (parentId is null)
     const topLevelComments = comments.filter((comment) => comment.parentId === null);

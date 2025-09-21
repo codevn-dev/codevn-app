@@ -21,9 +21,7 @@ export const getDb = () => {
         transform: {
           undefined: null, // Transform undefined to null
         },
-        onnotice: (notice) => {
-          console.log('Database notice:', notice);
-        },
+        onnotice: (_notice) => {},
       });
       db = drizzle(client, { schema });
     } catch (error) {

@@ -7,7 +7,7 @@ export interface User {
   email: string;
   role: 'user' | 'admin';
   avatar?: string;
-  createdAt: Date | string;
+  createdAt: string;
 }
 
 interface AuthState {
@@ -65,3 +65,6 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// Alias for backward compatibility
+export const useFastifyAuthStore = useAuthStore;

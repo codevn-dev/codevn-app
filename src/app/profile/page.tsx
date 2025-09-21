@@ -9,8 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { User, Mail, Calendar, Shield, Save } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { useAuthStore } from '@/stores';
-import { useSession } from 'next-auth/react';
+import { useFastifyAuthStore } from '@/stores';
 import { ClientOnly } from '@/components/layout';
 import { AvatarUpload } from '@/features/upload';
 
@@ -25,8 +24,7 @@ interface UserProfile {
 
 function ProfilePageContent() {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const { updateUser } = useAuthStore();
-  const { update: updateSession } = useSession();
+  const { updateUser } = useFastifyAuthStore();
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [originalProfile, setOriginalProfile] = useState<UserProfile | null>(null);
@@ -52,12 +50,7 @@ function ProfilePageContent() {
         name: user.name,
         avatar: user.avatar,
         role: user.role,
-        createdAt:
-          user.createdAt instanceof Date
-            ? user.createdAt.toISOString()
-            : typeof user.createdAt === 'string'
-              ? user.createdAt
-              : new Date().toISOString(),
+        createdAt: user.createdAt,
       };
       setProfile(profileData);
       setOriginalProfile(profileData);
@@ -74,11 +67,12 @@ function ProfilePageContent() {
 
   const refreshProfileData = async () => {
     try {
-      const response = await fetch('/api/auth/session');
+      const response = await fetch('http://localhost:3000/api/profile', {
+        credentials: 'include',
+      });
 
       if (response.ok) {
-        const sessionData = await response.json();
-        const userData = sessionData.user;
+        const userData = await response.json();
 
         // Update Zustand store with fresh user data
         updateUser({
@@ -114,11 +108,12 @@ function ProfilePageContent() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/profile', {
+      const response = await fetch('http://localhost:3000/api/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           name: profile.name,
           email: profile.email,
@@ -130,17 +125,7 @@ function ProfilePageContent() {
         throw new Error(data.error || 'Failed to update profile');
       }
 
-      // Force refresh session by calling updateSession
-      try {
-        await updateSession({
-          name: profile.name,
-          email: profile.email,
-        });
-      } catch {
-        // Error handled silently
-      }
-
-      // Refresh profile data from session
+      // Refresh profile data from API
       await refreshProfileData();
 
       setMessage('Profile updated successfully');

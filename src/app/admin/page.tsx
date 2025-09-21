@@ -78,6 +78,10 @@ function AdminPageContent() {
     parentId: '',
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Category | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Create stable reference for user to prevent unnecessary re-renders
   const stableUser = useMemo(() => user, [user]);
@@ -167,9 +171,12 @@ function AdminPageContent() {
     e.preventDefault();
 
     if (!user || user.role !== 'admin') {
-      alert('Only admin can create categories');
+      setCategoryError('Only admin can create categories');
       return;
     }
+
+    setIsSubmitting(true);
+    setCategoryError(null);
 
     try {
       const response = await fetch('/api/admin/categories', {
@@ -183,10 +190,16 @@ function AdminPageContent() {
       if (response.ok) {
         setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
         setShowCategoryForm(false);
+        setCategoryError(null);
         fetchData();
+      } else {
+        const error = await response.json();
+        setCategoryError(error.error || 'Failed to create category');
       }
     } catch {
-      // Error handled silently
+      setCategoryError('Network error. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -207,9 +220,12 @@ function AdminPageContent() {
     if (!editingCategory) return;
 
     if (!user || user.role !== 'admin') {
-      alert('Only admin can update categories');
+      setCategoryError('Only admin can update categories');
       return;
     }
+
+    setIsSubmitting(true);
+    setCategoryError(null);
 
     try {
       const response = await fetch('/api/admin/categories', {
@@ -227,18 +243,27 @@ function AdminPageContent() {
         setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
         setShowCategoryForm(false);
         setEditingCategory(null);
+        setCategoryError(null);
         fetchData();
+      } else {
+        const error = await response.json();
+        setCategoryError(error.error || 'Failed to update category');
       }
     } catch {
-      // Error handled silently
+      setCategoryError('Network error. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDeleteCategory = async (category: Category) => {
     if (!user || user.role !== 'admin') {
-      alert('Only admin can delete categories');
+      setDeleteError('Only admin can delete categories');
       return;
     }
+
+    setIsDeleting(true);
+    setDeleteError(null);
 
     try {
       const response = await fetch(`/api/admin/categories?id=${category.id}`, {
@@ -247,13 +272,16 @@ function AdminPageContent() {
 
       if (response.ok) {
         setShowDeleteConfirm(null);
+        setDeleteError(null);
         fetchData();
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to delete category');
+        setDeleteError(error.error || 'Failed to delete category');
       }
     } catch {
-      // Error handled silently
+      setDeleteError('Network error. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -261,6 +289,7 @@ function AdminPageContent() {
     setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
     setShowCategoryForm(false);
     setEditingCategory(null);
+    setCategoryError(null);
   };
 
   // Server-side pagination - users are already filtered and paginated by API
@@ -821,6 +850,47 @@ function AdminPageContent() {
                           </SelectContent>
                         </Select>
                       </div>
+
+                      {/* Error Message */}
+                      {categoryError && (
+                        <div className="rounded-md border border-red-200 bg-red-50 p-3">
+                          <div className="flex">
+                            <div className="flex-shrink-0">
+                              <svg
+                                className="h-5 w-5 text-red-400"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </div>
+                            <div className="ml-3">
+                              <h3 className="text-sm font-medium text-red-800">
+                                {categoryError.includes('duplicate') ||
+                                categoryError.includes('unique')
+                                  ? 'Category Already Exists'
+                                  : 'Error'}
+                              </h3>
+                              <div className="mt-2 text-sm text-red-700">
+                                <p>{categoryError}</p>
+                                {(categoryError.includes('duplicate') ||
+                                  categoryError.includes('unique')) && (
+                                  <div className="mt-2">
+                                    <p className="font-medium">
+                                      The category name or slug already exists. Please try a
+                                      different name.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </form>
                   </div>
 
@@ -828,8 +898,17 @@ function AdminPageContent() {
                     <Button variant="outline" onClick={resetForm}>
                       Cancel
                     </Button>
-                    <Button type="submit" form="category-form">
-                      {editingCategory ? 'Update' : 'Create'}
+                    <Button type="submit" form="category-form" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          {editingCategory ? 'Updating...' : 'Creating...'}
+                        </>
+                      ) : editingCategory ? (
+                        'Update'
+                      ) : (
+                        'Create'
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -1000,17 +1079,67 @@ function AdminPageContent() {
                 Are you sure you want to delete &quot;{showDeleteConfirm?.name}&quot;? This action
                 cannot be undone.
               </p>
+
+              {/* Error Message */}
+              {deleteError && (
+                <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">Cannot Delete Category</h3>
+                      <div className="mt-2 text-sm text-red-700">
+                        <p>{deleteError}</p>
+                        {deleteError.includes('articles') && (
+                          <div className="mt-2">
+                            <p className="font-medium">To delete this category:</p>
+                            <ul className="mt-1 list-inside list-disc space-y-1">
+                              <li>Move all articles to another category, or</li>
+                              <li>Delete all articles in this category first</li>
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowDeleteConfirm(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowDeleteConfirm(null);
+                    setDeleteError(null);
+                  }}
+                  disabled={isDeleting}
+                >
                   Cancel
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => showDeleteConfirm && handleDeleteCategory(showDeleteConfirm)}
                   className="border-red-600 text-red-600 hover:bg-red-50"
+                  disabled={isDeleting}
                 >
-                  <Trash2 className="mr-1 h-4 w-4" />
-                  Delete
+                  {isDeleting ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Delete
+                    </>
+                  )}
                 </Button>
               </div>
             </div>

@@ -1,4 +1,4 @@
-export { useAuthStore } from './auth-store';
+export { useAuthStore, useFastifyAuthStore } from './auth-store';
 export { useUIStore } from './ui-store';
 export { useForumStore } from './forum-store';
 

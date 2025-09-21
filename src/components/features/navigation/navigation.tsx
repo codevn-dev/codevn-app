@@ -1,6 +1,5 @@
 'use client';
 
-import { signOut } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,38 +11,37 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { AuthModal } from '@/features/auth';
 import { User, Settings, LogOut, FileText, Menu as MenuIcon, X as CloseIcon } from 'lucide-react';
-import { useAuthStore, useUIStore } from '@/stores';
-import { useAuth } from '@/hooks/use-auth';
+import { useFastifyAuthStore, useUIStore } from '@/stores';
+import { useFastifyAuth } from '@/hooks/use-fastify-auth';
 import { useState } from 'react';
 import Image from 'next/image';
 import { isAdmin } from '@/lib/utils';
 
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout } = useFastifyAuthStore();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Ensure the auth store stays in sync with NextAuth session
-  const { isAuthenticated: sessionAuthenticated } = useAuth();
+  // Use Fastify auth
+  const { logout: fastifyLogout } = useFastifyAuth();
 
   const handleSignOut = async () => {
-    // Optimistic UI: clear local auth state immediately to avoid flicker
     try {
+      // Use Fastify logout
+      await fastifyLogout();
+      // Clear local state
       logout();
+      // Redirect to home page
+      router.push('/');
       router.refresh();
-    } catch {}
-    try {
-      await signOut({ redirect: false });
-    } finally {
-      // Hard redirect to ensure cookies/session are cleared in UI
-      if (typeof window !== 'undefined') {
-        window.location.href = '/';
-      } else {
-        router.push('/');
-        router.refresh();
-      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear local state and redirect to home
+      logout();
+      router.push('/');
+      router.refresh();
     }
   };
 
@@ -81,7 +79,7 @@ export function Navigation() {
 
             {/* Navigation Items - Desktop */}
             <div className="hidden items-center space-x-4 md:flex">
-              {(sessionAuthenticated || isAuthenticated) && user ? (
+              {isAuthenticated && user ? (
                 <>
                   <Button
                     variant="ghost"
@@ -189,7 +187,7 @@ export function Navigation() {
         className={`border-b border-gray-200/50 bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
       >
         <div className="mx-auto max-w-7xl space-y-2 px-4 py-3 sm:px-6 lg:px-8">
-          {(sessionAuthenticated || isAuthenticated) && user ? (
+          {isAuthenticated && user ? (
             <>
               <button
                 className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"

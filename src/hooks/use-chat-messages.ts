@@ -146,7 +146,7 @@ export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessa
       }
       isPollingRef.current = false;
     };
-  }, [isActive, canChat, peerId]);
+  }, [isActive, canChat, peerId, onNewMessage]);
 
   return {
     messages,

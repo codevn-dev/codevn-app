@@ -13,25 +13,16 @@ export const dbConfig = {
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 } as const;
 
-// NextAuth configuration
+// Fastify Auth configuration
 export const authConfig = {
-  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key',
-  url: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+  secret: process.env.JWT_SECRET || 'your-super-secret-key-that-is-at-least-32-characters-long',
+  url: process.env.API_BASE_URL || 'http://localhost:3000',
   trustHost: true,
-  providers: {
-    credentials: {
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-    },
-  },
 } as const;
 
 // JWT configuration
 export const jwtConfig = {
-  secret: process.env.JWT_SECRET || 'your-jwt-secret',
+  secret: process.env.JWT_SECRET || 'your-super-secret-key-that-is-at-least-32-characters-long',
   maxAge: 30 * 24 * 60 * 60, // 30 days
 } as const;
 
@@ -115,14 +106,7 @@ export const redisConfig = {
 
 // Validation function to check required environment variables
 export function validateEnv() {
-  const requiredVars = [
-    'NEXTAUTH_SECRET',
-    'JWT_SECRET',
-    'DB_HOST',
-    'DB_NAME',
-    'DB_USER',
-    'DB_PASSWORD',
-  ];
+  const requiredVars = ['JWT_SECRET', 'DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
 
   const missingVars = requiredVars.filter((varName) => !process.env[varName]);
 
