@@ -21,11 +21,14 @@ export function getApiUrl(): string {
 }
 
 /**
- * Create a full API endpoint URL
- * @param endpoint - The API endpoint path (e.g., '/api/auth/sign-in')
- * @returns Full URL with proper base URL
+ * Create API URL that automatically handles client/server context
+ * - Client-side: Uses NEXT_PUBLIC_API_URL (accessible from browser)
+ * - Server-side: Uses API_URL (internal server-to-server calls)
  */
 export function createApiUrl(endpoint: string): string {
+  // getApiUrl() already handles client vs server detection
+  // - Client-side: Uses NEXT_PUBLIC_API_URL
+  // - Server-side: Uses API_URL
   const baseUrl = getApiUrl();
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   return `${baseUrl}${cleanEndpoint}`;

@@ -116,7 +116,8 @@ export function AuthModal() {
     setIsOauthLoading(true);
     try {
       // Redirect to Google OAuth
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/auth/google`;
+      const { createApiUrl } = await import('@/lib/utils/api-client');
+      window.location.href = createApiUrl('/api/auth/google');
     } catch {
       setError('Google login failed');
       setIsOauthLoading(false);

@@ -67,34 +67,29 @@ function ProfilePageContent() {
 
   const refreshProfileData = async () => {
     try {
-      const response = await fetch('/api/profile', {
-        credentials: 'include',
+      const { apiGet } = await import('@/lib/utils/api-client');
+      const userData = await apiGet('/api/profile');
+
+      // Update Zustand store with fresh user data
+      updateUser({
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
       });
 
-      if (response.ok) {
-        const userData = await response.json();
+      // Update local profile state
+      const updatedProfileData = {
+        id: userData.id,
+        email: userData.email,
+        name: userData.name,
+        role: userData.role,
+        avatar: userData.avatar,
+        createdAt: userData.createdAt || new Date().toISOString(),
+      };
+      setProfile(updatedProfileData);
+      setOriginalProfile(updatedProfileData);
 
-        // Update Zustand store with fresh user data
-        updateUser({
-          name: userData.name,
-          email: userData.email,
-          role: userData.role,
-        });
-
-        // Update local profile state
-        const updatedProfileData = {
-          id: userData.id,
-          email: userData.email,
-          name: userData.name,
-          role: userData.role,
-          avatar: userData.avatar,
-          createdAt: userData.createdAt || new Date().toISOString(),
-        };
-        setProfile(updatedProfileData);
-        setOriginalProfile(updatedProfileData);
-
-        return userData;
-      }
+      return userData;
     } catch {
       // Error handled silently
     }
@@ -108,22 +103,11 @@ function ProfilePageContent() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: profile.name,
-          email: profile.email,
-        }),
+      const { apiPut } = await import('@/lib/utils/api-client');
+      await apiPut('/api/profile', {
+        name: profile.name,
+        email: profile.email,
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to update profile');
-      }
 
       // Refresh profile data from API
       await refreshProfileData();
