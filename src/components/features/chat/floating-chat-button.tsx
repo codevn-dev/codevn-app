@@ -46,7 +46,8 @@ export function FloatingChatButton() {
       {/* Floating Chat Button */}
       <div className="fixed right-6 bottom-6 z-50">
         <Button
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             if (chatWindowOpen) {
               // If chat window is open, close it but keep sidebar open
               setClosingViaFloatingButton(true);
@@ -75,6 +76,7 @@ export function FloatingChatButton() {
           setChatWindowOpen(false);
         }}
         onStartChat={handleStartChatSimple}
+        chatWindowOpen={chatWindowOpen}
       />
 
       {/* Chat Window */}

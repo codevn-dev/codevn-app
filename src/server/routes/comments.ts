@@ -195,7 +195,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
           return reply.send({
             success: true,
             action: 'created',
-            reaction: { type: action, commentId: id, userId: authRequest.user!.id },
+            reaction: { type: action, comment: { id }, user: { id: authRequest.user!.id } },
           });
         }
       } catch (error) {

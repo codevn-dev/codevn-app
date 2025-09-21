@@ -52,14 +52,14 @@ jobs:
             git reset --hard origin/main
             git clean -f -d
 
-            # Clean up Docker to free space
-            echo "Cleaning up Docker system..."
-            docker system prune -f
-
             # Build and deploy
             echo "Building and deploying application..."
             docker compose up -d --build
             docker compose restart nginx
+
+            # Clean up Docker to free space
+            echo "Cleaning up Docker system..."
+            docker system prune -f
 
       - name: Purge Cloudflare cache for codevn.dev
         run: |

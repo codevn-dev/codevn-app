@@ -6,9 +6,12 @@ import { useUIStore } from '@/stores/ui-store';
 import { useChat } from '@/components/features/chat/chat-context';
 
 interface Conversation {
-  userId: string;
-  userName: string;
-  userAvatar?: string;
+  id: string;
+  peer: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
   lastMessage: {
     text: string;
     createdAt: string;
@@ -71,7 +74,7 @@ export function useChatPolling() {
             if (messageTime > lastCheckTimeRef.current) {
               addNotification({
                 type: 'info',
-                title: `New message from ${conversation.userName || 'User'}`,
+                title: `New message from ${conversation.peer?.name || 'User'}`,
                 message:
                   conversation.lastMessage.text.length > 50
                     ? `${conversation.lastMessage.text.substring(0, 50)}...`
@@ -80,9 +83,9 @@ export function useChatPolling() {
                 action: {
                   onClick: () => {
                     handleStartChat(
-                      conversation.userId,
-                      conversation.userName,
-                      conversation.userAvatar
+                      conversation.peer.id,
+                      conversation.peer.name,
+                      conversation.peer.avatar
                     );
                   },
                 },

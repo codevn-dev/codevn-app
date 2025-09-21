@@ -88,7 +88,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
         return {
           id: `${msg.id || msg.timestamp}-${timestamp}`,
           type: msg.type || 'message',
-          from: msg.fromUserId || msg.from,
+          from: msg.fromUser?.id || msg.fromUserId || msg.from,
           text: msg.text,
           timestamp,
           seen: msg.seen || false,
@@ -230,7 +230,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
       const newMessage: UiMessage = {
         id: data.message.id || `${data.message.timestamp}-${Date.now()}`,
         type: data.message.type,
-        from: data.message.fromUserId || data.message.from,
+        from: data.message.fromUser?.id || data.message.fromUserId || data.message.from,
         text: data.message.text,
         timestamp: new Date(data.message.timestamp).getTime(),
         seen: data.message.seen || false,
@@ -257,9 +257,16 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
   if (!isOpen) return null;
 
   return (
-    <div className="pointer-events-auto fixed right-80 bottom-0 z-[60] flex h-96 w-80 flex-col rounded-lg border border-gray-200 bg-white shadow-lg">
+    <div
+      className="pointer-events-auto fixed right-80 bottom-0 z-[110] flex h-96 w-80 flex-col rounded-lg border border-gray-200 bg-white shadow-lg"
+      data-chat-window="true"
+      onClick={(e) => e.stopPropagation()}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between rounded-t-lg bg-gray-900 p-4 text-white">
+      <div
+        className="flex items-center justify-between rounded-t-lg bg-gray-900 p-4 text-white"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src={peerAvatar || undefined} />
@@ -275,7 +282,10 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
           <Button
             variant="ghost"
             size="sm"
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
             className="h-6 w-6 p-0 text-white hover:bg-gray-700"
           >
             <X className="h-3 w-3" />
@@ -284,7 +294,11 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
       </div>
 
       {/* Messages */}
-      <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto bg-white p-4">
+      <div
+        ref={listRef}
+        className="flex-1 space-y-3 overflow-y-auto bg-white p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         {loading && messages.length === 0 ? (
           <div className="py-4 text-center text-sm text-gray-500">Loading messages...</div>
         ) : (
@@ -295,7 +309,10 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={loadMoreMessages}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    loadMoreMessages();
+                  }}
                   disabled={loadingMore}
                   className="text-xs"
                 >
@@ -364,6 +381,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
       {/* Input */}
       <div
         className="border-t border-gray-200 bg-gray-50 p-4"
+        onClick={(e) => e.stopPropagation()}
         onMouseEnter={() => {
           if (inputRef.current) {
             inputRef.current.focus();
@@ -384,14 +402,22 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
                 send();
               }
             }}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               inputRef.current?.focus();
             }}
             placeholder="Type a message..."
             disabled={!canChat || loading}
             className="flex-1"
           />
-          <Button onClick={send} disabled={!canChat || !text.trim() || loading} size="sm">
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              send();
+            }}
+            disabled={!canChat || !text.trim() || loading}
+            size="sm"
+          >
             {loading ? '...' : 'Send'}
           </Button>
         </div>

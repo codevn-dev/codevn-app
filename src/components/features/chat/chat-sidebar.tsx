@@ -8,9 +8,12 @@ import { MessageCircle, Search, X } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 
 interface Conversation {
-  userId: string;
-  userName: string;
-  userAvatar?: string;
+  id: string;
+  peer: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
   lastMessage: {
     text: string;
     createdAt: string;
@@ -25,9 +28,16 @@ interface ChatSidebarProps {
   onClose: () => void;
   onStartChat: (userId: string, userName: string, userAvatar?: string) => void;
   onCloseAll?: () => void; // New prop to close both sidebar and chat windows
+  chatWindowOpen?: boolean; // Add prop to know if chat window is open
 }
 
-export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSidebarProps) {
+export function ChatSidebar({
+  isOpen,
+  onClose,
+  onStartChat,
+  onCloseAll,
+  chatWindowOpen,
+}: ChatSidebarProps) {
   const { user } = useAuthState();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,6 +55,12 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
         const conversationsWithUnread = (data.conversations || []).map((conv: any) => ({
           ...conv,
           unreadCount: 0, // Will be calculated based on seen status
+          lastMessage: {
+            text: conv.lastMessage || '',
+            createdAt: conv.lastMessageAt || new Date().toISOString(),
+            fromUserId: conv.lastMessageFromUserId || '',
+            seen: conv.lastMessageSeen || false,
+          },
         }));
         setConversations(conversationsWithUnread);
       }
@@ -74,6 +90,12 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
           const conversationsWithUnread = (data.conversations || []).map((conv: any) => ({
             ...conv,
             unreadCount: 0, // Will be calculated based on seen status
+            lastMessage: {
+              text: conv.lastMessage || '',
+              createdAt: conv.lastMessageAt || new Date().toISOString(),
+              fromUserId: conv.lastMessageFromUserId || '',
+              seen: conv.lastMessageSeen || false,
+            },
           }));
           setConversations(conversationsWithUnread);
         }
@@ -95,13 +117,13 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
 
   // Sort conversations by last message time (newest first)
   const sortedConversations = conversations.sort((a, b) => {
-    const timeA = new Date(a.lastMessage.createdAt).getTime();
-    const timeB = new Date(b.lastMessage.createdAt).getTime();
+    const timeA = new Date(a.lastMessage?.createdAt || 0).getTime();
+    const timeB = new Date(b.lastMessage?.createdAt || 0).getTime();
     return timeB - timeA; // Descending order (newest first)
   });
 
   const filteredConversations = sortedConversations.filter((conv) =>
-    conv.userName.toLowerCase().includes(searchTerm.toLowerCase())
+    conv.peer?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatTime = (timestamp: string) => {
@@ -139,19 +161,23 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
 
   return (
     <>
-      {/* Overlay - click outside to close sidebar */}
-      <div
-        className="fixed inset-0 z-[100]"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (onCloseAll) {
-            onCloseAll();
-          } else {
-            onClose();
-          }
-        }}
-      />
+      {/* Overlay - click outside to close sidebar, but only if chat window is not open */}
+      {!chatWindowOpen && (
+        <div
+          className="fixed inset-0 z-[100]"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Only close sidebar if no chat window is active
+            if (onCloseAll) {
+              onCloseAll();
+            } else {
+              onClose();
+            }
+          }}
+        />
+      )}
       {/* Sidebar */}
       <div
         className="fixed top-0 right-0 z-[101] h-full w-80 transform bg-white shadow-xl transition-transform duration-300 ease-in-out"
@@ -198,22 +224,22 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
             <div className="space-y-1">
               {filteredConversations.map((conversation) => (
                 <div
-                  key={conversation.userId}
+                  key={conversation.peer.id}
                   className="flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-gray-50"
                   onClick={() => {
                     onStartChat(
-                      conversation.userId,
-                      conversation.userName,
-                      conversation.userAvatar
+                      conversation.peer.id,
+                      conversation.peer.name,
+                      conversation.peer.avatar
                     );
                     // Don't close sidebar when starting a chat - let the floating chat button handle it
                   }}
                 >
                   <div className="relative">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={conversation.userAvatar || undefined} />
+                      <AvatarImage src={conversation.peer?.avatar || undefined} />
                       <AvatarFallback className="bg-gradient-to-br from-blue-500 to-green-500 text-white">
-                        {conversation.userName.charAt(0).toUpperCase()}
+                        {conversation.peer?.name?.charAt(0).toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
                     {/* Unread indicator */}
@@ -226,13 +252,17 @@ export function ChatSidebar({ isOpen, onClose, onStartChat, onCloseAll }: ChatSi
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <div className="truncate text-sm font-medium">{conversation.userName}</div>
+                      <div className="truncate text-sm font-medium">
+                        {conversation.peer?.name || 'Unknown User'}
+                      </div>
                       <div className="ml-2 text-xs text-gray-500">
-                        {formatTime(conversation.lastMessage.createdAt)}
+                        {formatTime(
+                          conversation.lastMessage?.createdAt || new Date().toISOString()
+                        )}
                       </div>
                     </div>
                     <div className="truncate text-sm text-gray-600">
-                      {conversation.lastMessage.text}
+                      {conversation.lastMessage?.text || 'No messages'}
                     </div>
                   </div>
                 </div>

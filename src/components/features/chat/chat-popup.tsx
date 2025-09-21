@@ -112,7 +112,7 @@ export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupPro
       const newMessage: UiMessage = {
         id: data.message.id || `${data.message.timestamp}-${Date.now()}`,
         type: data.message.type,
-        from: data.message.fromUserId || data.message.from,
+        from: data.message.fromUser?.id || data.message.fromUserId || data.message.from,
         text: data.message.text,
         timestamp: new Date(data.message.timestamp).getTime(),
         seen: data.message.seen || false,

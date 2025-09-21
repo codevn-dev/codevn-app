@@ -343,7 +343,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
           return reply.send({
             success: true,
             action: 'created',
-            reaction: { type: action, articleId: id, userId: authRequest.user!.id },
+            reaction: { type: action, article: { id }, user: { id: authRequest.user!.id } },
           });
         }
       } catch (error) {

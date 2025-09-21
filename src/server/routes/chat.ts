@@ -40,8 +40,11 @@ export async function chatRoutes(fastify: FastifyInstance) {
         return reply.send({
           conversations: conversations.map((conv) => ({
             id: conv.chatId,
-            peerId: conv.otherUserId,
-            peerName: conv.otherUserName,
+            peer: {
+              id: conv.otherUserId,
+              name: conv.otherUserName,
+              avatar: conv.otherUserAvatar,
+            },
             lastMessage: conv.lastMessage,
             lastMessageAt: conv.lastMessageTime,
             unreadCount: conv.unreadCount,
@@ -110,9 +113,16 @@ export async function chatRoutes(fastify: FastifyInstance) {
 
           return reply.send({
             messages: limitedMessages.map((msg) => ({
-              ...msg,
+              id: msg.id,
+              chat: { id: msg.chatId },
+              fromUser: { id: msg.fromUserId },
+              toUser: { id: msg.toUserId },
+              text: msg.text,
+              type: msg.type,
               seen: msg.seen,
               seenAt: msg.seenAt,
+              createdAt: msg.createdAt,
+              updatedAt: msg.updatedAt,
             })),
             hasMore: hasMore,
           });
@@ -182,9 +192,9 @@ export async function chatRoutes(fastify: FastifyInstance) {
           message: {
             id: message.id,
             type: message.type,
-            chatId: message.chatId,
-            from: message.fromUserId,
-            to: message.toUserId,
+            chat: { id: message.chatId },
+            fromUser: { id: message.fromUserId },
+            toUser: { id: message.toUserId },
             text: message.text,
             seen: message.seen,
             seenAt: message.seenAt,

@@ -8,8 +8,6 @@ export interface CategoryWithCounts {
   description: string | null;
   slug: string;
   color: string;
-  parentId: string | null;
-  createdById: string;
   createdAt: Date;
   updatedAt: Date | null;
   createdBy: {
@@ -26,8 +24,6 @@ export interface CategoryWithCounts {
     description: string | null;
     slug: string;
     color: string;
-    parentId: string | null;
-    createdById: string;
     createdAt: Date;
     updatedAt: Date | null;
     createdBy: {
@@ -113,8 +109,6 @@ export class CategoryRepository {
             description: true,
             slug: true,
             color: true,
-            parentId: true,
-            createdById: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -207,8 +201,6 @@ export class CategoryRepository {
             description: true,
             slug: true,
             color: true,
-            parentId: true,
-            createdById: true,
             createdAt: true,
             updatedAt: true,
           },
