@@ -1,7 +1,3 @@
-// Comment related types
-
-import { User } from './auth';
-
 export interface Comment {
   id: string;
   content: string;

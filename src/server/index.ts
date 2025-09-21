@@ -19,10 +19,8 @@ async function buildServer() {
   await setupPlugins(fastify);
 
   // Initialize Redis service for authentication
-  console.log('[SERVER] Initializing Redis service...');
   const redisService = createRedisAuthService();
   setRedisService(redisService);
-  console.log('[SERVER] Redis service initialized and set');
 
   // Setup passport authentication
   await setupPassport(fastify);

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { User, AuthState } from '@/types/shared/auth';
+import { AuthState } from '@/types/shared/auth';
 import { useFastifyAuthStore } from '@/stores';
 import { apiPost, apiGet } from '@/lib/utils';
 
@@ -26,7 +26,7 @@ export function useAuthActions() {
 
       return data;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      const _errorMessage = error instanceof Error ? error.message : 'Login failed';
       setState((prev: AuthState) => ({
         ...prev,
         isLoading: false,
@@ -52,7 +52,7 @@ export function useAuthActions() {
 
       return data;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      const _errorMessage = error instanceof Error ? error.message : 'Registration failed';
       setState((prev: AuthState) => ({
         ...prev,
         isLoading: false,
@@ -106,8 +106,8 @@ export function useAuthActions() {
     try {
       return await apiPost('/api/auth/check-email', { email });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Email check failed';
-      throw new Error(errorMessage);
+      const _errorMessage = error instanceof Error ? error.message : 'Email check failed';
+      throw new Error(_errorMessage);
     }
   };
 

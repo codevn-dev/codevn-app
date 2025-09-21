@@ -1,5 +1,3 @@
-// Chat related types
-
 import { User } from './auth';
 
 export interface Message {

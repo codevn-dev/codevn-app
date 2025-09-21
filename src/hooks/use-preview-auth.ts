@@ -13,8 +13,6 @@ export function usePreviewAuth(isPreview: boolean) {
   const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
-    console.log('usePreviewAuth effect:', { isPreview, user: !!user, isChecking });
-
     if (!isPreview) return;
 
     // If user already exists, no need to check
@@ -23,18 +21,14 @@ export function usePreviewAuth(isPreview: boolean) {
     // If already checking, don't check again
     if (isChecking) return;
 
-    console.log('Starting preview auth check...');
-
     const checkAuth = async () => {
       setIsChecking(true);
       setLoading(true);
 
       try {
         const data = await apiGet('/api/auth/me');
-        console.log('Preview auth success:', data);
         setUser(data.user);
-      } catch (error) {
-        console.log('Preview auth check failed:', error);
+      } catch {
         setUser(null);
       } finally {
         setLoading(false);

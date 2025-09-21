@@ -1,5 +1,3 @@
-// User related types
-
 import { User } from './auth';
 
 // Request types

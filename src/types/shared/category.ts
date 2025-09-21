@@ -1,5 +1,3 @@
-// Category related types
-
 export interface Category {
   id: string;
   name: string;

@@ -17,15 +17,6 @@ export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGu
   const router = useRouter();
   const [hasWaited, setHasWaited] = useState(false);
 
-  console.log('PreviewGuard render:', {
-    isPreview,
-    user: !!user,
-    isLoading,
-    isAuthenticated,
-    articleAuthorId,
-    hasWaited,
-  });
-
   // Wait for AuthProvider to complete authentication
   useEffect(() => {
     if (isPreview && !isLoading && !hasWaited) {
@@ -47,7 +38,6 @@ export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGu
 
     if (isPreview && !isAuthenticated) {
       // Redirect to login if trying to preview without being logged in
-      console.log('PreviewGuard: redirecting to login');
       router.push('/?login=true');
       return;
     }
@@ -58,7 +48,6 @@ export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGu
 
       if (!isAuthor && !isAdmin) {
         // Redirect to home if not author or admin
-        console.log('PreviewGuard: redirecting to home - no permission');
         router.push('/');
         return;
       }
