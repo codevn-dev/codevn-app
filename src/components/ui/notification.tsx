@@ -18,12 +18,12 @@ export function Notification() {
   if (notifications.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed top-4 right-4 z-[120] space-y-2">
       {notifications.map((notification) => {
         return (
           <Card
             key={notification.id}
-            className={`animate-slide-in max-w-sm ${colorMap[notification.type]} ${
+            className={`animate-slide-in w-60 ${colorMap[notification.type]} ${
               notification.action ? 'cursor-pointer transition-shadow hover:shadow-md' : ''
             }`}
             onClick={notification.action ? notification.action.onClick : undefined}

@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2 } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
+import { useCommentWebSocketContext } from './comment-websocket-context';
 
 interface CommentFormProps {
   articleId: string;
@@ -30,8 +31,9 @@ export function CommentForm({
   commentId,
   autoFocus = false,
 }: CommentFormProps) {
-  const { isAuthenticated } = useAuthState();
+  const { isAuthenticated, user } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
+  const { sendComment, sendReply } = useCommentWebSocketContext();
   const [content, setContent] = useState(initialContent);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -85,26 +87,48 @@ export function CommentForm({
           setError(errorData.error || 'Failed to update comment');
         }
       } else {
-        const response = await fetch(`/api/articles/${articleId}/comments`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        // Create optimistic comment/reply for immediate UI update
+        const optimisticComment = {
+          id: `temp-${Date.now()}`,
+          content: content.trim(),
+          articleId,
+          authorId: user?.id || '',
+          parentId: parentId || null,
+          createdAt: new Date(),
+          updatedAt: null,
+          author: {
+            id: user?.id || '',
+            name: user?.name || 'You',
+            email: user?.email || '',
+            avatar: user?.avatar || null,
           },
-          body: JSON.stringify({
-            content: content.trim(),
-            parentId,
-          }),
-        });
+          replyCount: 0,
+          likeCount: 0,
+          unlikeCount: 0,
+          userHasLiked: false,
+          userHasUnliked: false,
+          _count: {
+            replies: 0,
+            likes: 0,
+          },
+        };
 
-        if (response.ok) {
-          const comment = await response.json();
-          onCommentAdded(comment);
-          setContent('');
-          if (onCancel) onCancel();
+        // Use WebSocket for new comments and replies
+        if (parentId) {
+          // This is a reply
+          sendReply(articleId, content.trim(), parentId);
+          // Add optimistic reply to UI immediately
+          onCommentAdded(optimisticComment);
         } else {
-          const errorData = await response.json();
-          setError(errorData.error || 'Failed to post comment');
+          // This is a new comment
+          sendComment(articleId, content.trim());
+          // Add optimistic comment to UI immediately (like replies)
+          onCommentAdded(optimisticComment);
         }
+
+        // Clear the form immediately for better UX
+        setContent('');
+        if (onCancel) onCancel();
       }
     } catch {
       setError('Failed to post comment. Please try again.');
@@ -156,7 +180,7 @@ export function CommentForm({
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="min-h-[80px] resize-none border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+            className="min-h-[80px] resize-none border-gray-200 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
             maxLength={1000}
             ref={textareaRef}
             autoFocus={autoFocus}

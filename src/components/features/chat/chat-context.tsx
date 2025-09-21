@@ -7,6 +7,8 @@ interface ChatContextType {
   setChatWindowOpen: (open: boolean) => void;
   chatPopupOpen: boolean;
   setChatPopupOpen: (open: boolean) => void;
+  chatSidebarOpen: boolean;
+  setChatSidebarOpen: (open: boolean) => void;
   peerId: string;
   setPeerId: (id: string) => void;
   peerName: string;
@@ -14,6 +16,7 @@ interface ChatContextType {
   peerAvatar: string;
   setPeerAvatar: (avatar: string) => void;
   handleStartChat: (userId: string, userName: string, userAvatar?: string) => void;
+  handleCloseChat: () => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -21,6 +24,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [chatWindowOpen, setChatWindowOpen] = useState(false);
   const [chatPopupOpen, setChatPopupOpen] = useState(false);
+  const [chatSidebarOpen, setChatSidebarOpen] = useState(false);
   const [peerId, setPeerId] = useState('');
   const [peerName, setPeerName] = useState('');
   const [peerAvatar, setPeerAvatar] = useState('');
@@ -32,6 +36,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setChatWindowOpen(true);
   };
 
+  const handleCloseChat = () => {
+    setChatWindowOpen(false);
+    setPeerId('');
+    setPeerName('');
+    setPeerAvatar('');
+  };
+
   return (
     <ChatContext.Provider
       value={{
@@ -39,6 +50,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setChatWindowOpen,
         chatPopupOpen,
         setChatPopupOpen,
+        chatSidebarOpen,
+        setChatSidebarOpen,
         peerId,
         setPeerId,
         peerName,
@@ -46,6 +59,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         peerAvatar,
         setPeerAvatar,
         handleStartChat,
+        handleCloseChat,
       }}
     >
       {children}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -54,6 +54,8 @@ export function CommentItem({
   const [repliesPage, setRepliesPage] = useState(1);
   const [hasMoreReplies, setHasMoreReplies] = useState(true);
   const [visibleRepliesCount, setVisibleRepliesCount] = useState(5);
+  const repliesLoadedRef = useRef(false);
+  const repliesRef = useRef<Comment[]>([]);
   const [childReplyingTo, setChildReplyingTo] = useState<Comment | null>(null);
   const [childReplyPrefill, setChildReplyPrefill] = useState<string>('');
   const [isLiked, setIsLiked] = useState(comment.userHasLiked || false);
@@ -67,6 +69,8 @@ export function CommentItem({
   const canEdit = isAuthor;
   const canDelete = isAuthor || user?.role === 'admin';
   const maxDepth = 1; // Only allow one level of replies
+
+  // Removed auto-show replies logic - users should manually click to show replies
   const isClient = useClientOnly();
 
   // Sync state with prop changes
@@ -76,6 +80,41 @@ export function CommentItem({
     setLikeCount(comment.likeCount || 0);
     setUnlikeCount(comment.unlikeCount || 0);
   }, [comment.userHasLiked, comment.userHasUnliked, comment.likeCount, comment.unlikeCount]);
+
+  // Sync replies state with comment prop changes (for websocket updates)
+  // Only sync if we haven't loaded replies yet, to avoid overwriting local state
+  useEffect(() => {
+    if (comment.replies && comment.replies.length > 0 && !repliesLoadedRef.current) {
+      setReplies(comment.replies);
+      repliesLoadedRef.current = true;
+    }
+  }, [comment.replies]);
+
+  // Update ref when replies change
+  useEffect(() => {
+    repliesRef.current = replies;
+  }, [replies]);
+
+  // Handle new replies from websocket - merge with existing local state
+  useEffect(() => {
+    if (comment.replies && comment.replies.length > 0 && repliesLoadedRef.current) {
+      // Only add new replies that don't exist in local state
+      const newReplies = comment.replies.filter(
+        (commentReply) =>
+          !repliesRef.current.some((localReply) => localReply.id === commentReply.id)
+      );
+      if (newReplies.length > 0) {
+        setReplies((prev) => {
+          const newRepliesList = [...prev, ...newReplies];
+          // Auto-expand visible count to show new replies
+          setVisibleRepliesCount((currentVisible) =>
+            Math.max(currentVisible, newRepliesList.length)
+          );
+          return newRepliesList;
+        });
+      }
+    }
+  }, [comment.replies]);
 
   const handleEdit = async (updatedComment: any) => {
     onCommentUpdated(updatedComment);
@@ -175,7 +214,13 @@ export function CommentItem({
     onReplyAdded(reply);
     setIsReplying(false);
     // Add the reply to local state
-    setReplies((prev) => [...prev, reply]);
+    setReplies((prev) => {
+      const newRepliesList = [...prev, reply];
+      // Auto-expand visible count to show new reply
+      setVisibleRepliesCount((currentVisible) => Math.max(currentVisible, newRepliesList.length));
+      return newRepliesList;
+    });
+    repliesLoadedRef.current = true;
   };
 
   const loadReplies = async (page = 1, append = false) => {
@@ -191,6 +236,7 @@ export function CommentItem({
         } else {
           setReplies(data.comments || []);
           setVisibleRepliesCount(5);
+          repliesLoadedRef.current = true;
         }
         setHasMoreReplies(data.pagination.hasNextPage);
         setRepliesPage(page);
@@ -468,7 +514,15 @@ export function CommentItem({
                     parentId={comment.id}
                     onCommentAdded={(newReply: any) => {
                       onReplyAdded(newReply);
-                      setReplies((prev) => [...prev, newReply]);
+                      setReplies((prev) => {
+                        const newRepliesList = [...prev, newReply];
+                        // Auto-expand visible count to show new reply
+                        setVisibleRepliesCount((currentVisible) =>
+                          Math.max(currentVisible, newRepliesList.length)
+                        );
+                        return newRepliesList;
+                      });
+                      repliesLoadedRef.current = true;
                       setChildReplyingTo(null);
                       setChildReplyPrefill('');
                     }}

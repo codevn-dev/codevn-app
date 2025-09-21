@@ -36,6 +36,9 @@ export async function setupPlugins(fastify: FastifyInstance) {
     prefix: '/public/',
   });
 
+  // WebSocket support
+  await fastify.register(require('@fastify/websocket'));
+
   // Security headers
   await fastify.register(require('@fastify/helmet'), {
     contentSecurityPolicy: false, // Disable for development

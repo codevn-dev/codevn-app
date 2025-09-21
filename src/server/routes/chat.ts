@@ -3,12 +3,29 @@ import { messageRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
 import { ChatQueryRequest, ChatPostRequest, ChatSeenRequest } from '@/types/shared/chat';
+import { chatWebSocketService } from '../websocket/chat-websocket';
 
 function getChatId(userA: string, userB: string): string {
   return [userA, userB].sort().join('|');
 }
 
 export async function chatRoutes(fastify: FastifyInstance) {
+  // WebSocket endpoint for real-time chat
+  fastify.register(async function (fastify) {
+    fastify.get('/ws', { websocket: true } as any, (connection: any, request: any) => {
+      logger.info('WebSocket connection received', {
+        url: request.url,
+        headers: request.headers,
+        query: request.query,
+        connectionKeys: Object.keys(connection),
+      });
+
+      // In @fastify/websocket, the connection object IS the WebSocket
+      // Pass the connection directly instead of connection.socket
+      chatWebSocketService.addConnection(connection, request);
+    });
+  });
+
   // GET /api/chat/conversations - Get all conversations
   fastify.get(
     '/conversations',
@@ -187,6 +204,23 @@ export async function chatRoutes(fastify: FastifyInstance) {
         });
       } catch (error) {
         logger.error('Error in chat POST', undefined, error as Error);
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+
+  // GET /api/chat/online-users - Get online users
+  fastify.get(
+    '/online-users',
+    {
+      preHandler: authMiddleware,
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const onlineUsers = chatWebSocketService.getOnlineUsers();
+        return reply.send({ onlineUsers });
+      } catch (error) {
+        logger.error('Error in online-users GET', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

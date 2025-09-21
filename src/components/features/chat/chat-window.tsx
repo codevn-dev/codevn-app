@@ -6,9 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
-import { useAbortController } from '@/hooks/use-abort-controller';
-import { useChatMessages } from '@/hooks/use-chat-messages';
-import { formatChatTime, isNewDay, formatDate, apiPost } from '@/lib/utils';
+import { useWebSocket } from './websocket-context';
+import { formatChatTime, isNewDay, formatDate } from '@/lib/utils';
 import { chatConfig } from '@/config';
 
 import { UiMessage } from '@/types/shared';
@@ -32,7 +31,6 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { createAbortController } = useAbortController();
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const userId = user?.id || '';
@@ -41,36 +39,104 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
   // Track last message to detect new messages
   const [lastMessageId, setLastMessageId] = useState<string>('');
 
-  // Use the centralized chat messages hook
-  const { messages, loading, setMessages, setLastMessageTime } = useChatMessages({
-    peerId,
-    isActive: isOpen && canChat,
-    onNewMessage: () => {
-      // No notification here - handled by useChatPolling
-    },
-  });
+  // Use WebSocket for real-time chat
+  const {
+    isConnected,
+    sendMessage: sendWebSocketMessage,
+    sendTyping,
+    markAsSeen: markAsSeenWebSocket,
+    loadMessages,
+    loadMoreMessages: _loadMoreMessages,
+    addOnNewMessageCallback,
+    addOnTypingCallback,
+    addOnMessagesSeenCallback,
+    markConversationAsRead,
+  } = useWebSocket();
+
+  // Local state for messages
+  const [messages, setMessages] = useState<UiMessage[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Load messages when chat window opens
+  useEffect(() => {
+    if (!isOpen || !canChat || !peerId) return;
+
+    const loadInitialMessages = async () => {
+      setLoading(true);
+      try {
+        const result = await loadMessages(peerId, 20);
+        if (result.messages) {
+          const transformedMessages = transformMessages(result.messages);
+          setMessages(transformedMessages);
+          setHasMoreMessages(result.hasMore || false);
+          // Mark conversation as read when opening chat
+          markConversationAsRead(peerId);
+        }
+      } catch (error) {
+        console.error('Error loading messages:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialMessages();
+  }, [isOpen, canChat, peerId, loadMessages, markConversationAsRead]);
 
   // Mark messages as seen when chat window is open
   useEffect(() => {
     if (!isOpen || !canChat || !peerId) return;
 
-    const markAsSeen = async () => {
-      try {
-        const chatId = [user?.id, peerId].sort().join('|');
-        await apiPost('/api/chat/seen', { chatId });
-      } catch (error) {
-        console.error('Error marking messages as seen:', error);
-      }
-    };
+    const chatId = [user?.id, peerId].sort().join('|');
 
     // Mark as seen immediately when chat opens
-    markAsSeen();
+    markAsSeenWebSocket(chatId);
 
     // Mark as seen every 5 seconds while chat is open
-    const interval = setInterval(markAsSeen, 5000);
+    const interval = setInterval(() => {
+      markAsSeenWebSocket(chatId);
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [isOpen, canChat, peerId, user?.id]);
+  }, [isOpen, canChat, peerId, user?.id, markAsSeenWebSocket]);
+
+  // Register WebSocket callbacks
+  useEffect(() => {
+    const removeOnNewMessage = addOnNewMessageCallback((message: UiMessage) => {
+      // Only handle messages for current peer
+      if (message.from === peerId || message.from === user?.id) {
+        setMessages((prev) => {
+          // Check if message already exists
+          const exists = prev.some((msg) => msg.id === message.id);
+          if (exists) return prev;
+
+          // Add new message
+          const newMessages = [...prev, message].sort((a, b) => a.timestamp - b.timestamp);
+          return newMessages;
+        });
+      }
+    });
+
+    const removeOnTyping = addOnTypingCallback((fromUserId: string, isTyping: boolean) => {
+      if (fromUserId === peerId) {
+        setIsTyping(isTyping);
+      }
+    });
+
+    const removeOnMessagesSeen = addOnMessagesSeenCallback((chatId: string, seenBy: string) => {
+      if (seenBy === peerId) {
+        // Mark messages as seen by peer
+        setMessages((prev) =>
+          prev.map((msg) => (msg.from === user?.id ? { ...msg, seen: true } : msg))
+        );
+      }
+    });
+
+    return () => {
+      removeOnNewMessage();
+      removeOnTyping();
+      removeOnMessagesSeen();
+    };
+  }, [peerId, user?.id, addOnNewMessageCallback, addOnTypingCallback, addOnMessagesSeenCallback]);
 
   // Helper function to transform API messages to UI messages
   const transformMessages = (apiMessages: any[]): UiMessage[] => {
@@ -110,7 +176,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
   };
 
   // Load more messages
-  const loadMoreMessages = async () => {
+  const handleLoadMoreMessages = async () => {
     if (loadingMore || !hasMoreMessages) return;
 
     setLoadingMore(true);
@@ -147,6 +213,8 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
   const handleTyping = () => {
     if (!isTyping) {
       setIsTyping(true);
+      // Send typing indicator via WebSocket
+      sendTyping(peerId, true);
     }
 
     if (typingTimeoutRef.current) {
@@ -155,6 +223,8 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
 
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
+      // Send stop typing indicator via WebSocket
+      sendTyping(peerId, false);
     }, chatConfig.typingTimeout);
   };
 
@@ -205,44 +275,11 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
     if (!msg || !canChat) return;
 
     try {
-      // Loading is handled by the hook
-
-      const controller = createAbortController();
-      const data = await apiPost(
-        '/api/chat',
-        {
-          peerId,
-          text: msg,
-        },
-        {
-          signal: controller.signal,
-        }
-      );
-
-      const newMessage: UiMessage = {
-        id: data.message.id || `${data.message.timestamp}-${Date.now()}`,
-        type: data.message.type,
-        from: data.message.fromUser?.id || data.message.fromUserId || data.message.from,
-        text: data.message.text,
-        timestamp: new Date(data.message.timestamp).getTime(),
-        seen: data.message.seen || false,
-        seenAt: data.message.seenAt,
-      };
-
-      setLastMessageTime(newMessage.timestamp);
-      setMessages((prev) => {
-        // Check if message already exists to prevent duplicates
-        const exists = prev.some((msg) => msg.id === newMessage.id);
-        if (exists) return prev;
-        return [...prev, newMessage];
-      });
+      // Send via WebSocket
+      sendWebSocketMessage(peerId, msg);
       setText('');
     } catch (error) {
-      if (error instanceof Error && error.name !== 'AbortError') {
-        console.error('Error sending message:', error);
-      }
-    } finally {
-      // Loading is handled by the hook
+      console.error('Error sending message:', error);
     }
   };
 
@@ -268,6 +305,14 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
           </Avatar>
           <div>
             <div className="text-sm font-medium">{peerName}</div>
+            <div className="flex items-center gap-1">
+              <div
+                className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}
+              />
+              <span className="text-xs text-gray-300">
+                {isConnected ? 'Connected' : 'Disconnected'}
+              </span>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -303,7 +348,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    loadMoreMessages();
+                    handleLoadMoreMessages();
                   }}
                   disabled={loadingMore}
                   className="text-xs"

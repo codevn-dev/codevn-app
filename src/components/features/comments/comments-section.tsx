@@ -7,6 +7,7 @@ import { CommentItem } from './comment-item';
 import { CommentForm } from './comment-form';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
+import { useCommentWebSocketContext } from './comment-websocket-context';
 import { Comment } from '@/types/shared';
 
 interface CommentsSectionProps {
@@ -23,6 +24,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
   ({ articleId, initialComments = [], commentCount = 0 }, ref) => {
     const { isAuthenticated } = useAuthState();
     const { setAuthModalOpen, setAuthMode } = useUIStore();
+    const { addOnNewCommentCallback, addOnNewReplyCallback } = useCommentWebSocketContext();
     const [comments, setComments] = useState<Comment[]>(initialComments);
     const [isLoading, setIsLoading] = useState(false);
     const [_isRefreshing, setIsRefreshing] = useState(false);
@@ -112,8 +114,22 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
     }, [articleId]); // fetchComments is intentionally excluded to prevent infinite loop
 
     const handleCommentAdded = (newComment: Comment) => {
-      // Auto refresh comments to get the latest data
-      fetchComments(false, 1, false);
+      if (newComment.parentId) {
+        // This is a reply - add it to the parent comment's replies
+        handleReplyAdded(newComment);
+      } else {
+        // This is a new comment - add it to the bottom of the list (latest at bottom)
+        setComments((prev) => {
+          // Check if comment already exists (for websocket updates)
+          const exists = prev.some((c) => c.id === newComment.id);
+          if (exists) return prev;
+
+          // Always add to the end for latest-first display
+          return [...prev, newComment];
+        });
+        // Auto-expand visible count to show new comment
+        setVisibleTopCount((c) => c + 1);
+      }
       // Update last comment ID immediately to prevent unnecessary polling
       lastCommentIdRef.current = newComment.id;
       setLastCommentId(newComment.id);
@@ -129,11 +145,39 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
       setComments((prev) => prev.filter((comment) => comment.id !== commentId));
     };
 
-    const handleReplyAdded = (reply: Comment) => {
+    const handleReplyAdded = useCallback((reply: Comment) => {
       // Find the parent comment and add the reply to its replies array
-      setComments((prev) =>
-        prev.map((comment) => {
-          if (comment.id === reply.parentId) {
+      setComments((prev) => {
+        const updated = prev.map((comment) => {
+          // Check if this comment is the parent by ID
+          const isParent = comment.id === reply.parentId;
+
+          if (isParent) {
+            // Check if this is replacing an optimistic reply (same content, different ID)
+            const optimisticIndex = comment.replies?.findIndex(
+              (r) =>
+                r.id.startsWith('temp-') &&
+                r.content === reply.content &&
+                r.authorId === reply.authorId
+            );
+
+            if (optimisticIndex !== -1 && optimisticIndex !== undefined && comment.replies) {
+              // Replace optimistic reply with real reply at the same position
+              const newReplies = [...comment.replies];
+              newReplies[optimisticIndex] = reply;
+              return {
+                ...comment,
+                replies: newReplies,
+                replyCount: comment.replyCount || 0,
+              };
+            }
+
+            // Check if reply already exists to avoid duplicates
+            const replyExists = comment.replies?.some((r) => r.id === reply.id);
+            if (replyExists) {
+              return comment;
+            }
+
             return {
               ...comment,
               replies: [...(comment.replies || []), reply],
@@ -141,9 +185,55 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
             };
           }
           return comment;
-        })
-      );
-    };
+        });
+        return updated;
+      });
+    }, []);
+
+    // WebSocket event handlers
+    const handleNewComment = useCallback(
+      (comment: Comment) => {
+        // Only add if it's for this article
+        if (comment.articleId === articleId) {
+          setComments((prev) => {
+            // Check if comment already exists to avoid duplicates
+            const exists = prev.some((c) => c.id === comment.id);
+            if (exists) return prev;
+
+            // Check if this is replacing an optimistic comment (same content, different ID)
+            const optimisticIndex = prev.findIndex(
+              (c) =>
+                c.id.startsWith('temp-') &&
+                c.content === comment.content &&
+                c.authorId === comment.authorId
+            );
+
+            if (optimisticIndex !== -1) {
+              // Replace optimistic comment with real comment at the same position
+              const newComments = [...prev];
+              newComments[optimisticIndex] = comment;
+              return newComments;
+            }
+
+            // Add new comment to the end
+            return [...prev, comment];
+          });
+          // Auto-expand visible count to show new comment
+          setVisibleTopCount((c) => c + 1);
+        }
+      },
+      [articleId]
+    );
+
+    const handleNewReply = useCallback(
+      (reply: Comment) => {
+        // Only add if it's for this article
+        if (reply.articleId === articleId) {
+          handleReplyAdded(reply);
+        }
+      },
+      [articleId, handleReplyAdded]
+    );
 
     // Load comments on mount if not provided initially
     useEffect(() => {
@@ -170,6 +260,17 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
       setVisibleTopCount(5);
     }, [articleId]);
 
+    // Register WebSocket callbacks
+    useEffect(() => {
+      const unsubscribeNewComment = addOnNewCommentCallback(handleNewComment);
+      const unsubscribeNewReply = addOnNewReplyCallback(handleNewReply);
+
+      return () => {
+        unsubscribeNewComment();
+        unsubscribeNewReply();
+      };
+    }, [addOnNewCommentCallback, addOnNewReplyCallback]); // eslint-disable-line react-hooks/exhaustive-deps
+
     // Only show top-level comments (parentId is null)
     const topLevelComments = comments.filter((comment) => comment.parentId === null);
 
@@ -181,36 +282,6 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
             Comments ({commentCount || comments.length})
           </h3>
         </div>
-
-        {/* Always show comment form for authenticated users */}
-        {isAuthenticated && (
-          <div ref={commentFormRef} className="mb-6">
-            <CommentForm
-              articleId={articleId}
-              onCommentAdded={handleCommentAdded}
-              placeholder="Write a comment..."
-            />
-          </div>
-        )}
-
-        {!isAuthenticated && (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-            <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-            <p className="text-gray-600">
-              Please{' '}
-              <button
-                onClick={() => {
-                  setAuthMode('signin');
-                  setAuthModalOpen(true);
-                }}
-                className="cursor-pointer font-medium text-blue-600 underline hover:text-blue-800"
-              >
-                sign in
-              </button>{' '}
-              to post comments.
-            </p>
-          </div>
-        )}
 
         {isLoading && (
           <div className="flex items-center justify-center py-8">
@@ -248,15 +319,13 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
               />
             ))}
 
-            {/* Load More Button */}
-            {(visibleTopCount < topLevelComments.length || hasMoreComments) && (
+            {/* Load More Button - only show if there are older comments to load */}
+            {hasMoreComments && (
               <div className="mt-2">
                 <Button
                   variant="ghost"
                   onClick={async () => {
-                    if (visibleTopCount < topLevelComments.length) {
-                      setVisibleTopCount((c) => c + 5);
-                    } else if (hasMoreComments && !loadingMore) {
+                    if (hasMoreComments && !loadingMore) {
                       await fetchComments(false, currentPage + 1, true);
                       setVisibleTopCount((c) => c + 5);
                     }
@@ -265,10 +334,40 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                   className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
                   {loadingMore ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                  {loadingMore ? 'Loading...' : 'Load more comments'}
+                  {loadingMore ? 'Loading...' : 'Load older comments'}
                 </Button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Comment form moved to bottom for better UX */}
+        {isAuthenticated && (
+          <div ref={commentFormRef} className="mt-6">
+            <CommentForm
+              articleId={articleId}
+              onCommentAdded={handleCommentAdded}
+              placeholder="Write a comment..."
+            />
+          </div>
+        )}
+
+        {!isAuthenticated && (
+          <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
+            <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+            <p className="text-gray-600">
+              Please{' '}
+              <button
+                onClick={() => {
+                  setAuthMode('signin');
+                  setAuthModalOpen(true);
+                }}
+                className="cursor-pointer font-medium text-blue-600 underline hover:text-blue-800"
+              >
+                sign in
+              </button>{' '}
+              to post comments.
+            </p>
           </div>
         )}
       </div>

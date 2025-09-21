@@ -9,9 +9,17 @@ import { ChatSidebar, ChatWindow } from './index';
 
 export function FloatingChatButton() {
   const { user } = useAuthState();
-  const { handleStartChat, chatWindowOpen, setChatWindowOpen, peerId, peerName, peerAvatar } =
-    useChat();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const {
+    handleStartChat,
+    handleCloseChat,
+    chatWindowOpen,
+    setChatWindowOpen,
+    chatSidebarOpen,
+    setChatSidebarOpen,
+    peerId,
+    peerName,
+    peerAvatar,
+  } = useChat();
   const [wasChatWindowOpen, setWasChatWindowOpen] = useState(false);
   const [closingViaFloatingButton, setClosingViaFloatingButton] = useState(false);
 
@@ -22,10 +30,10 @@ export function FloatingChatButton() {
 
   // Keep sidebar open when chat window is open
   useEffect(() => {
-    if (chatWindowOpen && !isSidebarOpen) {
-      setIsSidebarOpen(true);
+    if (chatWindowOpen && !chatSidebarOpen) {
+      setChatSidebarOpen(true);
     }
-  }, [chatWindowOpen, isSidebarOpen]);
+  }, [chatWindowOpen, chatSidebarOpen, setChatSidebarOpen]);
 
   // Track when chat window was open - don't auto-close sidebar
   useEffect(() => {
@@ -52,12 +60,12 @@ export function FloatingChatButton() {
               // If chat window is open, close it but keep sidebar open
               setClosingViaFloatingButton(true);
               setChatWindowOpen(false);
-            } else if (isSidebarOpen) {
+            } else if (chatSidebarOpen) {
               // If sidebar is open, close it
-              setIsSidebarOpen(false);
+              setChatSidebarOpen(false);
             } else {
               // If both are closed, open sidebar
-              setIsSidebarOpen(true);
+              setChatSidebarOpen(true);
             }
           }}
           className="h-14 w-14 rounded-full bg-blue-600 p-0 shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl"
@@ -69,11 +77,11 @@ export function FloatingChatButton() {
 
       {/* Chat Sidebar */}
       <ChatSidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        isOpen={chatSidebarOpen}
+        onClose={() => setChatSidebarOpen(false)}
         onCloseAll={() => {
-          setIsSidebarOpen(false);
-          setChatWindowOpen(false);
+          setChatSidebarOpen(false);
+          handleCloseChat();
         }}
         onStartChat={handleStartChatSimple}
         chatWindowOpen={chatWindowOpen}
@@ -85,7 +93,7 @@ export function FloatingChatButton() {
         peerName={peerName}
         peerAvatar={peerAvatar}
         isOpen={chatWindowOpen}
-        onClose={() => setChatWindowOpen(false)}
+        onClose={handleCloseChat}
       />
     </>
   );

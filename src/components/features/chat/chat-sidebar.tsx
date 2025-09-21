@@ -1,27 +1,12 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, Search, X } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
-
-interface Conversation {
-  id: string;
-  peer: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  lastMessage: {
-    text: string;
-    createdAt: string;
-    fromUserId: string;
-    seen?: boolean;
-  };
-  unreadCount?: number;
-}
+import { useWebSocket } from './websocket-context';
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -38,82 +23,36 @@ export function ChatSidebar({
   onCloseAll,
   chatWindowOpen,
 }: ChatSidebarProps) {
-  const { user } = useAuthState();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { user: _user } = useAuthState();
   const [searchTerm, setSearchTerm] = useState('');
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchConversations = useCallback(async () => {
-    if (!user) return;
+  // Use WebSocket hook
+  const {
+    isConnected,
+    conversations: wsConversations,
+    onlineUsers,
+    fetchConversations,
+  } = useWebSocket();
 
-    try {
-      setLoading(true);
-      const response = await fetch('/api/chat/conversations');
-      if (response.ok) {
-        const data = await response.json();
-        const conversationsWithUnread = (data.conversations || []).map((conv: any) => ({
-          ...conv,
-          unreadCount: 0, // Will be calculated based on seen status
-          lastMessage: {
-            text: conv.lastMessage || '',
-            createdAt: conv.lastMessageAt || new Date().toISOString(),
-            fromUserId: conv.lastMessageFromUserId || '',
-            seen: conv.lastMessageSeen || false,
-          },
-        }));
-        setConversations(conversationsWithUnread);
-      }
-    } catch (error) {
-      console.error('Error fetching conversations:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  // Transform WebSocket conversations to UI format
+  const conversations = wsConversations.map((conv: any) => ({
+    id: conv.id,
+    peer: conv.peer,
+    lastMessage: {
+      text: typeof conv.lastMessage === 'string' ? conv.lastMessage : conv.lastMessage?.text || '',
+      createdAt: conv.lastMessage?.createdAt || conv.lastMessageAt || new Date().toISOString(),
+      fromUserId: conv.lastMessage?.fromUserId || conv.lastMessageFromUserId || conv.peer?.id || '',
+      seen: conv.lastMessage?.seen || conv.lastMessageSeen || false,
+    },
+    unreadCount: conv.unreadCount || 0,
+  }));
 
   // Fetch conversations when sidebar opens
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isConnected) {
       fetchConversations();
     }
-  }, [isOpen, user, fetchConversations]);
-
-  // Poll for conversation updates when sidebar is open
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const pollConversations = async () => {
-      try {
-        const response = await fetch('/api/chat/conversations');
-        if (response.ok) {
-          const data = await response.json();
-          const conversationsWithUnread = (data.conversations || []).map((conv: any) => ({
-            ...conv,
-            unreadCount: 0, // Will be calculated based on seen status
-            lastMessage: {
-              text: conv.lastMessage || '',
-              createdAt: conv.lastMessageAt || new Date().toISOString(),
-              fromUserId: conv.lastMessageFromUserId || '',
-              seen: conv.lastMessageSeen || false,
-            },
-          }));
-          setConversations(conversationsWithUnread);
-        }
-      } catch (error) {
-        console.error('Error polling conversations:', error);
-      }
-    };
-
-    // Poll every 10 seconds when sidebar is open
-    pollingRef.current = setInterval(pollConversations, 10000);
-
-    return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
-    };
-  }, [isOpen]);
+  }, [isOpen, isConnected, fetchConversations]);
 
   // Sort conversations by last message time (newest first)
   const sortedConversations = conversations.sort((a, b) => {
@@ -189,6 +128,14 @@ export function ChatSidebar({
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-blue-600" />
             <h2 className="text-lg font-semibold">Chat</h2>
+            <div className="flex items-center gap-1">
+              <div
+                className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}
+              />
+              <span className="text-xs text-gray-500">
+                {isConnected ? 'Connected' : 'Disconnected'}
+              </span>
+            </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onCloseAll || onClose} className="h-8 w-8 p-0">
             <X className="h-4 w-4" />
@@ -210,11 +157,7 @@ export function ChatSidebar({
 
         {/* Conversations List */}
         <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-sm text-gray-500">Loading...</div>
-            </div>
-          ) : filteredConversations.length === 0 ? (
+          {filteredConversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <MessageCircle className="mb-2 h-12 w-12 text-gray-300" />
               <div className="text-sm text-gray-500">
@@ -243,12 +186,16 @@ export function ChatSidebar({
                         {conversation.peer?.name?.charAt(0).toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
-                    {/* Unread indicator */}
-                    {conversation.lastMessage &&
-                      conversation.lastMessage.fromUserId !== user?.id &&
-                      !conversation.lastMessage.seen && (
-                        <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-white bg-blue-500"></div>
-                      )}
+                    {/* Online indicator */}
+                    {onlineUsers.includes(conversation.peer.id) && (
+                      <div className="absolute -right-1 -bottom-1 h-3 w-3 rounded-full border-2 border-white bg-green-500"></div>
+                    )}
+                    {/* New message indicator */}
+                    {conversation.unreadCount > 0 && (
+                      <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white">
+                        {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
+                      </div>
+                    )}
                   </div>
 
                   <div className="min-w-0 flex-1">

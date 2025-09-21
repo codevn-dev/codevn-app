@@ -27,7 +27,7 @@ interface UIState {
   setAuthModalOpen: (open: boolean) => void;
   setAuthMode: (mode: AuthMode) => void;
   setGlobalLoading: (loading: boolean) => void;
-  addNotification: (notification: Omit<UIState['notifications'][0], 'id'>) => void;
+  addNotification: (notification: Omit<UIState['notifications'][0], 'id'>) => string;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
 }
@@ -70,6 +70,8 @@ export const useUIStore = create<UIState>((set, get) => ({
         get().removeNotification(id);
       }, newNotification.duration);
     }
+
+    return id;
   },
 
   removeNotification: (id) => {

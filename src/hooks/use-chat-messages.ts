@@ -1,149 +1,489 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useAuthState } from '@/hooks/use-auth-state';
-import { UiMessage } from '@/types/shared/chat';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useAuthState } from './use-auth-state';
+import { useUIStore } from '@/stores/ui-store';
+import { useChat as useChatContext } from '@/components/features/chat/chat-context';
+import { UiMessage } from '@/types/shared';
+import { chatConfig } from '@/config/config';
 
-interface UseChatMessagesProps {
-  peerId: string;
-  isActive: boolean;
-  onNewMessage?: (message: UiMessage) => void;
+interface Conversation {
+  id: string;
+  peer: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  lastMessage?: {
+    text: string;
+    createdAt: string;
+    fromUserId: string;
+    seen?: boolean;
+  };
+  lastMessageAt?: string;
+  lastMessageFromUserId?: string;
+  lastMessageSeen?: boolean;
+  unreadCount?: number;
 }
 
-export function useChatMessages({ peerId, isActive, onNewMessage }: UseChatMessagesProps) {
+interface WebSocketMessage {
+  type: 'connected' | 'new_message' | 'message_sent' | 'typing' | 'messages_seen' | 'error';
+  data?: any;
+}
+
+interface UseChatMessagesProps {
+  peerId?: string;
+  onNewMessage?: (message: UiMessage) => void;
+  onTyping?: (fromUserId: string, isTyping: boolean) => void;
+  onMessagesSeen?: (chatId: string, seenBy: string) => void;
+}
+
+export function useChatMessages({
+  peerId: _peerId,
+  onNewMessage,
+  onTyping,
+  onMessagesSeen,
+}: UseChatMessagesProps = {}) {
   const { user } = useAuthState();
-  const [messages, setMessages] = useState<UiMessage[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [lastMessageTime, setLastMessageTime] = useState<number>(0);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const isPollingRef = useRef(false);
+  const { addNotification } = useUIStore();
+  const { handleStartChat, chatWindowOpen, peerId } = useChatContext();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
-  const userId = user?.id || '';
-  const canChat = Boolean(userId && peerId && userId !== peerId);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttempts = useRef(0);
+  const isConnectingRef = useRef(false);
+  const maxReconnectAttempts = 5;
 
-  // Helper function to transform API messages to UI messages
-  const transformMessages = (apiMessages: any[]): UiMessage[] => {
-    return apiMessages
-      .map((msg: any) => {
-        const timestamp = new Date(msg.createdAt || msg.timestamp).getTime();
-        return {
-          id: msg.id || `${msg.fromUserId || msg.from}-${timestamp}`, // Use actual message ID if available
-          type: msg.type || 'message',
-          from: msg.fromUserId || msg.from,
-          text: msg.text,
-          timestamp,
-          seen: msg.seen || false,
-          seenAt: msg.seenAt,
-        };
-      })
-      .sort((a: UiMessage, b: UiMessage) => a.timestamp - b.timestamp);
-  };
+  // Use refs to store current values
+  const userRef = useRef(user);
+  const peerIdRef = useRef(peerId);
+  const chatWindowOpenRef = useRef(chatWindowOpen);
+  const conversationsRef = useRef(conversations);
 
-  // Fetch messages when component becomes active
-  useEffect(() => {
-    if (!isActive || !canChat) return;
+  // Update refs when values change
+  userRef.current = user;
+  peerIdRef.current = peerId;
+  chatWindowOpenRef.current = chatWindowOpen;
+  conversationsRef.current = conversations;
 
-    const fetchMessages = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/chat?peerId=${encodeURIComponent(peerId)}&action=get`);
-        if (response.ok) {
-          const data = await response.json();
-          const uiMessages = transformMessages(data.messages || []);
-          setMessages(uiMessages);
-
-          // Update last message time for polling
-          if (uiMessages.length > 0) {
-            setLastMessageTime(uiMessages[uiMessages.length - 1].timestamp);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-      } finally {
-        setLoading(false);
+  const fetchConversations = useCallback(async () => {
+    try {
+      const response = await fetch('/api/chat/conversations');
+      if (response.ok) {
+        const data = await response.json();
+        setConversations(data.conversations || []);
+      } else {
+        console.error('Failed to fetch conversations:', response.status);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+    }
+  }, []);
 
-    fetchMessages();
-  }, [isActive, canChat, peerId]);
+  const handleWebSocketMessage = useCallback(
+    (message: WebSocketMessage) => {
+      switch (message.type) {
+        case 'connected':
+          // Fetch initial conversations
+          fetchConversations();
+          break;
 
-  // Poll for new messages and seen status updates when active
-  useEffect(() => {
-    if (!isActive || !canChat) return;
+        case 'new_message':
+          if (message.data) {
+            const uiMessage: UiMessage = {
+              id: message.data.id,
+              type: message.data.type || 'message',
+              from: message.data.fromUser?.id,
+              text: message.data.text,
+              timestamp: message.data.timestamp || new Date(message.data.createdAt).getTime(),
+              seen: message.data.seen || false,
+              seenAt: message.data.seenAt,
+            };
 
-    const pollForUpdates = async () => {
-      if (isPollingRef.current) return; // Prevent concurrent polling
+            // Use refs to get current values
+            const currentUser = userRef.current;
+            const currentPeerId = peerIdRef.current;
 
-      isPollingRef.current = true;
-      try {
-        // Always fetch all messages to get updated seen status
-        const response = await fetch(`/api/chat?peerId=${encodeURIComponent(peerId)}&action=get`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.messages && data.messages.length > 0) {
-            const allMessages = transformMessages(data.messages);
+            // Show notification if not from current user AND not currently chatting with sender
+            const isFromCurrentUser = uiMessage.from === currentUser?.id;
+            const isCurrentlyChattingWithSender = currentPeerId === uiMessage.from;
 
-            setMessages((prev) => {
-              // Create a map of existing messages for faster lookup
-              const existingMessages = new Map(prev.map((msg) => [msg.id, msg]));
+            const shouldShowNotification = !isFromCurrentUser && !isCurrentlyChattingWithSender;
 
-              // Check if there are any new messages or seen status changes
-              const newMessages: UiMessage[] = [];
-              const hasSeenUpdates = allMessages.some((newMsg) => {
-                const prevMsg = existingMessages.get(newMsg.id);
-                return prevMsg && prevMsg.seen !== newMsg.seen;
+            if (shouldShowNotification) {
+              // Find the conversation to get peer info
+              const conversation = conversationsRef.current.find(
+                (conv) => conv.peer?.id === uiMessage.from
+              );
+              const senderName = conversation?.peer?.name || 'Someone';
+
+              // Show notification popup
+              const notificationId = addNotification({
+                type: 'info',
+                title: senderName,
+                message:
+                  uiMessage.text.length > 50
+                    ? `${uiMessage.text.substring(0, 50)}...`
+                    : uiMessage.text,
+                duration: 6000,
+                action: {
+                  onClick: () => {
+                    if (conversation) {
+                      handleStartChat(
+                        conversation.peer?.id || '',
+                        conversation.peer?.name || 'User',
+                        conversation.peer?.avatar
+                      );
+                      // Auto close notification when clicked
+                      setTimeout(() => {
+                        const { removeNotification } = useUIStore.getState();
+                        removeNotification(notificationId);
+                      }, 100);
+                    }
+                  },
+                },
               });
+            }
 
-              // Find truly new messages
-              allMessages.forEach((newMsg) => {
-                if (!existingMessages.has(newMsg.id)) {
-                  newMessages.push(newMsg);
-                }
-              });
+            // Update conversations list directly with new message
+            setConversations((prevConversations) => {
+              const updatedConversations = [...prevConversations];
+              const conversationIndex = updatedConversations.findIndex(
+                (conv) => conv.peer?.id === uiMessage.from
+              );
 
-              if (newMessages.length > 0 || hasSeenUpdates) {
-                // Update last message time for new messages
-                if (newMessages.length > 0) {
-                  const latestMessage = allMessages[allMessages.length - 1];
-                  setLastMessageTime(latestMessage.timestamp);
+              if (conversationIndex >= 0) {
+                // Update existing conversation
+                const isFromCurrentUser = uiMessage.from === currentUser?.id;
+                const isCurrentlyChattingWithSender = currentPeerId === uiMessage.from;
+                const currentUnreadCount = updatedConversations[conversationIndex].unreadCount || 0;
 
-                  // Callback for new messages
-                  if (onNewMessage) {
-                    newMessages.forEach((msg) => onNewMessage(msg));
-                  }
-                }
-
-                return allMessages;
+                updatedConversations[conversationIndex] = {
+                  ...updatedConversations[conversationIndex],
+                  lastMessage: {
+                    text: uiMessage.text,
+                    createdAt: new Date(uiMessage.timestamp).toISOString(),
+                    fromUserId: uiMessage.from,
+                    seen: uiMessage.seen || false,
+                  },
+                  lastMessageAt: new Date(uiMessage.timestamp).toISOString(),
+                  unreadCount:
+                    isFromCurrentUser || isCurrentlyChattingWithSender ? 0 : currentUnreadCount + 1,
+                };
+              } else {
+                // Create new conversation if not exists
+                const isFromCurrentUser = uiMessage.from === currentUser?.id;
+                const isCurrentlyChattingWithSender = currentPeerId === uiMessage.from;
+                const newConversation = {
+                  id: `conv_${uiMessage.from}`,
+                  peer: {
+                    id: uiMessage.from,
+                    name: 'Unknown User', // Will be updated when we fetch conversations
+                    avatar: undefined,
+                  },
+                  lastMessage: {
+                    text: uiMessage.text,
+                    createdAt: new Date(uiMessage.timestamp).toISOString(),
+                    fromUserId: uiMessage.from,
+                    seen: uiMessage.seen || false,
+                  },
+                  lastMessageAt: new Date(uiMessage.timestamp).toISOString(),
+                  unreadCount: isFromCurrentUser || isCurrentlyChattingWithSender ? 0 : 1,
+                };
+                updatedConversations.unshift(newConversation);
               }
 
-              return prev;
+              return updatedConversations;
             });
-          }
-        }
-      } catch (error) {
-        console.error('Error polling for updates:', error);
-      } finally {
-        isPollingRef.current = false;
-      }
-    };
 
-    // Start polling every 2 seconds for both new messages and seen status updates
-    pollingRef.current = setInterval(pollForUpdates, 2000);
+            if (onNewMessage) {
+              onNewMessage(uiMessage);
+            }
+          }
+          break;
+
+        case 'typing':
+          if (message.data && onTyping) {
+            onTyping(message.data.fromUserId, message.data.isTyping);
+          }
+          break;
+
+        case 'messages_seen':
+          if (message.data && onMessagesSeen) {
+            onMessagesSeen(message.data.chatId, message.data.seenBy);
+          }
+          break;
+
+        case 'error':
+          console.error('WebSocket error:', message.data);
+          break;
+      }
+    },
+    [addNotification, fetchConversations, handleStartChat, onMessagesSeen, onNewMessage, onTyping]
+  );
+
+  const connect = useCallback(() => {
+    if (!user?.id || wsRef.current?.readyState === WebSocket.OPEN || isConnectingRef.current)
+      return;
+
+    isConnectingRef.current = true;
+
+    // Clean up any existing connection before creating a new one
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    try {
+      // Get auth token from cookies
+      const token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('auth-token='))
+        ?.split('=')[1];
+
+      // Include token in WebSocket URL as query parameter
+      const wsUrl = token
+        ? `${chatConfig.wsUrl}?token=${encodeURIComponent(token)}`
+        : chatConfig.wsUrl;
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        setIsConnected(true);
+        reconnectAttempts.current = 0;
+        isConnectingRef.current = false;
+
+        // Start ping interval
+        pingIntervalRef.current = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, 30000);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(event.data);
+          handleWebSocketMessage(message);
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+
+      ws.onclose = (event) => {
+        setIsConnected(false);
+        isConnectingRef.current = false;
+
+        // Clear ping interval
+        if (pingIntervalRef.current) {
+          clearInterval(pingIntervalRef.current);
+          pingIntervalRef.current = null;
+        }
+
+        // Attempt to reconnect if not a normal closure
+        if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
+          reconnectAttempts.current++;
+
+          reconnectTimeoutRef.current = setTimeout(connect, delay);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', {
+          error,
+          url: chatConfig.wsUrl,
+          readyState: ws.readyState,
+          userId: user?.id,
+          errorType: error.type,
+        });
+
+        // Don't attempt to reconnect on error - let the close handler handle it
+        setIsConnected(false);
+        isConnectingRef.current = false;
+      };
+    } catch (error) {
+      console.error('Error creating WebSocket connection:', error);
+      isConnectingRef.current = false;
+    }
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const disconnect = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current);
+      pingIntervalRef.current = null;
+    }
+
+    if (wsRef.current) {
+      wsRef.current.close(1000, 'User disconnected');
+      wsRef.current = null;
+    }
+
+    setIsConnected(false);
+    isConnectingRef.current = false;
+  }, []);
+
+  const sendMessage = useCallback(
+    (toUserId: string, text: string) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        // Create optimistic message for immediate UI update
+        const tempId = `temp-${Date.now()}-${Math.random()}`;
+        const optimisticMessage: UiMessage = {
+          id: tempId,
+          type: 'message',
+          from: user?.id || '',
+          text,
+          timestamp: Date.now(),
+          seen: false,
+        };
+
+        // Send optimistic message to all components
+        if (onNewMessage) {
+          onNewMessage(optimisticMessage);
+        }
+
+        // Store temp ID for replacement later
+        (wsRef.current as any).lastTempId = tempId;
+
+        // Send via WebSocket
+        wsRef.current.send(
+          JSON.stringify({
+            type: 'message',
+            toUserId,
+            text,
+          })
+        );
+      }
+    },
+    [user?.id, onNewMessage]
+  );
+
+  const sendTyping = useCallback((toUserId: string, isTyping: boolean) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'typing',
+          toUserId,
+          data: { isTyping },
+        })
+      );
+    }
+  }, []);
+
+  const markAsSeen = useCallback((chatId: string) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: 'seen',
+          chatId,
+        })
+      );
+    }
+  }, []);
+
+  const fetchOnlineUsers = useCallback(async () => {
+    try {
+      const response = await fetch('/api/chat/online-users');
+      if (response.ok) {
+        const data = await response.json();
+        setOnlineUsers(data.onlineUsers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching online users:', error);
+    }
+  }, []);
+
+  const isUserOnline = useCallback(
+    (userId: string) => {
+      return onlineUsers.includes(userId);
+    },
+    [onlineUsers]
+  );
+
+  const loadMessages = useCallback(async (peerId: string, limit: number = 20, before?: number) => {
+    try {
+      const params = new URLSearchParams({
+        peerId,
+        action: 'get',
+        limit: limit.toString(),
+      });
+
+      if (before) {
+        params.append('before', before.toString());
+      }
+
+      const response = await fetch(`/api/chat?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          messages: data.messages || [],
+          hasMore: data.hasMore || false,
+        };
+      }
+      return { messages: [], hasMore: false };
+    } catch (error) {
+      console.error('Error loading messages:', error);
+      return { messages: [], hasMore: false };
+    }
+  }, []);
+
+  const loadMoreMessages = useCallback(
+    async (peerId: string, before: number, limit: number = 20) => {
+      return loadMessages(peerId, limit, before);
+    },
+    [loadMessages]
+  );
+
+  // Connect on mount and when user changes
+  useEffect(() => {
+    if (user?.id) {
+      connect();
+      // Also fetch conversations immediately
+      fetchConversations();
+    }
 
     return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
-      isPollingRef.current = false;
+      disconnect();
     };
-  }, [isActive, canChat, peerId, onNewMessage]);
+  }, [user?.id, connect, disconnect, fetchConversations]);
+
+  // Fetch online users periodically
+  useEffect(() => {
+    if (isConnected) {
+      fetchOnlineUsers();
+      const interval = setInterval(fetchOnlineUsers, 30000); // Every 30 seconds
+      return () => clearInterval(interval);
+    }
+  }, [isConnected, fetchOnlineUsers]);
+
+  const markConversationAsRead = useCallback((peerId: string) => {
+    setConversations((prevConversations) =>
+      prevConversations.map((conv) =>
+        conv.peer?.id === peerId ? { ...conv, unreadCount: 0 } : conv
+      )
+    );
+  }, []);
 
   return {
-    messages,
-    loading,
-    setMessages,
-    lastMessageTime,
-    setLastMessageTime,
+    isConnected,
+    conversations,
+    onlineUsers,
+    sendMessage,
+    sendTyping,
+    markAsSeen,
+    isUserOnline,
+    fetchConversations,
+    loadMessages,
+    loadMoreMessages,
+    markConversationAsRead,
   };
 }

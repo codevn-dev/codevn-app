@@ -42,10 +42,15 @@ export const apiConfig = {
 
 // Chat configuration
 export const chatConfig = {
-  pollingInterval: parseInt(process.env.CHAT_POLLING_INTERVAL || '2000'), // 2 seconds
   maxMessagesPerPage: parseInt(process.env.CHAT_MAX_MESSAGES_PER_PAGE || '20'),
   typingTimeout: parseInt(process.env.CHAT_TYPING_TIMEOUT || '2000'), // 2 seconds
   maxReconnectAttempts: parseInt(process.env.CHAT_MAX_RECONNECT_ATTEMPTS || '5'),
+  wsUrl: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/api/chat/ws`,
+} as const;
+
+// Comment configuration
+export const commentConfig = {
+  wsUrl: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/api/articles/comments/ws`,
 } as const;
 
 // Pagination configuration
