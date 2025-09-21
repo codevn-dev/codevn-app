@@ -15,8 +15,8 @@ install: ## Install dependencies
 dev: ## Start development server
 	pnpm dev --turbopack
 
-dev-server:
-	pnpm dev:server
+dev-api:
+	pnpm dev:api
 
 dev-full:
 	pnpm dev:full

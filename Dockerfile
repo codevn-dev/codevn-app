@@ -25,7 +25,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable pnpm && pnpm run build
 
 # Production image, copy all the files and run next
-FROM base AS runner
+FROM base AS web
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -58,6 +58,27 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 CMD ["npm", "start"]
+
+########################################
+# API image (Fastify)
+########################################
+FROM deps AS api
+WORKDIR /app
+
+# Copy source code
+COPY . .
+
+# Create uploads directory and set permissions
+RUN mkdir -p /app/public/uploads && chmod 755 /app/public/uploads
+
+# Expose API port
+EXPOSE 3001
+
+ENV NODE_ENV=production
+ENV PORT=3001
+
+# Start Fastify API server
+CMD ["pnpm", "dev:api"]
 
 ########################################
 # Migrator image
