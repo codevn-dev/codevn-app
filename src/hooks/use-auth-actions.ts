@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { User } from '@/types/auth';
 import { useFastifyAuthStore } from '@/stores';
 import { apiPost, apiGet } from '@/lib/utils';
