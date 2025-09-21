@@ -36,7 +36,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        domain: 'localhost',
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : 'localhost',
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       });
 
@@ -151,7 +151,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        domain: 'localhost',
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : 'localhost',
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       });
 
