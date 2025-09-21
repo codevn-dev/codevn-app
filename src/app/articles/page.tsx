@@ -34,40 +34,7 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { TiptapRichTextEditor, CodeHighlighter } from '@/features/articles';
 import { ImageUpload } from '@/features/upload';
-
-interface Article {
-  id: string;
-  title: string;
-  content: string;
-  slug: string;
-  thumbnail?: string;
-  published: boolean;
-  createdAt: string;
-  updatedAt: string;
-  author: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string | null;
-  };
-  category: {
-    id: string;
-    name: string;
-    color: string;
-    slug: string;
-  };
-  _count: {
-    comments: number;
-    likes: number;
-  };
-}
-
-interface Category {
-  id: string;
-  name: string;
-  color: string;
-  slug: string;
-}
+import { Article, Category } from '@/types/shared';
 
 function ArticlesContent() {
   const { user, isAuthenticated, isLoading } = useAuthState();

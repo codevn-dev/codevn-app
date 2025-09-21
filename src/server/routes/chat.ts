@@ -2,24 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { messageRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
-// import { Errors } from '@/lib/utils/errors';
-
-interface ChatQuery {
-  peerId: string;
-  action?: string;
-  since?: string;
-  limit?: string;
-  before?: string;
-}
-
-interface ChatPostBody {
-  peerId: string;
-  text: string;
-}
-
-interface ChatSeenBody {
-  chatId: string;
-}
+import { ChatQueryRequest, ChatPostRequest, ChatSeenRequest } from '@/types/shared/chat';
 
 function getChatId(userA: string, userB: string): string {
   return [userA, userB].sort().join('|');
@@ -59,12 +42,12 @@ export async function chatRoutes(fastify: FastifyInstance) {
   );
 
   // GET /api/chat - Get chat messages
-  fastify.get<{ Querystring: ChatQuery }>(
+  fastify.get<{ Querystring: ChatQueryRequest }>(
     '/',
     {
       preHandler: authMiddleware,
     },
-    async (request: FastifyRequest<{ Querystring: ChatQuery }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Querystring: ChatQueryRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
         const { peerId, action = 'get', since = '0', limit = '20', before = '' } = request.query;
@@ -138,12 +121,12 @@ export async function chatRoutes(fastify: FastifyInstance) {
   );
 
   // POST /api/chat/seen - Mark messages as seen
-  fastify.post<{ Body: ChatSeenBody }>(
+  fastify.post<{ Body: ChatSeenRequest }>(
     '/seen',
     {
       preHandler: authMiddleware,
     },
-    async (request: FastifyRequest<{ Body: ChatSeenBody }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: ChatSeenRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
         const { chatId } = request.body;
@@ -164,12 +147,12 @@ export async function chatRoutes(fastify: FastifyInstance) {
   );
 
   // POST /api/chat - Send chat message
-  fastify.post<{ Body: ChatPostBody }>(
+  fastify.post<{ Body: ChatPostRequest }>(
     '/',
     {
       preHandler: authMiddleware,
     },
-    async (request: FastifyRequest<{ Body: ChatPostBody }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: ChatPostRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
         const { peerId, text } = request.body;

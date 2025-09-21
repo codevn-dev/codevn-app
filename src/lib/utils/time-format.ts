@@ -31,14 +31,14 @@ export function formatTime(timestamp: number | string | Date): string {
 }
 
 /**
- * Format a timestamp to full datetime string (e.g., "15/12/2023 14:30")
+ * Format a timestamp to full datetime string (e.g., "Dec 15, 2023 14:30")
  */
 export function formatDateTime(timestamp: number | string | Date): string {
   const date = new Date(timestamp);
-  return date.toLocaleString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
+  return date.toLocaleString('en-US', {
     year: 'numeric',
+    month: 'short',
+    day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -117,8 +117,8 @@ export function formatDate(timestamp: number | string | Date): string {
 
   // Older dates
   return date.toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
     year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }

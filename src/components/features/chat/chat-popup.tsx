@@ -17,15 +17,7 @@ interface ChatPopupProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface UiMessage {
-  id: string;
-  type: 'message' | 'system';
-  from: string;
-  text: string;
-  timestamp: number;
-  seen: boolean;
-  seenAt?: string | null;
-}
+import { UiMessage } from '@/types/shared';
 
 export function ChatPopup({ peerId, peerName, open, onOpenChange }: ChatPopupProps) {
   const { user } = useAuthState();

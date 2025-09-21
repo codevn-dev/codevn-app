@@ -1,42 +1,36 @@
 import { useState, useCallback } from 'react';
-import { User } from '@/types/auth';
+import { User, AuthState } from '@/types/shared/auth';
 import { useFastifyAuthStore } from '@/stores';
 import { apiPost, apiGet } from '@/lib/utils';
-
-interface AuthState {
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-}
 
 export function useAuthActions() {
   const { user, setUser, setLoading } = useFastifyAuthStore();
   const [state, setState] = useState<AuthState>({
-    user,
-    loading: true,
-    error: null,
+    user: user || null,
+    isLoading: true,
+    isAuthenticated: false,
   });
 
   const login = async (email: string, password: string) => {
     try {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true }));
       setLoading(true);
 
       const data = await apiPost('/api/auth/sign-in', { email, password });
       setUser(data.user);
       setState({
         user: data.user,
-        loading: false,
-        error: null,
+        isLoading: false,
+        isAuthenticated: true,
       });
 
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
-      setState((prev) => ({
+      setState((prev: AuthState) => ({
         ...prev,
-        loading: false,
-        error: errorMessage,
+        isLoading: false,
+        isAuthenticated: false,
       }));
       setLoading(false);
       throw error;
@@ -45,24 +39,24 @@ export function useAuthActions() {
 
   const register = async (email: string, name: string, password: string) => {
     try {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true }));
       setLoading(true);
 
       const data = await apiPost('/api/auth/sign-up', { email, name, password });
       setUser(data.user);
       setState({
         user: data.user,
-        loading: false,
-        error: null,
+        isLoading: false,
+        isAuthenticated: true,
       });
 
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed';
-      setState((prev) => ({
+      setState((prev: AuthState) => ({
         ...prev,
-        loading: false,
-        error: errorMessage,
+        isLoading: false,
+        isAuthenticated: false,
       }));
       setLoading(false);
       throw error;
@@ -78,30 +72,30 @@ export function useAuthActions() {
       setUser(null);
       setState({
         user: null,
-        loading: false,
-        error: null,
+        isLoading: false,
+        isAuthenticated: true,
       });
     }
   };
 
   const checkAuth = useCallback(async () => {
     try {
-      setState((prev) => ({ ...prev, loading: true }));
+      setState((prev: AuthState) => ({ ...prev, isLoading: true }));
       setLoading(true);
 
       const data = await apiGet('/api/auth/me');
       setUser(data.user);
       setState({
         user: data.user,
-        loading: false,
-        error: null,
+        isLoading: false,
+        isAuthenticated: true,
       });
     } catch {
       setUser(null);
       setState({
         user: null,
-        loading: false,
-        error: null,
+        isLoading: false,
+        isAuthenticated: true,
       });
     } finally {
       setLoading(false);

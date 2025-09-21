@@ -11,15 +11,7 @@ import { useChatMessages } from '@/hooks/use-chat-messages';
 import { formatChatTime, isNewDay, formatDate, apiPost } from '@/lib/utils';
 import { chatConfig } from '@/config';
 
-interface UiMessage {
-  id: string;
-  type: 'message' | 'system';
-  from: string;
-  text: string;
-  timestamp: number;
-  seen: boolean;
-  seenAt?: string | null;
-}
+import { UiMessage } from '@/types/shared';
 
 interface ChatWindowProps {
   peerId: string;

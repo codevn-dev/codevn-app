@@ -4,21 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuthState } from './use-auth-state';
 import { useUIStore } from '@/stores/ui-store';
 import { useChat } from '@/components/features/chat/chat-context';
-
-interface Conversation {
-  id: string;
-  peer: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  lastMessage: {
-    text: string;
-    createdAt: string;
-    fromUserId: string;
-    seen?: boolean;
-  };
-}
+import { Conversation } from '@/types/shared';
 
 export function useChatPolling() {
   const { user } = useAuthState();

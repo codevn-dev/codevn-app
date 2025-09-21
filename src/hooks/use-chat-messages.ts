@@ -2,16 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useAuthState } from '@/hooks/use-auth-state';
-
-interface UiMessage {
-  id: string;
-  type: 'message' | 'system';
-  from: string;
-  text: string;
-  timestamp: number;
-  seen: boolean;
-  seenAt?: string | null;
-}
+import { UiMessage } from '@/types/shared/chat';
 
 interface UseChatMessagesProps {
   peerId: string;

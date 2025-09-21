@@ -1,26 +1,19 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { User, AuthState } from '@/types/shared';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'user' | 'admin';
-  avatar?: string;
-  createdAt: string;
-}
+// Re-export for backward compatibility
+export type { User, AuthState };
 
-interface AuthState {
+interface AuthStoreState extends AuthState {
   user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
 }
 
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create<AuthStoreState>()(
   persist(
     (set, get) => ({
       user: null,

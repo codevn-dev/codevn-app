@@ -1,0 +1,49 @@
+// Authentication related types
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'user' | 'admin';
+  avatar?: string;
+  createdAt: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+// Request types
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  name: string;
+  password: string;
+}
+
+export interface CheckEmailRequest {
+  email: string;
+}
+
+// Response types
+export interface LoginResponse {
+  message: string;
+  user: User;
+  token?: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  user: User;
+}
+
+export interface CheckEmailResponse {
+  available: boolean;
+  message: string;
+}

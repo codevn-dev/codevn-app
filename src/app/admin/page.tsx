@@ -15,38 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Users, Tag, Edit, Trash2, Search, ArrowUpDown, User } from 'lucide-react';
+import { Plus, Users, Tag, Edit, Trash2, Search, ArrowUpDown } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { isAdmin } from '@/lib/utils';
-
-interface Category {
-  id: string;
-  name: string;
-  description: string | null;
-  slug: string;
-  color: string;
-  parentId: string | null;
-  createdAt: string;
-  createdBy: {
-    name: string;
-  };
-  parent?: {
-    id: string;
-    name: string;
-    slug: string;
-  } | null;
-  children?: Category[];
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  avatar?: string | null;
-  createdAt: string;
-}
+import { Category } from '@/types/shared/category';
+import { User } from '@/types/shared/auth';
 
 function AdminPageContent() {
   const { user, isAuthenticated, isLoading } = useAuthState();
@@ -331,7 +305,7 @@ function AdminPageContent() {
       if (response.ok) {
         // Update local state immediately for better UX
         setUsers((prevUsers) =>
-          prevUsers.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
+          prevUsers.map((u) => (u.id === userId ? { ...u, role: newRole as 'user' | 'admin' } : u))
         );
         // Also refresh data from server
         fetchData();
@@ -588,8 +562,10 @@ function AdminPageContent() {
                                   user={{
                                     id: user.id,
                                     name: user.name,
+                                    email: user.email,
                                     avatar: user.avatar || undefined,
                                     role: user.role,
+                                    createdAt: user.createdAt,
                                   }}
                                   size="lg"
                                   className="shadow-sm ring-2 ring-white"
@@ -1002,7 +978,7 @@ function AdminPageContent() {
                             Sub Categories ({category.children.length})
                           </h4>
                           <div className="grid gap-3">
-                            {category.children.map((child) => (
+                            {category.children.map((child: Category) => (
                               <Card
                                 key={child.id}
                                 className="bg-white transition-shadow hover:shadow-sm"

@@ -21,34 +21,7 @@ import { CodeHighlighter } from '../articles/code-highlighter';
 import { formatRelativeTime } from '@/lib/utils';
 import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 import { useClientOnly } from '@/hooks/use-client-only';
-
-interface Comment {
-  id: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string | null;
-  parentId?: string | null;
-  author: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-  replies?: Comment[];
-  replyCount?: number;
-  likeCount?: number;
-  unlikeCount?: number;
-  userHasLiked?: boolean;
-  userHasUnliked?: boolean;
-  parent?: {
-    id: string;
-    content: string;
-    author: {
-      id: string;
-      name: string;
-    };
-  };
-}
+import { Comment } from '@/types/shared';
 
 interface CommentItemProps {
   comment: Comment;
@@ -241,7 +214,10 @@ export function CommentItem({
                 user={{
                   id: comment.author.id,
                   name: comment.author.name,
-                  avatar: comment.author.avatar,
+                  email: comment.author.email,
+                  avatar: comment.author.avatar || undefined,
+                  role: 'user' as const,
+                  createdAt: new Date().toISOString(),
                 }}
                 size="lg"
                 className="mt-0.5"

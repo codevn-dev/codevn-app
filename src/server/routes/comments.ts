@@ -2,14 +2,10 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { commentRepository, likeRepository, userRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
+import { UpdateCommentRequest } from '@/types/shared/comment';
+import { ReactionRequest } from '@/types/shared/article';
 
-interface UpdateCommentBody {
-  content: string;
-}
-
-interface CommentReactionBody {
-  action: 'like' | 'unlike' | 'dislike';
-}
+// Use shared types directly
 
 function requireOwnership(user: any, resourceUserId: string): void {
   if (user.id !== resourceUserId && user.role !== 'admin') {
@@ -42,7 +38,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
   // PUT /api/comments/:id - Update a comment
   fastify.put<{
     Params: { id: string };
-    Body: UpdateCommentBody;
+    Body: UpdateCommentRequest;
   }>(
     '/:id',
     {
@@ -51,7 +47,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
     async (
       request: FastifyRequest<{
         Params: { id: string };
-        Body: UpdateCommentBody;
+        Body: UpdateCommentRequest;
       }>,
       reply: FastifyReply
     ) => {
@@ -131,7 +127,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
   // POST /api/comments/:id/reaction - Like/dislike comment
   fastify.post<{
     Params: { id: string };
-    Body: CommentReactionBody;
+    Body: ReactionRequest;
   }>(
     '/:id/reaction',
     {
@@ -140,7 +136,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
     async (
       request: FastifyRequest<{
         Params: { id: string };
-        Body: CommentReactionBody;
+        Body: ReactionRequest;
       }>,
       reply: FastifyReply
     ) => {

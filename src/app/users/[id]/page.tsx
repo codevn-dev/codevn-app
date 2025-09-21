@@ -13,14 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useChat } from '@/components/features/chat/chat-context';
 import { formatDate } from '@/lib/utils';
 
-interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string | null;
-  role: string;
-  createdAt: string;
-}
+import { User as UserProfile } from '@/types/shared/auth';
 
 function UserProfileContent() {
   const params = useParams();

@@ -3,11 +3,9 @@ import { userRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { fileUpload } from '@/lib/server';
 import { logger } from '@/lib/utils/logger';
+import { UpdateProfileRequest } from '@/types/shared/user';
 
-interface UpdateProfileBody {
-  name: string;
-  email: string;
-}
+// Use shared type directly
 
 export async function profileRoutes(fastify: FastifyInstance) {
   // GET /api/profile - Get current user profile
@@ -42,12 +40,12 @@ export async function profileRoutes(fastify: FastifyInstance) {
   );
 
   // PUT /api/profile - Update user profile
-  fastify.put<{ Body: UpdateProfileBody }>(
+  fastify.put<{ Body: UpdateProfileRequest }>(
     '/',
     {
       preHandler: authMiddleware,
     },
-    async (request: FastifyRequest<{ Body: UpdateProfileBody }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: UpdateProfileRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
         const { name, email } = request.body;

@@ -6,21 +6,10 @@ import fastifyPassport from '@fastify/passport';
 import { config } from '@/config';
 import { createRedisAuthService } from '../redis';
 import { logger } from '@/lib/utils/logger';
-
-// interface LoginBody {
-//   email: string;
-//   password: string;
-// }
-
-interface RegisterBody {
-  email: string;
-  name: string;
-  password: string;
-}
-
-interface CheckEmailBody {
-  email: string;
-}
+import {
+  RegisterRequest as RegisterBody,
+  CheckEmailRequest as CheckEmailBody,
+} from '@/types/shared/auth';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Sign-in endpoint
@@ -63,7 +52,8 @@ export async function authRoutes(fastify: FastifyInstance) {
     '/sign-up',
     async (request: FastifyRequest<{ Body: RegisterBody }>, reply: FastifyReply) => {
       try {
-        const { email, name, password } = request.body;
+        const body = request.body as RegisterBody;
+        const { email, name, password } = body;
 
         if (!email || !name || !password) {
           return reply.status(400).send({ error: 'Email, name, and password are required' });
@@ -100,7 +90,8 @@ export async function authRoutes(fastify: FastifyInstance) {
     '/check-email',
     async (request: FastifyRequest<{ Body: CheckEmailBody }>, reply: FastifyReply) => {
       try {
-        const { email } = request.body;
+        const body = request.body as CheckEmailBody;
+        const { email } = body;
 
         if (!email) {
           return reply.status(400).send({ available: false, message: 'Email is required' });

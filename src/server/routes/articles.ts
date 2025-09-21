@@ -9,41 +9,15 @@ import {
 // import { Errors } from '@/lib/utils/errors';
 import { authMiddleware, optionalAuthMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
-
-interface CreateArticleBody {
-  title: string;
-  content: string;
-  slug: string;
-  thumbnail?: string;
-  categoryId: string;
-  published?: boolean;
-}
-
-interface UpdateArticleBody {
-  id: string;
-  title?: string;
-  content?: string;
-  slug?: string;
-  thumbnail?: string;
-  categoryId?: string;
-  published?: boolean;
-}
-
-interface ReactionBody {
-  action: 'like' | 'unlike' | 'dislike';
-}
-
-interface CommentQuery {
-  sortOrder?: 'asc' | 'desc';
-  page?: string;
-  limit?: string;
-  parentId?: string;
-}
-
-interface CreateCommentBody {
-  content: string;
-  parentId?: string;
-}
+import {
+  CreateArticleRequest as CreateArticleBody,
+  UpdateArticleRequest as UpdateArticleBody,
+  ReactionRequest as ReactionBody,
+} from '@/types/shared/article';
+import {
+  CommentQueryParams as CommentQuery,
+  CreateCommentRequest as CreateCommentBody,
+} from '@/types/shared/comment';
 
 function getPaginationParams(request: FastifyRequest) {
   const query = request.query as any;
@@ -136,7 +110,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Body: CreateArticleBody }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const { title, content, slug, thumbnail, categoryId, published = false } = request.body;
+        const body = request.body as CreateArticleBody;
+        const { title, content, slug, thumbnail, categoryId, published = false } = body;
 
         if (!title || !content || !slug || !categoryId) {
           return reply
@@ -190,7 +165,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Body: UpdateArticleBody }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const { id, title, content, slug, thumbnail, categoryId, published } = request.body;
+        const body = request.body as UpdateArticleBody;
+        const { id, title, content, slug, thumbnail, categoryId, published } = body;
 
         if (!id) {
           return reply.status(400).send({ error: 'Article ID is required' });
@@ -295,7 +271,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
       try {
         const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
-        const { action } = request.body;
+        const body = request.body as ReactionBody;
+        const { action } = body;
 
         if (!action || !['like', 'unlike', 'dislike'].includes(action)) {
           return reply
@@ -467,7 +444,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
       try {
         const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
-        const { sortOrder = 'desc', page = '1', limit = '10', parentId } = request.query;
+        const query = request.query as CommentQuery;
+        const { sortOrder = 'desc', page = '1', limit = '10', parentId } = query;
 
         // Check if article exists
         const article = await articleRepository.findById(id);
@@ -519,7 +497,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
       try {
         const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
-        const { content, parentId } = request.body;
+        const body = request.body as CreateCommentBody;
+        const { content, parentId } = body;
 
         if (!content || content.trim().length === 0) {
           return reply.status(400).send({ error: 'Comment content is required' });

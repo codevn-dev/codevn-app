@@ -7,30 +7,7 @@ import { CommentItem } from './comment-item';
 import { CommentForm } from './comment-form';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
-
-interface Comment {
-  id: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string | null;
-  parentId?: string | null;
-  author: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-  replies?: Comment[];
-  replyCount?: number;
-  parent?: {
-    id: string;
-    content: string;
-    author: {
-      id: string;
-      name: string;
-    };
-  };
-}
+import { Comment } from '@/types/shared';
 
 interface CommentsSectionProps {
   articleId: string;

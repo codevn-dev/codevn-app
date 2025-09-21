@@ -1,54 +1,8 @@
 import { create } from 'zustand';
+import { Category, Article } from '@/types/shared';
 
-export interface Category {
-  id: string;
-  name: string;
-  description: string | null;
-  slug: string;
-  color: string;
-  parentId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  createdById: string;
-  createdBy: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  parent?: Category | null;
-  children?: Category[];
-  _count: {
-    articles: number;
-    children: number;
-  };
-}
-
-export interface Article {
-  id: string;
-  title: string;
-  content: string;
-  slug: string;
-  thumbnail?: string;
-  categoryId: string;
-  published: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  authorId: string;
-  author: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  category: {
-    id: string;
-    name: string;
-    color: string;
-  };
-  _count: {
-    comments: number;
-    likes: number;
-  };
-}
+// Re-export for backward compatibility
+export type { Category, Article };
 
 interface ForumState {
   // Data

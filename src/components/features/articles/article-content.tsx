@@ -12,33 +12,7 @@ import type { CommentsSectionRef } from '@/features/comments';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
-
-interface Article {
-  id: string;
-  title: string;
-  content: string;
-  slug: string;
-  thumbnail?: string;
-  categoryId: string;
-  createdAt: Date | string;
-  author: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  category: {
-    id: string;
-    name: string;
-    color: string;
-  };
-  _count: {
-    comments: number;
-    likes: number;
-    unlikes: number;
-  };
-  userHasLiked?: boolean;
-  userHasUnliked?: boolean;
-}
+import { Article } from '@/types/shared';
 
 interface ArticleContentProps {
   article: Article;
@@ -147,25 +121,34 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center space-x-4 text-sm text-gray-500">
-            <div className="flex items-center">
+            <div className="flex items-start space-x-2">
               <AvatarWithDropdown
                 user={{
                   id: article.author.id,
                   name: article.author.name,
-                  avatar: article.author.avatar,
+                  email: article.author.email,
+                  avatar: article.author.avatar || undefined,
+                  role: 'user' as const,
+                  createdAt: new Date().toISOString(),
                 }}
-                size="md"
-                showName={true}
-                className="mr-2"
+                size="lg"
+                className="mt-0.5"
               />
-            </div>
-            <div className="flex items-center">
-              <Calendar className="mr-1 h-4 w-4" />
-              {new Date(article.createdAt).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-900">{article.author.name}</span>
+                </div>
+                <div className="flex items-center text-xs text-gray-500">
+                  <Calendar className="mr-1 h-3 w-3" />
+                  {new Date(article.createdAt).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </div>
+              </div>
             </div>
           </div>
 

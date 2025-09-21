@@ -2,26 +2,8 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { userRepository, categoryRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
-
-interface UpdateUserRoleBody {
-  userId: string;
-  role: string;
-}
-
-interface CreateCategoryBody {
-  name: string;
-  description?: string;
-  color?: string;
-  parentId?: string;
-}
-
-interface UpdateCategoryBody {
-  id: string;
-  name: string;
-  description?: string;
-  color?: string;
-  parentId?: string;
-}
+import { CreateCategoryRequest, UpdateCategoryRequest } from '@/types/shared/category';
+import { UpdateUserRoleRequest } from '@/types/shared/user';
 
 function getPaginationParams(request: FastifyRequest) {
   const query = request.query as any;
@@ -103,12 +85,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
     );
 
     // PUT /api/admin/users - Update user role
-    fastify.put<{ Body: UpdateUserRoleBody }>(
+    fastify.put<{ Body: UpdateUserRoleRequest }>(
       '/users',
       {
         preHandler: authMiddleware,
       },
-      async (request: FastifyRequest<{ Body: UpdateUserRoleBody }>, reply: FastifyReply) => {
+      async (request: FastifyRequest<{ Body: UpdateUserRoleRequest }>, reply: FastifyReply) => {
         try {
           const authRequest = request as AuthenticatedRequest;
 
@@ -173,12 +155,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
     );
 
     // POST /api/admin/categories - Create category
-    fastify.post<{ Body: CreateCategoryBody }>(
+    fastify.post<{ Body: CreateCategoryRequest }>(
       '/categories',
       {
         preHandler: authMiddleware,
       },
-      async (request: FastifyRequest<{ Body: CreateCategoryBody }>, reply: FastifyReply) => {
+      async (request: FastifyRequest<{ Body: CreateCategoryRequest }>, reply: FastifyReply) => {
         try {
           const authRequest = request as AuthenticatedRequest;
 
@@ -235,12 +217,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
     );
 
     // PUT /api/admin/categories - Update category
-    fastify.put<{ Body: UpdateCategoryBody }>(
+    fastify.put<{ Body: UpdateCategoryRequest }>(
       '/categories',
       {
         preHandler: authMiddleware,
       },
-      async (request: FastifyRequest<{ Body: UpdateCategoryBody }>, reply: FastifyReply) => {
+      async (request: FastifyRequest<{ Body: UpdateCategoryRequest }>, reply: FastifyReply) => {
         try {
           const authRequest = request as AuthenticatedRequest;
 

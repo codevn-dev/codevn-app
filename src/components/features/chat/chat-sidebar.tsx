@@ -145,11 +145,12 @@ export function ChatSidebar({
         });
       } else if (diffInHours < 168) {
         // 7 days
-        return date.toLocaleDateString('vi-VN', { weekday: 'short' });
+        return date.toLocaleDateString('en-US', { weekday: 'short' });
       } else {
-        return date.toLocaleDateString('vi-VN', {
-          day: '2-digit',
-          month: '2-digit',
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
         });
       }
     } catch {

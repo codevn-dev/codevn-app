@@ -3,18 +3,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, User } from 'lucide-react';
+import { MessageCircle, User as UserIcon } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useChat } from '@/components/features/chat/chat-context';
 import { useUIStore } from '@/stores/ui-store';
 import { useRouter } from 'next/navigation';
-
-interface User {
-  id: string;
-  name: string;
-  avatar?: string;
-  role?: string;
-}
+import { User } from '@/types/shared';
 
 interface AvatarWithDropdownProps {
   user: User;
@@ -119,7 +113,7 @@ export function AvatarWithDropdown({
                   onClick={handleViewProfile}
                   className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
                 >
-                  <User className="h-4 w-4 text-green-600" />
+                  <UserIcon className="h-4 w-4 text-green-600" />
                   <span>View Profile</span>
                 </button>
               </div>
@@ -157,7 +151,7 @@ export function AvatarWithDropdown({
                 onClick={handleViewProfile}
                 className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
               >
-                <User className="h-4 w-4 text-green-600" />
+                <UserIcon className="h-4 w-4 text-green-600" />
                 <span>View Profile</span>
               </button>
             </div>

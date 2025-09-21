@@ -14,14 +14,7 @@ import { ClientOnly } from '@/components/layout';
 import { AvatarUpload } from '@/features/upload';
 import { formatDate } from '@/lib/utils';
 
-interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string | null;
-  role: string;
-  createdAt: string;
-}
+import { User as UserProfile } from '@/types/shared/auth';
 
 function ProfilePageContent() {
   const { user, isAuthenticated, isLoading } = useAuthState();
@@ -146,9 +139,11 @@ function ProfilePageContent() {
             <AvatarUpload
               size="lg"
               onAvatarChange={(avatar) => {
-                setProfile((prev) => (prev ? { ...prev, avatar } : null));
+                setProfile((prev) => (prev ? { ...prev, avatar: avatar || undefined } : null));
                 // Update original profile to prevent save button from being enabled
-                setOriginalProfile((prev) => (prev ? { ...prev, avatar } : null));
+                setOriginalProfile((prev) =>
+                  prev ? { ...prev, avatar: avatar || undefined } : null
+                );
               }}
             />
             <div className="ml-6">
