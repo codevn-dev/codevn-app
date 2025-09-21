@@ -59,6 +59,7 @@ jobs:
             # Build and deploy
             echo "Building and deploying application..."
             docker compose up -d --build
+            docker compose restart nginx
 
       - name: Purge Cloudflare cache for codevn.dev
         run: |
