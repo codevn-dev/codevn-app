@@ -96,7 +96,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const authorId = query.authorId || '';
         const publishedOnlyParam = query.publishedOnly;
 
-        const user = await userRepository.findById(authRequest.user!.id);
+        // Check if user is authenticated
+        const user = authRequest.user ? await userRepository.findById(authRequest.user.id) : null;
         // Determine if user is admin
         const isAdmin = user?.role === 'admin';
 
