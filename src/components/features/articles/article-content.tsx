@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ThumbsUp, ThumbsDown, MessageSquare, Calendar, ArrowLeft, Eye } from 'lucide-react';
 import { CodeHighlighter } from '@/features/articles';
@@ -113,131 +112,135 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
   };
 
   return (
-    <Card className="shadow-xl shadow-gray-300/60">
-      {isPreview && (
-        <div className="border-b border-yellow-200 bg-yellow-100 px-6 py-3">
-          <div className="flex items-center text-sm font-medium text-yellow-800">
-            <Eye className="mr-2 h-4 w-4" />
-            Preview Mode - This article is not published yet
-          </div>
-        </div>
-      )}
-      <CardHeader className="pb-4">
-        <div className="mb-4 flex items-center text-sm text-gray-500">
-          <Link href="/" className="flex items-center hover:text-gray-700">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back
-          </Link>
-        </div>
+    <div className="py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl bg-white p-6 shadow-2xl">
+          {isPreview && (
+            <div className="-m-6 mb-6 rounded-t-2xl border-b border-yellow-200 bg-yellow-100 px-6 py-3">
+              <div className="flex items-center text-sm font-medium text-yellow-800">
+                <Eye className="mr-2 h-4 w-4" />
+                Preview Mode - This article is not published yet
+              </div>
+            </div>
+          )}
+          <div className="pb-4">
+            <div className="mb-4 flex items-center text-sm text-gray-500">
+              <Link href="/" className="flex items-center hover:text-gray-700">
+                <ArrowLeft className="mr-1 h-4 w-4" />
+                Back
+              </Link>
+            </div>
 
-        <div className="mb-4">
-          <Badge className="text-white" style={{ backgroundColor: article.category.color }}>
-            {article.category.name}
-          </Badge>
-        </div>
+            <div className="mb-4">
+              <Badge className="text-white" style={{ backgroundColor: article.category.color }}>
+                {article.category.name}
+              </Badge>
+            </div>
 
-        <h1 className="mb-3 text-2xl font-bold text-gray-900 sm:mb-4 sm:text-3xl">
-          {article.title}
-        </h1>
+            <h1 className="mb-3 text-2xl font-bold text-gray-900 sm:mb-4 sm:text-3xl">
+              {article.title}
+            </h1>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
-            <div className="flex items-start space-x-2">
-              <AvatarWithDropdown
-                user={{
-                  id: article.author.id,
-                  name: article.author.name,
-                  email: article.author.email,
-                  avatar: article.author.avatar || undefined,
-                  role: 'user' as const,
-                  createdAt: new Date().toISOString(),
-                }}
-                size="lg"
-                className="mt-0.5"
-              />
-              <div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-900">{article.author.name}</span>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center space-x-4 text-sm text-gray-500">
+                <div className="flex items-start space-x-2">
+                  <AvatarWithDropdown
+                    user={{
+                      id: article.author.id,
+                      name: article.author.name,
+                      email: article.author.email,
+                      avatar: article.author.avatar || undefined,
+                      role: 'user' as const,
+                      createdAt: new Date().toISOString(),
+                    }}
+                    size="lg"
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-900">{article.author.name}</span>
+                    </div>
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Calendar className="mr-1 h-3 w-3" />
+                      {new Date(article.createdAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center text-xs text-gray-500">
-                  <Calendar className="mr-1 h-3 w-3" />
-                  {new Date(article.createdAt).toLocaleString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                {typeof article.views === 'number' && (
+                  <span className="flex items-center text-sm text-gray-600">
+                    <Eye className="mr-1 h-4 w-4" />
+                    {article.views}
+                  </span>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLike}
+                  className={`transition-colors duration-200 ${
+                    likedEffective
+                      ? 'border-green-600 text-green-600 hover:border-green-700 hover:bg-green-50'
+                      : 'hover:border-green-600 hover:text-green-600'
+                  }`}
+                >
+                  <ThumbsUp
+                    className={`mr-1 h-4 w-4 transition-colors duration-200 ${
+                      likedEffective ? 'fill-current text-green-600' : 'text-gray-500'
+                    }`}
+                  />
+                  {likeCount}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleUnlike}
+                  className={`transition-colors duration-200 ${
+                    unlikedEffective
+                      ? 'border-red-600 text-red-600 hover:border-red-700 hover:bg-red-50'
+                      : 'hover:border-red-600 hover:text-red-600'
+                  }`}
+                >
+                  <ThumbsDown
+                    className={`mr-1 h-4 w-4 transition-colors duration-200 ${
+                      unlikedEffective ? 'fill-current text-red-600' : 'text-gray-500'
+                    }`}
+                  />
+                  {unlikeCount}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCommentClick}
+                  className="cursor-pointer hover:border-blue-300 hover:bg-blue-50"
+                >
+                  <MessageSquare className="mr-1 h-4 w-4" />
+                  {article._count.comments}
+                </Button>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {typeof article.views === 'number' && (
-              <span className="flex items-center text-sm text-gray-600">
-                <Eye className="mr-1 h-4 w-4" />
-                {article.views}
-              </span>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLike}
-              className={`transition-colors duration-200 ${
-                likedEffective
-                  ? 'border-green-600 text-green-600 hover:border-green-700 hover:bg-green-50'
-                  : 'hover:border-green-600 hover:text-green-600'
-              }`}
-            >
-              <ThumbsUp
-                className={`mr-1 h-4 w-4 transition-colors duration-200 ${
-                  likedEffective ? 'fill-current text-green-600' : 'text-gray-500'
-                }`}
-              />
-              {likeCount}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleUnlike}
-              className={`transition-colors duration-200 ${
-                unlikedEffective
-                  ? 'border-red-600 text-red-600 hover:border-red-700 hover:bg-red-50'
-                  : 'hover:border-red-600 hover:text-red-600'
-              }`}
-            >
-              <ThumbsDown
-                className={`mr-1 h-4 w-4 transition-colors duration-200 ${
-                  unlikedEffective ? 'fill-current text-red-600' : 'text-gray-500'
-                }`}
-              />
-              {unlikeCount}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCommentClick}
-              className="cursor-pointer hover:border-blue-300 hover:bg-blue-50"
-            >
-              <MessageSquare className="mr-1 h-4 w-4" />
-              {article._count.comments}
-            </Button>
+          <div className="pt-0">
+            <CodeHighlighter content={article.content} className="leading-relaxed text-gray-700" />
+          </div>
+
+          <div className="border-t border-gray-200 pt-0">
+            <CommentsSection
+              ref={commentsSectionRef}
+              articleId={article.id}
+              commentCount={article._count.comments}
+            />
           </div>
         </div>
-      </CardHeader>
-
-      <CardBody className="pt-0">
-        <CodeHighlighter content={article.content} className="leading-relaxed text-gray-700" />
-      </CardBody>
-
-      <CardBody className="border-t border-gray-200 pt-0">
-        <CommentsSection
-          ref={commentsSectionRef}
-          articleId={article.id}
-          commentCount={article._count.comments}
-        />
-      </CardBody>
-    </Card>
+      </div>
+    </div>
   );
 }

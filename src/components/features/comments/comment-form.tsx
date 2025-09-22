@@ -309,7 +309,7 @@ export function CommentForm({
           variant="outline"
           size="sm"
           disabled={isSubmitting || !content.trim()}
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-2 border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
         >
           {isSubmitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />

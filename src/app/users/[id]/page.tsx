@@ -78,7 +78,7 @@ function UserProfileContent() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Card className="shadow-lg">
           <CardBody className="py-12 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
@@ -107,7 +107,7 @@ function UserProfileContent() {
   const isOwnProfile = currentUser?.id === profile.id;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
         <Button onClick={handleBack} variant="outline" size="sm">
           <ArrowLeft className="mr-2 h-4 w-4" />

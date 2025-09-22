@@ -82,16 +82,8 @@ export default async function ArticlePage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <div className="mx-auto max-w-3xl sm:max-w-5xl">
-          <div className="rounded-2xl bg-white/80 p-6 shadow-lg shadow-gray-200/50 backdrop-blur-sm">
-            <PreviewGuard isPreview={isPreview} articleAuthorId={article.authorId}>
-              <ArticleContent article={articleWithCounts} isPreview={isPreview} />
-            </PreviewGuard>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PreviewGuard isPreview={isPreview} articleAuthorId={article.authorId}>
+      <ArticleContent article={articleWithCounts} isPreview={isPreview} />
+    </PreviewGuard>
   );
 }

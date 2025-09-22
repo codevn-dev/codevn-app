@@ -326,7 +326,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
 
   return (
     <div
-      className="pointer-events-auto fixed right-80 bottom-0 z-[110] flex h-[28.8rem] w-[24rem] flex-col rounded-lg border border-gray-100 bg-white shadow-lg"
+      className="pointer-events-auto fixed right-80 bottom-0 z-[110] flex h-[28.8rem] w-[24rem] flex-col rounded-lg bg-white shadow-lg"
       data-chat-window="true"
       onClick={(e) => e.stopPropagation()}
     >
@@ -525,7 +525,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
             size="sm"
             variant="ghost"
             className={`flex h-11 w-11 items-center justify-center p-0 transition-colors ${
-              canSend ? 'text-gray-600 hover:text-gray-800' : 'text-gray-300'
+              canSend ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-800' : 'text-gray-300'
             }`}
             aria-label="Send message"
             title="Send"

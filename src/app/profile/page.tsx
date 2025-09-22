@@ -131,123 +131,129 @@ function ProfilePageContent() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-      <Card className="shadow-xl shadow-gray-300/60">
-        <CardHeader className="pb-4">
-          <div className="flex items-center">
-            <AvatarUpload
-              size="lg"
-              onAvatarChange={(avatar) => {
-                setProfile((prev) => (prev ? { ...prev, avatar: avatar || undefined } : null));
-                // Update original profile to prevent save button from being enabled
-                setOriginalProfile((prev) =>
-                  prev ? { ...prev, avatar: avatar || undefined } : null
-                );
-              }}
-            />
-            <div className="ml-6">
-              <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-              <p className="mt-2 text-gray-600">Manage your account information and preferences</p>
+    <div className="py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Card className="shadow-xl shadow-gray-300/60">
+          <CardHeader className="pb-4">
+            <div className="flex items-center">
+              <AvatarUpload
+                size="lg"
+                onAvatarChange={(avatar) => {
+                  setProfile((prev) => (prev ? { ...prev, avatar: avatar || undefined } : null));
+                  // Update original profile to prevent save button from being enabled
+                  setOriginalProfile((prev) =>
+                    prev ? { ...prev, avatar: avatar || undefined } : null
+                  );
+                }}
+              />
+              <div className="ml-6">
+                <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
+                <p className="mt-2 text-gray-600">
+                  Manage your account information and preferences
+                </p>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardBody className="pt-0">
-          <form onSubmit={handleSave} className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-                  <Input
-                    id="name"
-                    placeholder="Enter your full name"
-                    value={profile.name || ''}
-                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                    className="pl-10"
-                    required
-                  />
+          </CardHeader>
+          <CardBody className="pt-0">
+            <form onSubmit={handleSave} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-sm font-medium text-gray-700">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                    <Input
+                      id="name"
+                      placeholder="Enter your full name"
+                      value={profile.name || ''}
+                      onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={profile.email || ''}
+                      onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    value={profile.email || ''}
-                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                    className="pl-10"
-                    required
-                  />
-                </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                  <CardBody className="flex flex-row items-center p-4">
+                    <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
+                    <div>
+                      <Badge className="mb-1">
+                        {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
+                      </Badge>
+                      <p className="text-sm text-[#A6825A]">Your current access level</p>
+                    </div>
+                  </CardBody>
+                </Card>
+
+                <Card className="border-green-200 bg-green-50">
+                  <CardBody className="flex flex-row items-center p-4">
+                    <Calendar className="mr-3 h-5 w-5 text-green-500" />
+                    <div>
+                      <p className="font-semibold text-green-800">
+                        {formatDate(profile.createdAt)}
+                      </p>
+                      <p className="text-sm text-green-700">Account creation date</p>
+                    </div>
+                  </CardBody>
+                </Card>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
-                <CardBody className="flex flex-row items-center p-4">
-                  <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
-                  <div>
-                    <Badge className="mb-1">
-                      {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
-                    </Badge>
-                    <p className="text-sm text-[#A6825A]">Your current access level</p>
-                  </div>
-                </CardBody>
-              </Card>
+              {message && (
+                <Card
+                  className={`${
+                    message.includes('successfully')
+                      ? 'border-green-200 bg-green-50'
+                      : 'border-red-200 bg-red-50'
+                  }`}
+                >
+                  <CardBody className="flex flex-row items-center p-4">
+                    <div
+                      className={`mr-3 h-3 w-3 rounded-full ${
+                        message.includes('successfully') ? 'bg-green-500' : 'bg-red-500'
+                      }`}
+                    ></div>
+                    <span className="font-semibold">{message}</span>
+                  </CardBody>
+                </Card>
+              )}
 
-              <Card className="border-green-200 bg-green-50">
-                <CardBody className="flex flex-row items-center p-4">
-                  <Calendar className="mr-3 h-5 w-5 text-green-500" />
-                  <div>
-                    <p className="font-semibold text-green-800">{formatDate(profile.createdAt)}</p>
-                    <p className="text-sm text-green-700">Account creation date</p>
-                  </div>
-                </CardBody>
-              </Card>
-            </div>
-
-            {message && (
-              <Card
-                className={`${
-                  message.includes('successfully')
-                    ? 'border-green-200 bg-green-50'
-                    : 'border-red-200 bg-red-50'
-                }`}
-              >
-                <CardBody className="flex flex-row items-center p-4">
-                  <div
-                    className={`mr-3 h-3 w-3 rounded-full ${
-                      message.includes('successfully') ? 'bg-green-500' : 'bg-red-500'
-                    }`}
-                  ></div>
-                  <span className="font-semibold">{message}</span>
-                </CardBody>
-              </Card>
-            )}
-
-            <div className="flex justify-end border-t border-gray-200 pt-6">
-              <Button type="submit" disabled={saving || !hasChanges()} size="lg">
-                {saving ? (
-                  <LoadingScreen message="Saving" />
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
+              <div className="flex justify-end border-t border-gray-200 pt-6">
+                <Button type="submit" disabled={saving || !hasChanges()} size="lg">
+                  {saving ? (
+                    <LoadingScreen message="Saving" />
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
+      </div>
     </div>
   );
 }
