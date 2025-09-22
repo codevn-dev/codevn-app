@@ -27,6 +27,9 @@ export async function userRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: 'User not found' });
         }
 
+        // Get user statistics
+        const statistics = await userRepository.getUserStatistics(userId);
+
         // Return user data without sensitive information
         const userProfile = {
           id: user.id,
@@ -35,6 +38,7 @@ export async function userRoutes(fastify: FastifyInstance) {
           avatar: user.avatar,
           role: user.role,
           createdAt: user.createdAt,
+          statistics,
         };
 
         // Mask email for privacy unless user is admin or viewing own profile

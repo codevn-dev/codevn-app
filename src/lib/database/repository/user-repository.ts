@@ -1,5 +1,5 @@
 import { getDb } from '..';
-import { users } from '../schema';
+import { users, articles, comments, reactions } from '../schema';
 import { eq, and, or, ilike, count, desc, asc, isNull, ne } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
@@ -228,6 +228,53 @@ export class UserRepository {
         updatedAt: new Date(),
       })
       .where(eq(users.id, id));
+  }
+
+  async getUserStatistics(userId: string) {
+    const [articleCount, totalLikes, totalDislikes, totalComments] = await Promise.all([
+      // Count total articles by user
+      getDb().select({ count: count() }).from(articles).where(eq(articles.authorId, userId)),
+
+      // Count total likes on user's articles (not comment likes)
+      getDb()
+        .select({ count: count() })
+        .from(reactions)
+        .innerJoin(articles, eq(reactions.articleId, articles.id))
+        .where(
+          and(
+            eq(articles.authorId, userId),
+            eq(reactions.type, 'like'),
+            isNull(reactions.commentId) // Only article likes, not comment likes
+          )
+        ),
+
+      // Count total dislikes on user's articles (not comment dislikes)
+      getDb()
+        .select({ count: count() })
+        .from(reactions)
+        .innerJoin(articles, eq(reactions.articleId, articles.id))
+        .where(
+          and(
+            eq(articles.authorId, userId),
+            eq(reactions.type, 'unlike'),
+            isNull(reactions.commentId) // Only article dislikes, not comment dislikes
+          )
+        ),
+
+      // Count total comments on user's articles
+      getDb()
+        .select({ count: count() })
+        .from(comments)
+        .innerJoin(articles, eq(comments.articleId, articles.id))
+        .where(eq(articles.authorId, userId)),
+    ]);
+
+    return {
+      totalArticles: articleCount[0]?.count || 0,
+      totalLikes: totalLikes[0]?.count || 0,
+      totalDislikes: totalDislikes[0]?.count || 0,
+      totalComments: totalComments[0]?.count || 0,
+    };
   }
 }
 

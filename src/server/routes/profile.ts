@@ -25,6 +25,9 @@ export async function profileRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: 'User not found' });
         }
 
+        // Get user statistics
+        const statistics = await userRepository.getUserStatistics(authRequest.user!.id);
+
         const response: UserResponse = {
           user: {
             id: user.id,
@@ -33,6 +36,7 @@ export async function profileRoutes(fastify: FastifyInstance) {
             avatar: (user.avatar || undefined) as any,
             role: user.role,
             createdAt: user.createdAt as any,
+            statistics,
           },
         };
         return reply.send(response);

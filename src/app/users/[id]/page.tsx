@@ -4,9 +4,19 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { User, Mail, Calendar, Shield, ArrowLeft, MessageCircle } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Calendar,
+  Shield,
+  ArrowLeft,
+  MessageCircle,
+  FileText,
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare,
+} from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -151,28 +161,81 @@ function UserProfileContent() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Card className="border-blue-200 bg-blue-50">
+              <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
                 <CardBody className="flex flex-row items-center p-4">
-                  <Shield className="mr-3 h-5 w-5 text-blue-500" />
+                  <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
-                    <Badge className="mb-1">
+                    <p className="mb-1 font-semibold text-[#A6825A]">
                       {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
-                    </Badge>
-                    <p className="text-sm text-blue-700">Access level</p>
+                    </p>
+                    <p className="text-sm text-[#A6825A]">Access level</p>
                   </div>
                 </CardBody>
               </Card>
 
-              <Card className="border-green-200 bg-green-50">
+              <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
                 <CardBody className="flex flex-row items-center p-4">
-                  <Calendar className="mr-3 h-5 w-5 text-green-500" />
+                  <Calendar className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
-                    <p className="font-semibold text-green-800">{formatDate(profile.createdAt)}</p>
-                    <p className="text-sm text-green-700">Member since</p>
+                    <p className="font-semibold text-[#A6825A]">{formatDate(profile.createdAt)}</p>
+                    <p className="text-sm text-[#A6825A]">Member since</p>
                   </div>
                 </CardBody>
               </Card>
             </div>
+
+            {/* User Statistics */}
+            {profile.statistics && (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                  <CardBody className="flex flex-row items-center p-4">
+                    <FileText className="mr-3 h-5 w-5 text-[#B8956A]" />
+                    <div>
+                      <p className="text-2xl font-bold text-[#A6825A]">
+                        {profile.statistics.totalArticles}
+                      </p>
+                      <p className="text-sm text-[#A6825A]">Total Articles</p>
+                    </div>
+                  </CardBody>
+                </Card>
+
+                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                  <CardBody className="flex flex-row items-center p-4">
+                    <MessageSquare className="mr-3 h-5 w-5 text-[#B8956A]" />
+                    <div>
+                      <p className="text-2xl font-bold text-[#A6825A]">
+                        {profile.statistics.totalComments}
+                      </p>
+                      <p className="text-sm text-[#A6825A]">Total Comments</p>
+                    </div>
+                  </CardBody>
+                </Card>
+
+                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                  <CardBody className="flex flex-row items-center p-4">
+                    <ThumbsUp className="mr-3 h-5 w-5 text-[#B8956A]" />
+                    <div>
+                      <p className="text-2xl font-bold text-[#A6825A]">
+                        {profile.statistics.totalLikes}
+                      </p>
+                      <p className="text-sm text-[#A6825A]">Total Likes</p>
+                    </div>
+                  </CardBody>
+                </Card>
+
+                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                  <CardBody className="flex flex-row items-center p-4">
+                    <ThumbsDown className="mr-3 h-5 w-5 text-[#B8956A]" />
+                    <div>
+                      <p className="text-2xl font-bold text-[#A6825A]">
+                        {profile.statistics.totalDislikes}
+                      </p>
+                      <p className="text-sm text-[#A6825A]">Total Dislikes</p>
+                    </div>
+                  </CardBody>
+                </Card>
+              </div>
+            )}
 
             {!isOwnProfile && (
               <div className="flex justify-end border-t border-gray-200 pt-6">

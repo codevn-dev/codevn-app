@@ -5,9 +5,18 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { User, Mail, Calendar, Shield, Save } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Calendar,
+  Shield,
+  Save,
+  FileText,
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare,
+} from 'lucide-react';
 import { useFastifyAuthStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
@@ -37,32 +46,58 @@ function ProfilePageContent() {
       return;
     }
 
-    // If authenticated, set up profile
+    // If authenticated, fetch profile data with statistics
     if (user) {
-      const profileData = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatar: user.avatar,
-        role: user.role,
-        createdAt: user.createdAt,
+      const fetchProfileWithStats = async () => {
+        try {
+          setLoading(true);
+          // Fetch fresh profile data with statistics from API
+          const response = await apiGet<{ user: UserProfile }>('/api/profile');
+          const userData = response.user;
+
+          const profileData = {
+            id: userData.id,
+            email: userData.email,
+            name: userData.name,
+            avatar: userData.avatar,
+            role: userData.role || 'user',
+            createdAt: userData.createdAt,
+            statistics: userData.statistics,
+          };
+          setProfile(profileData);
+          setOriginalProfile(profileData);
+        } catch {
+          // Fallback to user data from auth state if API fails
+          const profileData = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar: user.avatar,
+            role: user.role || 'user',
+            createdAt: user.createdAt,
+          };
+          setProfile(profileData);
+          setOriginalProfile(profileData);
+        } finally {
+          setLoading(false);
+        }
       };
-      setProfile(profileData);
-      setOriginalProfile(profileData);
-      setLoading(false);
+
+      fetchProfileWithStats();
     }
   }, [isAuthenticated, user, isLoading, router]);
 
-  // Check if profile has changes (excluding avatar)
+  // Check if profile has changes (excluding avatar and email)
   const hasChanges = () => {
     if (!profile || !originalProfile) return false;
 
-    return profile.name !== originalProfile.name || profile.email !== originalProfile.email;
+    return profile.name !== originalProfile.name;
   };
 
   const refreshProfileData = async () => {
     try {
-      const userData = await apiGet<UserProfile>('/api/profile');
+      const response = await apiGet<{ user: UserProfile }>('/api/profile');
+      const userData = response.user;
 
       // Update Zustand store with fresh user data
       updateUser({
@@ -76,9 +111,10 @@ function ProfilePageContent() {
         id: userData.id,
         email: userData.email,
         name: userData.name,
-        role: userData.role,
+        role: userData.role || 'user',
         avatar: userData.avatar,
         createdAt: userData.createdAt || new Date().toISOString(),
+        statistics: userData.statistics,
       };
       setProfile(updatedProfileData);
       setOriginalProfile(updatedProfileData);
@@ -99,7 +135,6 @@ function ProfilePageContent() {
     try {
       await apiPut<UserProfile>('/api/profile', {
         name: profile.name,
-        email: profile.email,
       });
 
       // Refresh profile data from API
@@ -183,11 +218,10 @@ function ProfilePageContent() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="Enter your email address"
                       value={profile.email || ''}
-                      onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                      className="pl-10"
-                      required
+                      className="cursor-not-allowed bg-gray-50 pl-10"
+                      disabled
+                      readOnly
                     />
                   </div>
                 </div>
@@ -198,26 +232,79 @@ function ProfilePageContent() {
                   <CardBody className="flex flex-row items-center p-4">
                     <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
-                      <Badge className="mb-1">
+                      <p className="mb-1 font-semibold text-[#A6825A]">
                         {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
-                      </Badge>
-                      <p className="text-sm text-[#A6825A]">Your current access level</p>
+                      </p>
+                      <p className="text-sm text-[#A6825A]">Access level</p>
                     </div>
                   </CardBody>
                 </Card>
 
-                <Card className="border-green-200 bg-green-50">
+                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
                   <CardBody className="flex flex-row items-center p-4">
-                    <Calendar className="mr-3 h-5 w-5 text-green-500" />
+                    <Calendar className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
-                      <p className="font-semibold text-green-800">
+                      <p className="font-semibold text-[#A6825A]">
                         {formatDate(profile.createdAt)}
                       </p>
-                      <p className="text-sm text-green-700">Account creation date</p>
+                      <p className="text-sm text-[#A6825A]">Member since</p>
                     </div>
                   </CardBody>
                 </Card>
               </div>
+
+              {/* User Statistics */}
+              {profile.statistics && (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                  <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                    <CardBody className="flex flex-row items-center p-4">
+                      <FileText className="mr-3 h-5 w-5 text-[#B8956A]" />
+                      <div>
+                        <p className="text-2xl font-bold text-[#A6825A]">
+                          {profile.statistics.totalArticles}
+                        </p>
+                        <p className="text-sm text-[#A6825A]">Total Articles</p>
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                    <CardBody className="flex flex-row items-center p-4">
+                      <MessageSquare className="mr-3 h-5 w-5 text-[#B8956A]" />
+                      <div>
+                        <p className="text-2xl font-bold text-[#A6825A]">
+                          {profile.statistics.totalComments}
+                        </p>
+                        <p className="text-sm text-[#A6825A]">Total Comments</p>
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                    <CardBody className="flex flex-row items-center p-4">
+                      <ThumbsUp className="mr-3 h-5 w-5 text-[#B8956A]" />
+                      <div>
+                        <p className="text-2xl font-bold text-[#A6825A]">
+                          {profile.statistics.totalLikes}
+                        </p>
+                        <p className="text-sm text-[#A6825A]">Total Likes</p>
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                    <CardBody className="flex flex-row items-center p-4">
+                      <ThumbsDown className="mr-3 h-5 w-5 text-[#B8956A]" />
+                      <div>
+                        <p className="text-2xl font-bold text-[#A6825A]">
+                          {profile.statistics.totalDislikes}
+                        </p>
+                        <p className="text-sm text-[#A6825A]">Total Dislikes</p>
+                      </div>
+                    </CardBody>
+                  </Card>
+                </div>
+              )}
 
               {message && (
                 <Card

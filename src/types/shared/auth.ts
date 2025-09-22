@@ -5,6 +5,12 @@ export interface User {
   role: 'user' | 'admin';
   avatar?: string;
   createdAt: string;
+  statistics?: {
+    totalArticles: number;
+    totalLikes: number;
+    totalDislikes: number;
+    totalComments: number;
+  };
 }
 
 export interface AuthState {

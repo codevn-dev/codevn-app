@@ -26,7 +26,6 @@ import {
   ChevronUp,
   ChevronDown,
   XCircle,
-  Calendar,
 } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
