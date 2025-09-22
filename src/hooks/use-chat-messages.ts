@@ -27,7 +27,16 @@ interface Conversation {
 }
 
 interface WebSocketMessage {
-  type: 'connected' | 'new_message' | 'message_sent' | 'typing' | 'messages_seen' | 'error';
+  type:
+    | 'connected'
+    | 'new_message'
+    | 'message_sent'
+    | 'typing'
+    | 'messages_seen'
+    | 'error'
+    | 'online_users'
+    | 'user_online'
+    | 'user_offline';
   data?: any;
 }
 
@@ -116,6 +125,10 @@ export function useChatMessages({
         case 'connected':
           // Fetch initial conversations
           fetchConversations();
+          // Initialize presence from server payload if available
+          if (message.data?.onlineUsers && Array.isArray(message.data.onlineUsers)) {
+            setOnlineUsers(message.data.onlineUsers as string[]);
+          }
           break;
 
         case 'new_message':
@@ -286,6 +299,29 @@ export function useChatMessages({
             onMessagesSeen(message.data.chatId, message.data.seenBy);
           }
           break;
+
+        // Presence updates (if server emits)
+        case 'online_users': {
+          const ids = (message.data?.onlineUsers || []) as string[];
+          if (Array.isArray(ids)) {
+            setOnlineUsers(ids);
+          }
+          break;
+        }
+        case 'user_online': {
+          const userId = message.data?.userId as string;
+          if (userId) {
+            setOnlineUsers((prev) => (prev.includes(userId) ? prev : [...prev, userId]));
+          }
+          break;
+        }
+        case 'user_offline': {
+          const userId = message.data?.userId as string;
+          if (userId) {
+            setOnlineUsers((prev) => prev.filter((id) => id !== userId));
+          }
+          break;
+        }
 
         case 'error':
           console.error('WebSocket error:', message.data);
@@ -459,17 +495,7 @@ export function useChatMessages({
     }
   }, []);
 
-  const fetchOnlineUsers = useCallback(async () => {
-    try {
-      const response = await fetch('/api/chat/online-users');
-      if (response.ok) {
-        const data = await response.json();
-        setOnlineUsers(data.onlineUsers || []);
-      }
-    } catch (error) {
-      console.error('Error fetching online users:', error);
-    }
-  }, []);
+  // Removed HTTP polling for online users; rely on WebSocket presence events
 
   const isUserOnline = useCallback(
     (userId: string) => {
@@ -525,14 +551,7 @@ export function useChatMessages({
     };
   }, [user?.id, connect, disconnect, fetchConversations]);
 
-  // Fetch online users periodically
-  useEffect(() => {
-    if (isConnected) {
-      fetchOnlineUsers();
-      const interval = setInterval(fetchOnlineUsers, 30000); // Every 30 seconds
-      return () => clearInterval(interval);
-    }
-  }, [isConnected, fetchOnlineUsers]);
+  // No polling; presence updates come via WebSocket events only
 
   const markConversationAsRead = useCallback((peerId: string) => {
     setConversations((prevConversations) =>

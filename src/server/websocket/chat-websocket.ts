@@ -35,6 +35,8 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
     await this.subscriber.subscribe('chat:new_message');
     await this.subscriber.subscribe('chat:typing');
     await this.subscriber.subscribe('chat:messages_seen');
+    await this.subscriber.subscribe('presence:user_online');
+    await this.subscriber.subscribe('presence:user_offline');
 
     this.subscriber.on('message', (channel: string, payload: string) => {
       try {
@@ -63,6 +65,16 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
               type: 'messages_seen',
               data: { chatId: data.chatId, seenBy: data.seenBy },
             });
+            break;
+          }
+          case 'presence:user_online': {
+            const data = message.data;
+            this.broadcastToAll({ type: 'user_online', data: { userId: data.userId } });
+            break;
+          }
+          case 'presence:user_offline': {
+            const data = message.data;
+            this.broadcastToAll({ type: 'user_offline', data: { userId: data.userId } });
             break;
           }
         }
@@ -251,6 +263,11 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
       }
       this.userConnections.get(userId)!.add(connectionId);
 
+      // If this is the first connection for the user, announce online
+      if (this.userConnections.get(userId)!.size === 1) {
+        this.onUserOnline(userId);
+      }
+
       // Set up event handlers
       socket.on('message', (data) => {
         try {
@@ -277,7 +294,7 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
       // Send welcome message
       this.sendToConnection(connectionId, {
         type: 'connected',
-        data: { userId, connectionId },
+        data: { userId, connectionId, onlineUsers: this.getOnlineUsers() },
       });
 
       logger.info('WebSocket connection added', { connectionId, userId });
@@ -293,6 +310,18 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
 
   public isUserOnline(userId: string): boolean {
     return this.userConnections.has(userId);
+  }
+
+  protected onUserOnline(userId: string): void {
+    // Notify all local connections and publish to other instances
+    this.broadcastToAll({ type: 'user_online', data: { userId } });
+    void this.publish('presence:user_online', { userId });
+  }
+
+  protected onUserOffline(userId: string): void {
+    // Notify all local connections and publish to other instances
+    this.broadcastToAll({ type: 'user_offline', data: { userId } });
+    void this.publish('presence:user_offline', { userId });
   }
 }
 

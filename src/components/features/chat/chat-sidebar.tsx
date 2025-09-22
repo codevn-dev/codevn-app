@@ -132,9 +132,7 @@ export function ChatSidebar({
               <div
                 className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}
               />
-              <span className="text-xs text-gray-500">
-                {isConnected ? 'Connected' : 'Disconnected'}
-              </span>
+              <span className="text-xs text-gray-500">{isConnected ? 'Online' : 'Offline'}</span>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onCloseAll || onClose} className="h-8 w-8 p-0">
@@ -186,10 +184,12 @@ export function ChatSidebar({
                         {conversation.peer?.name?.charAt(0).toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
-                    {/* Online indicator */}
-                    {onlineUsers.includes(conversation.peer.id) && (
-                      <div className="absolute -right-1 -bottom-1 h-3 w-3 rounded-full border-2 border-white bg-green-500"></div>
-                    )}
+                    {/* Online/Offline indicator (always visible) */}
+                    <div
+                      className={`absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-white ${
+                        onlineUsers.includes(conversation.peer.id) ? 'bg-green-500' : 'bg-gray-300'
+                      }`}
+                    ></div>
                     {/* New message indicator */}
                     {conversation.unreadCount > 0 && (
                       <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white">

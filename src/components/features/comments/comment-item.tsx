@@ -100,6 +100,27 @@ export function CommentItem({
     repliesRef.current = replies;
   }, [replies]);
 
+  // Helper: robust scroll to reply box with small retries to handle async layout
+  const scrollToReplyBox = () => {
+    const doScroll = () => {
+      bottomReplyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    // Immediate, next frame, and delayed attempts
+    doScroll();
+    requestAnimationFrame(doScroll);
+    setTimeout(doScroll, 80);
+    setTimeout(doScroll, 160);
+  };
+
+  // Ensure we scroll to the bottom reply textbox when requested, even after async loads
+  useEffect(() => {
+    if (showReplies && shouldFocusReply) {
+      setTimeout(() => {
+        scrollToReplyBox();
+      }, 0);
+    }
+  }, [showReplies, replies.length, replyFocusTick, shouldFocusReply]);
+
   // Handle new replies from websocket - merge with existing local state
   useEffect(() => {
     if (comment.replies && comment.replies.length > 0 && repliesLoadedRef.current) {
@@ -391,22 +412,20 @@ export function CommentItem({
                       setAuthModalOpen(true);
                       return;
                     }
-                    // Open replies section and focus the bottom reply textbox
-                    setShowReplies(true);
-                    if (!repliesLoadedRef.current) {
-                      void loadReplies(1, false);
+                    // Ensure replies are visible and loaded if needed
+                    if (!showReplies) {
+                      setShowReplies(true);
+                      if (!repliesLoadedRef.current) {
+                        void loadReplies(1, false);
+                      }
                     }
+                    // Set target and prefill
                     setChildReplyingTo(comment);
                     setChildReplyPrefill('');
-                    // bump tick to force focus re-run
                     setReplyFocusTick((t) => t + 1);
                     setShouldFocusReply(true);
-                    // after state updates, scroll the bottom reply box into view
                     setTimeout(() => {
-                      bottomReplyRef.current?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center',
-                      });
+                      scrollToReplyBox();
                     }, 0);
                   }}
                   className="h-6 rounded-md px-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
@@ -475,9 +494,24 @@ export function CommentItem({
                   onReplyAdded={onReplyAdded}
                   depth={depth + 1}
                   onRequestParentReply={(c) => {
-                    setShowReplies(true);
+                    // Ensure replies visible
+                    if (!showReplies) {
+                      setShowReplies(true);
+                      if (!repliesLoadedRef.current) {
+                        void loadReplies(1, false);
+                      }
+                    }
+                    // Set target, prefill, and scroll to reply box
                     setChildReplyingTo(c);
                     setChildReplyPrefill(`@${c.author.name} `);
+                    setReplyFocusTick((t) => t + 1);
+                    setShouldFocusReply(true);
+                    setTimeout(() => {
+                      bottomReplyRef.current?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                      });
+                    }, 0);
                   }}
                 />
               ))}

@@ -68,7 +68,7 @@ export function FloatingChatButton() {
               setChatSidebarOpen(true);
             }
           }}
-          className="h-14 w-14 rounded-full bg-blue-600 p-0 shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl"
+          className="h-14 w-14 rounded-full bg-gray-600 p-0 shadow-lg transition-all duration-200 hover:bg-gray-800 hover:shadow-xl"
           size="lg"
         >
           <MessageCircle className="h-6 w-6 text-white" />

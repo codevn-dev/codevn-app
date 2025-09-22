@@ -45,7 +45,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
 
   // Use WebSocket for real-time chat
   const {
-    isConnected,
+    isUserOnline,
     sendMessage: sendWebSocketMessage,
     sendTyping,
     markAsSeen: markAsSeenWebSocket,
@@ -326,13 +326,13 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
 
   return (
     <div
-      className="pointer-events-auto fixed right-80 bottom-0 z-[110] flex h-96 w-80 flex-col rounded-lg border border-gray-200 bg-white shadow-lg"
+      className="pointer-events-auto fixed right-80 bottom-0 z-[110] flex h-[28.8rem] w-[24rem] flex-col rounded-lg border border-gray-100 bg-white shadow-lg"
       data-chat-window="true"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between rounded-t-lg bg-gray-900 p-4 text-white"
+        className="flex items-center justify-between rounded-t-lg bg-gray-600 p-4 text-white"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2">
@@ -346,10 +346,10 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
             <div className="text-sm font-medium">{peerName}</div>
             <div className="flex items-center gap-1">
               <div
-                className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}
+                className={`h-2 w-2 rounded-full ${isUserOnline(peerId) ? 'bg-green-400' : 'bg-gray-400'}`}
               />
               <span className="text-xs text-gray-300">
-                {isConnected ? 'Connected' : 'Disconnected'}
+                {isUserOnline(peerId) ? 'Online' : 'Offline'}
               </span>
             </div>
           </div>
@@ -364,7 +364,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
             }}
             className="h-6 w-6 p-0 text-white hover:bg-gray-700"
           >
-            <X className="h-3 w-3" />
+            <X className="h-5 w-5" />
           </Button>
         </div>
       </div>
@@ -419,7 +419,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
                     ) : (
                       <div
                         className={`max-w-[70%] rounded-lg px-4 py-3 ${
-                          m.from === userId ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'
+                          m.from === userId ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-900'
                         }`}
                       >
                         <div className="text-sm">{m.text}</div>

@@ -270,20 +270,5 @@ export async function chatRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /api/chat/online-users - Get online users
-  fastify.get(
-    '/online-users',
-    {
-      preHandler: authMiddleware,
-    },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const onlineUsers = chatWebSocketService.getOnlineUsers();
-        return reply.send({ onlineUsers });
-      } catch (error) {
-        logger.error('Error in online-users GET', undefined, error as Error);
-        return reply.status(500).send({ error: 'Internal server error' });
-      }
-    }
-  );
+  // Removed /api/chat/online-users endpoint; presence is handled via WebSocket
 }

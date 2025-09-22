@@ -58,6 +58,16 @@ export abstract class BaseWebSocketService<TConnection extends BaseConnection> {
         userConnections.delete(connectionId);
         if (userConnections.size === 0) {
           this.userConnections.delete(connection.userId);
+          // Notify subclasses that this user went offline (last connection closed)
+          try {
+            this.onUserOffline(connection.userId);
+          } catch (err) {
+            logger.error(
+              'Error in onUserOffline hook',
+              { userId: connection.userId },
+              err as Error
+            );
+          }
         }
       }
     }
@@ -117,6 +127,16 @@ export abstract class BaseWebSocketService<TConnection extends BaseConnection> {
 
   // To be implemented by subclasses
   protected abstract setupRedisSubscriptions(): Promise<void>;
+
+  // Optional presence hooks for subclasses
+  // Called when the first connection for a user is established
+  protected onUserOnline(_userId: string): void {
+    // no-op by default
+  }
+  // Called when the last connection for a user is removed
+  protected onUserOffline(_userId: string): void {
+    // no-op by default
+  }
 
   public getOnlineUsers(): string[] {
     return Array.from(this.userConnections.keys());

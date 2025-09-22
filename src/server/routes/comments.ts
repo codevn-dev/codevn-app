@@ -32,17 +32,6 @@ export async function commentRoutes(fastify: FastifyInstance) {
     });
   });
 
-  // GET /api/comments/online-users - Get online users
-  fastify.get('/online-users', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const onlineUsers = commentWebSocketService.getOnlineUsers();
-      return reply.send({ onlineUsers });
-    } catch (error) {
-      logger.error('Error in comment online-users GET', undefined, error as Error);
-      return reply.status(500).send({ error: 'Internal server error' });
-    }
-  });
-
   // GET /api/comments/:id - Get a specific comment
   fastify.get(
     '/:id',

@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Smile } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { useCommentWebSocketContext } from './websocket-context';
 import { apiPut } from '@/lib/utils/api-client';
 import { UpdateCommentRequest, Comment } from '@/types/shared/comment';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 
 interface CommentFormProps {
   articleId: string;
@@ -46,6 +48,8 @@ export function CommentForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const emojiPopoverRef = useRef<HTMLDivElement>(null);
 
   // Sync content when initialContent changes
   useEffect(() => {
@@ -69,6 +73,39 @@ export function CommentForm({
       });
     }
   }, [autoFocus, focusTrigger]);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!showEmoji) return;
+      const target = e.target as Node;
+      if (
+        emojiPopoverRef.current &&
+        !emojiPopoverRef.current.contains(target) &&
+        target !== textareaRef.current
+      ) {
+        setShowEmoji(false);
+      }
+    };
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
+  }, [showEmoji]);
+
+  const insertAtCursor = (emoji: string) => {
+    const input = textareaRef.current;
+    if (!input) {
+      setContent((prev) => prev + emoji);
+      return;
+    }
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+    const newValue = input.value.slice(0, start) + emoji + input.value.slice(end);
+    setContent(newValue);
+    const caret = start + emoji.length;
+    requestAnimationFrame(() => {
+      input.focus();
+      input.setSelectionRange(caret, caret);
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,6 +237,19 @@ export function CommentForm({
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
         <div className="relative">
+          <button
+            type="button"
+            aria-label="Emoji"
+            className={`absolute right-2 bottom-2 flex h-8 w-8 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 ${
+              showEmoji ? 'text-gray-700' : ''
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowEmoji((v) => !v);
+            }}
+          >
+            <Smile className="h-5 w-5" />
+          </button>
           <Textarea
             value={content}
             onChange={handleChange}
@@ -208,12 +258,33 @@ export function CommentForm({
               textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }}
             onKeyDown={handleKeyDown}
+            onClick={(e) => {
+              e.stopPropagation();
+              textareaRef.current?.focus();
+              setShowEmoji(false);
+            }}
             placeholder={placeholder}
             className="min-h-[80px] resize-none border-gray-200 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
             maxLength={1000}
             ref={textareaRef}
             autoFocus={autoFocus}
           />
+          {showEmoji && (
+            <div
+              ref={emojiPopoverRef}
+              className="absolute right-0 bottom-12 z-[120] rounded-lg border border-gray-200 bg-white shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Picker
+                data={data}
+                onEmojiSelect={(emoji: any) => {
+                  insertAtCursor(emoji.native || emoji.shortcodes || '');
+                }}
+                theme="light"
+                previewPosition="none"
+              />
+            </div>
+          )}
         </div>
         <div className="mt-1 flex items-center justify-between">
           <span className="text-xs text-gray-500">{content.length}/1000 characters</span>
