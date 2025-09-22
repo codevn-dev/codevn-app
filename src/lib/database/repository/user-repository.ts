@@ -47,6 +47,7 @@ export class UserRepository {
     name: string;
     password: string;
     role?: 'user' | 'admin';
+    avatar?: string | null;
   }): Promise<
     Array<{
       id: string;
@@ -66,6 +67,7 @@ export class UserRepository {
         name: userData.name,
         password: hashedPassword,
         role: userData.role || 'user',
+        avatar: userData.avatar || null,
       })
       .returning({
         id: users.id,

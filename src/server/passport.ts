@@ -6,6 +6,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import fastifyPassport from '@fastify/passport';
 import { logger } from '@/lib/utils/logger';
+import { User as SharedUser } from '@/types/shared/auth';
 
 export async function setupPassport(fastify: FastifyInstance) {
   await fastify.register(fastifyPassport.initialize());
@@ -34,13 +35,15 @@ export async function setupPassport(fastify: FastifyInstance) {
             return done(null, false, { message: 'Invalid credentials' });
           }
 
-          return done(null, {
+          const authUser: SharedUser = {
             id: user.id,
             email: user.email,
             name: user.name,
-            avatar: user.avatar || undefined,
-            role: user.role,
-          });
+            avatar: (user.avatar as any) || undefined,
+            role: user.role as any,
+            createdAt: (user.createdAt as any)?.toISOString?.() || new Date().toISOString(),
+          };
+          return done(null, authUser);
         } catch (error) {
           logger.error('[AUTH] Local strategy error', undefined, error as Error);
           return done(error, false);
@@ -74,28 +77,25 @@ export async function setupPassport(fastify: FastifyInstance) {
 
             if (!user) {
               // Create new user
-              const newUser = await userRepository.create({
+              await userRepository.create({
                 email,
                 name: name || email.split('@')[0],
                 password: '', // No password for OAuth users
                 role: 'user',
+                avatar: avatar || null,
               });
-              user = newUser[0];
-
-              if (avatar) {
-                await userRepository.update(user.id, { avatar });
-              }
-            } else if (avatar && !user.avatar) {
-              await userRepository.update(user.id, { avatar });
+              user = await userRepository.findByEmail(email);
             }
 
-            return done(null, {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              avatar: user.avatar || undefined,
-              role: user.role,
-            });
+            const authUser: SharedUser = {
+              id: user!.id,
+              email: user!.email,
+              name: user!.name,
+              avatar: (user!.avatar as any) || undefined,
+              role: user!.role as any,
+              createdAt: (user!.createdAt as any)?.toISOString?.() || new Date().toISOString(),
+            };
+            return done(null, authUser);
           } catch (error) {
             logger.error('[AUTH] Google strategy error', undefined, error as Error);
             return done(error, false);
