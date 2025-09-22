@@ -3,11 +3,10 @@ import { FastifyRequest } from 'fastify';
 import { messageRepository } from '@/lib/database/repository';
 import { logger } from '@/lib/utils/logger';
 import { verifyToken } from '../jwt';
+import { BaseWebSocketService, BaseConnection } from './base-websocket';
 
-interface ChatConnection {
+interface ChatConnection extends BaseConnection {
   userId: string;
-  socket: WebSocket;
-  isAlive: boolean;
 }
 
 interface ChatMessage {
@@ -20,61 +19,60 @@ interface ChatMessage {
   messageId?: string;
 }
 
-class ChatWebSocketService {
-  private connections: Map<string, ChatConnection> = new Map();
-  private userConnections: Map<string, Set<string>> = new Map(); // userId -> Set of connectionIds
-
+class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
   constructor() {
-    // Set up ping/pong mechanism to keep connections alive
-    setInterval(() => {
-      this.pingConnections();
-    }, 30000); // Ping every 30 seconds
-  }
-
-  private generateConnectionId(): string {
-    return (
-      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-    );
+    super(30000);
+    this.setupRedisSubscriptions().catch((error) => {
+      logger.error('Error setting up Redis subscriptions for chat', undefined, error as Error);
+    });
   }
 
   private getChatId(userA: string, userB: string): string {
     return [userA, userB].sort().join('|');
   }
 
-  private pingConnections() {
-    this.connections.forEach((connection, connectionId) => {
-      if (!connection.isAlive) {
-        this.removeConnection(connectionId);
-        return;
-      }
+  protected async setupRedisSubscriptions(): Promise<void> {
+    await this.subscriber.subscribe('chat:new_message');
+    await this.subscriber.subscribe('chat:typing');
+    await this.subscriber.subscribe('chat:messages_seen');
 
-      connection.isAlive = false;
+    this.subscriber.on('message', (channel: string, payload: string) => {
       try {
-        connection.socket.ping();
+        const message = JSON.parse(payload) as {
+          instanceId: string;
+          type: string;
+          data: any;
+        };
+        if (message.instanceId === this.instanceId) return;
+
+        switch (channel) {
+          case 'chat:new_message': {
+            const data = message.data;
+            // Deliver to recipient
+            this.sendToUser(data.toUser.id, { type: 'new_message', data });
+            break;
+          }
+          case 'chat:typing': {
+            const data = message.data;
+            this.sendToUser(data.toUserId, { type: 'typing', data });
+            break;
+          }
+          case 'chat:messages_seen': {
+            const data = message.data;
+            this.sendToUser(data.otherUserId, {
+              type: 'messages_seen',
+              data: { chatId: data.chatId, seenBy: data.seenBy },
+            });
+            break;
+          }
+        }
       } catch (error) {
-        logger.error('Error pinging connection', { connectionId }, error as Error);
-        this.removeConnection(connectionId);
+        logger.error('Error handling Redis pubsub message for chat', undefined, error as Error);
       }
     });
   }
 
-  private removeConnection(connectionId: string) {
-    const connection = this.connections.get(connectionId);
-    if (!connection) return;
-
-    this.connections.delete(connectionId);
-
-    // Remove from user connections
-    const userConnections = this.userConnections.get(connection.userId);
-    if (userConnections) {
-      userConnections.delete(connectionId);
-      if (userConnections.size === 0) {
-        this.userConnections.delete(connection.userId);
-      }
-    }
-
-    logger.info('WebSocket connection removed', { connectionId, userId: connection.userId });
-  }
+  // publish and lifecycle inherited
 
   private async handleMessage(connectionId: string, message: ChatMessage) {
     const connection = this.connections.get(connectionId);
@@ -95,7 +93,7 @@ class ChatWebSocketService {
           connection.isAlive = true;
           break;
         default:
-          logger.warn('Unknown message type', { type: message.type, connectionId });
+          break;
       }
     } catch (error) {
       logger.error(
@@ -141,11 +139,14 @@ class ChatWebSocketService {
       data: messageData,
     });
 
-    // Send to recipient if online
+    // Send to recipient if online (local instance)
     this.sendToUser(message.toUserId, {
       type: 'new_message',
       data: messageData,
     });
+
+    // Publish for cross-instance delivery
+    await this.publish('chat:new_message', messageData);
 
     logger.info('Chat message sent via WebSocket', {
       fromUserId: connection.userId,
@@ -165,6 +166,13 @@ class ChatWebSocketService {
         fromUserId: connection.userId,
         isTyping: message.data?.isTyping || false,
       },
+    });
+
+    // Publish typing to other instances
+    await this.publish('chat:typing', {
+      toUserId: message.toUserId,
+      fromUserId: connection.userId,
+      isTyping: message.data?.isTyping || false,
     });
   }
 
@@ -187,29 +195,17 @@ class ChatWebSocketService {
           seenBy: connection.userId,
         },
       });
+
+      // Publish seen update to other instances
+      await this.publish('chat:messages_seen', {
+        chatId: message.chatId,
+        seenBy: connection.userId,
+        otherUserId,
+      });
     }
   }
 
-  private sendToConnection(connectionId: string, message: any) {
-    const connection = this.connections.get(connectionId);
-    if (!connection || connection.socket.readyState !== WebSocket.OPEN) return;
-
-    try {
-      connection.socket.send(JSON.stringify(message));
-    } catch (error) {
-      logger.error('Error sending message to connection', { connectionId }, error as Error);
-      this.removeConnection(connectionId);
-    }
-  }
-
-  private sendToUser(userId: string, message: any) {
-    const userConnections = this.userConnections.get(userId);
-    if (!userConnections) return;
-
-    userConnections.forEach((connectionId) => {
-      this.sendToConnection(connectionId, message);
-    });
-  }
+  // send helpers inherited
 
   public async addConnection(socket: WebSocket, request: FastifyRequest) {
     try {
@@ -245,11 +241,7 @@ class ChatWebSocketService {
       logger.info('WebSocket token verified', { userId });
 
       const connectionId = this.generateConnectionId();
-      const connection: ChatConnection = {
-        userId,
-        socket,
-        isAlive: true,
-      };
+      const connection: ChatConnection = { userId, socket, isAlive: true };
 
       this.connections.set(connectionId, connection);
 

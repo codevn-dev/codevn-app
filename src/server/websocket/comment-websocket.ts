@@ -3,15 +3,12 @@ import { FastifyRequest } from 'fastify';
 import { commentRepository } from '@/lib/database/repository';
 import { logger } from '@/lib/utils/logger';
 import { verifyToken } from '../jwt';
+import { BaseWebSocketService, BaseConnection } from './base-websocket';
 
-interface CommentConnection {
-  userId: string | null;
-  socket: WebSocket;
-  isAlive: boolean;
-}
+interface CommentConnection extends BaseConnection {}
 
 interface CommentMessage {
-  type: 'comment' | 'reply' | 'ping' | 'pong';
+  type: 'comment' | 'reply' | 'ping' | 'pong' | 'connected' | 'disconnected';
   data?: any;
   articleId?: string;
   fromUserId?: string;
@@ -20,62 +17,46 @@ interface CommentMessage {
   commentId?: string;
 }
 
-class CommentWebSocketService {
-  private connections: Map<string, CommentConnection> = new Map();
-  private userConnections: Map<string, Set<string>> = new Map(); // userId -> Set of connectionIds
-
+class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
   constructor() {
-    // Set up ping/pong mechanism to keep connections alive
-    setInterval(() => {
-      this.pingConnections();
-    }, 30000); // Ping every 30 seconds
+    super(30000);
+    this.setupRedisSubscriptions().catch((error) => {
+      logger.error('Error setting up Redis subscriptions for comment', undefined, error as Error);
+    });
   }
 
-  private generateConnectionId(): string {
-    return (
-      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-    );
-  }
+  protected async setupRedisSubscriptions(): Promise<void> {
+    await this.subscriber.subscribe('comment:new_comment');
+    await this.subscriber.subscribe('comment:new_reply');
 
-  private pingConnections() {
-    this.connections.forEach((connection, connectionId) => {
-      if (!connection.isAlive) {
-        this.removeConnection(connectionId);
-        return;
-      }
-
-      connection.isAlive = false;
+    this.subscriber.on('message', (channel: string, payload: string) => {
       try {
-        connection.socket.ping();
-      } catch (error) {
-        logger.error('Error pinging connection', { connectionId }, error as Error);
-        this.removeConnection(connectionId);
-      }
-    });
-  }
+        const message = JSON.parse(payload) as {
+          instanceId: string;
+          type: string;
+          data: any;
+        };
+        if (message.instanceId === this.instanceId) return;
 
-  private removeConnection(connectionId: string) {
-    const connection = this.connections.get(connectionId);
-    if (!connection) return;
-
-    this.connections.delete(connectionId);
-
-    // Remove from user connections
-    if (connection.userId) {
-      const userConnections = this.userConnections.get(connection.userId);
-      if (userConnections) {
-        userConnections.delete(connectionId);
-        if (userConnections.size === 0) {
-          this.userConnections.delete(connection.userId);
+        switch (channel) {
+          case 'comment:new_comment': {
+            this.broadcastToAll({ type: 'new_comment', data: message.data });
+            break;
+          }
+          case 'comment:new_reply': {
+            this.broadcastToAll({ type: 'new_reply', data: message.data });
+            break;
+          }
         }
+      } catch (error) {
+        logger.error('Error handling Redis pubsub message for comment', undefined, error as Error);
       }
-    }
-
-    logger.info('WebSocket connection removed', {
-      connectionId,
-      userId: connection.userId ?? undefined,
     });
   }
+
+  // publish inherited
+
+  // lifecycle inherited
 
   private async handleMessage(connectionId: string, message: CommentMessage) {
     const connection = this.connections.get(connectionId);
@@ -93,7 +74,7 @@ class CommentWebSocketService {
           connection.isAlive = true;
           break;
         default:
-          logger.warn('Unknown message type', { type: message.type, connectionId });
+          break;
       }
     } catch (error) {
       logger.error(
@@ -144,11 +125,14 @@ class CommentWebSocketService {
       userHasUnliked: false,
     };
 
-    // Send to all connected users except the sender
+    // Local broadcast to other connections on the same instance
     this.broadcastToAllExcept(connectionId, {
       type: 'new_comment',
       data: commentData,
     });
+
+    // Publish for cross-instance delivery
+    await this.publish('comment:new_comment', commentData);
 
     logger.info('Comment sent via WebSocket', {
       fromUserId: connection.userId,
@@ -197,11 +181,14 @@ class CommentWebSocketService {
       userHasUnliked: false,
     };
 
-    // Send to all connected users except the sender
+    // Local broadcast to other connections on the same instance
     this.broadcastToAllExcept(connectionId, {
       type: 'new_reply',
       data: replyData,
     });
+
+    // Publish for cross-instance delivery
+    await this.publish('comment:new_reply', replyData);
 
     logger.info('Reply sent via WebSocket', {
       fromUserId: connection.userId,
@@ -211,31 +198,7 @@ class CommentWebSocketService {
     });
   }
 
-  private sendToConnection(connectionId: string, message: any) {
-    const connection = this.connections.get(connectionId);
-    if (!connection || connection.socket.readyState !== WebSocket.OPEN) return;
-
-    try {
-      connection.socket.send(JSON.stringify(message));
-    } catch (error) {
-      logger.error('Error sending message to connection', { connectionId }, error as Error);
-      this.removeConnection(connectionId);
-    }
-  }
-
-  private broadcastToAll(message: any) {
-    this.connections.forEach((_, connectionId) => {
-      this.sendToConnection(connectionId, message);
-    });
-  }
-
-  private broadcastToAllExcept(excludeConnectionId: string, message: any) {
-    this.connections.forEach((_, connectionId) => {
-      if (connectionId !== excludeConnectionId) {
-        this.sendToConnection(connectionId, message);
-      }
-    });
-  }
+  // send helpers inherited
 
   public async addConnection(socket: WebSocket, request: FastifyRequest) {
     try {
