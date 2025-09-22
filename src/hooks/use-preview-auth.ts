@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useFastifyAuthStore } from '@/stores';
 import { apiGet } from '@/lib/utils';
-import { User } from '@/types/shared/auth';
 import { UserResponse } from '@/types/shared';
 
 /**

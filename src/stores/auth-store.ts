@@ -9,7 +9,7 @@ interface AuthStoreState extends AuthState {
   user: User | null;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
-  logout: () => void;
+  signOut: () => void;
   updateUser: (updates: Partial<User>) => void;
 }
 
@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthStoreState>()(
         set({ isLoading: loading });
       },
 
-      logout: () => {
+      signOut: () => {
         set({
           user: null,
           isAuthenticated: false,

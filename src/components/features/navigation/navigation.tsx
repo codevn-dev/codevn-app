@@ -19,8 +19,8 @@ import { isAdmin } from '@/lib/utils';
 
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useFastifyAuthStore();
-  const { logout: authLogout } = useAuthActions();
+  const { user, isAuthenticated, signOut } = useFastifyAuthStore();
+  const { signOut: authSignOut } = useAuthActions();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();
   const pathname = usePathname();
@@ -28,16 +28,16 @@ export function Navigation() {
   const handleSignOut = async () => {
     try {
       // Use auth actions logout
-      await authLogout();
+      await authSignOut();
       // Clear local state
-      logout();
+      signOut();
       // Redirect to home page
       router.push('/');
       router.refresh();
     } catch (error) {
       console.error('Logout error:', error);
       // Still clear local state and redirect to home
-      logout();
+      signOut();
       router.push('/');
       router.refresh();
     }

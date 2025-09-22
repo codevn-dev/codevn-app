@@ -20,7 +20,7 @@ import { useAuthActions } from '@/hooks/use-auth-actions';
 export function AuthModal() {
   const { authModalOpen, authMode, setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();
-  const { login, register, checkEmail } = useAuthActions();
+  const { signIn, signUp, checkEmail } = useAuthActions();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -67,7 +67,7 @@ export function AuthModal() {
 
     setIsLoading(true);
     try {
-      await login(formData.email, formData.password);
+      await signIn(formData.email, formData.password);
       setSuccess('Login successful!');
       setAuthModalOpen(false);
       router.refresh();
@@ -101,7 +101,7 @@ export function AuthModal() {
 
     setIsLoading(true);
     try {
-      await register(formData.email, formData.name, formData.password);
+      await signUp(formData.email, formData.name, formData.password);
       // Auto-login occurs on server; close modal and refresh UI
       setAuthModalOpen(false);
       router.refresh();

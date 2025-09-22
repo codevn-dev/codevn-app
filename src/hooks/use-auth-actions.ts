@@ -4,7 +4,6 @@ import {
   LoginResponse,
   RegisterResponse,
   CheckEmailResponse,
-  User,
 } from '@/types/shared/auth';
 import { useFastifyAuthStore } from '@/stores';
 import { apiPost, apiGet } from '@/lib/utils';
