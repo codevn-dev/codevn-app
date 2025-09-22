@@ -5,9 +5,6 @@ import { RedisAuthService } from './redis';
 export interface JWTPayload {
   id: string;
   email: string;
-  name: string;
-  avatar?: string;
-  role: string;
   iat?: number;
   exp?: number;
 }

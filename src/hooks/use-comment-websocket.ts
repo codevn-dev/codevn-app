@@ -97,8 +97,7 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
   );
 
   const connect = useCallback(() => {
-    if (!user?.id || wsRef.current?.readyState === WebSocket.OPEN || isConnectingRef.current)
-      return;
+    if (wsRef.current?.readyState === WebSocket.OPEN || isConnectingRef.current) return;
 
     isConnectingRef.current = true;
 
@@ -116,9 +115,8 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
         ?.split('=')[1];
 
       // Include token in WebSocket URL as query parameter
-      const wsUrl = token
-        ? `${config.chat.wsUrl.replace('/chat', '/comments')}?token=${encodeURIComponent(token)}`
-        : config.chat.wsUrl.replace('/chat', '/comments');
+      const baseUrl = config.comment.wsUrl;
+      const wsUrl = token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -145,6 +143,11 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
       };
 
       ws.onclose = (event) => {
+        console.error('Comment WebSocket closed:', {
+          code: event.code,
+          reason: event.reason,
+          wasClean: event.wasClean,
+        });
         setIsConnected(false);
         isConnectingRef.current = false;
 
@@ -166,10 +169,10 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
       ws.onerror = (error) => {
         console.error('Comment WebSocket error:', {
           error,
-          url: config.chat.wsUrl.replace('/chat', '/comments'),
+          url: wsUrl,
           readyState: ws.readyState,
           userId: user?.id,
-          errorType: error.type,
+          errorType: (error as any)?.type,
         });
 
         // Don't attempt to reconnect on error - let the close handler handle it
@@ -180,7 +183,7 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
       console.error('Error creating Comment WebSocket connection:', error);
       isConnectingRef.current = false;
     }
-  }, [user?.id, handleWebSocketMessage]);
+  }, [handleWebSocketMessage]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -227,16 +230,14 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
     }
   }, []);
 
-  // Connect on mount and when user changes
+  // Connect once on mount
   useEffect(() => {
-    if (user?.id) {
-      connect();
-    }
+    connect();
 
     return () => {
       disconnect();
     };
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     isConnected,

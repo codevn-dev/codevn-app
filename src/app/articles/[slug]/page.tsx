@@ -21,7 +21,6 @@ export default async function ArticlePage({
 
   // Get current user from JWT token
   let currentUserId: string | null = null;
-  let userRole: string | null = null;
 
   try {
     const cookieStore = await cookies();
@@ -31,17 +30,12 @@ export default async function ArticlePage({
       const decoded = await verifyToken(token);
       if (decoded) {
         currentUserId = decoded.id;
-        userRole = decoded.role;
       }
     }
   } catch {
     // Token invalid or expired
     currentUserId = null;
-    userRole = null;
   }
-
-  // Suppress unused variable warning
-  void userRole;
 
   const article = await articleRepository.findBySlug(slug);
 

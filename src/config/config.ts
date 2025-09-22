@@ -50,7 +50,7 @@ export const chatConfig = {
 
 // Comment configuration
 export const commentConfig = {
-  wsUrl: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000'}/api/articles/comments/ws`,
+  wsUrl: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000'}/api/comments/ws`,
 } as const;
 
 // Pagination configuration
@@ -125,6 +125,7 @@ export const config = {
   upload: uploadConfig,
   api: apiConfig,
   chat: chatConfig,
+  comment: commentConfig,
   pagination: paginationConfig,
   rateLimit: rateLimitConfig,
   cors: corsConfig,

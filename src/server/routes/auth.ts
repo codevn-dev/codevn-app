@@ -74,9 +74,31 @@ export async function authRoutes(fastify: FastifyInstance) {
           role: 'user',
         });
 
+        // Auto-login: generate token and set cookie like sign-in
+        const createdUser = newUser[0];
+        const token = await generateToken(createdUser);
+
+        reply.cookie('auth-token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          domain:
+            process.env.NODE_ENV === 'production'
+              ? process.env.COOKIE_DOMAIN || undefined
+              : 'localhost',
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        });
+
         return reply.status(201).send({
           message: 'Sign-up successful',
-          user: { id: newUser[0].id, email: newUser[0].email, name: newUser[0].name },
+          user: {
+            id: createdUser.id,
+            email: createdUser.email,
+            name: createdUser.name,
+            avatar: createdUser.avatar,
+            role: createdUser.role || 'user',
+          },
         });
       } catch (error) {
         logger.error('Registration error', undefined, error as Error);

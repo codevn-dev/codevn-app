@@ -5,7 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { verifyToken } from '../jwt';
 
 interface CommentConnection {
-  userId: string;
+  userId: string | null;
   socket: WebSocket;
   isAlive: boolean;
 }
@@ -61,15 +61,20 @@ class CommentWebSocketService {
     this.connections.delete(connectionId);
 
     // Remove from user connections
-    const userConnections = this.userConnections.get(connection.userId);
-    if (userConnections) {
-      userConnections.delete(connectionId);
-      if (userConnections.size === 0) {
-        this.userConnections.delete(connection.userId);
+    if (connection.userId) {
+      const userConnections = this.userConnections.get(connection.userId);
+      if (userConnections) {
+        userConnections.delete(connectionId);
+        if (userConnections.size === 0) {
+          this.userConnections.delete(connection.userId);
+        }
       }
     }
 
-    logger.info('WebSocket connection removed', { connectionId, userId: connection.userId });
+    logger.info('WebSocket connection removed', {
+      connectionId,
+      userId: connection.userId ?? undefined,
+    });
   }
 
   private async handleMessage(connectionId: string, message: CommentMessage) {
@@ -102,6 +107,13 @@ class CommentWebSocketService {
   private async handleComment(connectionId: string, message: CommentMessage) {
     const connection = this.connections.get(connectionId);
     if (!connection || !message.content || !message.articleId) return;
+    if (!connection.userId) {
+      this.sendToConnection(connectionId, {
+        type: 'error',
+        data: { message: 'Authentication required to comment' },
+      });
+      return;
+    }
 
     // Save comment to database
     const savedComment = await commentRepository.create({
@@ -148,6 +160,13 @@ class CommentWebSocketService {
   private async handleReply(connectionId: string, message: CommentMessage) {
     const connection = this.connections.get(connectionId);
     if (!connection || !message.content || !message.articleId || !message.parentId) return;
+    if (!connection.userId) {
+      this.sendToConnection(connectionId, {
+        type: 'error',
+        data: { message: 'Authentication required to reply' },
+      });
+      return;
+    }
 
     // Save reply to database
     const savedReply = await commentRepository.create({
@@ -234,22 +253,27 @@ class CommentWebSocketService {
         headers: Object.keys(request.headers),
       });
 
-      if (!token) {
-        logger.warn('Comment WebSocket connection rejected: No token');
-        socket.close(1008, 'Token required');
-        return;
+      let userId: string | null = null;
+      if (token) {
+        // Verify token if provided. If invalid or throws, proceed as anonymous.
+        try {
+          const payload = await verifyToken(token);
+          if (payload && payload.id) {
+            userId = payload.id;
+            logger.info('Comment WebSocket token verified', { userId });
+          } else {
+            logger.warn('Comment WebSocket proceeding as anonymous: Invalid token');
+          }
+        } catch (verifyError) {
+          logger.error(
+            'Comment WebSocket proceeding as anonymous: Token verification error',
+            undefined,
+            verifyError as Error
+          );
+        }
+      } else {
+        logger.info('Comment WebSocket anonymous connection');
       }
-
-      // Verify token
-      const payload = await verifyToken(token);
-      if (!payload) {
-        logger.warn('Comment WebSocket connection rejected: Invalid token');
-        socket.close(1008, 'Invalid token');
-        return;
-      }
-
-      const userId = payload.id;
-      logger.info('Comment WebSocket token verified', { userId });
 
       const connectionId = this.generateConnectionId();
       const connection: CommentConnection = {
@@ -260,11 +284,13 @@ class CommentWebSocketService {
 
       this.connections.set(connectionId, connection);
 
-      // Add to user connections
-      if (!this.userConnections.has(userId)) {
-        this.userConnections.set(userId, new Set());
+      // Add to user connections if authenticated
+      if (userId) {
+        if (!this.userConnections.has(userId)) {
+          this.userConnections.set(userId, new Set());
+        }
+        this.userConnections.get(userId)!.add(connectionId);
       }
-      this.userConnections.get(userId)!.add(connectionId);
 
       // Set up event handlers
       socket.on('message', (data) => {
@@ -285,7 +311,11 @@ class CommentWebSocketService {
       });
 
       socket.on('error', (error) => {
-        logger.error('WebSocket error', { connectionId, userId }, error as Error);
+        logger.error(
+          'WebSocket error',
+          { connectionId, userId: userId ?? undefined },
+          error as Error
+        );
         this.removeConnection(connectionId);
       });
 
@@ -295,10 +325,13 @@ class CommentWebSocketService {
         data: { userId, connectionId },
       });
 
-      logger.info('Comment WebSocket connection added', { connectionId, userId });
+      logger.info('Comment WebSocket connection added', {
+        connectionId,
+        userId: userId ?? undefined,
+      });
     } catch (error) {
-      logger.error('Comment WebSocket auth error', undefined, error as Error);
-      socket.close(1008, 'Authentication failed');
+      logger.error('Comment WebSocket connection error', undefined, error as Error);
+      socket.close(1011, 'Unexpected error');
     }
   }
 

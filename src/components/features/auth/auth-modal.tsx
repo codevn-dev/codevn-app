@@ -102,9 +102,9 @@ export function AuthModal() {
     setIsLoading(true);
     try {
       await register(formData.email, formData.name, formData.password);
-      setSuccess('Registration successful! You can now login.');
-      setAuthMode('signin');
-      setFormData({ email: '', name: '', password: '', confirmPassword: '' });
+      // Auto-login occurs on server; close modal and refresh UI
+      setAuthModalOpen(false);
+      router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Registration failed');
     } finally {
