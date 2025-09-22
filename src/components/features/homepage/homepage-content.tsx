@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { Search, MessageSquare, BookOpen, Calendar, Eye, X } from 'lucide-react';
+import { MessageSquare, BookOpen, Calendar, Eye, X } from 'lucide-react';
 import { useForumStore } from '@/stores';
 import { CategorySelector } from '@/features/articles';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -18,13 +17,11 @@ export function HomepageContent() {
   const {
     categories,
     articles,
-    searchTerm,
     isLoading,
     error,
     setCategories,
     setArticles,
     addArticles,
-    setSearchTerm,
     setLoading,
     setError,
     articlesPage,
@@ -66,16 +63,13 @@ export function HomepageContent() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    const q = params.get('search') || '';
     const names = (params.get('categoryNames') || '')
       .split(',')
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
     const mine = params.get('mine') === '1';
-    if (q) setSearchTerm(q);
     if (names.length > 0) setSelectedCategoryNames(names);
     if (mine) setOnlyMine(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch articles with pagination and server-side filters
@@ -93,7 +87,6 @@ export function HomepageContent() {
           sortBy: 'createdAt',
           sortOrder: 'desc',
         });
-        if (searchTerm) params.set('search', searchTerm);
         if (selectedCategoryNames.length > 0)
           params.set(
             'categoryNames',
@@ -119,7 +112,6 @@ export function HomepageContent() {
     fetchArticlesPage();
   }, [
     articlesPage,
-    searchTerm,
     selectedCategoryNames,
     onlyMine,
     isAuthenticated,
@@ -131,16 +123,15 @@ export function HomepageContent() {
     setError,
   ]);
 
-  // Reset to first page when filter/search changes
+  // Reset to first page when filter changes
   useEffect(() => {
     setArticlesPage(1);
-  }, [searchTerm, selectedCategoryNames, onlyMine, setArticlesPage]);
+  }, [selectedCategoryNames, onlyMine, setArticlesPage]);
 
   // Sync filters to URL
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams();
-    if (searchTerm) params.set('search', searchTerm);
     if (selectedCategoryNames.length > 0)
       params.set(
         'categoryNames',
@@ -149,7 +140,7 @@ export function HomepageContent() {
     if (onlyMine) params.set('mine', '1');
     const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
     window.history.replaceState(null, '', newUrl);
-  }, [searchTerm, selectedCategoryNames, onlyMine]);
+  }, [selectedCategoryNames, onlyMine]);
 
   // IntersectionObserver for lazy load
   useEffect(() => {
@@ -186,51 +177,37 @@ export function HomepageContent() {
   }
 
   return (
-    <div className="space-y-8 sm:space-y-10 md:space-y-12">
-      {/* Hero Section */}
-      <div className="py-6 text-center sm:py-8">
-        {/* Search Bar */}
-        <div className="mx-auto max-w-2xl px-3 sm:px-0">
-          <div className="relative">
-            <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
-            <Input
-              placeholder="Search articles, topics, or authors..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-11 pl-10 text-base sm:h-12 sm:text-lg"
-            />
-          </div>
-        </div>
+    <div className="min-h-screen space-y-12 bg-gray-50 sm:space-y-16 md:space-y-20">
+      {/* Categories Section - Horizontal Layout */}
+      <div className="mb-12 sm:mb-16">
+        <CategorySelector
+          categories={categories}
+          selectedCategoryIds={selectedCategoryNames
+            .map((name) => {
+              const cat = getCategoryByName(name);
+              return cat ? cat.id : '';
+            })
+            .filter(Boolean)}
+          onCategoryToggle={(id) => {
+            const cat = getCategoryById(id);
+            if (!cat) return;
+            const namesToToggle = getDescendantNames(cat.name).map((name) => name.toLowerCase());
+            setSelectedCategoryNames((prev) => {
+              const set = new Set(prev);
+              const hasAll = namesToToggle.every((x) => set.has(x));
+              if (hasAll) {
+                namesToToggle.forEach((x) => set.delete(x));
+              } else {
+                namesToToggle.forEach((x) => set.add(x));
+              }
+              return Array.from(set);
+            });
+          }}
+        />
       </div>
 
-      {/* Categories Section - Horizontal Layout */}
-      <CategorySelector
-        categories={categories}
-        selectedCategoryIds={selectedCategoryNames
-          .map((name) => {
-            const cat = getCategoryByName(name);
-            return cat ? cat.id : '';
-          })
-          .filter(Boolean)}
-        onCategoryToggle={(id) => {
-          const cat = getCategoryById(id);
-          if (!cat) return;
-          const namesToToggle = getDescendantNames(cat.name).map((name) => name.toLowerCase());
-          setSelectedCategoryNames((prev) => {
-            const set = new Set(prev);
-            const hasAll = namesToToggle.every((x) => set.has(x));
-            if (hasAll) {
-              namesToToggle.forEach((x) => set.delete(x));
-            } else {
-              namesToToggle.forEach((x) => set.add(x));
-            }
-            return Array.from(set);
-          });
-        }}
-      />
-
       {/* Articles Section */}
-      <div>
+      <div className="mt-8 rounded-2xl bg-white/60 p-6 shadow-lg shadow-gray-200/50 backdrop-blur-sm">
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
@@ -246,19 +223,23 @@ export function HomepageContent() {
                 <Button
                   variant={onlyMine ? 'default' : 'outline'}
                   onClick={() => setOnlyMine((v) => !v)}
-                  className={onlyMine ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
+                  className={
+                    onlyMine
+                      ? 'bg-blue-600 font-semibold text-white hover:bg-blue-700'
+                      : 'font-medium text-gray-700'
+                  }
                 >
                   My Articles
                 </Button>
               )}
-              {(onlyMine || searchTerm || selectedCategoryNames.length > 0) && (
+              {(onlyMine || selectedCategoryNames.length > 0) && (
                 <Button
                   variant="outline"
                   onClick={() => {
                     setOnlyMine(false);
-                    setSearchTerm('');
                     setSelectedCategoryNames([]);
                   }}
+                  className="font-medium text-gray-700"
                 >
                   Clear all
                 </Button>
@@ -267,7 +248,7 @@ export function HomepageContent() {
           </div>
           {selectedCategoryNames.length > 0 && (
             <div className="mt-2 flex items-center gap-2 sm:gap-3">
-              <span className="text-xs font-medium text-gray-600 sm:text-sm">Filtered by:</span>
+              <span className="text-xs font-medium text-gray-700 sm:text-sm">Filtered by:</span>
               <div className="flex flex-wrap gap-2">
                 {selectedCategoryNames.map((name) => {
                   const cat = getCategoryByName(name);
@@ -275,10 +256,9 @@ export function HomepageContent() {
                   return (
                     <div
                       key={name}
-                      className="flex items-center rounded-full border-2 px-3 py-1.5 text-xs font-semibold shadow-sm sm:px-4 sm:py-2 sm:text-sm"
+                      className="flex items-center rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm sm:px-4 sm:py-2 sm:text-sm"
                       style={{
                         backgroundColor: `${cat.color || '#3B82F6'}15`,
-                        borderColor: cat.color || '#3B82F6',
                         color: cat.color || '#3B82F6',
                       }}
                     >
@@ -293,7 +273,7 @@ export function HomepageContent() {
                         }
                         aria-label={`Remove ${cat.name}`}
                         title={`Remove ${cat.name}`}
-                        className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current/30 text-current hover:bg-current/10"
+                        className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full text-current hover:bg-current/10"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
@@ -310,7 +290,7 @@ export function HomepageContent() {
             <Link
               key={article.id}
               href={`/articles/${article.slug}`}
-              className="group block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200/50 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-200/50"
+              className="group block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white/90 shadow-lg shadow-gray-200/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-gray-300/60"
             >
               {/* Thumbnail (consistent height whether exists or not) */}
               <div className="h-28 w-full overflow-hidden sm:h-32">
@@ -338,7 +318,6 @@ export function HomepageContent() {
                     style={{
                       backgroundColor: `${article.category.color}15`,
                       color: article.category.color,
-                      border: `1px solid ${article.category.color}30`,
                     }}
                     onClick={(e) => {
                       e.preventDefault();
@@ -357,7 +336,7 @@ export function HomepageContent() {
                     ></div>
                     {article.category.name}
                   </button>
-                  <div className="flex items-center text-xs text-gray-500">
+                  <div className="flex items-center text-xs text-gray-600">
                     <Calendar className="mr-1 h-3 w-3" />
                     {new Date(article.createdAt).toLocaleDateString('en-US', {
                       year: 'numeric',
@@ -371,7 +350,7 @@ export function HomepageContent() {
                   {article.title}
                 </h3>
 
-                <div className="flex items-center text-xs text-gray-600 sm:text-sm">
+                <div className="flex items-center text-xs text-gray-700 sm:text-sm">
                   <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
                     {article.author.name.charAt(0).toUpperCase()}
                   </div>
@@ -380,22 +359,22 @@ export function HomepageContent() {
               </div>
 
               {/* Article Footer */}
-              <div className="border-t border-gray-100/50 bg-gray-50/50 px-4 py-3 sm:px-6 sm:py-4">
-                <div className="grid grid-cols-3 text-xs text-gray-600 sm:text-sm">
+              <div className="bg-gray-50/50 px-4 py-3 sm:px-6 sm:py-4">
+                <div className="grid grid-cols-3 text-xs text-gray-700 sm:text-sm">
                   <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                    <MessageSquare className="h-4 w-4 text-gray-500" aria-hidden="true" />
+                    <MessageSquare className="h-4 w-4 text-gray-600" aria-hidden="true" />
                     <span className="font-medium tabular-nums" aria-label="comments count">
                       {article._count.comments}
                     </span>
                   </div>
                   <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                    <BookOpen className="h-4 w-4 text-gray-500" aria-hidden="true" />
+                    <BookOpen className="h-4 w-4 text-gray-600" aria-hidden="true" />
                     <span className="font-medium tabular-nums" aria-label="likes count">
                       {article._count.likes}
                     </span>
                   </div>
                   <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                    <Eye className="h-4 w-4 text-gray-500" />
+                    <Eye className="h-4 w-4 text-gray-600" />
                     <span className="font-medium tabular-nums" aria-label="views count">
                       {typeof article.views === 'number' ? article.views : 0}
                     </span>
@@ -414,20 +393,19 @@ export function HomepageContent() {
             <h3 className="mb-2 text-xl font-bold text-gray-900 sm:mb-3 sm:text-2xl">
               No articles found
             </h3>
-            <p className="mx-auto mb-6 max-w-md text-base text-gray-600 sm:mb-8 sm:text-lg">
-              {searchTerm || selectedCategoryNames.length > 0
-                ? "Try adjusting your search or filter criteria to find what you're looking for."
+            <p className="mx-auto mb-6 max-w-md text-base text-gray-700 sm:mb-8 sm:text-lg">
+              {selectedCategoryNames.length > 0
+                ? "Try adjusting your filter criteria to find what you're looking for."
                 : 'Be the first to share your knowledge with the community!'}
             </p>
             <Button
               size="sm"
               onClick={() => {
-                setSearchTerm('');
                 setSelectedCategoryNames([]);
               }}
               className="bg-gradient-to-r from-blue-500 to-purple-600 font-semibold text-white hover:from-blue-600 hover:to-purple-700"
             >
-              {searchTerm || selectedCategoryNames.length > 0 ? 'Clear Filters' : 'Explore Topics'}
+              {selectedCategoryNames.length > 0 ? 'Clear Filters' : 'Explore Topics'}
             </Button>
           </div>
         )}
@@ -435,7 +413,9 @@ export function HomepageContent() {
         {/* Lazy load sentinel */}
         <div ref={loadMoreRef} className="h-10 w-full" />
         {isLoadingMore && (
-          <div className="mt-2 text-center text-sm text-gray-500">Loading more...</div>
+          <div className="mt-2 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-600 backdrop-blur-sm">
+            Loading more...
+          </div>
         )}
       </div>
     </div>

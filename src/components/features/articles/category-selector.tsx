@@ -29,7 +29,7 @@ export function CategorySelector({
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* Root Categories - Horizontal Layout */}
-      <div className="scrollbar-hide -mx-3 flex gap-2 overflow-x-auto px-3 py-1 sm:mx-0 sm:gap-3 sm:px-0 sm:py-0">
+      <div className="scrollbar-hide -mx-3 flex gap-2 overflow-x-auto rounded-xl bg-white/80 px-3 py-4 shadow-lg shadow-gray-200/50 backdrop-blur-sm sm:mx-0 sm:gap-3 sm:px-0 sm:py-4">
         {categories.map((category) => (
           <div key={category.id} className="relative">
             {category.children && category.children.length > 0 ? (
@@ -38,7 +38,7 @@ export function CategorySelector({
                   className={`group flex h-[42px] items-center rounded-xl pr-10 pl-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
                     isSelected(category.id)
                       ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
-                      : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md'
                   } `}
                   onClick={() => onCategoryToggle(category.id)}
                   variant={isSelected(category.id) ? 'default' : 'outline'}
@@ -83,7 +83,7 @@ export function CategorySelector({
                       <ChevronDown className="h-4 w-4" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="z-50 w-64 rounded-xl border border-gray-200 bg-white shadow-lg">
+                  <DropdownMenuContent className="z-[100] w-64 rounded-xl bg-white shadow-lg">
                     {(category.children || []).map((child) => (
                       <DropdownMenuItem
                         key={child.id}
@@ -127,7 +127,7 @@ export function CategorySelector({
                 className={`group flex h-[42px] items-center rounded-xl px-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
                   isSelected(category.id)
                     ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
-                    : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md'
                 } `}
                 onClick={() => onCategoryToggle(category.id)}
                 variant={isSelected(category.id) ? 'default' : 'outline'}

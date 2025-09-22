@@ -311,7 +311,7 @@ function AdminPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Admin Panel</h1>
@@ -319,7 +319,7 @@ function AdminPageContent() {
 
         {/* Simple Tab Navigation */}
         <div className="mb-6 sm:mb-8">
-          <div className="border-b border-gray-200">
+          <div className="rounded-xl bg-white/80 p-4 shadow-lg shadow-gray-200/50 backdrop-blur-sm">
             <nav className="no-scrollbar -mb-px flex space-x-6 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('users')}
@@ -456,10 +456,10 @@ function AdminPageContent() {
                 <p className="text-gray-500">Users will appear here once they register</p>
               </div>
             ) : (
-              <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+              <div className="overflow-hidden rounded-lg bg-white/90 shadow-lg shadow-gray-200/50 backdrop-blur-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="border-b border-gray-200 bg-gray-50">
+                    <thead className="bg-gray-50/50">
                       <tr>
                         <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
                           User
@@ -472,14 +472,9 @@ function AdminPageContent() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y-0 bg-white">
-                      {currentUsers.map((user, index) => (
-                        <tr
-                          key={user.id}
-                          className={`transition-colors hover:bg-gray-50 ${
-                            index === currentUsers.length - 1 ? '' : 'border-b border-gray-100'
-                          }`}
-                        >
+                    <tbody className="bg-white/90 backdrop-blur-sm">
+                      {currentUsers.map((user, _index) => (
+                        <tr key={user.id} className="transition-colors hover:bg-gray-50/50">
                           <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
                             <div className="flex items-center">
                               <div className="h-10 w-10 flex-shrink-0 sm:h-12 sm:w-12">
@@ -793,7 +788,10 @@ function AdminPageContent() {
                 </div>
               ) : (
                 categories.map((category) => (
-                  <Card key={category.id} className="shadow-sm transition-shadow hover:shadow-md">
+                  <Card
+                    key={category.id}
+                    className="shadow-lg shadow-gray-200/50 transition-all duration-300 hover:shadow-xl hover:shadow-gray-300/60"
+                  >
                     <CardHeader className="pb-4">
                       <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                         <div className="flex flex-1 items-center">
@@ -868,7 +866,7 @@ function AdminPageContent() {
                             {category.children.map((child: Category) => (
                               <Card
                                 key={child.id}
-                                className="bg-white transition-shadow hover:shadow-sm"
+                                className="bg-white/90 shadow-md shadow-gray-200/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:shadow-gray-300/60"
                               >
                                 <CardBody className="p-4">
                                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

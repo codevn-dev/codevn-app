@@ -227,7 +227,7 @@ function ArticlesContent() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="text-center">
-          <p className="text-gray-600">Please log in to manage your articles.</p>
+          <p className="text-gray-700">Please log in to manage your articles.</p>
         </div>
       </div>
     );
@@ -366,11 +366,11 @@ function ArticlesContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">My Articles</h1>
-          <p className="mt-1 text-gray-600 sm:mt-2">
+          <p className="mt-1 text-gray-700 sm:mt-2">
             Manage your articles and share your knowledge
           </p>
         </div>
@@ -384,12 +384,12 @@ function ArticlesContent() {
         </div>
 
         {/* Search and Filter Controls */}
-        <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+        <div className="mb-6 rounded-xl bg-white/80 p-4 shadow-lg shadow-gray-200/50 backdrop-blur-sm">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {/* Search Input */}
             <div className="lg:col-span-2">
               <div className="relative">
-                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-500" />
                 <Input
                   placeholder="Search your articles..."
                   value={searchTerm}
@@ -510,10 +510,10 @@ function ArticlesContent() {
         {articles.length === 0 ? (
           <div className="py-12 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-              <FileText className="h-8 w-8 text-gray-400" />
+              <FileText className="h-8 w-8 text-gray-600" />
             </div>
             <h3 className="mb-2 text-lg font-medium text-gray-900">No articles found</h3>
-            <p className="mb-4 text-gray-500">
+            <p className="mb-4 text-gray-700">
               Start sharing your knowledge by creating your first article
             </p>
             <Button onClick={() => setShowArticleForm(true)}>
@@ -524,7 +524,10 @@ function ArticlesContent() {
         ) : (
           <div className="space-y-4">
             {articles.map((article) => (
-              <Card key={article.id} className="shadow-sm transition-shadow hover:shadow-md">
+              <Card
+                key={article.id}
+                className="shadow-lg shadow-gray-200/50 transition-all duration-300 hover:shadow-xl hover:shadow-gray-300/60"
+              >
                 <CardBody className="p-4 sm:p-6">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     {/* Thumbnail */}
@@ -567,7 +570,7 @@ function ArticlesContent() {
                           </Button>
 
                           {openDropdown === article.id && (
-                            <div className="dropdown-container absolute top-8 right-0 z-50 w-48 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                            <div className="dropdown-container absolute top-8 right-0 z-50 w-48 rounded-xl bg-white py-1 shadow-lg">
                               <div
                                 onClick={() => {
                                   handleTogglePublish(article);
@@ -629,14 +632,14 @@ function ArticlesContent() {
                         </div>
                       </div>
 
-                      <div className="mb-3 line-clamp-2 text-sm text-gray-600">
+                      <div className="mb-3 line-clamp-2 text-sm text-gray-700">
                         <CodeHighlighter
                           content={article.content.substring(0, 150) + '...'}
                           className="text-sm"
                         />
                       </div>
 
-                      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 sm:text-sm">
+                      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-600 sm:text-sm">
                         <div className="flex items-center gap-1">
                           <Tag className="h-4 w-4" style={{ color: article.category.color }} />
                           <span>{article.category.name}</span>
@@ -659,7 +662,7 @@ function ArticlesContent() {
                         </div>
                       </div>
 
-                      <div className="text-xs text-gray-400">Slug: {article.slug}</div>
+                      <div className="text-xs text-gray-500">Slug: {article.slug}</div>
                     </div>
                   </div>
                 </CardBody>
@@ -671,7 +674,7 @@ function ArticlesContent() {
         {/* Lazy load sentinel */}
         <div ref={loadMoreRef} className="h-10 w-full" />
         {isLoadingMore && (
-          <div className="mt-2 text-center text-sm text-gray-500">Loading more...</div>
+          <div className="mt-2 text-center text-sm text-gray-600">Loading more...</div>
         )}
 
         {/* Article Form Modal */}
@@ -754,12 +757,12 @@ function ArticlesContent() {
                         onClick={() => setShowImageUpload(true)}
                         className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg border-2 border-dashed border-gray-300 bg-white transition-colors hover:border-gray-400"
                       >
-                        <Upload className="h-8 w-8 text-gray-400" />
+                        <Upload className="h-8 w-8 text-gray-600" />
                         <span className="text-sm font-medium text-gray-700">
                           Click to upload thumbnail
                         </span>
                       </button>
-                      <p className="mt-2 text-xs text-gray-400">PNG, JPG, GIF, WebP up to 5MB</p>
+                      <p className="mt-2 text-xs text-gray-500">PNG, JPG, GIF, WebP up to 5MB</p>
                     </div>
                   )}
                 </div>
@@ -843,7 +846,7 @@ function ArticlesContent() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
             <div className="w-full max-w-md rounded-lg bg-white p-6">
               <h2 className="mb-4 text-lg font-semibold">Delete Article</h2>
-              <p className="mb-6 text-gray-600">
+              <p className="mb-6 text-gray-700">
                 Are you sure you want to delete &quot;{showDeleteConfirm?.title}&quot;? This action
                 cannot be undone and will also delete all comments and likes.
               </p>
