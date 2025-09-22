@@ -202,7 +202,7 @@ function TiptapEditorContent({
     return (
       <div className={`rounded-lg border border-gray-300 ${className}`}>
         <div className="flex h-[400px] items-center justify-center bg-gray-50">
-          <div className="text-gray-500">Loading editor...</div>
+          <div className="text-gray-500">Thinking...</div>
         </div>
       </div>
     );
@@ -489,7 +489,7 @@ const TiptapRichTextEditor = dynamic(() => Promise.resolve(TiptapEditorContent),
   loading: () => (
     <div className="min-h-[400px] rounded-lg border border-gray-300">
       <div className="flex h-[400px] items-center justify-center bg-gray-50">
-        <div className="text-gray-500">Loading editor...</div>
+        <div className="text-gray-500">Thinking...</div>
       </div>
     </div>
   ),

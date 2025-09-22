@@ -274,7 +274,7 @@ export function CommentItem({
                 </div>
                 <div className="flex items-center text-xs text-gray-500">
                   <Calendar className="mr-1 h-3 w-3" />
-                  {isClient ? formatRelativeTime(comment.createdAt) : 'Loading...'}
+                  {isClient ? formatRelativeTime(comment.createdAt) : 'Thinking...'}
                   {comment.updatedAt && (
                     <Badge variant="secondary" className="ml-2 px-1 py-0 text-xs">
                       edited
@@ -501,7 +501,7 @@ export function CommentItem({
                     className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                   >
                     {loadingReplies ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                    {loadingReplies ? 'Loading...' : 'Load more replies'}
+                    {loadingReplies ? 'Thinking...' : 'Load more replies'}
                   </Button>
                 </div>
               )}

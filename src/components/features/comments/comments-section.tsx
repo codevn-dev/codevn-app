@@ -333,7 +333,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                   className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
                   {loadingMore ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                  {loadingMore ? 'Loading...' : 'Load older comments'}
+                  {loadingMore ? 'Thinking...' : 'Load older comments'}
                 </Button>
               </div>
             )}
