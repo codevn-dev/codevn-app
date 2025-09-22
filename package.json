@@ -16,7 +16,6 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
-    "db:seed": "tsx scripts/seed-categories.ts",
     "create-mock-users": "tsx scripts/create-mock-users.ts",
     "prepare": "husky"
   },
