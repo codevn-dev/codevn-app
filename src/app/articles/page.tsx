@@ -29,6 +29,8 @@ import {
   Upload,
   X,
   MoreVertical,
+  ThumbsUp,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
@@ -521,153 +523,188 @@ function ArticlesContent() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {articles.map((article) => (
-                <Card
+                <div
                   key={article.id}
-                  className="shadow-xl shadow-gray-300/60 transition-all duration-300 hover:shadow-2xl hover:shadow-gray-400/70"
+                  className="block flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80"
                 >
-                  <CardBody className="p-4 sm:p-6">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      {/* Thumbnail */}
-                      {article.thumbnail && (
-                        <div className="flex-shrink-0 sm:mr-4">
-                          <img
-                            src={article.thumbnail}
-                            alt={article.title}
-                            className="h-40 w-full rounded-lg object-cover sm:h-24 sm:w-32"
-                          />
+                  {/* Thumbnail (consistent height whether exists or not) */}
+                  <div className="relative h-28 w-full overflow-hidden sm:h-32">
+                    {article.thumbnail ? (
+                      <img
+                        src={article.thumbnail}
+                        alt={article.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="h-full w-full"
+                        style={{
+                          background: `linear-gradient(135deg, ${article.category.color}12, #ffffff)`,
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  {/* Article Header */}
+                  <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
+                    <div className="mb-3 flex items-center justify-between sm:mb-4">
+                      <button
+                        className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
+                        style={{
+                          backgroundColor: `${article.category.color}15`,
+                          color: article.category.color,
+                        }}
+                      >
+                        <div
+                          className="mr-2 h-2 w-2 rounded-full"
+                          style={{ backgroundColor: article.category.color }}
+                        />
+                        {article.category.name}
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center text-xs text-gray-600">
+                          <Calendar className="mr-1 h-3 w-3" />
+                          {new Date(article.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
                         </div>
-                      )}
+                        <div className="dropdown-container relative">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenDropdown(openDropdown === article.id ? null : article.id);
+                            }}
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
 
-                      <div className="flex-1">
-                        <div className="mb-2 flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 sm:gap-3">
-                            <h3 className="line-clamp-2 text-lg font-bold text-gray-900 sm:text-xl">
-                              {article.title}
-                            </h3>
-                            <Badge
-                              variant={article.published ? 'default' : 'secondary'}
-                              className={
-                                article.published
-                                  ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]'
-                                  : ''
-                              }
-                            >
-                              {article.published ? 'Published' : 'Draft'}
-                            </Badge>
-                          </div>
-                          <div className="dropdown-container relative self-start sm:self-auto">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenDropdown(openDropdown === article.id ? null : article.id);
-                              }}
-                              className="h-8 w-8 p-0"
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-
-                            {openDropdown === article.id && (
-                              <div className="dropdown-container absolute top-8 right-0 z-50 w-48 rounded-xl bg-white py-1 shadow-xl shadow-gray-300/60">
-                                <div
-                                  onClick={() => {
-                                    handleTogglePublish(article);
-                                    setOpenDropdown(null);
-                                  }}
-                                  className={`flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm hover:bg-gray-50 ${
-                                    article.published ? 'text-orange-600' : 'text-green-600'
-                                  }`}
-                                >
-                                  {article.published ? (
-                                    <>
-                                      <EyeOff className="mr-2 h-4 w-4" />
-                                      Unpublish
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Eye className="mr-2 h-4 w-4" />
-                                      Publish
-                                    </>
-                                  )}
-                                </div>
-
-                                {!article.published && user && article.author.id === user.id && (
-                                  <div
-                                    onClick={() => {
-                                      handlePreviewArticle(article);
-                                      setOpenDropdown(null);
-                                    }}
-                                    className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-[#B8956A] hover:bg-gray-50"
-                                  >
-                                    <ExternalLink className="mr-2 h-4 w-4" />
-                                    Preview
-                                  </div>
+                          {openDropdown === article.id && (
+                            <div className="dropdown-container absolute top-8 right-0 z-50 w-48 rounded-xl bg-white py-1 shadow-xl shadow-gray-300/60">
+                              <div
+                                onClick={() => {
+                                  handleTogglePublish(article);
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
+                              >
+                                {article.published ? (
+                                  <>
+                                    <EyeOff className="mr-2 h-4 w-4" />
+                                    Unpublish
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    Publish
+                                  </>
                                 )}
-
-                                <div
-                                  onClick={() => {
-                                    handleEditArticle(article);
-                                    setOpenDropdown(null);
-                                  }}
-                                  className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                                >
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit
-                                </div>
-
-                                <div
-                                  onClick={() => {
-                                    setShowDeleteConfirm(article);
-                                    setOpenDropdown(null);
-                                  }}
-                                  className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
-                                </div>
                               </div>
-                            )}
-                          </div>
-                        </div>
 
-                        <div className="mb-3 line-clamp-2 text-sm text-gray-700">
-                          <CodeHighlighter
-                            content={article.content.substring(0, 150) + '...'}
-                            className="text-sm"
-                          />
-                        </div>
+                              {user && article.author.id === user.id && (
+                                <div
+                                  onClick={() => {
+                                    if (article.published) {
+                                      // Open published article in new tab
+                                      window.open(`/articles/${article.slug}`, '_blank');
+                                    } else {
+                                      // Open preview for draft
+                                      handlePreviewArticle(article);
+                                    }
+                                    setOpenDropdown(null);
+                                  }}
+                                  className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
+                                >
+                                  <ExternalLink className="mr-2 h-4 w-4" />
+                                  {article.published ? 'View' : 'Preview'}
+                                </div>
+                              )}
 
-                        <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-600 sm:text-sm">
-                          <div className="flex items-center gap-1">
-                            <Tag className="h-4 w-4" style={{ color: article.category.color }} />
-                            <span>{article.category.name}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              {new Date(article.createdAt).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                              })}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span>{article._count.comments} comments</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span>{article._count.likes} likes</span>
-                          </div>
-                        </div>
+                              <div
+                                onClick={() => {
+                                  handleEditArticle(article);
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </div>
 
-                        <div className="text-xs text-gray-500">Slug: {article.slug}</div>
+                              <div
+                                onClick={() => {
+                                  setShowDeleteConfirm(article);
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </CardBody>
-                </Card>
+
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <h3 className="line-clamp-2 flex-1 text-lg font-bold text-gray-900 sm:text-xl">
+                        {article.title}
+                      </h3>
+                      <Badge
+                        variant={article.published ? 'default' : 'secondary'}
+                        className={
+                          article.published ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]' : ''
+                        }
+                      >
+                        {article.published ? 'Published' : 'Draft'}
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3 line-clamp-2 text-sm text-gray-700">
+                      <CodeHighlighter
+                        content={article.content.substring(0, 150) + '...'}
+                        className="text-sm"
+                      />
+                    </div>
+
+                    <div className="flex items-center text-xs text-gray-700 sm:text-sm">
+                      <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#B8956A] to-[#8B6F47] text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
+                        {article.author.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="font-medium">{article.author.name}</span>
+                    </div>
+                  </div>
+
+                  {/* Article Footer */}
+                  <div className="bg-gray-50/50 px-4 py-3 sm:px-6 sm:py-4">
+                    <div className="grid grid-cols-3 text-xs text-gray-700 sm:text-sm">
+                      {/* Views - Left */}
+                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                        <Eye className="h-4 w-4 text-gray-600" />
+                        <span className="font-medium tabular-nums">
+                          {typeof article.views === 'number' ? article.views : 0}
+                        </span>
+                      </div>
+                      {/* Likes - Center */}
+                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                        <ThumbsUp className="h-4 w-4 text-gray-600" />
+                        <span className="font-medium tabular-nums">{article._count.likes}</span>
+                      </div>
+                      {/* Comments - Right */}
+                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                        <MessageSquare className="h-4 w-4 text-gray-600" />
+                        <span className="font-medium tabular-nums">{article._count.comments}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}

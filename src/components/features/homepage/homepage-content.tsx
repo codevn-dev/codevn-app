@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { MessageSquare, BookOpen, Calendar, Eye, X } from 'lucide-react';
+import { MessageSquare, BookOpen, Calendar, Eye, X, ThumbsUp } from 'lucide-react';
 import { useForumStore } from '@/stores';
 import { CategorySelector } from '@/features/articles';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -180,7 +180,7 @@ export function HomepageContent() {
     <div className="py-8">
       {/* Articles Section with Categories */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="rounded-2xl bg-white p-8 shadow-2xl">
           {/* Categories Section */}
           <div className="mb-8">
             <CategorySelector
@@ -292,31 +292,33 @@ export function HomepageContent() {
               <Link
                 key={article.id}
                 href={`/articles/${article.slug}`}
-                className="group hover:shadow-3xl block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80 transition-all duration-300 hover:-translate-y-3 hover:shadow-gray-500/90"
+                className="group hover:shadow-3xl block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80 transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-[1.02] hover:ring-2 hover:shadow-gray-500/60 hover:ring-[#B8956A]/20"
               >
                 {/* Thumbnail (consistent height whether exists or not) */}
-                <div className="h-28 w-full overflow-hidden sm:h-32">
+                <div className="relative h-28 w-full overflow-hidden sm:h-32">
                   {article.thumbnail ? (
                     <img
                       src={article.thumbnail}
                       alt={article.title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
                     />
                   ) : (
                     <div
-                      className="h-full w-full"
+                      className="h-full w-full transition-all duration-500 ease-out group-hover:scale-110"
                       style={{
                         background: `linear-gradient(135deg, ${article.category.color}12, #ffffff)`,
                       }}
                     />
                   )}
+                  {/* Overlay effect */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
                 </div>
 
                 {/* Article Header */}
                 <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
                   <div className="mb-3 flex items-center justify-between sm:mb-4">
                     <button
-                      className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition-all duration-200 hover:scale-105 sm:px-3 sm:text-xs"
+                      className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition-all duration-300 ease-out hover:scale-110 hover:shadow-lg sm:px-3 sm:text-xs"
                       style={{
                         backgroundColor: `${article.category.color}15`,
                         color: article.category.color,
@@ -348,37 +350,57 @@ export function HomepageContent() {
                     </div>
                   </div>
 
-                  <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-colors group-hover:text-[#B8956A] sm:mb-3 sm:text-xl">
+                  <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-all duration-300 ease-out group-hover:scale-[1.02] group-hover:text-[#B8956A] sm:mb-3 sm:text-xl">
                     {article.title}
                   </h3>
 
-                  <div className="flex items-center text-xs text-gray-700 sm:text-sm">
-                    <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#B8956A] to-[#8B6F47] text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
+                  <div className="flex items-center text-xs text-gray-700 transition-all duration-300 ease-out group-hover:translate-x-1 sm:text-sm">
+                    <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#B8956A] to-[#8B6F47] text-[10px] font-bold text-white transition-all duration-300 ease-out group-hover:scale-110 group-hover:shadow-lg sm:mr-3 sm:text-xs">
                       {article.author.name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="font-medium">{article.author.name}</span>
+                    <span className="font-medium transition-colors duration-300 ease-out group-hover:text-[#B8956A]">
+                      {article.author.name}
+                    </span>
                   </div>
                 </div>
 
                 {/* Article Footer */}
-                <div className="bg-gray-50/50 px-4 py-3 sm:px-6 sm:py-4">
+                <div className="bg-gray-50/50 px-4 py-3 transition-all duration-300 ease-out group-hover:bg-gradient-to-r group-hover:from-[#B8956A]/5 group-hover:to-[#8B6F47]/5 sm:px-6 sm:py-4">
                   <div className="grid grid-cols-3 text-xs text-gray-700 sm:text-sm">
-                    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                      <MessageSquare className="h-4 w-4 text-gray-600" aria-hidden="true" />
-                      <span className="font-medium tabular-nums" aria-label="comments count">
-                        {article._count.comments}
+                    {/* Views - Left */}
+                    <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
+                      <Eye className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]" />
+                      <span
+                        className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
+                        aria-label="views count"
+                      >
+                        {typeof article.views === 'number' ? article.views : 0}
                       </span>
                     </div>
-                    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                      <BookOpen className="h-4 w-4 text-gray-600" aria-hidden="true" />
-                      <span className="font-medium tabular-nums" aria-label="likes count">
+                    {/* Likes - Center */}
+                    <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
+                      <ThumbsUp
+                        className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]"
+                        aria-hidden="true"
+                      />
+                      <span
+                        className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
+                        aria-label="likes count"
+                      >
                         {article._count.likes}
                       </span>
                     </div>
-                    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                      <Eye className="h-4 w-4 text-gray-600" />
-                      <span className="font-medium tabular-nums" aria-label="views count">
-                        {typeof article.views === 'number' ? article.views : 0}
+                    {/* Comments - Right */}
+                    <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
+                      <MessageSquare
+                        className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]"
+                        aria-hidden="true"
+                      />
+                      <span
+                        className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
+                        aria-label="comments count"
+                      >
+                        {article._count.comments}
                       </span>
                     </div>
                   </div>
