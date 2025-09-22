@@ -9,7 +9,7 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - ./public/uploads:/app/public/uploads
+      - uploads_data:/app/public/uploads
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -26,7 +26,7 @@ services:
     ports:
       - '3001:3001'
     volumes:
-      - ./public/uploads:/app/public/uploads
+      - uploads_data:/app/public/uploads
     env_file: .env
     depends_on:
       postgres:
@@ -118,6 +118,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  uploads_data:
   postgres_data:
   pgadmin_data:
   redis_data:
