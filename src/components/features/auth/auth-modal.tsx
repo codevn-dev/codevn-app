@@ -218,7 +218,7 @@ export function AuthModal() {
             disabled={isOauthLoading}
           >
             {isOauthLoading ? (
-              <Spinner className="mr-2 h-4 w-4" />
+              <Spinner className="mr-2 h-6 w-6" />
             ) : (
               <GoogleIcon className="mr-2 h-6 w-6" />
             )}
