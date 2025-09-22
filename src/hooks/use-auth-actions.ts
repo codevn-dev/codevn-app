@@ -100,7 +100,7 @@ export function useAuthActions() {
       setState({
         user: null,
         isLoading: false,
-        isAuthenticated: true,
+        isAuthenticated: false,
       });
     } finally {
       setLoading(false);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
@@ -25,11 +25,26 @@ interface ArticleContentProps {
 export function ArticleContent({ article, isPreview = false }: ArticleContentProps) {
   const { isAuthenticated } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
-  const [isLiked, setIsLiked] = useState(article.userHasLiked || false);
-  const [isUnliked, setIsUnliked] = useState(article.userHasUnliked || false);
+  const [isLiked, setIsLiked] = useState((isAuthenticated && article.userHasLiked) || false);
+  const [isUnliked, setIsUnliked] = useState((isAuthenticated && article.userHasUnliked) || false);
   const [likeCount, setLikeCount] = useState(article._count.likes);
   const [unlikeCount, setUnlikeCount] = useState(article._count.unlikes || 0);
   const commentsSectionRef = useRef<CommentsSectionRef>(null);
+
+  // Derive effective UI states that never show as active when logged out
+  const likedEffective = isAuthenticated ? isLiked : false;
+  const unlikedEffective = isAuthenticated ? isUnliked : false;
+
+  // Sync reaction state with auth status: if logged out, we cannot know per-user state -> reset to false
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setIsLiked(false);
+      setIsUnliked(false);
+    } else {
+      setIsLiked(!!article.userHasLiked);
+      setIsUnliked(!!article.userHasUnliked);
+    }
+  }, [isAuthenticated, article.userHasLiked, article.userHasUnliked]);
 
   const handleReaction = async (action: 'like' | 'unlike') => {
     // Check if user is authenticated
@@ -174,14 +189,14 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
               size="sm"
               onClick={handleLike}
               className={`transition-colors duration-200 ${
-                isLiked
+                likedEffective
                   ? 'border-green-600 text-green-600 hover:border-green-700 hover:bg-green-50'
                   : 'hover:border-green-600 hover:text-green-600'
               }`}
             >
               <ThumbsUp
                 className={`mr-1 h-4 w-4 transition-colors duration-200 ${
-                  isLiked ? 'fill-current text-green-600' : 'text-gray-500'
+                  likedEffective ? 'fill-current text-green-600' : 'text-gray-500'
                 }`}
               />
               {likeCount}
@@ -191,14 +206,14 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
               size="sm"
               onClick={handleUnlike}
               className={`transition-colors duration-200 ${
-                isUnliked
+                unlikedEffective
                   ? 'border-red-600 text-red-600 hover:border-red-700 hover:bg-red-50'
                   : 'hover:border-red-600 hover:text-red-600'
               }`}
             >
               <ThumbsDown
                 className={`mr-1 h-4 w-4 transition-colors duration-200 ${
-                  isUnliked ? 'fill-current text-red-600' : 'text-gray-500'
+                  unlikedEffective ? 'fill-current text-red-600' : 'text-gray-500'
                 }`}
               />
               {unlikeCount}

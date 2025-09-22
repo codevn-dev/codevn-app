@@ -151,15 +151,30 @@ export async function authRoutes(fastify: FastifyInstance) {
   );
 
   // Google OAuth login
-  fastify.get(
-    '/google',
-    {
-      preHandler: fastifyPassport.authenticate('google', { scope: ['profile', 'email'] }),
-    },
-    async (_request: FastifyRequest, _reply: FastifyReply) => {
-      // This will redirect to Google
-    }
-  );
+  fastify.get('/google', async (request: FastifyRequest, reply: FastifyReply) => {
+    // Capture desired return URL (same-origin only)
+    const returnUrl = (request.query as any)?.returnUrl as string | undefined;
+    try {
+      if (returnUrl && typeof returnUrl === 'string') {
+        const url = new URL(returnUrl);
+        const appUrl = new URL(config.api.clientUrl);
+        if (url.origin === appUrl.origin) {
+          reply.setCookie('oauth_return_url', returnUrl, {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            path: '/',
+            maxAge: 10 * 60, // 10 minutes
+          });
+        }
+      }
+    } catch {}
+
+    return (fastifyPassport.authenticate('google', { scope: ['profile', 'email'] }) as any)(
+      request as any,
+      reply as any
+    );
+  });
 
   // Google OAuth callback
   fastify.get(
@@ -185,9 +200,21 @@ export async function authRoutes(fastify: FastifyInstance) {
           maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         });
 
-        // Redirect to frontend
-        const appUrl = config.api.clientUrl;
-        return reply.redirect(appUrl);
+        // Redirect back to original page if provided and safe
+        const storedReturnUrl = request.cookies?.['oauth_return_url'];
+        if (storedReturnUrl) {
+          reply.clearCookie('oauth_return_url');
+          try {
+            const url = new URL(storedReturnUrl);
+            const appUrl = new URL(config.api.clientUrl);
+            if (url.origin === appUrl.origin) {
+              return reply.redirect(storedReturnUrl);
+            }
+          } catch {}
+        }
+
+        // Fallback to app root
+        return reply.redirect(config.api.clientUrl);
       } catch (error) {
         console.error('[AUTH] Google OAuth callback error:', error);
         return reply.status(500).send({ error: 'Authentication failed' });

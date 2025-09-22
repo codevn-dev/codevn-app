@@ -13,13 +13,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { Separator } from '@/components/ui/separator';
-import { useRouter } from 'next/navigation';
 import { useUIStore } from '@/stores';
 import { useAuthActions } from '@/hooks/use-auth-actions';
 
 export function AuthModal() {
   const { authModalOpen, authMode, setAuthModalOpen, setAuthMode } = useUIStore();
-  const router = useRouter();
   const { signIn, signUp, checkEmail } = useAuthActions();
 
   const [formData, setFormData] = useState({
@@ -70,7 +68,8 @@ export function AuthModal() {
       await signIn(formData.email, formData.password);
       setSuccess('Login successful!');
       setAuthModalOpen(false);
-      router.refresh();
+      // Do not navigate away; keep current page
+      // router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Login failed');
     } finally {
@@ -102,9 +101,9 @@ export function AuthModal() {
     setIsLoading(true);
     try {
       await signUp(formData.email, formData.name, formData.password);
-      // Auto-login occurs on server; close modal and refresh UI
+      // Auto-login occurs on server; close modal and stay on page
       setAuthModalOpen(false);
-      router.refresh();
+      // router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Registration failed');
     } finally {
@@ -117,7 +116,10 @@ export function AuthModal() {
     try {
       // Redirect to Google OAuth
       const { createApiUrl } = await import('@/lib/utils/api-client');
-      window.location.href = createApiUrl('/api/auth/google');
+      const returnUrl = window.location.href;
+      window.location.href = createApiUrl(
+        `/api/auth/google?returnUrl=${encodeURIComponent(returnUrl)}`
+      );
     } catch {
       setError('Google login failed');
       setIsOauthLoading(false);

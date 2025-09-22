@@ -31,14 +31,12 @@ export function Navigation() {
       await authSignOut();
       // Clear local state
       signOut();
-      // Redirect to home page
-      router.push('/');
+      // Stay on current page, optionally refresh data if needed
       router.refresh();
     } catch (error) {
       console.error('Logout error:', error);
-      // Still clear local state and redirect to home
+      // Still clear local state and stay on page
       signOut();
-      router.push('/');
       router.refresh();
     }
   };
