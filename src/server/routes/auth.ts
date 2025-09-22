@@ -187,8 +187,8 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // Sign-out endpoint
-  fastify.get('/sign-out', async (request: FastifyRequest, reply: FastifyReply) => {
+  // Sign-out endpoint (POST)
+  fastify.post('/sign-out', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       // Get token from cookie or header
       const token =

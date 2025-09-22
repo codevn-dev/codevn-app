@@ -28,6 +28,11 @@ export interface ApiResponse<T = any> {
   message?: string;
 }
 
+// Simple success-only response shape
+export interface SuccessResponse {
+  success: boolean;
+}
+
 export interface ErrorResponse {
   success: false;
   error: string;

@@ -12,8 +12,10 @@ import { ClientOnly } from '@/components/layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useChat } from '@/components/features/chat/chat-context';
 import { formatDate } from '@/lib/utils';
+import { apiGet } from '@/lib/utils/api-client';
 
 import { User as UserProfile } from '@/types/shared/auth';
+import { UserResponse } from '@/types/shared/user';
 
 function UserProfileContent() {
   const params = useParams();
@@ -43,18 +45,7 @@ function UserProfileContent() {
         setError('');
 
         // Use the same API - it will handle role-based masking
-        const response = await fetch(`/api/users/${userId}`);
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('User not found');
-          } else {
-            setError('Failed to load user profile');
-          }
-          return;
-        }
-
-        const data = await response.json();
+        const data = await apiGet<UserResponse>(`/api/users/${userId}`);
         setProfile(data.user);
       } catch {
         setError('Failed to load user profile');

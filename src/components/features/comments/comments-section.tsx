@@ -8,7 +8,8 @@ import { CommentForm } from './comment-form';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { useCommentWebSocketContext } from './websocket-context';
-import { Comment } from '@/types/shared';
+import { Comment, CommentListResponse } from '@/types/shared';
+import { apiGet } from '@/lib/utils/api-client';
 
 interface CommentsSectionProps {
   articleId: string;
@@ -71,29 +72,23 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
         setError('');
 
         try {
-          const response = await fetch(
+          const data = await apiGet<CommentListResponse>(
             `/api/articles/${articleId}/comments?sortOrder=asc&page=${page}&limit=5`
           );
-
-          if (response.ok) {
-            const data = await response.json();
-            if (append) {
-              setComments((prev) => [...prev, ...(data.comments || [])]);
-            } else {
-              setComments(data.comments || []);
-              setVisibleTopCount(5);
-              // Update last comment ID (use the first comment as it's the most recent)
-              if (data.comments && data.comments.length > 0) {
-                const newLastCommentId = data.comments[0].id;
-                setLastCommentId(newLastCommentId);
-                lastCommentIdRef.current = newLastCommentId;
-              }
-            }
-            setHasMoreComments(data.pagination.hasNextPage);
-            setCurrentPage(page);
+          if (append) {
+            setComments((prev) => [...prev, ...(data.comments || [])]);
           } else {
-            setError('Failed to load comments');
+            setComments(data.comments || []);
+            setVisibleTopCount(5);
+            // Update last comment ID (use the first comment as it's the most recent)
+            if (data.comments && data.comments.length > 0) {
+              const newLastCommentId = data.comments[0].id;
+              setLastCommentId(newLastCommentId);
+              lastCommentIdRef.current = newLastCommentId;
+            }
           }
+          setHasMoreComments(page < (data.pagination?.totalPages ?? page));
+          setCurrentPage(page);
         } catch {
           setError('Failed to load comments');
         } finally {

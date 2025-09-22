@@ -3,7 +3,6 @@ import { authRoutes } from './routes/auth';
 import { articleRoutes } from './routes/articles';
 import { categoryRoutes } from './routes/categories';
 import { commentRoutes } from './routes/comments';
-import { commentWebSocketRoutes } from './routes/comment-websocket';
 import { chatRoutes } from './routes/chat';
 import { profileRoutes } from './routes/profile';
 import { uploadRoutes } from './routes/upload';
@@ -21,7 +20,6 @@ export async function setupRoutes(fastify: FastifyInstance) {
   await fastify.register(articleRoutes, { prefix: '/api/articles' });
   await fastify.register(categoryRoutes, { prefix: '/api/categories' });
   await fastify.register(commentRoutes, { prefix: '/api/comments' });
-  await fastify.register(commentWebSocketRoutes, { prefix: '/api/comments' });
   await fastify.register(chatRoutes, { prefix: '/api/chat' });
   await fastify.register(profileRoutes, { prefix: '/api/profile' });
   await fastify.register(uploadRoutes, { prefix: '/api/upload' });

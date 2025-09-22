@@ -28,6 +28,7 @@ export interface Article {
   };
   userHasLiked?: boolean;
   userHasUnliked?: boolean;
+  views?: number;
 }
 
 // Request types

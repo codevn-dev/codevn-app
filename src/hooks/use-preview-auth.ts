@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useFastifyAuthStore } from '@/stores';
 import { apiGet } from '@/lib/utils';
+import { User } from '@/types/shared/auth';
+import { UserResponse } from '@/types/shared';
 
 /**
  * Hook specifically for preview authentication
@@ -26,7 +28,7 @@ export function usePreviewAuth(isPreview: boolean) {
       setLoading(true);
 
       try {
-        const data = await apiGet('/api/auth/me');
+        const data = await apiGet<UserResponse>('/api/auth/me');
         setUser(data.user);
       } catch {
         setUser(null);

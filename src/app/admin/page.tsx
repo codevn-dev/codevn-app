@@ -21,6 +21,9 @@ import { ClientOnly } from '@/components/layout';
 import { isAdmin } from '@/lib/utils';
 import { Category } from '@/types/shared/category';
 import { User } from '@/types/shared/auth';
+import { UserListResponse } from '@/types/shared/user';
+import { SuccessResponse } from '@/types/shared/common';
+import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/utils/api-client';
 
 function AdminPageContent() {
   const { user, isAuthenticated, isLoading } = useAuthState();
@@ -79,21 +82,20 @@ function AdminPageContent() {
           limit: itemsPerPage.toString(),
         });
 
-        const usersRes = await fetch(`/api/admin/users?${params}`);
-
-        if (usersRes.ok) {
-          const usersData = await usersRes.json();
-          setUsers(usersData.users);
-          setPagination(usersData.pagination);
-        }
+        const usersData = await apiGet<UserListResponse>(`/api/admin/users?${params}`);
+        setUsers(usersData.users);
+        setPagination({
+          currentPage: usersData.pagination.page,
+          totalPages: usersData.pagination.totalPages,
+          totalItems: usersData.pagination.total,
+          itemsPerPage: usersData.pagination.limit,
+          hasNextPage: usersData.pagination.page < usersData.pagination.totalPages,
+          hasPrevPage: usersData.pagination.page > 1,
+        });
       } else if (activeTab === 'categories') {
         // Only fetch categories data when on categories tab
-        const categoriesRes = await fetch('/api/admin/categories');
-
-        if (categoriesRes.ok) {
-          const categoriesData = await categoriesRes.json();
-          setCategories(categoriesData);
-        }
+        const categoriesData = await apiGet<Category[]>('/api/admin/categories');
+        setCategories(categoriesData);
       }
     } catch {
       // Error handled silently
@@ -153,23 +155,11 @@ function AdminPageContent() {
     setCategoryError(null);
 
     try {
-      const response = await fetch('/api/admin/categories', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(categoryForm),
-      });
-
-      if (response.ok) {
-        setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
-        setShowCategoryForm(false);
-        setCategoryError(null);
-        fetchData();
-      } else {
-        const error = await response.json();
-        setCategoryError(error.error || 'Failed to create category');
-      }
+      const _res = await apiPost<Category>('/api/admin/categories', categoryForm);
+      setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
+      setShowCategoryForm(false);
+      setCategoryError(null);
+      fetchData();
     } catch {
       setCategoryError('Network error. Please try again.');
     } finally {
@@ -202,27 +192,15 @@ function AdminPageContent() {
     setCategoryError(null);
 
     try {
-      const response = await fetch('/api/admin/categories', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: editingCategory.id,
-          ...categoryForm,
-        }),
+      const _res = await apiPut<Category>('/api/admin/categories', {
+        id: editingCategory.id,
+        ...categoryForm,
       });
-
-      if (response.ok) {
-        setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
-        setShowCategoryForm(false);
-        setEditingCategory(null);
-        setCategoryError(null);
-        fetchData();
-      } else {
-        const error = await response.json();
-        setCategoryError(error.error || 'Failed to update category');
-      }
+      setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
+      setShowCategoryForm(false);
+      setEditingCategory(null);
+      setCategoryError(null);
+      fetchData();
     } catch {
       setCategoryError('Network error. Please try again.');
     } finally {
@@ -240,18 +218,10 @@ function AdminPageContent() {
     setDeleteError(null);
 
     try {
-      const response = await fetch(`/api/admin/categories?id=${category.id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setShowDeleteConfirm(null);
-        setDeleteError(null);
-        fetchData();
-      } else {
-        const error = await response.json();
-        setDeleteError(error.error || 'Failed to delete category');
-      }
+      const _res = await apiDelete<SuccessResponse>(`/api/admin/categories?id=${category.id}`);
+      setShowDeleteConfirm(null);
+      setDeleteError(null);
+      fetchData();
     } catch {
       setDeleteError('Network error. Please try again.');
     } finally {
@@ -294,25 +264,13 @@ function AdminPageContent() {
     }
 
     try {
-      const response = await fetch('/api/admin/users', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId, role: newRole }),
-      });
-
-      if (response.ok) {
-        // Update local state immediately for better UX
-        setUsers((prevUsers) =>
-          prevUsers.map((u) => (u.id === userId ? { ...u, role: newRole as 'user' | 'admin' } : u))
-        );
-        // Also refresh data from server
-        fetchData();
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to update role: ${errorData.error || 'Unknown error'}`);
-      }
+      const _res = await apiPut<User>('/api/admin/users', { userId, role: newRole });
+      // Update local state immediately for better UX
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === userId ? { ...u, role: newRole as 'user' | 'admin' } : u))
+      );
+      // Also refresh data from server
+      fetchData();
     } catch {
       alert('Error updating user role. Please try again.');
     }

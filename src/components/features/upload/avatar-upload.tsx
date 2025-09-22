@@ -14,6 +14,7 @@ import ReactCrop, {
   makeAspectCrop,
 } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { apiUpload } from '@/lib/utils/api-client';
 
 interface AvatarUploadProps {
   onAvatarChange?: (avatar: string | null) => void;
@@ -202,24 +203,10 @@ export function AvatarUpload({
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const response = await fetch('/api/profile/avatar', {
-        method: 'POST',
-        body: formData,
-      });
+      const result = await apiUpload<{ avatar: string }>('/api/profile/avatar', formData);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Upload failed');
-      }
-
-      const result = await response.json();
-
-      // Update user in store with the file path
       updateUser({ avatar: result.avatar });
-
-      // Call callback if provided
       onAvatarChange?.(result.avatar);
-
       setPreview(null);
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Upload failed');

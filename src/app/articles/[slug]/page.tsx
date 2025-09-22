@@ -71,7 +71,7 @@ export default async function ArticlePage({
     createdAt: article.createdAt.toISOString(),
     author: Array.isArray(article.author) ? article.author[0] : article.author,
     category: Array.isArray(article.category) ? article.category[0] : article.category,
-    views: (article as any).views ?? 0,
+    views: (article as unknown as { views?: number }).views ?? 0,
     _count: {
       comments: commentCount,
       likes: likeCount,

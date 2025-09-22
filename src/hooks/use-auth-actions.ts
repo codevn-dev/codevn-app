@@ -1,7 +1,14 @@
 import { useState, useCallback } from 'react';
-import { AuthState } from '@/types/shared/auth';
+import {
+  AuthState,
+  LoginResponse,
+  RegisterResponse,
+  CheckEmailResponse,
+  User,
+} from '@/types/shared/auth';
 import { useFastifyAuthStore } from '@/stores';
 import { apiPost, apiGet } from '@/lib/utils';
+import { UserResponse } from '@/types/shared';
 
 export function useAuthActions() {
   const { user, setUser, setLoading } = useFastifyAuthStore();
@@ -11,12 +18,12 @@ export function useAuthActions() {
     isAuthenticated: false,
   });
 
-  const login = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string) => {
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
       setLoading(true);
 
-      const data = await apiPost('/api/auth/sign-in', { email, password });
+      const data = await apiPost<LoginResponse>('/api/auth/sign-in', { email, password });
       setUser(data.user);
       setState({
         user: data.user,
@@ -37,12 +44,12 @@ export function useAuthActions() {
     }
   };
 
-  const register = async (email: string, name: string, password: string) => {
+  const signUp = async (email: string, name: string, password: string) => {
     try {
       setState((prev) => ({ ...prev, isLoading: true }));
       setLoading(true);
 
-      const data = await apiPost('/api/auth/sign-up', { email, name, password });
+      const data = await apiPost<RegisterResponse>('/api/auth/sign-up', { email, name, password });
       setUser(data.user);
       setState({
         user: data.user,
@@ -52,7 +59,6 @@ export function useAuthActions() {
 
       return data;
     } catch (error) {
-      const _errorMessage = error instanceof Error ? error.message : 'Registration failed';
       setState((prev: AuthState) => ({
         ...prev,
         isLoading: false,
@@ -63,9 +69,9 @@ export function useAuthActions() {
     }
   };
 
-  const logout = async () => {
+  const signOut = async () => {
     try {
-      await apiGet('/api/auth/sign-out');
+      await apiPost('/api/auth/sign-out');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -83,7 +89,7 @@ export function useAuthActions() {
       setState((prev: AuthState) => ({ ...prev, isLoading: true }));
       setLoading(true);
 
-      const data = await apiGet('/api/auth/me');
+      const data = await apiGet<UserResponse>('/api/auth/me');
       setUser(data.user);
       setState({
         user: data.user,
@@ -104,7 +110,7 @@ export function useAuthActions() {
 
   const checkEmail = async (email: string) => {
     try {
-      return await apiPost('/api/auth/check-email', { email });
+      return await apiPost<CheckEmailResponse>('/api/auth/check-email', { email });
     } catch (error) {
       const _errorMessage = error instanceof Error ? error.message : 'Email check failed';
       throw new Error(_errorMessage);
@@ -113,9 +119,9 @@ export function useAuthActions() {
 
   return {
     ...state,
-    login,
-    register,
-    logout,
+    signIn,
+    signUp,
+    signOut,
     checkAuth,
     checkEmail,
   };

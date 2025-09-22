@@ -10,9 +10,9 @@ import {
 import { authMiddleware, optionalAuthMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
 import {
-  CreateArticleRequest as CreateArticleBody,
-  UpdateArticleRequest as UpdateArticleBody,
-  ReactionRequest as ReactionBody,
+  CreateArticleRequest,
+  UpdateArticleRequest,
+  ReactionRequest,
 } from '@/types/shared/article';
 import {
   CommentQueryParams as CommentQuery,
@@ -102,15 +102,15 @@ export async function articleRoutes(fastify: FastifyInstance) {
   );
 
   // POST /api/articles - Create new article
-  fastify.post<{ Body: CreateArticleBody }>(
+  fastify.post<{ Body: CreateArticleRequest }>(
     '/',
     {
       preHandler: authMiddleware,
     },
-    async (request: FastifyRequest<{ Body: CreateArticleBody }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: CreateArticleRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const body = request.body as CreateArticleBody;
+        const body = request.body as CreateArticleRequest;
         const { title, content, slug, thumbnail, categoryId, published = false } = body;
 
         if (!title || !content || !slug || !categoryId) {
@@ -157,15 +157,15 @@ export async function articleRoutes(fastify: FastifyInstance) {
   );
 
   // PUT /api/articles - Update article
-  fastify.put<{ Body: UpdateArticleBody }>(
+  fastify.put<{ Body: UpdateArticleRequest }>(
     '/',
     {
       preHandler: authMiddleware,
     },
-    async (request: FastifyRequest<{ Body: UpdateArticleBody }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: UpdateArticleRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const body = request.body as UpdateArticleBody;
+        const body = request.body as UpdateArticleRequest;
         const { id, title, content, slug, thumbnail, categoryId, published } = body;
 
         if (!id) {
@@ -255,7 +255,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
   // POST /api/articles/:id/reaction - Like/dislike article
   fastify.post<{
     Params: { id: string };
-    Body: ReactionBody;
+    Body: ReactionRequest;
   }>(
     '/:id/reaction',
     {
@@ -264,14 +264,14 @@ export async function articleRoutes(fastify: FastifyInstance) {
     async (
       request: FastifyRequest<{
         Params: { id: string };
-        Body: ReactionBody;
+        Body: ReactionRequest;
       }>,
       reply: FastifyReply
     ) => {
       try {
         const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
-        const body = request.body as ReactionBody;
+        const body = request.body as ReactionRequest;
         const { action } = body;
 
         if (!action || !['like', 'unlike', 'dislike'].includes(action)) {

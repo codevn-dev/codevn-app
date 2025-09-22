@@ -10,6 +10,7 @@ import { useForumStore } from '@/stores';
 import { CategorySelector } from '@/features/articles';
 import { findCategoryById } from '@/features/articles';
 import { apiGet } from '@/lib/utils';
+import { Category, Article, ArticleListResponse } from '@/types/shared';
 
 export function DashboardContent() {
   const {
@@ -34,8 +35,8 @@ export function DashboardContent() {
 
       try {
         const [categoriesData, articlesResponse] = await Promise.all([
-          apiGet('/api/categories'),
-          apiGet('/api/articles?publishedOnly=true'),
+          apiGet<Category[]>('/api/categories'),
+          apiGet<Article[] | ArticleListResponse>('/api/articles?publishedOnly=true'),
         ]);
 
         setCategories(categoriesData);
@@ -240,7 +241,7 @@ export function DashboardContent() {
                       <circle cx="12" cy="12" r="3"></circle>
                     </svg>
                     <span className="font-medium tabular-nums" aria-label="views count">
-                      {typeof (article as any).views === 'number' ? (article as any).views : 0}
+                      {typeof article.views === 'number' ? article.views : 0}
                     </span>
                   </div>
                 </div>

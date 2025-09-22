@@ -21,7 +21,9 @@ import { CodeHighlighter } from '../articles/code-highlighter';
 import { formatRelativeTime } from '@/lib/utils';
 import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 import { useClientOnly } from '@/hooks/use-client-only';
-import { Comment } from '@/types/shared';
+import { Comment, CommentListResponse, SuccessResponse } from '@/types/shared';
+import { apiDelete, apiGet, apiPost } from '@/lib/utils/api-client';
+import { ReactionRequest } from '@/types/shared/article';
 
 interface CommentItemProps {
   comment: Comment;
@@ -126,13 +128,8 @@ export function CommentItem({
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/comments/${comment.id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        onCommentDeleted(comment.id);
-      }
+      const _res = await apiDelete<SuccessResponse>(`/api/comments/${comment.id}`);
+      onCommentDeleted(comment.id);
     } catch {
       // Error handled silently
     } finally {
@@ -154,46 +151,43 @@ export function CommentItem({
     }
 
     try {
-      const method =
-        (action === 'like' && isLiked) || (action === 'unlike' && isUnliked) ? 'DELETE' : 'POST';
+      const shouldDelete = (action === 'like' && isLiked) || (action === 'unlike' && isUnliked);
 
-      const response = await fetch(`/api/comments/${comment.id}/reaction`, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action }),
-      });
+      if (shouldDelete) {
+        await apiDelete<SuccessResponse>(`/api/comments/${comment.id}/reaction`);
+      } else {
+        await apiPost<SuccessResponse>(`/api/comments/${comment.id}/reaction`, {
+          action,
+        } as ReactionRequest);
+      }
 
-      if (response.ok) {
-        if (action === 'like') {
-          if (isLiked) {
-            // Remove like
-            setIsLiked(false);
-            setLikeCount((prev) => prev - 1);
-          } else {
-            // Add like, remove unlike if exists
-            if (isUnliked) {
-              setIsUnliked(false);
-              setUnlikeCount((prev) => prev - 1);
-            }
-            setIsLiked(true);
-            setLikeCount((prev) => prev + 1);
-          }
-        } else if (action === 'unlike') {
+      if (action === 'like') {
+        if (isLiked) {
+          // Remove like
+          setIsLiked(false);
+          setLikeCount((prev) => prev - 1);
+        } else {
+          // Add like, remove unlike if exists
           if (isUnliked) {
-            // Remove unlike
             setIsUnliked(false);
             setUnlikeCount((prev) => prev - 1);
-          } else {
-            // Add unlike, remove like if exists
-            if (isLiked) {
-              setIsLiked(false);
-              setLikeCount((prev) => prev - 1);
-            }
-            setIsUnliked(true);
-            setUnlikeCount((prev) => prev + 1);
           }
+          setIsLiked(true);
+          setLikeCount((prev) => prev + 1);
+        }
+      } else if (action === 'unlike') {
+        if (isUnliked) {
+          // Remove unlike
+          setIsUnliked(false);
+          setUnlikeCount((prev) => prev - 1);
+        } else {
+          // Add unlike, remove like if exists
+          if (isLiked) {
+            setIsLiked(false);
+            setLikeCount((prev) => prev - 1);
+          }
+          setIsUnliked(true);
+          setUnlikeCount((prev) => prev + 1);
         }
       }
     } catch {
@@ -226,21 +220,18 @@ export function CommentItem({
   const loadReplies = async (page = 1, append = false) => {
     setLoadingReplies(true);
     try {
-      const response = await fetch(
+      const data = await apiGet<CommentListResponse>(
         `/api/articles/${articleId}/comments?parentId=${comment.id}&page=${page}&limit=5&sortOrder=asc`
       );
-      if (response.ok) {
-        const data = await response.json();
-        if (append) {
-          setReplies((prev) => [...prev, ...(data.comments || [])]);
-        } else {
-          setReplies(data.comments || []);
-          setVisibleRepliesCount(5);
-          repliesLoadedRef.current = true;
-        }
-        setHasMoreReplies(data.pagination.hasNextPage);
-        setRepliesPage(page);
+      if (append) {
+        setReplies((prev) => [...prev, ...(data.comments || [])]);
+      } else {
+        setReplies(data.comments || []);
+        setVisibleRepliesCount(5);
+        repliesLoadedRef.current = true;
       }
+      setHasMoreReplies(page < (data.pagination?.totalPages ?? page));
+      setRepliesPage(page);
     } catch {
       // Error handled silently
     } finally {

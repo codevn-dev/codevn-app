@@ -13,6 +13,9 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 import { Article } from '@/types/shared';
+import { apiDelete, apiPost } from '@/lib/utils/api-client';
+import { SuccessResponse } from '@/types/shared/common';
+import { ReactionRequest } from '@/types/shared/article';
 
 interface ArticleContentProps {
   article: Article;
@@ -37,46 +40,42 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
     }
 
     try {
-      const method =
-        (action === 'like' && isLiked) || (action === 'unlike' && isUnliked) ? 'DELETE' : 'POST';
+      const shouldDelete = (action === 'like' && isLiked) || (action === 'unlike' && isUnliked);
 
-      const response = await fetch(`/api/articles/${article.id}/reaction`, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action }),
-      });
-
-      if (response.ok) {
-        if (action === 'like') {
-          if (isLiked) {
-            // Remove like
-            setIsLiked(false);
-            setLikeCount((prev) => prev - 1);
-          } else {
-            // Add like, remove unlike if exists
-            if (isUnliked) {
-              setIsUnliked(false);
-              setUnlikeCount((prev) => prev - 1);
-            }
-            setIsLiked(true);
-            setLikeCount((prev) => prev + 1);
-          }
-        } else if (action === 'unlike') {
+      if (shouldDelete) {
+        await apiDelete<SuccessResponse>(`/api/articles/${article.id}/reaction`);
+      } else {
+        await apiPost<SuccessResponse>(`/api/articles/${article.id}/reaction`, {
+          action,
+        } as ReactionRequest);
+      }
+      if (action === 'like') {
+        if (isLiked) {
+          // Remove like
+          setIsLiked(false);
+          setLikeCount((prev) => prev - 1);
+        } else {
+          // Add like, remove unlike if exists
           if (isUnliked) {
-            // Remove unlike
             setIsUnliked(false);
             setUnlikeCount((prev) => prev - 1);
-          } else {
-            // Add unlike, remove like if exists
-            if (isLiked) {
-              setIsLiked(false);
-              setLikeCount((prev) => prev - 1);
-            }
-            setIsUnliked(true);
-            setUnlikeCount((prev) => prev + 1);
           }
+          setIsLiked(true);
+          setLikeCount((prev) => prev + 1);
+        }
+      } else if (action === 'unlike') {
+        if (isUnliked) {
+          // Remove unlike
+          setIsUnliked(false);
+          setUnlikeCount((prev) => prev - 1);
+        } else {
+          // Add unlike, remove like if exists
+          if (isLiked) {
+            setIsLiked(false);
+            setLikeCount((prev) => prev - 1);
+          }
+          setIsUnliked(true);
+          setUnlikeCount((prev) => prev + 1);
         }
       }
     } catch {
@@ -153,7 +152,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {typeof (article as any).views === 'number' && (
+            {typeof article.views === 'number' && (
               <span className="flex items-center text-sm text-gray-600">
                 <svg
                   className="mr-1 h-4 w-4"
@@ -167,7 +166,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                   <circle cx="12" cy="12" r="3"></circle>
                 </svg>
-                {(article as any).views}
+                {article.views}
               </span>
             )}
             <Button

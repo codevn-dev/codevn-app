@@ -49,3 +49,8 @@ export interface UserListResponse {
     totalPages: number;
   };
 }
+
+// Single user response
+export interface UserResponse {
+  user: User;
+}

@@ -34,7 +34,17 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { TiptapRichTextEditor, CodeHighlighter } from '@/features/articles';
 import { ImageUpload } from '@/features/upload';
-import { Article, Category } from '@/types/shared';
+import {
+  Article,
+  Category,
+  ArticleListResponse,
+  CreateArticleResponse,
+  UpdateArticleResponse,
+  DeleteArticleResponse,
+  CreateArticleRequest,
+  UpdateArticleRequest,
+} from '@/types/shared';
+import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/utils/api-client';
 
 function ArticlesContent() {
   const { user, isAuthenticated, isLoading } = useAuthState();
@@ -94,11 +104,8 @@ function ArticlesContent() {
   // Fetch categories for dropdown
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await fetch('/api/categories');
-      if (response.ok) {
-        const categoriesData = await response.json();
-        setCategories(categoriesData);
-      }
+      const categoriesData = await apiGet<Category[]>('/api/categories');
+      setCategories(categoriesData);
     } catch {
       // Error handled silently
     }
@@ -123,13 +130,16 @@ function ArticlesContent() {
         authorId: user.id, // Only fetch user's own articles
       });
 
-      const response = await fetch(`/api/articles?${params}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setArticles(data.articles);
-        setPagination(data.pagination);
-      }
+      const data = await apiGet<ArticleListResponse>(`/api/articles?${params}`);
+      setArticles(data.articles);
+      setPagination({
+        currentPage: data.pagination.page,
+        totalPages: data.pagination.totalPages,
+        totalItems: data.pagination.total,
+        itemsPerPage: data.pagination.limit,
+        hasNextPage: data.pagination.hasNext,
+        hasPrevPage: data.pagination.hasPrev,
+      });
     } catch {
       // Error handled silently
     } finally {
@@ -209,29 +219,17 @@ function ArticlesContent() {
     }
 
     try {
-      const response = await fetch('/api/articles', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(articleForm),
+      await apiPost<CreateArticleResponse>('/api/articles', articleForm as CreateArticleRequest);
+      setArticleForm({
+        title: '',
+        content: '',
+        slug: '',
+        thumbnail: '',
+        categoryId: '',
+        published: false,
       });
-
-      if (response.ok) {
-        setArticleForm({
-          title: '',
-          content: '',
-          slug: '',
-          thumbnail: '',
-          categoryId: '',
-          published: false,
-        });
-        setShowArticleForm(false);
-        fetchArticles();
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to create article');
-      }
+      setShowArticleForm(false);
+      fetchArticles();
     } catch {
       alert('Error creating article. Please try again.');
     }
@@ -261,33 +259,19 @@ function ArticlesContent() {
     }
 
     try {
-      const response = await fetch('/api/articles', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: editingArticle.id,
-          ...articleForm,
-        }),
+      const payload: UpdateArticleRequest = { id: editingArticle.id, ...articleForm };
+      await apiPut<UpdateArticleResponse>('/api/articles', payload);
+      setArticleForm({
+        title: '',
+        content: '',
+        slug: '',
+        thumbnail: '',
+        categoryId: '',
+        published: false,
       });
-
-      if (response.ok) {
-        setArticleForm({
-          title: '',
-          content: '',
-          slug: '',
-          thumbnail: '',
-          categoryId: '',
-          published: false,
-        });
-        setShowArticleForm(false);
-        setEditingArticle(null);
-        fetchArticles();
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to update article');
-      }
+      setShowArticleForm(false);
+      setEditingArticle(null);
+      fetchArticles();
     } catch {
       alert('Error updating article. Please try again.');
     }
@@ -300,17 +284,9 @@ function ArticlesContent() {
     }
 
     try {
-      const response = await fetch(`/api/articles?id=${article.id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setShowDeleteConfirm(null);
-        fetchArticles();
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to delete article');
-      }
+      const _res = await apiDelete<DeleteArticleResponse>(`/api/articles?id=${article.id}`);
+      setShowDeleteConfirm(null);
+      fetchArticles();
     } catch {
       alert('Error deleting article. Please try again.');
     }
@@ -328,24 +304,11 @@ function ArticlesContent() {
     }
 
     try {
-      const response = await fetch('/api/articles', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: article.id,
-          published: !article.published,
-        }),
-      });
-
-      if (response.ok) {
-        fetchArticles();
-      } else {
-        const error = await response.json();
-        console.error('Error response:', error);
-        alert(error.error || 'Failed to update article status');
-      }
+      const _res = await apiPut<UpdateArticleResponse>('/api/articles', {
+        id: article.id,
+        published: !article.published,
+      } as UpdateArticleRequest);
+      fetchArticles();
     } catch (error) {
       console.error('Fetch error:', error);
       alert('Error updating article status. Please try again.');

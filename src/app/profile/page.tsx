@@ -13,6 +13,7 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { AvatarUpload } from '@/features/upload';
 import { formatDate } from '@/lib/utils';
+import { apiGet, apiPut } from '@/lib/utils/api-client';
 
 import { User as UserProfile } from '@/types/shared/auth';
 
@@ -61,8 +62,7 @@ function ProfilePageContent() {
 
   const refreshProfileData = async () => {
     try {
-      const { apiGet } = await import('@/lib/utils/api-client');
-      const userData = await apiGet('/api/profile');
+      const userData = await apiGet<UserProfile>('/api/profile');
 
       // Update Zustand store with fresh user data
       updateUser({
@@ -97,8 +97,7 @@ function ProfilePageContent() {
     setMessage('');
 
     try {
-      const { apiPut } = await import('@/lib/utils/api-client');
-      await apiPut('/api/profile', {
+      await apiPut<UserProfile>('/api/profile', {
         name: profile.name,
         email: profile.email,
       });

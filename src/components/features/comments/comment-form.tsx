@@ -7,6 +7,8 @@ import { Send, Loader2 } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { useCommentWebSocketContext } from './websocket-context';
+import { apiPut } from '@/lib/utils/api-client';
+import { UpdateCommentRequest, Comment } from '@/types/shared/comment';
 
 interface CommentFormProps {
   articleId: string;
@@ -70,22 +72,10 @@ export function CommentForm({
 
     try {
       if (isEditing && commentId) {
-        const response = await fetch(`/api/comments/${commentId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ content: content.trim() }),
-        });
-
-        if (response.ok) {
-          const updatedComment = await response.json();
-          onCommentAdded(updatedComment);
-          if (onCancel) onCancel();
-        } else {
-          const errorData = await response.json();
-          setError(errorData.error || 'Failed to update comment');
-        }
+        const payload: Omit<UpdateCommentRequest, 'id'> = { content: content.trim() };
+        const updated = await apiPut<Comment>(`/api/comments/${commentId}`, payload);
+        onCommentAdded(updated);
+        if (onCancel) onCancel();
       } else {
         // Create optimistic comment/reply for immediate UI update
         const optimisticComment = {
@@ -137,12 +127,18 @@ export function CommentForm({
     }
   };
 
+  const submitNow = () => {
+    if (!isSubmitting && content.trim()) {
+      // Create a synthetic event that matches React.FormEvent signature
+      const event = { preventDefault: () => {} } as unknown as React.FormEvent;
+      void handleSubmit(event);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.altKey) {
       e.preventDefault();
-      if (!isSubmitting && content.trim()) {
-        handleSubmit(e as any);
-      }
+      submitNow();
     }
     // Alt+Enter will create a new line (default behavior)
   };
