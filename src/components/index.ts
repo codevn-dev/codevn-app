@@ -2,7 +2,6 @@
 export * from './features/articles';
 export * from './features/auth';
 export * from './features/comments';
-export * from './features/dashboard';
 export * from './features/navigation';
 export * from './features/upload';
 

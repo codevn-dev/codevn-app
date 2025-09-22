@@ -58,13 +58,19 @@ export const useForumStore = create<ForumState>((set) => ({
   },
 
   setArticles: (articles) => {
-    set({ articles });
+    const unique = Array.isArray(articles)
+      ? Array.from(new Map(articles.map((a) => [a.id, a])).values())
+      : [];
+    set({ articles: unique });
   },
 
   addArticles: (articles) => {
-    set((state) => ({
-      articles: [...state.articles, ...articles],
-    }));
+    set((state) => {
+      const map = new Map<string, import('@/types/shared').Article>();
+      for (const a of state.articles) map.set(a.id, a);
+      for (const a of articles) if (!map.has(a.id)) map.set(a.id, a);
+      return { articles: Array.from(map.values()) };
+    });
   },
 
   setCurrentArticle: (article) => {

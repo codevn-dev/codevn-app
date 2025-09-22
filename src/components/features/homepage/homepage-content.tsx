@@ -5,14 +5,16 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { Search, MessageSquare, BookOpen, Calendar, Eye } from 'lucide-react';
+import { Search, MessageSquare, BookOpen, Calendar, Eye, X } from 'lucide-react';
 import { useForumStore } from '@/stores';
 import { CategorySelector } from '@/features/articles';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { findCategoryById } from '@/features/articles';
 import { apiGet } from '@/lib/utils';
 import { Category, ArticleListResponse } from '@/types/shared';
 
 export function HomepageContent() {
+  const { user, isAuthenticated } = useAuthState();
   const {
     categories,
     articles,
@@ -31,9 +33,21 @@ export function HomepageContent() {
     setHasMoreArticles,
   } = useForumStore();
 
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedCategoryNames, setSelectedCategoryNames] = useState<string[]>([]);
+  const [onlyMine, setOnlyMine] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  // Helpers
+  const getCategoryById = (id: string) => findCategoryById(categories, id);
+  const getCategoryByName = (name: string) =>
+    categories.find((c) => c.name.toLowerCase() === name.toLowerCase());
+  const getDescendantNames = (name: string): string[] => {
+    const cat = getCategoryByName(name);
+    if (!cat) return [];
+    const childNames = (cat.children || []).map((c) => c.name);
+    return [name, ...childNames];
+  };
 
   // Fetch categories once
   useEffect(() => {
@@ -47,6 +61,22 @@ export function HomepageContent() {
     };
     fetchCategoriesOnce();
   }, [setCategories, setError]);
+
+  // Read filters from URL on first load
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('search') || '';
+    const names = (params.get('categoryNames') || '')
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    const mine = params.get('mine') === '1';
+    if (q) setSearchTerm(q);
+    if (names.length > 0) setSelectedCategoryNames(names);
+    if (mine) setOnlyMine(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch articles with pagination and server-side filters
   useEffect(() => {
@@ -64,7 +94,12 @@ export function HomepageContent() {
           sortOrder: 'desc',
         });
         if (searchTerm) params.set('search', searchTerm);
-        if (selectedCategoryId) params.set('categoryIds', selectedCategoryId);
+        if (selectedCategoryNames.length > 0)
+          params.set(
+            'categoryNames',
+            selectedCategoryNames.map((name) => name.toLowerCase()).join(',')
+          );
+        if (onlyMine && isAuthenticated && user) params.set('authorId', user.id);
 
         const res = await apiGet<ArticleListResponse>(`/api/articles?${params.toString()}`);
         if (articlesPage === 1) {
@@ -85,7 +120,10 @@ export function HomepageContent() {
   }, [
     articlesPage,
     searchTerm,
-    selectedCategoryId,
+    selectedCategoryNames,
+    onlyMine,
+    isAuthenticated,
+    user,
     setArticles,
     addArticles,
     setHasMoreArticles,
@@ -96,7 +134,22 @@ export function HomepageContent() {
   // Reset to first page when filter/search changes
   useEffect(() => {
     setArticlesPage(1);
-  }, [searchTerm, selectedCategoryId, setArticlesPage]);
+  }, [searchTerm, selectedCategoryNames, onlyMine, setArticlesPage]);
+
+  // Sync filters to URL
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('search', searchTerm);
+    if (selectedCategoryNames.length > 0)
+      params.set(
+        'categoryNames',
+        selectedCategoryNames.map((name) => name.toLowerCase()).join(',')
+      );
+    if (onlyMine) params.set('mine', '1');
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+    window.history.replaceState(null, '', newUrl);
+  }, [searchTerm, selectedCategoryNames, onlyMine]);
 
   // IntersectionObserver for lazy load
   useEffect(() => {
@@ -153,8 +206,27 @@ export function HomepageContent() {
       {/* Categories Section - Horizontal Layout */}
       <CategorySelector
         categories={categories}
-        selectedCategoryIds={selectedCategoryId ? [selectedCategoryId] : []}
-        onCategoryToggle={(id) => setSelectedCategoryId((prev) => (prev === id ? null : id))}
+        selectedCategoryIds={selectedCategoryNames
+          .map((name) => {
+            const cat = getCategoryByName(name);
+            return cat ? cat.id : '';
+          })
+          .filter(Boolean)}
+        onCategoryToggle={(id) => {
+          const cat = getCategoryById(id);
+          if (!cat) return;
+          const namesToToggle = getDescendantNames(cat.name).map((name) => name.toLowerCase());
+          setSelectedCategoryNames((prev) => {
+            const set = new Set(prev);
+            const hasAll = namesToToggle.every((x) => set.has(x));
+            if (hasAll) {
+              namesToToggle.forEach((x) => set.delete(x));
+            } else {
+              namesToToggle.forEach((x) => set.add(x));
+            }
+            return Array.from(set);
+          });
+        }}
       />
 
       {/* Articles Section */}
@@ -169,30 +241,68 @@ export function HomepageContent() {
                 Fresh insights from the Vietnamese developer community
               </p>
             </div>
-            {selectedCategoryId && (
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="text-xs font-medium text-gray-600 sm:text-sm">Filtered by:</span>
-                <div
-                  className="flex items-center rounded-full border-2 px-3 py-1.5 text-xs font-semibold shadow-sm sm:px-4 sm:py-2 sm:text-sm"
-                  style={{
-                    backgroundColor: `${findCategoryById(categories, selectedCategoryId)?.color || '#3B82F6'}15`,
-                    borderColor:
-                      findCategoryById(categories, selectedCategoryId)?.color || '#3B82F6',
-                    color: findCategoryById(categories, selectedCategoryId)?.color || '#3B82F6',
+            <div className="flex items-center gap-2">
+              {isAuthenticated && (
+                <Button
+                  variant={onlyMine ? 'default' : 'outline'}
+                  onClick={() => setOnlyMine((v) => !v)}
+                  className={onlyMine ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
+                >
+                  My Articles
+                </Button>
+              )}
+              {(onlyMine || searchTerm || selectedCategoryNames.length > 0) && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setOnlyMine(false);
+                    setSearchTerm('');
+                    setSelectedCategoryNames([]);
                   }}
                 >
-                  <div
-                    className="mr-2 h-2 w-2 rounded-full"
-                    style={{
-                      backgroundColor:
-                        findCategoryById(categories, selectedCategoryId)?.color || '#3B82F6',
-                    }}
-                  ></div>
-                  {findCategoryById(categories, selectedCategoryId)?.name || 'Unknown'}
-                </div>
-              </div>
-            )}
+                  Clear all
+                </Button>
+              )}
+            </div>
           </div>
+          {selectedCategoryNames.length > 0 && (
+            <div className="mt-2 flex items-center gap-2 sm:gap-3">
+              <span className="text-xs font-medium text-gray-600 sm:text-sm">Filtered by:</span>
+              <div className="flex flex-wrap gap-2">
+                {selectedCategoryNames.map((name) => {
+                  const cat = getCategoryByName(name);
+                  if (!cat) return null;
+                  return (
+                    <div
+                      key={name}
+                      className="flex items-center rounded-full border-2 px-3 py-1.5 text-xs font-semibold shadow-sm sm:px-4 sm:py-2 sm:text-sm"
+                      style={{
+                        backgroundColor: `${cat.color || '#3B82F6'}15`,
+                        borderColor: cat.color || '#3B82F6',
+                        color: cat.color || '#3B82F6',
+                      }}
+                    >
+                      <div
+                        className="mr-2 h-2 w-2 rounded-full"
+                        style={{ backgroundColor: cat.color || '#3B82F6' }}
+                      />
+                      {cat.name}
+                      <button
+                        onClick={() =>
+                          setSelectedCategoryNames((prev) => prev.filter((x) => x !== name))
+                        }
+                        aria-label={`Remove ${cat.name}`}
+                        title={`Remove ${cat.name}`}
+                        className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current/30 text-current hover:bg-current/10"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -221,7 +331,7 @@ export function HomepageContent() {
               </div>
 
               {/* Article Header */}
-              <div className="p-4 pb-3 sm:p-6 sm:pb-4">
+              <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
                 <div className="mb-3 flex items-center justify-between sm:mb-4">
                   <button
                     className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition-all duration-200 hover:scale-105 sm:px-3 sm:text-xs"
@@ -233,7 +343,12 @@ export function HomepageContent() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setSelectedCategoryId(article.categoryId);
+                      const categoryName = article.category.name.toLowerCase();
+                      setSelectedCategoryNames((prev) =>
+                        prev.includes(categoryName)
+                          ? prev.filter((x) => x !== categoryName)
+                          : [...prev, categoryName]
+                      );
                     }}
                   >
                     <div
@@ -252,11 +367,11 @@ export function HomepageContent() {
                   </div>
                 </div>
 
-                <h3 className="mb-2 line-clamp-2 text-lg font-bold text-gray-900 transition-colors group-hover:text-blue-600 sm:mb-3 sm:text-xl">
+                <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-colors group-hover:text-blue-600 sm:mb-3 sm:text-xl">
                   {article.title}
                 </h3>
 
-                <div className="mb-3 flex items-center text-xs text-gray-600 sm:mb-4 sm:text-sm">
+                <div className="flex items-center text-xs text-gray-600 sm:text-sm">
                   <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
                     {article.author.name.charAt(0).toUpperCase()}
                   </div>
@@ -265,7 +380,7 @@ export function HomepageContent() {
               </div>
 
               {/* Article Footer */}
-              <div className="mt-auto border-t border-gray-100/50 bg-gray-50/50 px-4 py-3 sm:px-6 sm:py-4">
+              <div className="border-t border-gray-100/50 bg-gray-50/50 px-4 py-3 sm:px-6 sm:py-4">
                 <div className="grid grid-cols-3 text-xs text-gray-600 sm:text-sm">
                   <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                     <MessageSquare className="h-4 w-4 text-gray-500" aria-hidden="true" />
@@ -300,7 +415,7 @@ export function HomepageContent() {
               No articles found
             </h3>
             <p className="mx-auto mb-6 max-w-md text-base text-gray-600 sm:mb-8 sm:text-lg">
-              {searchTerm || selectedCategoryId
+              {searchTerm || selectedCategoryNames.length > 0
                 ? "Try adjusting your search or filter criteria to find what you're looking for."
                 : 'Be the first to share your knowledge with the community!'}
             </p>
@@ -308,11 +423,11 @@ export function HomepageContent() {
               size="sm"
               onClick={() => {
                 setSearchTerm('');
-                setSelectedCategoryId(null);
+                setSelectedCategoryNames([]);
               }}
               className="bg-gradient-to-r from-blue-500 to-purple-600 font-semibold text-white hover:from-blue-600 hover:to-purple-700"
             >
-              {searchTerm || selectedCategoryId ? 'Clear Filters' : 'Explore Topics'}
+              {searchTerm || selectedCategoryNames.length > 0 ? 'Clear Filters' : 'Explore Topics'}
             </Button>
           </div>
         )}

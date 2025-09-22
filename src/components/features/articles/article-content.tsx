@@ -31,6 +31,13 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
   const [unlikeCount, setUnlikeCount] = useState(article._count.unlikes || 0);
   const commentsSectionRef = useRef<CommentsSectionRef>(null);
 
+  // Ensure view starts at top when opening an article
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   // Derive effective UI states that never show as active when logged out
   const likedEffective = isAuthenticated ? isLiked : false;
   const unlikedEffective = isAuthenticated ? isUnliked : false;

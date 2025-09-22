@@ -1,6 +1,6 @@
 import { getDb } from '..';
-import { articles, comments, reactions } from '../schema';
-import { and, eq, or, like, isNull, sql, count } from 'drizzle-orm';
+import { articles, comments, reactions, categories } from '../schema';
+import { and, eq, or, like, isNull, sql, count, inArray, exists } from 'drizzle-orm';
 import { Article as SharedArticle } from '@/types/shared/article';
 
 export interface ArticleFilters {
@@ -10,7 +10,8 @@ export interface ArticleFilters {
   page?: number;
   limit?: number;
   status?: 'all' | 'published' | 'draft';
-  categoryId?: string;
+  categoryIds?: string[];
+  categoryNames?: string[];
   authorId?: string;
   publishedOnly?: boolean;
   userId?: string; // For checking user like/unlike status
@@ -104,7 +105,6 @@ export class ArticleRepository {
       page = 1,
       limit = 10,
       status = 'all',
-      categoryId = '',
       authorId = '',
       publishedOnly = true,
     } = filters;
@@ -127,8 +127,28 @@ export class ArticleRepository {
       whereConditions.push(eq(articles.published, status === 'published'));
     }
 
-    if (categoryId) {
-      whereConditions.push(eq(articles.categoryId, categoryId));
+    if (filters.categoryIds && filters.categoryIds.length > 0) {
+      whereConditions.push(inArray(articles.categoryId, filters.categoryIds));
+    }
+
+    if (filters.categoryNames && filters.categoryNames.length > 0) {
+      const namesLower = filters.categoryNames.map((n) => n.toLowerCase());
+      whereConditions.push(
+        exists(
+          getDb()
+            .select()
+            .from(categories)
+            .where(
+              and(
+                eq(categories.id, articles.categoryId),
+                sql`lower(${categories.name}) in (${sql.join(
+                  namesLower.map((name) => sql`${name}`),
+                  sql`, `
+                )})`
+              )
+            )
+        )
+      );
     }
 
     if (authorId) {

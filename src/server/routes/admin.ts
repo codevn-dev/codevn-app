@@ -196,6 +196,14 @@ export async function adminRoutes(fastify: FastifyInstance) {
             }
           }
 
+          // Check duplicate name (case-insensitive)
+          const nameExists = await categoryRepository.checkNameExists(name);
+          if (nameExists) {
+            return reply.status(400).send({
+              error: 'Category name already exists. Please choose a different name.',
+            });
+          }
+
           const newCategory = await categoryRepository.create({
             name,
             description,
@@ -268,6 +276,14 @@ export async function adminRoutes(fastify: FastifyInstance) {
             if (!parentCategory) {
               return reply.status(404).send({ error: 'Parent category not found' });
             }
+          }
+
+          // Check duplicate name (case-insensitive), excluding current category
+          const nameExists = await categoryRepository.checkNameExists(name, id);
+          if (nameExists) {
+            return reply.status(400).send({
+              error: 'Category name already exists. Please choose a different name.',
+            });
           }
 
           // Update category

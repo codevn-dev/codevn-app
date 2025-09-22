@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +15,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Users, Tag, Edit, Trash2, Search, ArrowUpDown } from 'lucide-react';
+import {
+  Plus,
+  Users,
+  Tag,
+  Edit,
+  Trash2,
+  Search,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
+  XCircle,
+} from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { isAdmin } from '@/lib/utils';
@@ -161,8 +171,10 @@ function AdminPageContent() {
       setShowCategoryForm(false);
       setCategoryError(null);
       fetchData();
-    } catch {
-      setCategoryError('Network error. Please try again.');
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.error || error?.message || 'Network error. Please try again.';
+      setCategoryError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -202,8 +214,10 @@ function AdminPageContent() {
       setEditingCategory(null);
       setCategoryError(null);
       fetchData();
-    } catch {
-      setCategoryError('Network error. Please try again.');
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.error || error?.message || 'Network error. Please try again.';
+      setCategoryError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -422,9 +436,9 @@ function AdminPageContent() {
                     {sortBy === 'joined' && (
                       <span className="ml-1">
                         {sortOrder === 'asc' ? (
-                          <img src="/icons/chevron-up.svg" alt="up" className="h-3 w-3" />
+                          <ChevronUp className="h-3 w-3" />
                         ) : (
-                          <img src="/icons/chevron-down.svg" alt="down" className="h-3 w-3" />
+                          <ChevronDown className="h-3 w-3" />
                         )}
                       </span>
                     )}
@@ -669,7 +683,7 @@ function AdminPageContent() {
             </div>
 
             {showCategoryForm && (
-              <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
                 <div className="w-full max-w-lg rounded-lg bg-white p-6">
                   <div className="mb-4">
                     <h2 className="text-lg font-semibold">
@@ -739,39 +753,7 @@ function AdminPageContent() {
                       </div>
 
                       {/* Error Message */}
-                      {categoryError && (
-                        <div className="rounded-md border border-red-200 bg-red-50 p-3">
-                          <div className="flex">
-                            <div className="flex-shrink-0">
-                              <img
-                                src="/icons/x-circle.svg"
-                                alt="x"
-                                className="h-5 w-5 text-red-400"
-                              />
-                            </div>
-                            <div className="ml-3">
-                              <h3 className="text-sm font-medium text-red-800">
-                                {categoryError.includes('duplicate') ||
-                                categoryError.includes('unique')
-                                  ? 'Category Already Exists'
-                                  : 'Error'}
-                              </h3>
-                              <div className="mt-2 text-sm text-red-700">
-                                <p>{categoryError}</p>
-                                {(categoryError.includes('duplicate') ||
-                                  categoryError.includes('unique')) && (
-                                  <div className="mt-2">
-                                    <p className="font-medium">
-                                      The category name or slug already exists. Please try a
-                                      different name.
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      {categoryError && <p className="text-sm text-red-600">{categoryError}</p>}
                     </form>
                   </div>
 
@@ -953,7 +935,7 @@ function AdminPageContent() {
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
             <div className="w-full max-w-md rounded-lg bg-white p-6">
               <h2 className="mb-4 text-lg font-semibold">Delete Category</h2>
               <p className="mb-6 text-gray-600">
@@ -966,7 +948,7 @@ function AdminPageContent() {
                 <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <img src="/icons/x-circle.svg" alt="x" className="h-5 w-5 text-red-400" />
+                      <XCircle className="h-5 w-5 text-red-400" />
                     </div>
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-red-800">Cannot Delete Category</h3>

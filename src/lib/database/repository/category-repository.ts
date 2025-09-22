@@ -1,6 +1,6 @@
 import { getDb } from '..';
 import { categories, articles } from '../schema';
-import { eq, count, and, isNull } from 'drizzle-orm';
+import { eq, count, and, isNull, sql } from 'drizzle-orm';
 
 export interface CategoryWithCounts {
   id: string;
@@ -277,6 +277,20 @@ export class CategoryRepository {
         createdById: categoryData.createdById,
       })
       .returning();
+  }
+
+  async checkNameExists(name: string, excludeId?: string): Promise<boolean> {
+    const nameLower = name.toLowerCase();
+    const whereCondition = excludeId
+      ? and(
+          isNull(categories.deletedAt),
+          sql`lower(${categories.name}) = ${nameLower}`,
+          sql`${categories.id} != ${excludeId}`
+        )
+      : and(isNull(categories.deletedAt), sql`lower(${categories.name}) = ${nameLower}`);
+
+    const existing = await getDb().query.categories.findFirst({ where: whereCondition });
+    return !!existing;
   }
 
   async update(

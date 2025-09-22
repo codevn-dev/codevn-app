@@ -16,7 +16,6 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
-    "create-mock-users": "tsx scripts/create-mock-users.ts",
     "prepare": "husky"
   },
   "dependencies": {

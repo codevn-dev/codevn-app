@@ -1,19 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+// Removed Dialog imports - using custom overlay
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { Separator } from '@/components/ui/separator';
 import { useUIStore } from '@/stores';
+// Removed X import - no close button needed
 
 import GoogleIcon from '@/icons/google.svg';
 import { useAuthActions } from '@/hooks/use-auth-actions';
@@ -196,17 +191,24 @@ export function AuthModal() {
     setEmailError(null);
   };
 
+  if (!authModalOpen) return null;
+
   return (
-    <Dialog open={authModalOpen} onOpenChange={closeModal}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{authMode === 'signin' ? 'Welcome back' : 'Create an account'}</DialogTitle>
-          <DialogDescription>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+      onClick={closeModal}
+    >
+      <div className="w-full max-w-md rounded-lg bg-white p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">
+            {authMode === 'signin' ? 'Welcome back' : 'Create an account'}
+          </h2>
+          <p className="text-sm text-gray-600">
             {authMode === 'signin'
               ? 'Sign in to your account to continue'
               : 'Enter your details to create a new account'}
-          </DialogDescription>
-        </DialogHeader>
+          </p>
+        </div>
 
         <div className="space-y-4">
           {/* Google OAuth Button */}
@@ -367,7 +369,7 @@ export function AuthModal() {
             )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

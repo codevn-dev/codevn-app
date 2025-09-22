@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,7 +58,7 @@ function ArticlesContent() {
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(9);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'title' | 'createdAt' | 'updatedAt'>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -68,10 +68,12 @@ function ArticlesContent() {
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
-    itemsPerPage: 10,
+    itemsPerPage: 9,
     hasNextPage: false,
     hasPrevPage: false,
   });
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const [articleForm, setArticleForm] = useState({
     title: '',
@@ -131,7 +133,7 @@ function ArticlesContent() {
       });
 
       const data = await apiGet<ArticleListResponse>(`/api/articles?${params}`);
-      setArticles(data.articles);
+      setArticles((prev) => (currentPage === 1 ? data.articles : [...prev, ...data.articles]));
       setPagination({
         currentPage: data.pagination.page,
         totalPages: data.pagination.totalPages,
@@ -144,6 +146,7 @@ function ArticlesContent() {
       // Error handled silently
     } finally {
       setLoading(false);
+      setIsLoadingMore(false);
     }
   }, [
     user,
@@ -176,6 +179,26 @@ function ArticlesContent() {
     categoryFilter,
     fetchArticles,
   ]);
+
+  // IntersectionObserver for lazy loading
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+    if (!pagination.hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting && !isLoadingMore) {
+          setIsLoadingMore(true);
+          setCurrentPage((p) => p + 1);
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [pagination.hasNextPage, isLoadingMore]);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -326,10 +349,6 @@ function ArticlesContent() {
     });
     setShowArticleForm(false);
     setEditingArticle(null);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
   };
 
   // Generate slug from title
@@ -649,108 +668,15 @@ function ArticlesContent() {
           </div>
         )}
 
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="mt-6 flex flex-col items-start justify-between gap-3 rounded-lg border border-gray-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:px-6">
-            <div className="flex items-center text-sm text-gray-700">
-              <span>
-                Page {pagination.currentPage} of {pagination.totalPages} | {pagination.itemsPerPage}{' '}
-                articles per page
-              </span>
-            </div>
-            <div className="flex w-full items-center space-x-2 overflow-x-auto sm:w-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(pagination.currentPage - 1)}
-                disabled={!pagination.hasPrevPage}
-                className="px-3 py-1"
-              >
-                Previous
-              </Button>
-
-              <div className="flex items-center space-x-1">
-                {(() => {
-                  const pages = [];
-                  const currentPage = pagination.currentPage;
-                  const totalPages = pagination.totalPages;
-                  const maxVisiblePages = 5;
-
-                  if (totalPages <= maxVisiblePages + 1) {
-                    for (let i = 1; i <= totalPages; i++) {
-                      pages.push(i);
-                    }
-                  } else {
-                    let startPage = Math.max(1, currentPage - 2);
-                    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-                    if (endPage - startPage < maxVisiblePages - 1) {
-                      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-                    }
-
-                    if (startPage > 1) {
-                      pages.push(1);
-                      if (startPage > 2) {
-                        pages.push('...');
-                      }
-                    }
-
-                    for (let i = startPage; i <= endPage; i++) {
-                      pages.push(i);
-                    }
-
-                    if (endPage < totalPages) {
-                      if (endPage < totalPages - 1) {
-                        pages.push('...');
-                      }
-                      pages.push(totalPages);
-                    }
-                  }
-
-                  return pages.map((page, index) => {
-                    if (page === '...') {
-                      return (
-                        <span key={`ellipsis-${index}`} className="px-2 text-gray-500">
-                          ...
-                        </span>
-                      );
-                    }
-
-                    return (
-                      <Button
-                        key={page}
-                        variant={pagination.currentPage === page ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => handlePageChange(page as number)}
-                        className={`min-w-[40px] px-3 py-1 ${
-                          pagination.currentPage === page
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                            : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  });
-                })()}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(pagination.currentPage + 1)}
-                disabled={!pagination.hasNextPage}
-                className="px-3 py-1"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+        {/* Lazy load sentinel */}
+        <div ref={loadMoreRef} className="h-10 w-full" />
+        {isLoadingMore && (
+          <div className="mt-2 text-center text-sm text-gray-500">Loading more...</div>
         )}
 
         {/* Article Form Modal */}
         {showArticleForm && (
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
             <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6">
               <div className="mb-4">
                 <h2 className="text-lg font-semibold">
@@ -914,7 +840,7 @@ function ArticlesContent() {
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
             <div className="w-full max-w-md rounded-lg bg-white p-6">
               <h2 className="mb-4 text-lg font-semibold">Delete Article</h2>
               <p className="mb-6 text-gray-600">

@@ -26,7 +26,7 @@ import {
 function getPaginationParams(request: FastifyRequest) {
   const query = request.query as any;
   const page = Math.max(1, parseInt(query.page || '1'));
-  const limit = Math.min(100, Math.max(1, parseInt(query.limit || '10')));
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit || '9')));
   const offset = (page - 1) * limit;
   return { page, limit, offset };
 }
@@ -70,7 +70,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const search = getSearchParam(request);
 
         const status = query.status || 'all';
-        const categoryId = query.categoryId || '';
+        const categoryIdsParam = (query as any).categoryIds;
+        const categoryNameParam = (query as any).categoryName;
+        const categoryNamesParam = (query as any).categoryNames;
         const authorId = query.authorId || '';
         const publishedOnlyParam = query.publishedOnly;
 
@@ -84,6 +86,27 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const publishedOnly =
           publishedOnlyParam === null ? !isAdmin : publishedOnlyParam === 'true';
 
+        // Normalize categoryIds from either categoryIds (preferred) or legacy categoryId (CSV)
+        const normalizedCategoryIds = Array.isArray(categoryIdsParam)
+          ? categoryIdsParam
+          : typeof categoryIdsParam === 'string'
+            ? categoryIdsParam.split(',').filter(Boolean)
+            : undefined;
+
+        // Prepare categoryNames (CSV or array). Lowercase for lookup; repository will handle exists subquery
+        const categoryNames: string[] | undefined = (() => {
+          const parts = Array.isArray(categoryNamesParam)
+            ? (categoryNamesParam as string[])
+            : typeof categoryNamesParam === 'string'
+              ? (categoryNamesParam as string).split(',')
+              : undefined;
+          const single = categoryNameParam ? [String(categoryNameParam)] : [];
+          const combined = [...(parts || []), ...single]
+            .map((s) => s.trim().toLowerCase())
+            .filter(Boolean);
+          return combined.length > 0 ? combined : undefined;
+        })();
+
         const result = await articleRepository.findManyWithPagination({
           search,
           sortBy,
@@ -91,12 +114,25 @@ export async function articleRoutes(fastify: FastifyInstance) {
           page,
           limit,
           status: status as 'all' | 'published' | 'draft',
-          categoryId: categoryId || undefined,
+          categoryIds: normalizedCategoryIds,
+          categoryNames,
           authorId: authorId || undefined,
           publishedOnly,
           userId: authRequest.user?.id,
         });
-        const response = result as unknown as ArticleListResponse;
+        const hasNext = result.pagination.page < result.pagination.totalPages;
+        const hasPrev = result.pagination.page > 1;
+        const response: ArticleListResponse = {
+          articles: result.articles as any,
+          pagination: {
+            page: result.pagination.page,
+            limit: result.pagination.limit,
+            total: result.pagination.total,
+            totalPages: result.pagination.totalPages,
+            hasNext,
+            hasPrev,
+          },
+        };
         return reply.send(response);
       } catch (error) {
         logger.error('Get articles error', undefined, error as Error);

@@ -13,24 +13,18 @@ import { Category } from '@/stores';
 
 interface CategorySelectorProps {
   categories: Category[];
-  selectedCategoryId: string | null;
-  onCategorySelect: (categoryId: string | null) => void;
+  selectedCategoryIds: string[];
+  onCategoryToggle: (categoryId: string) => void;
 }
 
 export function CategorySelector({
   categories,
-  selectedCategoryId,
-  onCategorySelect,
+  selectedCategoryIds,
+  onCategoryToggle,
 }: CategorySelectorProps) {
   const [_expandedCategoryId, _setExpandedCategoryId] = useState<string | null>(null);
 
-  const isCategorySelected = (category: Category) => {
-    if (selectedCategoryId === category.id) return true;
-    if (category.children) {
-      return category.children.some((child) => selectedCategoryId === child.id);
-    }
-    return false;
-  };
+  const isSelected = (id: string) => selectedCategoryIds.includes(id);
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -39,100 +33,115 @@ export function CategorySelector({
         {categories.map((category) => (
           <div key={category.id} className="relative">
             {category.children && category.children.length > 0 ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    className={`group flex transform items-center rounded-xl px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:px-4 sm:py-3 sm:text-sm ${
-                      isCategorySelected(category)
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
-                        : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md'
-                    } `}
-                    variant={isCategorySelected(category) ? 'default' : 'outline'}
-                  >
-                    <div className="flex items-center">
-                      <div
-                        className="mr-2 h-2 w-2 rounded-full"
-                        style={{
-                          backgroundColor: isCategorySelected(category) ? 'white' : category.color,
-                        }}
-                      ></div>
-                      <span>{category.name}</span>
-                      {category._count && (
-                        <span
-                          className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            isCategorySelected(category)
-                              ? 'bg-white/20 text-white'
-                              : 'bg-gray-100 text-gray-600'
-                          }`}
-                        >
-                          {category._count.articles}
-                        </span>
-                      )}
-                    </div>
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="z-50 w-64 rounded-xl border border-gray-200 bg-white shadow-lg">
-                  {(category.children || []).map((child) => (
-                    <DropdownMenuItem
-                      key={child.id}
-                      onClick={() => onCategorySelect(child.id)}
-                      className={`group flex transform items-center rounded-lg px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:text-sm ${
-                        selectedCategoryId === child.id
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
-                          : 'text-gray-700 hover:bg-gray-50'
+              <div className="relative">
+                <Button
+                  className={`group flex h-[42px] items-center rounded-xl pr-10 pl-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
+                    isSelected(category.id)
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
+                      : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md'
+                  } `}
+                  onClick={() => onCategoryToggle(category.id)}
+                  variant={isSelected(category.id) ? 'default' : 'outline'}
+                >
+                  <div className="flex items-center">
+                    <div
+                      className="mr-2 h-2 w-2 rounded-full"
+                      style={{
+                        backgroundColor: isSelected(category.id) ? 'white' : category.color,
+                      }}
+                    />
+                    <span>{category.name}</span>
+                    {category._count && (
+                      <span
+                        className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          isSelected(category.id)
+                            ? 'bg-white/20 text-white'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        {category._count.articles}
+                      </span>
+                    )}
+                  </div>
+                  {/* Vertical divider */}
+                  <span
+                    className={`pointer-events-none absolute top-1/2 right-8 h-4 w-px -translate-y-1/2 ${
+                      isSelected(category.id) ? 'bg-white/30' : 'bg-gray-200'
+                    }`}
+                  />
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`absolute top-1/2 right-1 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg transition-colors ${
+                        isSelected(category.id)
+                          ? 'text-white hover:bg-white/10'
+                          : 'text-gray-600 hover:bg-gray-100'
                       }`}
+                      aria-label="Open subcategories"
                     >
-                      <div className="flex items-center">
-                        <div
-                          className="mr-2 h-2 w-2 rounded-full"
-                          style={{
-                            backgroundColor:
-                              selectedCategoryId === child.id ? 'white' : child.color,
-                          }}
-                        ></div>
-                        <span className="ml-2">{child.name}</span>
-                        {child._count && (
-                          <span
-                            className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              selectedCategoryId === child.id
-                                ? 'bg-white/20 text-white'
-                                : 'bg-gray-200 text-gray-600'
-                            }`}
-                          >
-                            {child._count.articles}
-                          </span>
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="z-50 w-64 rounded-xl border border-gray-200 bg-white shadow-lg">
+                    {(category.children || []).map((child) => (
+                      <DropdownMenuItem
+                        key={child.id}
+                        onClick={() => onCategoryToggle(child.id)}
+                        className={`group flex transform items-center rounded-lg px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:text-sm ${
+                          isSelected(child.id)
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <div
+                            className="mr-2 h-2 w-2 rounded-full"
+                            style={{
+                              backgroundColor: isSelected(child.id) ? 'white' : child.color,
+                            }}
+                          />
+                          <span className="ml-2">{child.name}</span>
+                          {child._count && (
+                            <span
+                              className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                isSelected(child.id)
+                                  ? 'bg-white/20 text-white'
+                                  : 'bg-gray-200 text-gray-600'
+                              }`}
+                            >
+                              {child._count.articles}
+                            </span>
+                          )}
+                        </div>
+                        {isSelected(child.id) && (
+                          <ArrowRight className="ml-2 h-3 w-3 transition-transform group-hover:translate-x-1" />
                         )}
-                      </div>
-                      {selectedCategoryId === child.id && (
-                        <ArrowRight className="ml-2 h-3 w-3 transition-transform group-hover:translate-x-1" />
-                      )}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
               <Button
-                className={`group flex transform items-center rounded-xl px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:px-4 sm:py-3 sm:text-sm ${
-                  isCategorySelected(category)
+                className={`group flex h-[42px] items-center rounded-xl px-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
+                  isSelected(category.id)
                     ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
                     : 'border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md'
                 } `}
-                onClick={() => onCategorySelect(category.id)}
-                variant={isCategorySelected(category) ? 'default' : 'outline'}
+                onClick={() => onCategoryToggle(category.id)}
+                variant={isSelected(category.id) ? 'default' : 'outline'}
               >
                 <div className="flex items-center">
                   <div
                     className="mr-2 h-2 w-2 rounded-full"
-                    style={{
-                      backgroundColor: isCategorySelected(category) ? 'white' : category.color,
-                    }}
+                    style={{ backgroundColor: isSelected(category.id) ? 'white' : category.color }}
                   ></div>
                   <span>{category.name}</span>
                   {category._count && (
                     <span
                       className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        isCategorySelected(category)
+                        isSelected(category.id)
                           ? 'bg-white/20 text-white'
                           : 'bg-gray-100 text-gray-600'
                       }`}
@@ -141,9 +150,6 @@ export function CategorySelector({
                     </span>
                   )}
                 </div>
-                {isCategorySelected(category) && (
-                  <ArrowRight className="ml-2 h-3 w-3 transition-transform group-hover:translate-x-1" />
-                )}
               </Button>
             )}
           </div>
