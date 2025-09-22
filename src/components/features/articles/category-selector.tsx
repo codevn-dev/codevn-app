@@ -37,8 +37,8 @@ export function CategorySelector({
                 <Button
                   className={`group flex h-[42px] items-center rounded-xl pr-10 pl-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
                     isSelected(category.id)
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md'
+                      ? 'bg-gradient-to-r from-[#B8956A] to-[#8B6F47] text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
                   } `}
                   onClick={() => onCategoryToggle(category.id)}
                   variant={isSelected(category.id) ? 'default' : 'outline'}
@@ -90,7 +90,7 @@ export function CategorySelector({
                         onClick={() => onCategoryToggle(child.id)}
                         className={`group flex transform items-center rounded-lg px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:text-sm ${
                           isSelected(child.id)
-                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
+                            ? 'bg-gradient-to-r from-[#B8956A] to-[#8B6F47] text-white'
                             : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
@@ -126,7 +126,7 @@ export function CategorySelector({
               <Button
                 className={`group flex h-[42px] items-center rounded-xl px-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
                   isSelected(category.id)
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
+                    ? 'bg-gradient-to-r from-[#B8956A] to-[#8B6F47] text-white shadow-lg shadow-[#B8956A]/25'
                     : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md'
                 } `}
                 onClick={() => onCategoryToggle(category.id)}

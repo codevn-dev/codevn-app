@@ -126,7 +126,7 @@ export function ChatSidebar({
         {/* Header */}
         <div className="flex items-center justify-between border-b p-4">
           <div className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-blue-600" />
+            <MessageCircle className="h-5 w-5 text-[#B8956A]" />
             <h2 className="text-lg font-semibold">Chat</h2>
             <div className="flex items-center gap-1">
               <div
@@ -180,7 +180,7 @@ export function ChatSidebar({
                   <div className="relative">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={conversation.peer?.avatar || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-green-500 text-white">
+                      <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-white">
                         {conversation.peer?.name?.charAt(0).toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>
@@ -192,7 +192,7 @@ export function ChatSidebar({
                     ></div>
                     {/* New message indicator */}
                     {conversation.unreadCount > 0 && (
-                      <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white">
+                      <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#B8956A] text-xs font-bold text-white">
                         {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
                       </div>
                     )}

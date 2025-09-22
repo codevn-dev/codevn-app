@@ -198,7 +198,10 @@ export function AuthModal() {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
       onClick={closeModal}
     >
-      <div className="w-full max-w-md rounded-lg bg-white p-6" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl shadow-gray-300/60"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="mb-4">
           <h2 className="text-lg font-semibold">
             {authMode === 'signin' ? 'Welcome back' : 'Create an account'}
@@ -215,7 +218,7 @@ export function AuthModal() {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full border-[#B8956A] bg-[#B8956A] font-semibold text-white shadow-lg hover:border-[#A6825A] hover:bg-[#A6825A]"
             onClick={handleGoogleLogin}
             disabled={isOauthLoading}
           >
@@ -337,7 +340,11 @@ export function AuthModal() {
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full bg-[#B8956A] py-3 text-lg font-bold text-white shadow-xl shadow-gray-400/50 hover:bg-[#A6825A]"
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />

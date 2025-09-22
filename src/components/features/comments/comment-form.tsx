@@ -264,7 +264,7 @@ export function CommentForm({
               setShowEmoji(false);
             }}
             placeholder={placeholder}
-            className="min-h-[80px] resize-none border-gray-200 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
+            className="min-h-[80px] resize-none border border-gray-200 bg-white shadow-sm placeholder:text-gray-500 focus:border-[#B8956A] focus:ring-[#B8956A]"
             maxLength={1000}
             ref={textareaRef}
             autoFocus={autoFocus}

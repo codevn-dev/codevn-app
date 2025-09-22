@@ -384,7 +384,7 @@ function ArticlesContent() {
         </div>
 
         {/* Search and Filter Controls */}
-        <div className="mb-6 rounded-xl bg-white/80 p-4 shadow-lg shadow-gray-200/50 backdrop-blur-sm">
+        <div className="mb-6 rounded-xl bg-white/80 p-4 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {/* Search Input */}
             <div className="lg:col-span-2">
@@ -394,14 +394,14 @@ function ArticlesContent() {
                   placeholder="Search your articles..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="border-gray-300 pl-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                  className="pl-10 focus:ring-2 focus:ring-[#B8956A]/20"
                 />
               </div>
             </div>
 
             {/* Status Filter */}
             <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-              <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+              <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
@@ -416,7 +416,7 @@ function ArticlesContent() {
               value={categoryFilter || 'all'}
               onValueChange={(value) => setCategoryFilter(value === 'all' ? '' : value)}
             >
-              <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+              <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
                 <SelectValue placeholder="Filter by category" />
               </SelectTrigger>
               <SelectContent>
@@ -443,10 +443,8 @@ function ArticlesContent() {
                   setSortOrder('asc');
                 }
               }}
-              className={`border-gray-300 px-3 transition-colors hover:border-gray-400 ${
-                sortBy === 'title'
-                  ? 'border-blue-300 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 bg-white text-gray-700'
+              className={`px-3 transition-colors ${
+                sortBy === 'title' ? 'bg-[#B8956A]/10 text-[#A6825A]' : 'bg-white text-gray-700'
               }`}
             >
               <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -467,10 +465,8 @@ function ArticlesContent() {
                   setSortOrder('desc');
                 }
               }}
-              className={`border-gray-300 px-3 transition-colors hover:border-gray-400 ${
-                sortBy === 'createdAt'
-                  ? 'border-blue-300 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 bg-white text-gray-700'
+              className={`px-3 transition-colors ${
+                sortBy === 'createdAt' ? 'bg-[#B8956A]/10 text-[#A6825A]' : 'bg-white text-gray-700'
               }`}
             >
               <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -491,10 +487,8 @@ function ArticlesContent() {
                   setSortOrder('desc');
                 }
               }}
-              className={`border-gray-300 px-3 transition-colors hover:border-gray-400 ${
-                sortBy === 'updatedAt'
-                  ? 'border-blue-300 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 bg-white text-gray-700'
+              className={`px-3 transition-colors ${
+                sortBy === 'updatedAt' ? 'bg-[#B8956A]/10 text-[#A6825A]' : 'bg-white text-gray-700'
               }`}
             >
               <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -526,7 +520,7 @@ function ArticlesContent() {
             {articles.map((article) => (
               <Card
                 key={article.id}
-                className="shadow-lg shadow-gray-200/50 transition-all duration-300 hover:shadow-xl hover:shadow-gray-300/60"
+                className="shadow-xl shadow-gray-300/60 transition-all duration-300 hover:shadow-2xl hover:shadow-gray-400/70"
               >
                 <CardBody className="p-4 sm:p-6">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -536,7 +530,7 @@ function ArticlesContent() {
                         <img
                           src={article.thumbnail}
                           alt={article.title}
-                          className="h-40 w-full rounded-lg border object-cover sm:h-24 sm:w-32"
+                          className="h-40 w-full rounded-lg object-cover sm:h-24 sm:w-32"
                         />
                       </div>
                     )}
@@ -550,7 +544,7 @@ function ArticlesContent() {
                           <Badge
                             variant={article.published ? 'default' : 'secondary'}
                             className={
-                              article.published ? 'bg-blue-600 text-white hover:bg-blue-700' : ''
+                              article.published ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]' : ''
                             }
                           >
                             {article.published ? 'Published' : 'Draft'}
@@ -570,7 +564,7 @@ function ArticlesContent() {
                           </Button>
 
                           {openDropdown === article.id && (
-                            <div className="dropdown-container absolute top-8 right-0 z-50 w-48 rounded-xl bg-white py-1 shadow-lg">
+                            <div className="dropdown-container absolute top-8 right-0 z-50 w-48 rounded-xl bg-white py-1 shadow-xl shadow-gray-300/60">
                               <div
                                 onClick={() => {
                                   handleTogglePublish(article);
@@ -599,7 +593,7 @@ function ArticlesContent() {
                                     handlePreviewArticle(article);
                                     setOpenDropdown(null);
                                   }}
-                                  className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-blue-600 hover:bg-gray-50"
+                                  className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-[#B8956A] hover:bg-gray-50"
                                 >
                                   <ExternalLink className="mr-2 h-4 w-4" />
                                   Preview
@@ -728,7 +722,7 @@ function ArticlesContent() {
                         <img
                           src={articleForm.thumbnail}
                           alt="Thumbnail preview"
-                          className="h-40 w-full rounded-lg border object-cover"
+                          className="h-40 w-full rounded-lg object-cover"
                         />
                         <Button
                           type="button"
@@ -755,7 +749,7 @@ function ArticlesContent() {
                       <button
                         type="button"
                         onClick={() => setShowImageUpload(true)}
-                        className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg border-2 border-dashed border-gray-300 bg-white transition-colors hover:border-gray-400"
+                        className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg bg-white transition-colors"
                       >
                         <Upload className="h-8 w-8 text-gray-600" />
                         <span className="text-sm font-medium text-gray-700">
@@ -778,7 +772,7 @@ function ArticlesContent() {
                       })
                     }
                   >
-                    <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                    <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -818,7 +812,7 @@ function ArticlesContent() {
                     onChange={(e) =>
                       setArticleForm({ ...articleForm, published: e.target.checked })
                     }
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 rounded border-gray-300 text-[#B8956A] focus:ring-[#B8956A]"
                   />
                   <label htmlFor="published" className="text-sm font-medium">
                     Publish immediately

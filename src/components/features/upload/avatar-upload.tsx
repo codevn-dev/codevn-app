@@ -393,7 +393,7 @@ export function AvatarUpload({
       <div className="group relative">
         <Avatar className={`${sizeClasses[size]} cursor-pointer`}>
           <AvatarImage src={currentAvatar || undefined} />
-          <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-lg font-bold text-white">
+          <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-lg font-bold text-white">
             {user?.name?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
@@ -405,7 +405,7 @@ export function AvatarUpload({
         )}
 
         {showCrop && (
-          <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-blue-500">
+          <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-[#B8956A]">
             <Crop className="h-4 w-4 text-white" />
           </div>
         )}
@@ -414,7 +414,7 @@ export function AvatarUpload({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading || isCompressing || showCrop}
-            className={`absolute -right-1 -bottom-1 ${buttonSizeClasses[size]} flex items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-colors hover:bg-blue-600 disabled:opacity-50`}
+            className={`absolute -right-1 -bottom-1 ${buttonSizeClasses[size]} flex items-center justify-center rounded-full bg-[#B8956A] text-white shadow-lg transition-colors hover:bg-[#A6825A] disabled:opacity-50`}
           >
             {showCrop ? <Crop className="h-3 w-3" /> : <Camera className="h-3 w-3" />}
           </button>

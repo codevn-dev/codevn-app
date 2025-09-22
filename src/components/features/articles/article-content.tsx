@@ -113,7 +113,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
   };
 
   return (
-    <Card className="shadow-lg">
+    <Card className="shadow-xl shadow-gray-300/60">
       {isPreview && (
         <div className="border-b border-yellow-200 bg-yellow-100 px-6 py-3">
           <div className="flex items-center text-sm font-medium text-yellow-800">

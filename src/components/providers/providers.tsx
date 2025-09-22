@@ -17,7 +17,7 @@ export function Providers({ children }: ProvidersProps) {
         <WebSocketProvider>
           <CommentWebSocketProvider>
             <Navigation />
-            <main className="bg-gray-80 min-h-screen">{children}</main>
+            <main className="min-h-screen bg-gray-100">{children}</main>
             <Notification />
             <FloatingChatButton />
           </CommentWebSocketProvider>

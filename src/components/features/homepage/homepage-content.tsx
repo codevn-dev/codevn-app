@@ -177,37 +177,36 @@ export function HomepageContent() {
   }
 
   return (
-    <div className="min-h-screen space-y-12 bg-gray-50 sm:space-y-16 md:space-y-20">
-      {/* Categories Section - Horizontal Layout */}
-      <div className="mb-12 sm:mb-16">
-        <CategorySelector
-          categories={categories}
-          selectedCategoryIds={selectedCategoryNames
-            .map((name) => {
-              const cat = getCategoryByName(name);
-              return cat ? cat.id : '';
-            })
-            .filter(Boolean)}
-          onCategoryToggle={(id) => {
-            const cat = getCategoryById(id);
-            if (!cat) return;
-            const namesToToggle = getDescendantNames(cat.name).map((name) => name.toLowerCase());
-            setSelectedCategoryNames((prev) => {
-              const set = new Set(prev);
-              const hasAll = namesToToggle.every((x) => set.has(x));
-              if (hasAll) {
-                namesToToggle.forEach((x) => set.delete(x));
-              } else {
-                namesToToggle.forEach((x) => set.add(x));
-              }
-              return Array.from(set);
-            });
-          }}
-        />
-      </div>
-
-      {/* Articles Section */}
-      <div className="mt-8 rounded-2xl bg-white/60 p-6 shadow-lg shadow-gray-200/50 backdrop-blur-sm">
+    <div className="min-h-screen space-y-12 bg-gray-100 sm:space-y-16 md:space-y-20">
+      {/* Articles Section with Categories */}
+      <div className="mt-8 rounded-2xl bg-white/80 p-6 backdrop-blur-sm">
+        {/* Categories Section */}
+        <div className="mb-8">
+          <CategorySelector
+            categories={categories}
+            selectedCategoryIds={selectedCategoryNames
+              .map((name) => {
+                const cat = getCategoryByName(name);
+                return cat ? cat.id : '';
+              })
+              .filter(Boolean)}
+            onCategoryToggle={(id) => {
+              const cat = getCategoryById(id);
+              if (!cat) return;
+              const namesToToggle = getDescendantNames(cat.name).map((name) => name.toLowerCase());
+              setSelectedCategoryNames((prev) => {
+                const set = new Set(prev);
+                const hasAll = namesToToggle.every((x) => set.has(x));
+                if (hasAll) {
+                  namesToToggle.forEach((x) => set.delete(x));
+                } else {
+                  namesToToggle.forEach((x) => set.add(x));
+                }
+                return Array.from(set);
+              });
+            }}
+          />
+        </div>
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
@@ -225,7 +224,7 @@ export function HomepageContent() {
                   onClick={() => setOnlyMine((v) => !v)}
                   className={
                     onlyMine
-                      ? 'bg-blue-600 font-semibold text-white hover:bg-blue-700'
+                      ? 'bg-[#B8956A] font-semibold text-white hover:bg-[#A6825A]'
                       : 'font-medium text-gray-700'
                   }
                 >
@@ -256,7 +255,7 @@ export function HomepageContent() {
                   return (
                     <div
                       key={name}
-                      className="flex items-center rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm sm:px-4 sm:py-2 sm:text-sm"
+                      className="flex items-center rounded-full px-3 py-1.5 text-xs font-semibold shadow-md shadow-gray-200/50 sm:px-4 sm:py-2 sm:text-sm"
                       style={{
                         backgroundColor: `${cat.color || '#3B82F6'}15`,
                         color: cat.color || '#3B82F6',
@@ -290,7 +289,7 @@ export function HomepageContent() {
             <Link
               key={article.id}
               href={`/articles/${article.slug}`}
-              className="group block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white/90 shadow-lg shadow-gray-200/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-gray-300/60"
+              className="group block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white/90 shadow-xl shadow-gray-300/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-gray-400/70"
             >
               {/* Thumbnail (consistent height whether exists or not) */}
               <div className="h-28 w-full overflow-hidden sm:h-32">
@@ -346,12 +345,12 @@ export function HomepageContent() {
                   </div>
                 </div>
 
-                <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-colors group-hover:text-blue-600 sm:mb-3 sm:text-xl">
+                <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-colors group-hover:text-[#B8956A] sm:mb-3 sm:text-xl">
                   {article.title}
                 </h3>
 
                 <div className="flex items-center text-xs text-gray-700 sm:text-sm">
-                  <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
+                  <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#B8956A] to-[#8B6F47] text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
                     {article.author.name.charAt(0).toUpperCase()}
                   </div>
                   <span className="font-medium">{article.author.name}</span>
@@ -387,8 +386,8 @@ export function HomepageContent() {
 
         {filteredArticles.length === 0 && (
           <div className="px-4 py-12 text-center sm:py-16">
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-100 to-purple-100 sm:mb-6 sm:h-20 sm:w-20">
-              <BookOpen className="h-8 w-8 text-blue-600 sm:h-10 sm:w-10" />
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-[#B8956A]/20 to-[#8B6F47]/20 sm:mb-6 sm:h-20 sm:w-20">
+              <BookOpen className="h-8 w-8 text-[#B8956A] sm:h-10 sm:w-10" />
             </div>
             <h3 className="mb-2 text-xl font-bold text-gray-900 sm:mb-3 sm:text-2xl">
               No articles found
@@ -403,7 +402,7 @@ export function HomepageContent() {
               onClick={() => {
                 setSelectedCategoryNames([]);
               }}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 font-semibold text-white hover:from-blue-600 hover:to-purple-700"
+              className="bg-gradient-to-r from-[#B8956A] to-[#8B6F47] font-semibold text-white hover:from-[#A6825A] hover:to-[#7A5F3F]"
             >
               {selectedCategoryNames.length > 0 ? 'Clear Filters' : 'Explore Topics'}
             </Button>
@@ -413,7 +412,7 @@ export function HomepageContent() {
         {/* Lazy load sentinel */}
         <div ref={loadMoreRef} className="h-10 w-full" />
         {isLoadingMore && (
-          <div className="mt-2 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-600 backdrop-blur-sm">
+          <div className="mt-2 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-600 shadow-md shadow-gray-200/50 backdrop-blur-sm">
             Loading more...
           </div>
         )}

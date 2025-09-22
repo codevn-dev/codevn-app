@@ -120,7 +120,7 @@ function UserProfileContent() {
           <div className="flex items-center">
             <Avatar className="h-20 w-20">
               <AvatarImage src={profile.avatar || undefined} alt={profile.name} />
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-2xl text-white">
+              <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-2xl text-white">
                 {profile.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

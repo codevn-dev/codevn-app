@@ -319,13 +319,13 @@ function AdminPageContent() {
 
         {/* Simple Tab Navigation */}
         <div className="mb-6 sm:mb-8">
-          <div className="rounded-xl bg-white/80 p-4 shadow-lg shadow-gray-200/50 backdrop-blur-sm">
+          <div className="rounded-xl bg-white/80 p-4 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
             <nav className="no-scrollbar -mb-px flex space-x-6 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('users')}
                 className={`border-b-2 px-1 py-2 text-sm font-medium ${
                   activeTab === 'users'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-[#B8956A] text-[#B8956A]'
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
@@ -338,7 +338,7 @@ function AdminPageContent() {
                 onClick={() => setActiveTab('categories')}
                 className={`border-b-2 px-1 py-2 text-sm font-medium ${
                   activeTab === 'categories'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-[#B8956A] text-[#B8956A]'
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
@@ -363,7 +363,7 @@ function AdminPageContent() {
             </div>
 
             {/* Search and Sort Controls */}
-            <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+            <div className="mb-6 rounded-lg bg-white p-4">
               <div className="flex flex-col gap-4 sm:flex-row">
                 {/* Search Input */}
                 <div className="flex-1">
@@ -373,7 +373,7 @@ function AdminPageContent() {
                       placeholder="Search by name or email..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="border-gray-300 pl-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="pl-10 focus:ring-2 focus:ring-[#B8956A]/20"
                     />
                   </div>
                 </div>
@@ -393,10 +393,10 @@ function AdminPageContent() {
                         setSortOrder('asc');
                       }
                     }}
-                    className={`border-gray-300 px-3 transition-colors hover:border-gray-400 ${
+                    className={`px-3 transition-colors ${
                       sortBy === 'name'
-                        ? 'border-blue-300 bg-blue-50 text-blue-700'
-                        : 'border-gray-300 bg-white text-gray-700'
+                        ? 'bg-[#B8956A]/10 text-[#A6825A]'
+                        : 'bg-white text-gray-700'
                     }`}
                   >
                     <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -425,10 +425,10 @@ function AdminPageContent() {
                         setSortOrder('asc');
                       }
                     }}
-                    className={`border-gray-300 px-3 transition-colors hover:border-gray-400 ${
+                    className={`px-3 transition-colors ${
                       sortBy === 'joined'
-                        ? 'border-blue-300 bg-blue-50 text-blue-700'
-                        : 'border-gray-300 bg-white text-gray-700'
+                        ? 'bg-[#B8956A]/10 text-[#A6825A]'
+                        : 'bg-white text-gray-700'
                     }`}
                   >
                     <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -456,7 +456,7 @@ function AdminPageContent() {
                 <p className="text-gray-500">Users will appear here once they register</p>
               </div>
             ) : (
-              <div className="overflow-hidden rounded-lg bg-white/90 shadow-lg shadow-gray-200/50 backdrop-blur-sm">
+              <div className="overflow-hidden rounded-lg bg-white/90 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50/50">
@@ -495,7 +495,7 @@ function AdminPageContent() {
                                 <div className="line-clamp-1 max-w-[160px] text-sm font-semibold text-gray-900 sm:max-w-none">
                                   <button
                                     onClick={() => router.push(`/users/${user.id}`)}
-                                    className="transition-colors hover:text-blue-600 hover:underline"
+                                    className="transition-colors hover:text-[#B8956A] hover:underline"
                                   >
                                     {user.name}
                                   </button>
@@ -518,7 +518,7 @@ function AdminPageContent() {
                               }
                             >
                               <SelectTrigger
-                                className={`h-9 w-36 border-gray-300 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:h-10 sm:w-40 ${
+                                className={`h-9 w-36 transition-colors focus:ring-2 focus:ring-[#B8956A]/20 sm:h-10 sm:w-40 ${
                                   user.id === currentUserId ||
                                   (isAdmin(user.role) && user.id !== currentUserId)
                                     ? 'cursor-not-allowed bg-gray-100 opacity-60'
@@ -536,7 +536,7 @@ function AdminPageContent() {
                                 </SelectItem>
                                 <SelectItem value="admin">
                                   <div className="flex items-center space-x-2">
-                                    <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                                    <div className="h-2 w-2 rounded-full bg-[#B8956A]"></div>
                                     <span>Admin</span>
                                   </div>
                                 </SelectItem>
@@ -560,7 +560,7 @@ function AdminPageContent() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex flex-col items-start justify-between gap-3 border-t border-gray-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:px-6">
+                  <div className="flex flex-col items-start justify-between gap-3 bg-white px-4 py-4 sm:flex-row sm:items-center sm:px-6">
                     <div className="flex items-center text-sm text-gray-700">
                       <span>
                         Page {pagination.currentPage} of {pagination.totalPages} |{' '}
@@ -639,7 +639,7 @@ function AdminPageContent() {
                                 onClick={() => handlePageChange(page as number)}
                                 className={`min-w-[40px] px-3 py-1 ${
                                   pagination.currentPage === page
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]'
                                     : 'hover:bg-gray-50'
                                 }`}
                               >
@@ -733,7 +733,7 @@ function AdminPageContent() {
                             })
                           }
                         >
-                          <SelectTrigger className="border-gray-300 bg-white transition-colors hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                          <SelectTrigger className="bg-white transition-colors focus:ring-2 focus:ring-[#B8956A]/20">
                             <SelectValue placeholder="Select a parent category (optional)" />
                           </SelectTrigger>
                           <SelectContent className="z-50">
@@ -790,7 +790,7 @@ function AdminPageContent() {
                 categories.map((category) => (
                   <Card
                     key={category.id}
-                    className="shadow-lg shadow-gray-200/50 transition-all duration-300 hover:shadow-xl hover:shadow-gray-300/60"
+                    className="shadow-xl shadow-gray-300/60 transition-all duration-300 hover:shadow-2xl hover:shadow-gray-400/70"
                   >
                     <CardHeader className="pb-4">
                       <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -824,7 +824,7 @@ function AdminPageContent() {
                               {category.children && category.children.length > 0 && (
                                 <>
                                   <span className="mx-2 hidden sm:inline">•</span>
-                                  <span className="font-medium text-blue-600">
+                                  <span className="font-medium text-[#B8956A]">
                                     {category.children.length} Sub Categories
                                   </span>
                                 </>
@@ -866,7 +866,7 @@ function AdminPageContent() {
                             {category.children.map((child: Category) => (
                               <Card
                                 key={child.id}
-                                className="bg-white/90 shadow-md shadow-gray-200/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:shadow-gray-300/60"
+                                className="bg-white/90 shadow-lg shadow-gray-300/60 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-gray-400/70"
                               >
                                 <CardBody className="p-4">
                                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -132,7 +132,7 @@ function ProfilePageContent() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-      <Card className="shadow-lg">
+      <Card className="shadow-xl shadow-gray-300/60">
         <CardHeader className="pb-4">
           <div className="flex items-center">
             <AvatarUpload
@@ -191,14 +191,14 @@ function ProfilePageContent() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Card className="border-blue-200 bg-blue-50">
+              <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
                 <CardBody className="flex flex-row items-center p-4">
-                  <Shield className="mr-3 h-5 w-5 text-blue-500" />
+                  <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
                     <Badge className="mb-1">
                       {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
                     </Badge>
-                    <p className="text-sm text-blue-700">Your current access level</p>
+                    <p className="text-sm text-[#A6825A]">Your current access level</p>
                   </div>
                 </CardBody>
               </Card>

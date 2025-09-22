@@ -1,13 +1,13 @@
 <svg width="150" height="120" viewBox="80 15 90 100" xmlns="http://www.w3.org/2000/svg">
-    <path d="M75,50 L125,20 L175,50" stroke="#FF6B6B" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <rect x="85" y="50" width="80" height="60" rx="5" fill="#4ECDC4" stroke="#2D3748" stroke-width="2"/>
-    <rect x="95" y="60" width="20" height="20" rx="3" fill="#FFD166" stroke="#2D3748" stroke-width="2"/>
-    <line x1="105" y1="60" x2="105" y2="80" stroke="#2D3748" stroke-width="2"/>
-    <line x1="95" y1="70" x2="115" y2="70" stroke="#2D3748" stroke-width="2"/>
-    <rect x="135" y="60" width="20" height="20" rx="3" fill="#FFD166" stroke="#2D3748" stroke-width="2"/>
-    <line x1="145" y1="60" x2="145" y2="80" stroke="#2D3748" stroke-width="2"/>
-    <line x1="135" y1="70" x2="155" y2="70" stroke="#2D3748" stroke-width="2"/>
-    <rect x="115" y="75" width="20" height="35" rx="2" fill="#FF6B6B" stroke="#2D3748" stroke-width="2"/>
-    <circle cx="125" cy="92" r="2" fill="#2D3748"/>
+    <path d="M75,50 L125,20 L175,50" stroke="#B8956A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <rect x="85" y="50" width="80" height="60" rx="5" fill="#B8956A" stroke="#A6825A" stroke-width="2"/>
+    <rect x="95" y="60" width="20" height="20" rx="3" fill="#A6825A" stroke="#8B6F47" stroke-width="2"/>
+    <line x1="105" y1="60" x2="105" y2="80" stroke="#8B6F47" stroke-width="2"/>
+    <line x1="95" y1="70" x2="115" y2="70" stroke="#8B6F47" stroke-width="2"/>
+    <rect x="135" y="60" width="20" height="20" rx="3" fill="#A6825A" stroke="#8B6F47" stroke-width="2"/>
+    <line x1="145" y1="60" x2="145" y2="80" stroke="#8B6F47" stroke-width="2"/>
+    <line x1="135" y1="70" x2="155" y2="70" stroke="#8B6F47" stroke-width="2"/>
+    <rect x="115" y="75" width="20" height="35" rx="2" fill="#B8956A" stroke="#A6825A" stroke-width="2"/>
+    <circle cx="125" cy="92" r="2" fill="#8B6F47"/>
 </svg>
 

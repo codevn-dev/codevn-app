@@ -94,7 +94,7 @@ export function AvatarWithDropdown({
           <div className="flex items-center gap-2">
             <Avatar className={sizeClasses[size]}>
               <AvatarImage src={user.avatar || undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+              <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-white">
                 {user.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -134,7 +134,7 @@ export function AvatarWithDropdown({
         <div className="flex items-center gap-2">
           <Avatar className={sizeClasses[size]}>
             <AvatarImage src={user.avatar || undefined} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-green-500 text-white">
+            <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-white">
               {user.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
