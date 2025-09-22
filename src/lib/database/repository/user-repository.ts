@@ -13,14 +13,19 @@ export interface UserFilters {
 }
 
 export interface PaginatedUsers {
-  users: any[];
+  users: Array<{
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+    role: 'user' | 'admin';
+    createdAt: Date;
+  }>;
   pagination: {
-    currentPage: number;
+    page: number;
+    limit: number;
+    total: number;
     totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
   };
 }
 
@@ -42,7 +47,16 @@ export class UserRepository {
     name: string;
     password: string;
     role?: 'user' | 'admin';
-  }) {
+  }): Promise<
+    Array<{
+      id: string;
+      email: string;
+      name: string;
+      avatar: string | null;
+      role: 'user' | 'admin';
+      createdAt: Date;
+    }>
+  > {
     const hashedPassword = await bcrypt.hash(userData.password, 12);
 
     return await getDb()
@@ -53,7 +67,14 @@ export class UserRepository {
         password: hashedPassword,
         role: userData.role || 'user',
       })
-      .returning();
+      .returning({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        avatar: users.avatar,
+        role: users.role,
+        createdAt: users.createdAt,
+      });
   }
 
   async update(
@@ -64,7 +85,16 @@ export class UserRepository {
       avatar?: string | null;
       role?: 'user' | 'admin';
     }
-  ) {
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      email: string;
+      avatar: string | null;
+      role: 'user' | 'admin';
+      createdAt: Date;
+    }>
+  > {
     const dataToUpdate: any = { ...updateData };
     if (Object.keys(dataToUpdate).length > 0) {
       dataToUpdate.updatedAt = new Date();
@@ -161,18 +191,14 @@ export class UserRepository {
 
     // Calculate pagination info
     const totalPages = Math.ceil(total / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
 
     return {
       users: usersResult,
       pagination: {
-        currentPage: page,
+        page,
+        limit,
+        total,
         totalPages,
-        totalItems: total,
-        itemsPerPage: limit,
-        hasNextPage,
-        hasPrevPage,
       },
     };
   }

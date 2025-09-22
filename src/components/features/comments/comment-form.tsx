@@ -20,6 +20,9 @@ interface CommentFormProps {
   isEditing?: boolean;
   commentId?: string;
   autoFocus?: boolean;
+  focusTrigger?: number;
+  onReady?: () => void;
+  suppressAuthPrompt?: boolean;
 }
 
 export function CommentForm({
@@ -32,6 +35,9 @@ export function CommentForm({
   isEditing = false,
   commentId,
   autoFocus = false,
+  focusTrigger,
+  onReady,
+  suppressAuthPrompt = false,
 }: CommentFormProps) {
   const { isAuthenticated, user } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
@@ -45,9 +51,24 @@ export function CommentForm({
   useEffect(() => {
     setContent(initialContent);
     if (autoFocus) {
-      requestAnimationFrame(() => textareaRef.current?.focus());
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          if (onReady) onReady();
+        }
+      });
     }
-  }, [initialContent, autoFocus]);
+  }, [initialContent, autoFocus, focusTrigger, onReady]);
+
+  // Always scroll to the textarea when it is focused (programmatically or by user)
+  useEffect(() => {
+    if (autoFocus || focusTrigger !== undefined) {
+      // After focus has been attempted above, ensure it's in view
+      requestAnimationFrame(() => {
+        textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+  }, [autoFocus, focusTrigger]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,18 +128,20 @@ export function CommentForm({
         if (parentId) {
           // This is a reply
           sendReply(articleId, content.trim(), parentId);
-          // Add optimistic reply to UI immediately
-          onCommentAdded(optimisticComment);
         } else {
           // This is a new comment
           sendComment(articleId, content.trim());
-          // Add optimistic comment to UI immediately (like replies)
-          onCommentAdded(optimisticComment);
         }
+
+        onCommentAdded(optimisticComment);
 
         // Clear the form immediately for better UX
         setContent('');
         if (onCancel) onCancel();
+        // Keep the textbox in view after sending
+        requestAnimationFrame(() => {
+          textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
       }
     } catch {
       setError('Failed to post comment. Please try again.');
@@ -145,9 +168,15 @@ export function CommentForm({
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
+    // Ensure the textarea remains visible as the user types
+    requestAnimationFrame(() => {
+      textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
   };
 
-  if (!isAuthenticated) {
+  const effectiveAuthenticated = isAuthenticated || suppressAuthPrompt;
+
+  if (!effectiveAuthenticated) {
     return (
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
         <p className="text-gray-600">
@@ -174,6 +203,10 @@ export function CommentForm({
           <Textarea
             value={content}
             onChange={handleChange}
+            onFocus={() => {
+              // Ensure the focused textarea is brought into view on any focus event
+              textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className="min-h-[80px] resize-none border-gray-200 placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"

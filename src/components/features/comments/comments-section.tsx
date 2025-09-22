@@ -265,8 +265,11 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
       };
     }, [addOnNewCommentCallback, addOnNewReplyCallback]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Only show top-level comments (parentId is null)
-    const topLevelComments = comments.filter((comment) => comment.parentId === null);
+    // Only show top-level comments (parentId is null) and ensure unique IDs
+    const topLevelComments = comments.reduce<Comment[]>((acc, c) => {
+      if (c.parentId === null && !acc.some((x) => x.id === c.id)) acc.push(c);
+      return acc;
+    }, []);
 
     return (
       <div className="space-y-6">
@@ -304,7 +307,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           <div className="space-y-3">
             {topLevelComments.slice(0, visibleTopCount).map((comment) => (
               <CommentItem
-                key={comment.id}
+                key={`${comment.id}-${comment.createdAt}`}
                 comment={comment}
                 articleId={articleId}
                 onCommentUpdated={handleCommentUpdated}

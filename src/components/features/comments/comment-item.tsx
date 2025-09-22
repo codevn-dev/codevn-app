@@ -46,7 +46,7 @@ export function CommentItem({
 }: CommentItemProps) {
   const { user, isAuthenticated } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
-  const [isReplying, setIsReplying] = useState(false);
+  // Removed inline reply state; reply is handled via the persistent bottom textbox
   const [isEditing, setIsEditing] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -60,6 +60,9 @@ export function CommentItem({
   const repliesRef = useRef<Comment[]>([]);
   const [childReplyingTo, setChildReplyingTo] = useState<Comment | null>(null);
   const [childReplyPrefill, setChildReplyPrefill] = useState<string>('');
+  const [replyFocusTick, setReplyFocusTick] = useState(0);
+  const [shouldFocusReply, setShouldFocusReply] = useState(false);
+  const bottomReplyRef = useRef<HTMLDivElement | null>(null);
   const [isLiked, setIsLiked] = useState(comment.userHasLiked || false);
   const [isUnliked, setIsUnliked] = useState(comment.userHasUnliked || false);
   const [likeCount, setLikeCount] = useState(comment.likeCount || 0);
@@ -100,21 +103,33 @@ export function CommentItem({
   // Handle new replies from websocket - merge with existing local state
   useEffect(() => {
     if (comment.replies && comment.replies.length > 0 && repliesLoadedRef.current) {
-      // Only add new replies that don't exist in local state
-      const newReplies = comment.replies.filter(
-        (commentReply) =>
-          !repliesRef.current.some((localReply) => localReply.id === commentReply.id)
-      );
-      if (newReplies.length > 0) {
-        setReplies((prev) => {
-          const newRepliesList = [...prev, ...newReplies];
-          // Auto-expand visible count to show new replies
-          setVisibleRepliesCount((currentVisible) =>
-            Math.max(currentVisible, newRepliesList.length)
+      setReplies((prev) => {
+        const merged = [...prev];
+        for (const incoming of comment.replies!) {
+          const existingIndex = merged.findIndex((r) => r.id === incoming.id);
+          if (existingIndex !== -1) {
+            // Already present by real ID; ensure latest data
+            merged[existingIndex] = incoming;
+            continue;
+          }
+          // Try to replace an optimistic temp reply by content+author match
+          const optimisticIndex = merged.findIndex(
+            (r) =>
+              r.id.startsWith('temp-') &&
+              r.content === incoming.content &&
+              r.authorId === incoming.authorId
           );
-          return newRepliesList;
-        });
-      }
+          if (optimisticIndex !== -1) {
+            merged[optimisticIndex] = incoming;
+            continue;
+          }
+          // Otherwise append
+          merged.push(incoming);
+        }
+        // Auto-expand visible count to show new replies
+        setVisibleRepliesCount((currentVisible) => Math.max(currentVisible, merged.length));
+        return merged;
+      });
     }
   }, [comment.replies]);
 
@@ -203,19 +218,6 @@ export function CommentItem({
 
   const handleLike = () => handleReaction('like');
   const handleUnlike = () => handleReaction('unlike');
-
-  const handleReplyAdded = (reply: Comment) => {
-    onReplyAdded(reply);
-    setIsReplying(false);
-    // Add the reply to local state
-    setReplies((prev) => {
-      const newRepliesList = [...prev, reply];
-      // Auto-expand visible count to show new reply
-      setVisibleRepliesCount((currentVisible) => Math.max(currentVisible, newRepliesList.length));
-      return newRepliesList;
-    });
-    repliesLoadedRef.current = true;
-  };
 
   const loadReplies = async (page = 1, append = false) => {
     setLoadingReplies(true);
@@ -345,7 +347,7 @@ export function CommentItem({
                 variant="ghost"
                 size="sm"
                 onClick={handleLike}
-                disabled={isLiking || !user}
+                disabled={isLiking}
                 className={`h-6 px-2 transition-colors duration-200 ${
                   isLiked
                     ? 'bg-green-50 text-green-600 hover:bg-green-50 hover:text-green-700'
@@ -364,7 +366,7 @@ export function CommentItem({
                 variant="ghost"
                 size="sm"
                 onClick={handleUnlike}
-                disabled={isUnliking || !user}
+                disabled={isUnliking}
                 className={`h-6 px-2 transition-colors duration-200 ${
                   isUnliked
                     ? 'bg-red-50 text-red-600 hover:bg-red-50 hover:text-red-700'
@@ -389,7 +391,23 @@ export function CommentItem({
                       setAuthModalOpen(true);
                       return;
                     }
-                    setIsReplying(!isReplying);
+                    // Open replies section and focus the bottom reply textbox
+                    setShowReplies(true);
+                    if (!repliesLoadedRef.current) {
+                      void loadReplies(1, false);
+                    }
+                    setChildReplyingTo(comment);
+                    setChildReplyPrefill('');
+                    // bump tick to force focus re-run
+                    setReplyFocusTick((t) => t + 1);
+                    setShouldFocusReply(true);
+                    // after state updates, scroll the bottom reply box into view
+                    setTimeout(() => {
+                      bottomReplyRef.current?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                      });
+                    }, 0);
                   }}
                   className="h-6 rounded-md px-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
@@ -423,17 +441,7 @@ export function CommentItem({
             </div>
           )}
 
-          {isReplying && (
-            <div className="pl-4">
-              <CommentForm
-                articleId={articleId}
-                parentId={comment.id}
-                onCommentAdded={handleReplyAdded}
-                onCancel={() => setIsReplying(false)}
-                placeholder={`Reply to ${comment.author.name}...`}
-              />
-            </div>
-          )}
+          {/* Inline reply box removed in favor of focusing the persistent bottom reply textbox */}
 
           {/* Show replies toggle at parent (kept), without load more here */}
           {Number(comment.replyCount) > 0 && depth === 0 && !showReplies && (
@@ -455,11 +463,11 @@ export function CommentItem({
           )}
 
           {/* Render replies - only show if loaded */}
-          {showReplies && replies.length > 0 && depth === 0 && (
+          {showReplies && depth === 0 && (
             <div className="mt-3 space-y-3">
               {replies.slice(0, visibleRepliesCount).map((reply) => (
                 <CommentItem
-                  key={reply.id}
+                  key={`${reply.id}-${reply.createdAt}`}
                   comment={reply}
                   articleId={articleId}
                   onCommentUpdated={onCommentUpdated}
@@ -487,6 +495,15 @@ export function CommentItem({
                         await loadReplies(repliesPage + 1, true);
                         setVisibleRepliesCount((c) => c + 5);
                       }
+                      // After loading more, direct focus to the reply box
+                      setReplyFocusTick((t) => t + 1);
+                      setShouldFocusReply(true);
+                      setTimeout(() => {
+                        bottomReplyRef.current?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'center',
+                        });
+                      }, 0);
                     }}
                     disabled={loadingReplies}
                     className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
@@ -499,7 +516,7 @@ export function CommentItem({
 
               {/* Child reply text box at the end of child comments */}
               {isAuthenticated && (
-                <div className="mt-2 pl-4">
+                <div ref={bottomReplyRef} className="mt-2 pl-4">
                   <CommentForm
                     articleId={articleId}
                     parentId={comment.id}
@@ -523,7 +540,20 @@ export function CommentItem({
                         : 'Write a reply...'
                     }
                     initialContent={childReplyPrefill}
-                    autoFocus={!!childReplyingTo}
+                    autoFocus={shouldFocusReply}
+                    focusTrigger={replyFocusTick}
+                    onReady={() => {
+                      // Ensure we scroll only after the actual textarea is focusable
+                      setTimeout(() => {
+                        bottomReplyRef.current?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'center',
+                        });
+                      }, 0);
+                      // reset so it does not steal focus later
+                      setShouldFocusReply(false);
+                    }}
+                    suppressAuthPrompt={true}
                   />
                 </div>
               )}

@@ -3,6 +3,7 @@ import { userRepository } from '@/lib/database/repository';
 import { maskUserEmail, isAdmin } from '@/lib/utils';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
+import { UserResponse } from '@/types/shared/user';
 
 export async function userRoutes(fastify: FastifyInstance) {
   // GET /api/users/:id - Get user profile
@@ -41,7 +42,8 @@ export async function userRoutes(fastify: FastifyInstance) {
         const finalUserProfile =
           isAdmin(user.role) || isOwnProfile ? userProfile : maskUserEmail(userProfile);
 
-        return reply.send({ user: finalUserProfile });
+        const response: UserResponse = { user: finalUserProfile as any };
+        return reply.send(response);
       } catch (error) {
         logger.error('Get user error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });

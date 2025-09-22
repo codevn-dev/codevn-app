@@ -2,8 +2,9 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { userRepository, categoryRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
-import { CreateCategoryRequest, UpdateCategoryRequest } from '@/types/shared/category';
-import { UpdateUserRoleRequest } from '@/types/shared/user';
+import { CreateCategoryRequest, UpdateCategoryRequest, Category } from '@/types/shared/category';
+import { UpdateUserRoleRequest, UserListResponse } from '@/types/shared/user';
+import { SuccessResponse } from '@/types/shared/common';
 
 function getPaginationParams(request: FastifyRequest) {
   const query = request.query as any;
@@ -76,7 +77,19 @@ export async function adminRoutes(fastify: FastifyInstance) {
             role: role as 'user' | 'admin' | undefined,
           });
 
-          return reply.send(result);
+          const response: UserListResponse = {
+            users: result.users.map((u) => ({
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              avatar: u.avatar || undefined,
+              role: u.role,
+              createdAt: u.createdAt as any,
+              _count: { articles: 0, comments: 0, likes: 0 },
+            })),
+            pagination: result.pagination,
+          };
+          return reply.send(response);
         } catch (error) {
           logger.error('Get admin users error', undefined, error as Error);
           return reply.status(500).send({ error: 'Internal server error' });
@@ -146,7 +159,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
           requireAdmin(user!);
 
           const rootCategories = await categoryRepository.findAllForAdmin();
-          return reply.send(rootCategories);
+          const response = rootCategories as unknown as Category[];
+          return reply.send(response);
         } catch (error) {
           logger.error('Get admin categories error', undefined, error as Error);
           return reply.status(500).send({ error: 'Internal server error' });
@@ -190,7 +204,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
             createdById: authRequest.user!.id,
           });
 
-          return reply.status(201).send(newCategory[0]);
+          const response = newCategory[0] as unknown as Category;
+          return reply.status(201).send(response);
         } catch (error: any) {
           logger.error('Create category error', undefined, error as Error);
 
@@ -263,7 +278,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
             parentId: parentId || null,
           });
 
-          return reply.send(updatedCategory[0]);
+          const response = updatedCategory[0] as unknown as Category;
+          return reply.send(response);
         } catch (error: any) {
           logger.error('Update category error', undefined, error as Error);
 
@@ -338,7 +354,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
           // Delete category
           await categoryRepository.delete(id);
 
-          return reply.send({ message: 'Category deleted successfully' });
+          const response: SuccessResponse = { success: true };
+          return reply.send(response);
         } catch (error) {
           logger.error('Delete category error', undefined, error as Error);
           return reply.status(500).send({ error: 'Internal server error' });

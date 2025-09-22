@@ -60,6 +60,17 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
     },
   };
 
+  // If there is no body, remove JSON content-type to avoid Fastify empty JSON body errors
+  if (
+    !('body' in mergedOptions) ||
+    mergedOptions.body === undefined ||
+    mergedOptions.body === null
+  ) {
+    if (mergedOptions.headers) {
+      delete (mergedOptions.headers as any)['Content-Type'];
+    }
+  }
+
   try {
     const response = await fetch(url, mergedOptions);
 

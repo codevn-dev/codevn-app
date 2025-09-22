@@ -1,6 +1,7 @@
 import { getDb } from '..';
 import { comments, reactions } from '../schema';
 import { eq, and, desc, asc, count, sql, isNull } from 'drizzle-orm';
+import { Comment as SharedComment } from '@/types/shared/comment';
 
 export interface CommentFilters {
   articleId?: string;
@@ -14,14 +15,12 @@ export interface CommentFilters {
 }
 
 export interface PaginatedComments {
-  comments: any[];
+  comments: SharedComment[];
   pagination: {
-    currentPage: number;
+    page: number;
+    limit: number;
+    total: number;
     totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
   };
 }
 
@@ -49,7 +48,7 @@ export class CommentRepository {
     });
   }
 
-  async findByArticle(articleId: string, filters: CommentFilters = {}) {
+  async findByArticle(articleId: string, filters: CommentFilters = {}): Promise<PaginatedComments> {
     const {
       parentId = null,
       sortBy = 'createdAt',
@@ -102,7 +101,7 @@ export class CommentRepository {
     });
 
     // Add reply count, like/unlike counts, and user status for each comment
-    const commentsWithCounts = await Promise.all(
+    const commentsWithCounts: SharedComment[] = await Promise.all(
       commentsData.map(async (comment) => {
         const [replyCount, likeCount, unlikeCount, userHasLiked, userHasUnliked] =
           await Promise.all([
@@ -142,19 +141,21 @@ export class CommentRepository {
           unlikeCount: unlikeCount[0]?.count || 0,
           userHasLiked: !!userHasLiked,
           userHasUnliked: !!userHasUnliked,
-        };
+          _count: {
+            replies: replyCount,
+            likes: likeCount[0]?.count || 0,
+          },
+        } as unknown as SharedComment;
       })
     );
 
     return {
       comments: commentsWithCounts,
       pagination: {
-        currentPage: page,
+        page,
+        limit,
+        total: totalCount,
         totalPages,
-        totalItems: totalCount,
-        itemsPerPage: limit,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
       },
     };
   }

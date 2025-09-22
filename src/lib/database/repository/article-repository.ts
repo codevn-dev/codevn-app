@@ -1,6 +1,7 @@
 import { getDb } from '..';
 import { articles, comments, reactions } from '../schema';
 import { and, eq, or, like, isNull, sql, count } from 'drizzle-orm';
+import { Article as SharedArticle } from '@/types/shared/article';
 
 export interface ArticleFilters {
   search?: string;
@@ -16,15 +17,26 @@ export interface ArticleFilters {
 }
 
 export interface PaginatedArticles {
-  articles: any[];
+  articles: SharedArticle[];
   pagination: {
-    currentPage: number;
+    page: number;
+    limit: number;
+    total: number;
     totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
   };
+}
+
+export interface ArticleInsertReturning {
+  id: string;
+  title: string;
+  content: string;
+  slug: string;
+  thumbnail: string | null;
+  categoryId: string;
+  authorId: string;
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date | null;
 }
 
 export class ArticleRepository {
@@ -170,7 +182,7 @@ export class ArticleRepository {
     });
 
     // Get comment, like, and unlike counts for each article
-    const articlesWithCounts = await Promise.all(
+    const articlesWithCounts: SharedArticle[] = await Promise.all(
       articlesData.map(async (article) => {
         const [commentCount, likeCount, unlikeCount, userHasLiked, userHasUnliked] =
           await Promise.all([
@@ -215,19 +227,17 @@ export class ArticleRepository {
           },
           userHasLiked: !!userHasLiked,
           userHasUnliked: !!userHasUnliked,
-        };
+        } as unknown as SharedArticle;
       })
     );
 
     return {
       articles: articlesWithCounts,
       pagination: {
-        currentPage: page,
+        page,
+        limit,
+        total: totalCount,
         totalPages,
-        totalItems: totalCount,
-        itemsPerPage: limit,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
       },
     };
   }
@@ -240,7 +250,7 @@ export class ArticleRepository {
     categoryId: string;
     authorId: string;
     published?: boolean;
-  }) {
+  }): Promise<ArticleInsertReturning[]> {
     return await getDb()
       .insert(articles)
       .values({
@@ -252,7 +262,18 @@ export class ArticleRepository {
         authorId: articleData.authorId,
         published: articleData.published || false,
       })
-      .returning();
+      .returning({
+        id: articles.id,
+        title: articles.title,
+        content: articles.content,
+        slug: articles.slug,
+        thumbnail: articles.thumbnail,
+        categoryId: articles.categoryId,
+        authorId: articles.authorId,
+        published: articles.published,
+        createdAt: articles.createdAt,
+        updatedAt: articles.updatedAt,
+      });
   }
 
   async update(
@@ -265,7 +286,7 @@ export class ArticleRepository {
       categoryId?: string;
       published?: boolean;
     }
-  ) {
+  ): Promise<Awaited<ReturnType<ArticleRepository['findById']>>> {
     const dataToUpdate: any = { ...updateData };
     if (Object.keys(dataToUpdate).length > 0) {
       dataToUpdate.updatedAt = new Date();

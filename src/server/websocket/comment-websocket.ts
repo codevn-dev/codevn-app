@@ -125,8 +125,9 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
       userHasUnliked: false,
     };
 
-    // Local broadcast to other connections on the same instance
-    this.broadcastToAllExcept(connectionId, {
+    // Local broadcast to all connections on the same instance (including sender)
+    // This allows the originating client to reconcile optimistic IDs
+    this.broadcastToAll({
       type: 'new_comment',
       data: commentData,
     });
@@ -181,8 +182,9 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
       userHasUnliked: false,
     };
 
-    // Local broadcast to other connections on the same instance
-    this.broadcastToAllExcept(connectionId, {
+    // Local broadcast to all connections on the same instance (including sender)
+    // This allows the originating client to reconcile optimistic IDs
+    this.broadcastToAll({
       type: 'new_reply',
       data: replyData,
     });

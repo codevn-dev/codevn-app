@@ -183,7 +183,7 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
       console.error('Error creating Comment WebSocket connection:', error);
       isConnectingRef.current = false;
     }
-  }, [handleWebSocketMessage]);
+  }, [handleWebSocketMessage, user?.id]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {

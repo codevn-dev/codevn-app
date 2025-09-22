@@ -70,7 +70,7 @@ export function useAuthActions() {
 
   const signOut = async () => {
     try {
-      await apiPost('/api/auth/sign-out');
+      await apiPost('/api/auth/sign-out', {});
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -78,7 +78,7 @@ export function useAuthActions() {
       setState({
         user: null,
         isLoading: false,
-        isAuthenticated: true,
+        isAuthenticated: false,
       });
     }
   };

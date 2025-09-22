@@ -2,28 +2,50 @@ import { getDb } from '..';
 import { reactions } from '../schema';
 import { eq, and } from 'drizzle-orm';
 
+export interface ReactionRow {
+  id?: string;
+  articleId?: string | null;
+  commentId?: string | null;
+  userId: string;
+  type: 'like' | 'unlike';
+  createdAt?: Date;
+}
+
 export class LikeRepository {
   // Article reactions
-  async findByUserAndArticle(userId: string, articleId: string, type: 'like' | 'unlike') {
-    return await getDb().query.reactions.findFirst({
+  async findByUserAndArticle(
+    userId: string,
+    articleId: string,
+    type: 'like' | 'unlike'
+  ): Promise<ReactionRow | null> {
+    const row = await getDb().query.reactions.findFirst({
       where: and(
         eq(reactions.articleId, articleId),
         eq(reactions.userId, userId),
         eq(reactions.type, type)
       ),
     });
+    return (row as ReactionRow) || null;
   }
 
-  async createArticleReaction(userId: string, articleId: string, type: 'like' | 'unlike') {
-    return await getDb().insert(reactions).values({
+  async createArticleReaction(
+    userId: string,
+    articleId: string,
+    type: 'like' | 'unlike'
+  ): Promise<void> {
+    await getDb().insert(reactions).values({
       articleId,
       userId,
       type,
     });
   }
 
-  async deleteArticleReaction(userId: string, articleId: string, type: 'like' | 'unlike') {
-    return await getDb()
+  async deleteArticleReaction(
+    userId: string,
+    articleId: string,
+    type: 'like' | 'unlike'
+  ): Promise<number> {
+    const result = await getDb()
       .delete(reactions)
       .where(
         and(
@@ -32,9 +54,10 @@ export class LikeRepository {
           eq(reactions.type, type)
         )
       );
+    return Number((result as unknown as { rowCount?: number }).rowCount || 0);
   }
 
-  async getReactionsByArticle(articleId: string, type?: 'like' | 'unlike') {
+  async getReactionsByArticle(articleId: string, type?: 'like' | 'unlike'): Promise<ReactionRow[]> {
     const whereConditions = [eq(reactions.articleId, articleId)];
     if (type) {
       whereConditions.push(eq(reactions.type, type));
@@ -46,26 +69,39 @@ export class LikeRepository {
   }
 
   // Comment reactions
-  async findByUserAndComment(userId: string, commentId: string, type: 'like' | 'unlike') {
-    return await getDb().query.reactions.findFirst({
+  async findByUserAndComment(
+    userId: string,
+    commentId: string,
+    type: 'like' | 'unlike'
+  ): Promise<ReactionRow | null> {
+    const row = await getDb().query.reactions.findFirst({
       where: and(
         eq(reactions.commentId, commentId),
         eq(reactions.userId, userId),
         eq(reactions.type, type)
       ),
     });
+    return (row as ReactionRow) || null;
   }
 
-  async createCommentReaction(userId: string, commentId: string, type: 'like' | 'unlike') {
-    return await getDb().insert(reactions).values({
+  async createCommentReaction(
+    userId: string,
+    commentId: string,
+    type: 'like' | 'unlike'
+  ): Promise<void> {
+    await getDb().insert(reactions).values({
       commentId,
       userId,
       type,
     });
   }
 
-  async deleteCommentReaction(userId: string, commentId: string, type: 'like' | 'unlike') {
-    return await getDb()
+  async deleteCommentReaction(
+    userId: string,
+    commentId: string,
+    type: 'like' | 'unlike'
+  ): Promise<number> {
+    const result = await getDb()
       .delete(reactions)
       .where(
         and(
@@ -74,9 +110,10 @@ export class LikeRepository {
           eq(reactions.type, type)
         )
       );
+    return Number((result as unknown as { rowCount?: number }).rowCount || 0);
   }
 
-  async getReactionsByComment(commentId: string, type?: 'like' | 'unlike') {
+  async getReactionsByComment(commentId: string, type?: 'like' | 'unlike'): Promise<ReactionRow[]> {
     const whereConditions = [eq(reactions.commentId, commentId)];
     if (type) {
       whereConditions.push(eq(reactions.type, type));
@@ -87,7 +124,7 @@ export class LikeRepository {
     });
   }
 
-  async getReactionsByUser(userId: string, type?: 'like' | 'unlike') {
+  async getReactionsByUser(userId: string, type?: 'like' | 'unlike'): Promise<ReactionRow[]> {
     const whereConditions = [eq(reactions.userId, userId)];
     if (type) {
       whereConditions.push(eq(reactions.type, type));

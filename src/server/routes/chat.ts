@@ -2,7 +2,15 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { messageRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
-import { ChatQueryRequest, ChatPostRequest, ChatSeenRequest } from '@/types/shared/chat';
+import {
+  ChatQueryRequest,
+  ChatPostRequest,
+  ChatSeenRequest,
+  ConversationListResponse,
+  MessageListResponse,
+  SendMessageResponse,
+} from '@/types/shared/chat';
+import { SuccessResponse } from '@/types/shared/common';
 import { chatWebSocketService } from '../websocket/chat-websocket';
 
 function getChatId(userA: string, userB: string): string {
@@ -38,19 +46,62 @@ export async function chatRoutes(fastify: FastifyInstance) {
         // Get all conversations for this user
         const conversations = await messageRepository.getConversations(authRequest.user!.id);
 
-        return reply.send({
+        const response: ConversationListResponse = {
           conversations: conversations.map((conv) => ({
             id: conv.chatId,
-            peer: {
+            participant1Id: authRequest.user!.id,
+            participant2Id: conv.otherUserId,
+            createdAt: conv.lastMessageTime,
+            updatedAt: conv.lastMessageTime,
+            participant1: {
+              id: authRequest.user!.id,
+              name: '',
+              email: '',
+              role: 'user',
+              createdAt: new Date().toISOString(),
+              avatar: undefined,
+            },
+            participant2: {
               id: conv.otherUserId,
               name: conv.otherUserName,
-              avatar: conv.otherUserAvatar,
+              email: '',
+              role: 'user',
+              createdAt: new Date().toISOString(),
+              avatar: conv.otherUserAvatar || undefined,
             },
-            lastMessage: conv.lastMessage,
-            lastMessageAt: conv.lastMessageTime,
+            lastMessage: {
+              id: `${conv.chatId}:${new Date(conv.lastMessageTime).getTime()}`,
+              content: conv.lastMessage,
+              senderId: conv.lastMessageFromUserId,
+              receiverId:
+                conv.lastMessageFromUserId === authRequest.user!.id
+                  ? conv.otherUserId
+                  : authRequest.user!.id,
+              conversationId: conv.chatId,
+              createdAt: conv.lastMessageTime,
+              updatedAt: conv.lastMessageTime,
+              sender: { id: conv.lastMessageFromUserId, name: '', email: '' },
+              receiver: {
+                id:
+                  conv.lastMessageFromUserId === authRequest.user!.id
+                    ? conv.otherUserId
+                    : authRequest.user!.id,
+                name: '',
+                email: '',
+              },
+              seen: conv.lastMessageSeen,
+              seenAt: null,
+            },
             unreadCount: conv.unreadCount,
           })),
-        });
+          pagination: {
+            page: 1,
+            limit: conversations.length,
+            total: conversations.length,
+            totalPages: 1,
+          },
+        };
+        return reply.send(response);
       } catch (error) {
         logger.error('Error in conversations GET', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -104,7 +155,6 @@ export async function chatRoutes(fastify: FastifyInstance) {
 
           // Apply limit
           const limitNum = parseInt(limit);
-          const hasMore = filteredMessages.length > limitNum;
           const limitedMessages = filteredMessages.slice(0, limitNum);
 
           // Sort by timestamp ascending (oldest first) for display
@@ -112,21 +162,28 @@ export async function chatRoutes(fastify: FastifyInstance) {
             (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           );
 
-          return reply.send({
+          const response: MessageListResponse = {
             messages: limitedMessages.map((msg) => ({
               id: msg.id,
-              chat: { id: msg.chatId },
-              fromUser: { id: msg.fromUserId },
-              toUser: { id: msg.toUserId },
-              text: msg.text,
-              type: msg.type,
-              seen: msg.seen,
-              seenAt: msg.seenAt,
+              content: msg.text,
+              senderId: msg.fromUserId,
+              receiverId: msg.toUserId,
+              conversationId: msg.chatId,
               createdAt: msg.createdAt,
-              updatedAt: msg.updatedAt,
+              updatedAt: msg.updatedAt ?? msg.createdAt,
+              sender: { id: msg.fromUserId, name: '', email: '' },
+              receiver: { id: msg.toUserId, name: '', email: '' },
+              seen: msg.seen,
+              seenAt: msg.seenAt as any,
             })),
-            hasMore: hasMore,
-          });
+            pagination: {
+              page: 1,
+              limit: limitNum,
+              total: filteredMessages.length,
+              totalPages: Math.max(1, Math.ceil(filteredMessages.length / limitNum)),
+            },
+          };
+          return reply.send(response);
         }
 
         return reply.status(400).send({ error: 'Invalid action' });
@@ -155,7 +212,8 @@ export async function chatRoutes(fastify: FastifyInstance) {
         // Mark messages as seen
         await messageRepository.markAsSeen(chatId, authRequest.user!.id);
 
-        return reply.send({ success: true });
+        const response: SuccessResponse = { success: true };
+        return reply.send(response);
       } catch (error) {
         logger.error('Error in chat seen POST', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -188,20 +246,23 @@ export async function chatRoutes(fastify: FastifyInstance) {
           type: 'message',
         });
 
-        return reply.send({
-          success: true,
-          message: {
+        const response: SendMessageResponse = {
+          message: 'Message sent',
+          data: {
             id: message.id,
-            type: message.type,
-            chat: { id: message.chatId },
-            fromUser: { id: message.fromUserId },
-            toUser: { id: message.toUserId },
-            text: message.text,
+            content: message.text,
+            senderId: message.fromUserId,
+            receiverId: message.toUserId,
+            conversationId: message.chatId,
+            createdAt: message.createdAt,
+            updatedAt: message.updatedAt ?? message.createdAt,
+            sender: { id: message.fromUserId, name: '', email: '' },
+            receiver: { id: message.toUserId, name: '', email: '' },
             seen: message.seen,
-            seenAt: message.seenAt,
-            timestamp: message.createdAt.getTime(),
+            seenAt: message.seenAt as any,
           },
-        });
+        };
+        return reply.send(response);
       } catch (error) {
         logger.error('Error in chat POST', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });

@@ -2,6 +2,32 @@ import { getDb } from '../index';
 import { messages, users } from '../schema';
 import { eq, and, desc, or } from 'drizzle-orm';
 
+export interface MessageRow {
+  id: string;
+  chatId: string;
+  fromUserId: string;
+  toUserId: string;
+  text: string;
+  type: 'message' | 'system';
+  seen: boolean;
+  seenAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+}
+
+export interface ConversationSummary {
+  chatId: string;
+  otherUserId: string;
+  otherUserName: string;
+  otherUserEmail: string;
+  otherUserAvatar: string | null;
+  lastMessage: string;
+  lastMessageTime: Date;
+  lastMessageFromUserId: string;
+  lastMessageSeen: boolean;
+  unreadCount: number;
+}
+
 export const messageRepository = {
   async create(data: {
     chatId: string;
@@ -9,7 +35,7 @@ export const messageRepository = {
     toUserId: string;
     text: string;
     type?: 'message' | 'system';
-  }) {
+  }): Promise<MessageRow> {
     const db = getDb();
     const [message] = await db
       .insert(messages)
@@ -21,44 +47,47 @@ export const messageRepository = {
         type: data.type || 'message',
       })
       .returning();
-    return message;
+    return message as unknown as MessageRow;
   },
 
-  async findByChatId(chatId: string, limit = 50) {
+  async findByChatId(chatId: string, limit = 50): Promise<MessageRow[]> {
     const db = getDb();
-    return await db
+    const rows = await db
       .select()
       .from(messages)
       .where(eq(messages.chatId, chatId))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
+    return rows as unknown as MessageRow[];
   },
 
-  async findByUserPair(userId1: string, userId2: string, limit = 50) {
+  async findByUserPair(userId1: string, userId2: string, limit = 50): Promise<MessageRow[]> {
     const db = getDb();
     const chatId = [userId1, userId2].sort().join('|');
 
-    return await db
+    const rows = await db
       .select()
       .from(messages)
       .where(and(eq(messages.chatId, chatId)))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
+    return rows as unknown as MessageRow[];
   },
 
-  async getRecentChats(userId: string, limit = 20) {
+  async getRecentChats(userId: string, limit = 20): Promise<MessageRow[]> {
     const db = getDb();
     // This is a simplified version - in production you'd want a more sophisticated query
     // to get the most recent chat for each user pair
-    return await db
+    const rows = await db
       .select()
       .from(messages)
       .where(and(eq(messages.fromUserId, userId)))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
+    return rows as unknown as MessageRow[];
   },
 
-  async getConversations(userId: string) {
+  async getConversations(userId: string): Promise<ConversationSummary[]> {
     const db = getDb();
 
     // Get all messages for the current user
@@ -88,8 +117,8 @@ export const messageRepository = {
     }
 
     // Get user details for all other users
-    const conversations = [];
-    for (const [, chat] of chatMap) {
+    const conversations: ConversationSummary[] = [];
+    for (const [, chat] of chatMap as any) {
       const userDetails = await db
         .select({
           id: users.id,
@@ -103,7 +132,13 @@ export const messageRepository = {
 
       if (userDetails.length > 0) {
         conversations.push({
-          ...chat,
+          chatId: chat.chatId,
+          otherUserId: chat.otherUserId,
+          lastMessage: chat.lastMessage,
+          lastMessageTime: chat.lastMessageTime,
+          lastMessageFromUserId: chat.lastMessageFromUserId,
+          lastMessageSeen: chat.lastMessageSeen,
+          unreadCount: chat.unreadCount,
           otherUserName: userDetails[0].name,
           otherUserEmail: userDetails[0].email,
           otherUserAvatar: userDetails[0].avatar,
@@ -115,9 +150,9 @@ export const messageRepository = {
   },
 
   // Mark messages as seen
-  async markAsSeen(chatId: string, userId: string) {
+  async markAsSeen(chatId: string, userId: string): Promise<MessageRow[]> {
     const db = getDb();
-    return await db
+    const rows = await db
       .update(messages)
       .set({
         seen: true,
@@ -128,10 +163,11 @@ export const messageRepository = {
         and(eq(messages.chatId, chatId), eq(messages.toUserId, userId), eq(messages.seen, false))
       )
       .returning();
+    return rows as unknown as MessageRow[];
   },
 
   // Get unread message count for a user
-  async getUnreadCount(userId: string) {
+  async getUnreadCount(userId: string): Promise<number> {
     const db = getDb();
     const result = await db
       .select({ count: messages.id })
@@ -141,7 +177,7 @@ export const messageRepository = {
   },
 
   // Get unread count for specific chat
-  async getUnreadCountForChat(chatId: string, userId: string) {
+  async getUnreadCountForChat(chatId: string, userId: string): Promise<number> {
     const db = getDb();
     const result = await db
       .select({ count: messages.id })
@@ -153,7 +189,7 @@ export const messageRepository = {
   },
 
   // Get last seen message for a chat
-  async getLastSeenMessage(chatId: string, userId: string) {
+  async getLastSeenMessage(chatId: string, userId: string): Promise<MessageRow | null> {
     const db = getDb();
     const result = await db
       .select()
@@ -163,6 +199,6 @@ export const messageRepository = {
       )
       .orderBy(desc(messages.seenAt))
       .limit(1);
-    return result[0] || null;
+    return (result[0] as unknown as MessageRow) || null;
   },
 };

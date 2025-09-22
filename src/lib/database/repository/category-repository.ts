@@ -178,7 +178,7 @@ export class CategoryRepository {
     return categoriesWithCounts.filter((category) => !category.parentId);
   }
 
-  async findAllForAdmin() {
+  async findAllForAdmin(): Promise<CategoryWithCounts[]> {
     const allCategories = await getDb().query.categories.findMany({
       where: isNull(categories.deletedAt),
       with: {
@@ -224,7 +224,22 @@ export class CategoryRepository {
     });
 
     // Filter to only return root categories (categories without parentId)
-    return allCategories.filter((category) => !category.parentId);
+    const filtered = allCategories.filter((category) => !category.parentId);
+    // Add _count shape to satisfy CategoryWithCounts
+    return filtered.map((category) => ({
+      ...category,
+      _count: {
+        articles: 0,
+        children: (category.children || []).length,
+      },
+      children: (category.children || []).map((child) => ({
+        ...child,
+        _count: {
+          articles: 0,
+          children: 0,
+        },
+      })),
+    }));
   }
 
   async create(categoryData: {
@@ -233,7 +248,19 @@ export class CategoryRepository {
     color?: string;
     parentId?: string;
     createdById: string;
-  }) {
+  }): Promise<
+    Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      slug: string;
+      color: string;
+      parentId: string | null;
+      createdById: string;
+      createdAt: Date;
+      updatedAt: Date | null;
+    }>
+  > {
     const slug = categoryData.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -260,7 +287,19 @@ export class CategoryRepository {
       color?: string;
       parentId?: string | null;
     }
-  ) {
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      slug: string;
+      color: string;
+      parentId: string | null;
+      createdById: string;
+      createdAt: Date;
+      updatedAt: Date | null;
+    }>
+  > {
     const dataToUpdate: any = { ...updateData };
 
     // Generate new slug from name if name is being updated

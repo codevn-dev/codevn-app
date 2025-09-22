@@ -10,6 +10,9 @@ import {
   RegisterRequest as RegisterBody,
   CheckEmailRequest as CheckEmailBody,
 } from '@/types/shared/auth';
+import { LoginResponse, RegisterResponse, CheckEmailResponse } from '@/types/shared/auth';
+import { UserResponse } from '@/types/shared/user';
+import { SuccessResponse } from '@/types/shared/common';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Sign-in endpoint
@@ -34,16 +37,18 @@ export async function authRoutes(fastify: FastifyInstance) {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       });
 
-      return reply.send({
+      const response: LoginResponse = {
         message: 'Sign-in successful',
         user: {
           id: user.id,
           email: user.email,
           name: user.name,
-          avatar: user.avatar,
+          avatar: user.avatar || undefined,
           role: user.role,
+          createdAt: new Date().toISOString(),
         },
-      });
+      };
+      return reply.send(response);
     }
   );
 
@@ -90,16 +95,18 @@ export async function authRoutes(fastify: FastifyInstance) {
           maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         });
 
-        return reply.status(201).send({
+        const response: RegisterResponse = {
           message: 'Sign-up successful',
           user: {
             id: createdUser.id,
             email: createdUser.email,
             name: createdUser.name,
-            avatar: createdUser.avatar,
-            role: createdUser.role || 'user',
+            avatar: createdUser.avatar || undefined,
+            role: (createdUser.role as any) || 'user',
+            createdAt: new Date().toISOString(),
           },
-        });
+        };
+        return reply.status(201).send(response);
       } catch (error) {
         logger.error('Registration error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -131,10 +138,11 @@ export async function authRoutes(fastify: FastifyInstance) {
         // Check if email already exists
         const existingUser = await userRepository.findByEmail(email);
 
-        return reply.send({
+        const response: CheckEmailResponse = {
           available: !existingUser,
           message: existingUser ? 'Email already exists' : 'Email is available',
-        });
+        };
+        return reply.send(response);
       } catch (error) {
         logger.error('Email check error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -203,12 +211,20 @@ export async function authRoutes(fastify: FastifyInstance) {
       }
 
       reply.clearCookie('auth-token');
-      return reply.send({ message: 'Sign-out successful' });
+      const response: SuccessResponse & { message: string } = {
+        success: true,
+        message: 'Sign-out successful',
+      };
+      return reply.send(response);
     } catch (error) {
       logger.error('Sign-out error', undefined, error as Error);
       // Still clear cookie even if Redis operation fails
       reply.clearCookie('auth-token');
-      return reply.send({ message: 'Sign-out successful' });
+      const response: SuccessResponse & { message: string } = {
+        success: true,
+        message: 'Sign-out successful',
+      };
+      return reply.send(response);
     }
   });
 
@@ -228,16 +244,17 @@ export async function authRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: 'User not found' });
         }
 
-        return reply.send({
+        const response: UserResponse = {
           user: {
             id: user.id,
             email: user.email,
             name: user.name,
-            avatar: user.avatar,
+            avatar: user.avatar || undefined,
             role: user.role,
-            createdAt: user.createdAt,
+            createdAt: user.createdAt as any,
           },
-        });
+        };
+        return reply.send(response);
       } catch (error) {
         logger.error('Get user error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -262,7 +279,11 @@ export async function authRoutes(fastify: FastifyInstance) {
         // Clear current session cookie
         reply.clearCookie('auth-token');
 
-        return reply.send({ message: 'Logged out from all devices successfully' });
+        const response: SuccessResponse & { message: string } = {
+          success: true,
+          message: 'Logged out from all devices successfully',
+        };
+        return reply.send(response);
       } catch (error) {
         logger.error('Logout all devices error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -288,7 +309,11 @@ export async function authRoutes(fastify: FastifyInstance) {
           await refreshToken(token);
         }
 
-        return reply.send({ message: 'Token refreshed successfully' });
+        const response: SuccessResponse & { message: string } = {
+          success: true,
+          message: 'Token refreshed successfully',
+        };
+        return reply.send(response);
       } catch (error) {
         logger.error('Refresh token error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });

@@ -13,7 +13,11 @@ import {
   CreateArticleRequest,
   UpdateArticleRequest,
   ReactionRequest,
+  Article,
+  ArticleListResponse,
 } from '@/types/shared/article';
+import { CommentListResponse } from '@/types/shared/comment';
+import { SuccessResponse } from '@/types/shared/common';
 import {
   CommentQueryParams as CommentQuery,
   CreateCommentRequest as CreateCommentBody,
@@ -92,8 +96,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
           publishedOnly,
           userId: authRequest.user?.id,
         });
-
-        return reply.send(result);
+        const response = result as unknown as ArticleListResponse;
+        return reply.send(response);
       } catch (error) {
         logger.error('Get articles error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -148,7 +152,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
           return reply.status(500).send({ error: 'Failed to retrieve created article' });
         }
 
-        return reply.status(201).send(createdArticle);
+        const response = createdArticle as unknown as Article;
+        return reply.status(201).send(response);
       } catch (error) {
         logger.error('Create article error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -208,7 +213,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         const updatedArticle = await articleRepository.update(id, updateData);
 
-        return reply.send(updatedArticle);
+        const response = updatedArticle as unknown as Article;
+        return reply.send(response);
       } catch (error) {
         logger.error('Update article error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -244,7 +250,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
         // Delete article (cascade will handle related comments and likes)
         await articleRepository.delete(id);
 
-        return reply.send({ message: 'Article deleted successfully' });
+        const response: SuccessResponse = { success: true };
+        return reply.send(response);
       } catch (error) {
         logger.error('Delete article error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -467,10 +474,11 @@ export async function articleRoutes(fastify: FastifyInstance) {
           userId: authRequest.user?.id,
         });
 
-        return reply.send({
-          comments: result.comments,
-          pagination: result.pagination,
-        });
+        const response: CommentListResponse = {
+          comments: result.comments as any,
+          pagination: result.pagination as any,
+        };
+        return reply.send(response);
       } catch (error) {
         logger.error('Get article comments error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });

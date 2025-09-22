@@ -3,7 +3,8 @@ import { userRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { fileUpload } from '@/lib/server';
 import { logger } from '@/lib/utils/logger';
-import { UpdateProfileRequest } from '@/types/shared/user';
+import { UpdateProfileRequest, UserResponse } from '@/types/shared/user';
+import { SuccessResponse } from '@/types/shared/common';
 
 // Use shared type directly
 
@@ -24,14 +25,17 @@ export async function profileRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: 'User not found' });
         }
 
-        return reply.send({
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          avatar: user.avatar,
-          role: user.role,
-          createdAt: user.createdAt,
-        });
+        const response: UserResponse = {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar: (user.avatar || undefined) as any,
+            role: user.role,
+            createdAt: user.createdAt as any,
+          },
+        };
+        return reply.send(response);
       } catch (error) {
         logger.error('Get profile error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -65,8 +69,8 @@ export async function profileRoutes(fastify: FastifyInstance) {
           name,
           email,
         });
-
-        return reply.send(updatedUser[0]);
+        const response: UserResponse = { user: updatedUser[0] as any };
+        return reply.send(response);
       } catch (error) {
         logger.error('Update profile error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -97,11 +101,12 @@ export async function profileRoutes(fastify: FastifyInstance) {
           avatar: uploadResult.publicPath,
         });
 
-        return reply.send({
+        const response = {
           success: true,
           avatar: uploadResult.publicPath,
           user: updatedUser[0],
-        });
+        } as SuccessResponse & { avatar: string; user: any };
+        return reply.send(response);
       } catch (error) {
         logger.error('Upload avatar error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });

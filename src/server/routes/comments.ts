@@ -2,7 +2,8 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { commentRepository, likeRepository, userRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { logger } from '@/lib/utils/logger';
-import { UpdateCommentRequest } from '@/types/shared/comment';
+import { UpdateCommentRequest, Comment } from '@/types/shared/comment';
+import { SuccessResponse } from '@/types/shared/common';
 import { ReactionRequest } from '@/types/shared/article';
 import { commentWebSocketService } from '../websocket/comment-websocket';
 
@@ -55,7 +56,8 @@ export async function commentRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: 'Comment not found' });
         }
 
-        return reply.send(comment);
+        const response = comment as unknown as Comment;
+        return reply.send(response);
       } catch (error) {
         logger.error('Get comment error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -144,7 +146,8 @@ export async function commentRoutes(fastify: FastifyInstance) {
 
         await commentRepository.delete(id);
 
-        return reply.send({ success: true });
+        const response: SuccessResponse = { success: true };
+        return reply.send(response);
       } catch (error) {
         logger.error('Delete comment error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
