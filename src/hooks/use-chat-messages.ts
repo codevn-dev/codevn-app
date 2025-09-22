@@ -89,7 +89,9 @@ export function useChatMessages({
             lastMessage: {
               text: typeof last === 'string' ? last : last.text || last.content || '',
               createdAt:
-                last.createdAt || conv.lastMessageAt || (typeof last === 'object' ? last.updatedAt : undefined),
+                last.createdAt ||
+                conv.lastMessageAt ||
+                (typeof last === 'object' ? last.updatedAt : undefined),
               fromUserId: last.fromUserId || last.senderId || conv.lastMessageFromUserId,
               seen: last.seen ?? conv.lastMessageSeen ?? false,
             },

@@ -4,13 +4,15 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X } from 'lucide-react';
+import { X, Smile, Send } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useWebSocket } from './websocket-context';
 import { formatChatTime, isNewDay, formatDate } from '@/lib/utils';
 import { chatConfig } from '@/config';
 
 import { UiMessage } from '@/types/shared';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 
 interface ChatWindowProps {
   peerId: string;
@@ -32,6 +34,8 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const emojiPopoverRef = useRef<HTMLDivElement | null>(null);
 
   const userId = user?.id || '';
   const canChat = Boolean(userId && peerId && userId !== peerId);
@@ -56,6 +60,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
   // Local state for messages
   const [messages, setMessages] = useState<UiMessage[]>([]);
   const [loading, setLoading] = useState(false);
+  const canSend = !!(canChat && !loading && text.trim().length > 0);
 
   // Load messages when chat window opens
   useEffect(() => {
@@ -270,6 +275,39 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!showEmoji) return;
+      const target = e.target as Node;
+      if (
+        emojiPopoverRef.current &&
+        !emojiPopoverRef.current.contains(target) &&
+        target !== inputRef.current
+      ) {
+        setShowEmoji(false);
+      }
+    };
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
+  }, [showEmoji]);
+
+  const insertAtCursor = (emoji: string) => {
+    const input = inputRef.current;
+    if (!input) {
+      setText((prev) => prev + emoji);
+      return;
+    }
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+    const newValue = input.value.slice(0, start) + emoji + input.value.slice(end);
+    setText(newValue);
+    const caret = start + emoji.length;
+    requestAnimationFrame(() => {
+      input.focus();
+      input.setSelectionRange(caret, caret);
+    });
+  };
+
   // Send message
   const send = async () => {
     const msg = text.trim();
@@ -426,7 +464,20 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
           }
         }}
       >
-        <div className="flex gap-2">
+        <div className="relative flex items-center gap-3">
+          <button
+            type="button"
+            aria-label="Emoji"
+            className={`flex h-10 w-10 items-center justify-center text-gray-500 transition-colors hover:text-gray-700 ${
+              showEmoji ? 'text-gray-700' : ''
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowEmoji((v) => !v);
+            }}
+          >
+            <Smile className="h-6 w-6" />
+          </button>
           <Input
             ref={inputRef}
             value={text}
@@ -443,20 +494,43 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
             onClick={(e) => {
               e.stopPropagation();
               inputRef.current?.focus();
+              setShowEmoji(false);
             }}
             placeholder="Type a message..."
             disabled={!canChat || loading}
             className="flex-1"
           />
+          {showEmoji && (
+            <div
+              ref={emojiPopoverRef}
+              className="absolute bottom-12 left-0 z-[120] rounded-lg border border-gray-200 bg-white shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Picker
+                data={data}
+                onEmojiSelect={(emoji: any) => {
+                  insertAtCursor(emoji.native || emoji.shortcodes || '');
+                }}
+                theme="light"
+                previewPosition="none"
+              />
+            </div>
+          )}
           <Button
             onClick={(e) => {
               e.stopPropagation();
               send();
             }}
-            disabled={!canChat || !text.trim() || loading}
+            disabled={!canSend}
             size="sm"
+            variant="ghost"
+            className={`flex h-11 w-11 items-center justify-center p-0 transition-colors ${
+              canSend ? 'text-gray-600 hover:text-gray-800' : 'text-gray-300'
+            }`}
+            aria-label="Send message"
+            title="Send"
           >
-            {loading ? '...' : 'Send'}
+            <Send className="h-6 w-6" />
           </Button>
         </div>
       </div>
