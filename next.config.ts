@@ -33,6 +33,15 @@ const nextConfig: NextConfig = {
     // nginx handles /api/* → api:3001 and /* → web:3000
     return [];
   },
+  turbopack: {
+    rules: {
+      // Bất kỳ file .svg import sẽ dùng SVGR để thành React component
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
 };
 
 export default nextConfig;

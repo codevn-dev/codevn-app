@@ -169,18 +169,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {typeof article.views === 'number' && (
               <span className="flex items-center text-sm text-gray-600">
-                <svg
-                  className="mr-1 h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
+                <Eye className="mr-1 h-4 w-4" />
                 {article.views}
               </span>
             )}

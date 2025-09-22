@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -389,33 +390,9 @@ function AdminPageContent() {
                     {sortBy === 'name' && (
                       <span className="ml-1">
                         {sortOrder === 'asc' ? (
-                          <svg
-                            className="h-3 w-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 15l7-7 7 7"
-                            />
-                          </svg>
+                          <ChevronUp className="h-3 w-3" />
                         ) : (
-                          <svg
-                            className="h-3 w-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 9l-7 7-7-7"
-                            />
-                          </svg>
+                          <ChevronDown className="h-3 w-3" />
                         )}
                       </span>
                     )}
@@ -445,33 +422,9 @@ function AdminPageContent() {
                     {sortBy === 'joined' && (
                       <span className="ml-1">
                         {sortOrder === 'asc' ? (
-                          <svg
-                            className="h-3 w-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 15l7-7 7 7"
-                            />
-                          </svg>
+                          <img src="/icons/chevron-up.svg" alt="up" className="h-3 w-3" />
                         ) : (
-                          <svg
-                            className="h-3 w-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 9l-7 7-7-7"
-                            />
-                          </svg>
+                          <img src="/icons/chevron-down.svg" alt="down" className="h-3 w-3" />
                         )}
                       </span>
                     )}
@@ -790,17 +743,11 @@ function AdminPageContent() {
                         <div className="rounded-md border border-red-200 bg-red-50 p-3">
                           <div className="flex">
                             <div className="flex-shrink-0">
-                              <svg
+                              <img
+                                src="/icons/x-circle.svg"
+                                alt="x"
                                 className="h-5 w-5 text-red-400"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
+                              />
                             </div>
                             <div className="ml-3">
                               <h3 className="text-sm font-medium text-red-800">
@@ -1019,13 +966,7 @@ function AdminPageContent() {
                 <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      <img src="/icons/x-circle.svg" alt="x" className="h-5 w-5 text-red-400" />
                     </div>
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-red-800">Cannot Delete Category</h3>
