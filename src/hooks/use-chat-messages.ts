@@ -75,7 +75,31 @@ export function useChatMessages({
       const response = await fetch('/api/chat/conversations');
       if (response.ok) {
         const data = await response.json();
-        setConversations(data.conversations || []);
+        const normalized = (data.conversations || []).map((conv: any) => {
+          // Normalize server response to the shape used by UI
+          const peer = conv.peer || conv.participant2 || conv.participant || {};
+          const last = conv.lastMessage || {};
+          return {
+            id: conv.id || conv.chatId,
+            peer: {
+              id: peer.id || conv.participant2Id || conv.otherUserId,
+              name: peer.name || conv.participant2?.name || conv.otherUserName || 'Unknown User',
+              avatar: peer.avatar || conv.participant2?.avatar || conv.otherUserAvatar,
+            },
+            lastMessage: {
+              text: typeof last === 'string' ? last : last.text || last.content || '',
+              createdAt:
+                last.createdAt || conv.lastMessageAt || (typeof last === 'object' ? last.updatedAt : undefined),
+              fromUserId: last.fromUserId || last.senderId || conv.lastMessageFromUserId,
+              seen: last.seen ?? conv.lastMessageSeen ?? false,
+            },
+            lastMessageAt: conv.lastMessageAt,
+            lastMessageFromUserId: conv.lastMessageFromUserId,
+            lastMessageSeen: conv.lastMessageSeen,
+            unreadCount: conv.unreadCount || 0,
+          } as Conversation;
+        });
+        setConversations(normalized);
       } else {
         console.error('Failed to fetch conversations:', response.status);
       }
@@ -152,8 +176,10 @@ export function useChatMessages({
             // Update conversations list directly with new message
             setConversations((prevConversations) => {
               const updatedConversations = [...prevConversations];
+              // For receiver, peer is the sender; for safety also fallback to to-user match
+              const targetPeerId = uiMessage.from;
               const conversationIndex = updatedConversations.findIndex(
-                (conv) => conv.peer?.id === uiMessage.from
+                (conv) => conv.peer?.id === targetPeerId
               );
 
               if (conversationIndex >= 0) {
@@ -205,6 +231,47 @@ export function useChatMessages({
             }
           }
           break;
+
+        case 'message_sent': {
+          // Update sender's conversation preview without increasing unread
+          const data = message.data;
+          if (data) {
+            const otherUserId = data.toUser?.id as string;
+            const timestamp = data.timestamp || new Date(data.createdAt).getTime();
+            setConversations((prevConversations) => {
+              const updated = [...prevConversations];
+              const idx = updated.findIndex((c) => c.peer?.id === otherUserId);
+              if (idx >= 0) {
+                updated[idx] = {
+                  ...updated[idx],
+                  lastMessage: {
+                    text: data.text,
+                    createdAt: new Date(timestamp).toISOString(),
+                    fromUserId: data.fromUser?.id,
+                    seen: data.seen || false,
+                  },
+                  lastMessageAt: new Date(timestamp).toISOString(),
+                  unreadCount: 0,
+                } as any;
+              } else if (otherUserId) {
+                updated.unshift({
+                  id: `conv_${otherUserId}`,
+                  peer: { id: otherUserId, name: 'Unknown User', avatar: undefined },
+                  lastMessage: {
+                    text: data.text,
+                    createdAt: new Date(timestamp).toISOString(),
+                    fromUserId: data.fromUser?.id,
+                    seen: data.seen || false,
+                  },
+                  lastMessageAt: new Date(timestamp).toISOString(),
+                  unreadCount: 0,
+                } as any);
+              }
+              return updated;
+            });
+          }
+          break;
+        }
 
         case 'typing':
           if (message.data && onTyping) {

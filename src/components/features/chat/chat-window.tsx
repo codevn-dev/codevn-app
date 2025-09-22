@@ -142,16 +142,17 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
   const transformMessages = (apiMessages: any[]): UiMessage[] => {
     return apiMessages
       .map((msg: any) => {
-        const timestamp = new Date(msg.createdAt || msg.timestamp).getTime();
+        const createdAt = msg.createdAt || msg.timestamp || msg.updatedAt;
+        const timestamp = createdAt ? new Date(createdAt).getTime() : Date.now();
         return {
-          id: `${msg.id || msg.timestamp}-${timestamp}`,
+          id: `${msg.id || msg.timestamp || `${msg.senderId || msg.fromUserId}-${timestamp}`}-${timestamp}`,
           type: msg.type || 'message',
-          from: msg.fromUser?.id || msg.fromUserId || msg.from,
-          text: msg.text,
+          from: msg.fromUser?.id || msg.fromUserId || msg.senderId || msg.from,
+          text: msg.text || msg.content || '',
           timestamp,
           seen: msg.seen || false,
           seenAt: msg.seenAt,
-        };
+        } as UiMessage;
       })
       .sort((a: UiMessage, b: UiMessage) => a.timestamp - b.timestamp);
   };
