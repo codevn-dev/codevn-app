@@ -263,7 +263,9 @@ export function HomepageContent() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const filteredArticles = Array.isArray(articles) ? articles : [];
+  const filteredArticles = Array.isArray(articles)
+    ? articles.filter((a) => (a as any)?.published === true)
+    : [];
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -429,7 +431,7 @@ export function HomepageContent() {
                     <Link href={`/articles/${article.slug}`} className="block h-full">
                       <div className="group hover:shadow-3xl shadow-brand/30 hover:shadow-brand/40 block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl drop-shadow-2xl transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-[1.02]">
                         {/* Thumbnail (consistent height whether exists or not) */}
-                        <div className="relative h-28 w-full overflow-hidden sm:h-32">
+                        <div className="relative aspect-[16/9] w-full overflow-hidden">
                           {article.thumbnail ? (
                             <img
                               src={article.thumbnail}

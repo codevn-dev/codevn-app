@@ -181,6 +181,29 @@ function ArticlesContent() {
     fetchArticles,
   ]);
 
+  // Open edit modal directly when coming from ArticleContent
+  useEffect(() => {
+    try {
+      const id = localStorage.getItem('editArticleId');
+      if (id && Array.isArray(articles)) {
+        const target = articles.find((a) => String(a.id) === id);
+        if (target) {
+          setEditingArticle(target);
+          setArticleForm({
+            title: target.title,
+            content: target.content,
+            slug: target.slug,
+            thumbnail: target.thumbnail || '',
+            categoryId: target.category.id,
+            published: target.published,
+          });
+          setShowArticleForm(true);
+          localStorage.removeItem('editArticleId');
+        }
+      }
+    } catch {}
+  }, [articles]);
+
   // IntersectionObserver for lazy loading
   useEffect(() => {
     if (!loadMoreRef.current) return;
@@ -551,7 +574,7 @@ function ArticlesContent() {
                       <motion.div key={article.id} variants={itemVariants} className="block h-full">
                         <div className="shadow-brand/30 block flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl drop-shadow-2xl">
                           {/* Thumbnail (consistent height whether exists or not) */}
-                          <div className="relative h-28 w-full overflow-hidden sm:h-32">
+                          <div className="relative aspect-[16/9] w-full overflow-hidden">
                             {article.thumbnail ? (
                               <img
                                 src={article.thumbnail}
