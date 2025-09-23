@@ -17,6 +17,8 @@ import { useAuthActions } from '@/hooks/use-auth-actions';
 import { useState } from 'react';
 import Image from 'next/image';
 import { isAdmin } from '@/lib/utils';
+import { LanguageSwitcher } from './language-switcher';
+import { useI18n } from '@/components/providers';
 
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -26,6 +28,7 @@ export function Navigation() {
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useI18n();
 
   const handleSignOut = async () => {
     try {
@@ -87,7 +90,7 @@ export function Navigation() {
                     onClick={() => router.push('/articles')}
                   >
                     <FileText className="mr-2 h-4 w-4" />
-                    Articles
+                    {t('nav.articles')}
                   </Button>
 
                   {isAdmin(user.role) && (
@@ -98,9 +101,11 @@ export function Navigation() {
                       onClick={() => router.push('/admin')}
                     >
                       <Settings className="mr-2 h-4 w-4" />
-                      Admin
+                      {t('nav.admin')}
                     </Button>
                   )}
+
+                  <LanguageSwitcher />
 
                   <div className="flex items-center gap-2">
                     <DropdownMenu>
@@ -124,14 +129,14 @@ export function Navigation() {
                           className="cursor-pointer bg-white hover:bg-gray-50 focus:bg-gray-50"
                         >
                           <User className="mr-2 h-4 w-4" />
-                          Edit Profile
+                          {t('nav.editProfile')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={handleSignOut}
                           className="cursor-pointer bg-white text-red-600 hover:bg-gray-50 focus:bg-gray-50 focus:text-red-600"
                         >
                           <LogOut className="mr-2 h-4 w-4" />
-                          Sign Out
+                          {t('nav.signOut')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -146,7 +151,7 @@ export function Navigation() {
                       setAuthModalOpen(true);
                     }}
                   >
-                    Sign In
+                    {t('nav.signIn')}
                   </Button>
                   <Button
                     onClick={() => {
@@ -154,7 +159,7 @@ export function Navigation() {
                       setAuthModalOpen(true);
                     }}
                   >
-                    Sign Up
+                    {t('nav.signUp')}
                   </Button>
                 </>
               )}

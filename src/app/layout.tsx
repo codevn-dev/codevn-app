@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
-import { PageTransition } from '@/components/layout';
+import { PageTransition, AppFooter } from '@/components/layout';
 import { CustomCursor } from '@/components/layout/custom-cursor';
 
 const geistSans = Geist({
@@ -24,6 +24,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Note: This is a Server Component; avoid calling hooks here.
   return (
     <html lang="en">
       <body
@@ -35,9 +36,7 @@ export default function RootLayout({
           <PageTransition>
             <div className="flex min-h-screen flex-col pt-16">
               <div className="flex-1">{children}</div>
-              <footer className="border-t border-gray-100 py-6 text-center text-sm text-gray-500">
-                © {new Date().getFullYear()} CodeVN. All rights reserved.
-              </footer>
+              <AppFooter />
             </div>
           </PageTransition>
         </Providers>

@@ -4,6 +4,7 @@ import { Card, CardBody } from '@/components/ui/card';
 import { MotionContainer } from '@/components/layout';
 import { Calendar, FileText, MessageSquare, Shield, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/providers';
 
 interface ProfileStatistics {
   totalArticles?: number;
@@ -29,6 +30,7 @@ export function ProfileInfoStats({
   statistics,
   className,
 }: ProfileInfoStatsProps) {
+  const { t } = useI18n();
   return (
     <div className={cn('space-y-6', className)}>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -67,7 +69,7 @@ export function ProfileInfoStats({
                   <p className="text-brand-600 text-2xl font-bold">
                     {statistics.totalArticles ?? 0}
                   </p>
-                  <p className="text-brand-600 text-sm">Total Articles</p>
+                  <p className="text-brand-600 text-sm">{t('profile.totalArticles')}</p>
                 </div>
               </CardBody>
             </Card>
@@ -81,7 +83,9 @@ export function ProfileInfoStats({
                   <p className="text-brand-600 text-2xl font-bold">
                     {statistics.totalComments ?? 0}
                   </p>
-                  <p className="text-brand-600 text-sm">Total Comments</p>
+                  <p className="text-brand-600 text-sm">
+                    {t('profile.totalComments') || 'Total Comments'}
+                  </p>
                 </div>
               </CardBody>
             </Card>
@@ -93,7 +97,9 @@ export function ProfileInfoStats({
                 <ThumbsUp className="text-brand mr-3 h-5 w-5" />
                 <div>
                   <p className="text-brand-600 text-2xl font-bold">{statistics.totalLikes ?? 0}</p>
-                  <p className="text-brand-600 text-sm">Total Likes</p>
+                  <p className="text-brand-600 text-sm">
+                    {t('profile.totalLikes') || 'Total Likes'}
+                  </p>
                 </div>
               </CardBody>
             </Card>
@@ -107,7 +113,9 @@ export function ProfileInfoStats({
                   <p className="text-brand-600 text-2xl font-bold">
                     {statistics.totalDislikes ?? 0}
                   </p>
-                  <p className="text-brand-600 text-sm">Total Dislikes</p>
+                  <p className="text-brand-600 text-sm">
+                    {t('profile.totalDislikes') || 'Total Dislikes'}
+                  </p>
                 </div>
               </CardBody>
             </Card>

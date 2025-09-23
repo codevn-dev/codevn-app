@@ -15,6 +15,7 @@ import ReactCrop, {
 } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { apiUpload } from '@/lib/utils/api-client';
+import { useI18n } from '@/components/providers';
 
 interface AvatarUploadProps {
   onAvatarChange?: (avatar: string | null) => void;
@@ -31,6 +32,7 @@ export function AvatarUpload({
   showCompressionSettings = false,
   customCompressionSettings,
 }: AvatarUploadProps) {
+  const { t } = useI18n();
   const { user, updateUser } = useAuthStore();
   const [isUploading, setIsUploading] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
@@ -256,11 +258,11 @@ export function AvatarUpload({
 
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={handleCropCancel}>
-                Cancel
+                {t('profile.cancel')}
               </Button>
               <Button onClick={handleCropComplete} disabled={!completedCrop}>
                 <Check className="mr-2 h-4 w-4" />
-                Upload
+                {t('profile.upload')}
               </Button>
             </div>
           </div>

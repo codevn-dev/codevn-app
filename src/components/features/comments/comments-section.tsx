@@ -10,6 +10,7 @@ import { useUIStore } from '@/stores';
 import { useCommentWebSocketContext } from './websocket-context';
 import { Comment, CommentListResponse } from '@/types/shared';
 import { apiGet } from '@/lib/utils/api-client';
+import { useI18n } from '@/components/providers';
 
 interface CommentsSectionProps {
   articleId: string;
@@ -23,6 +24,7 @@ export interface CommentsSectionRef {
 
 export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
   ({ articleId, initialComments = [] }, ref) => {
+    const { t } = useI18n();
     const { isAuthenticated, isLoading: isAuthLoading } = useAuthState();
     const { setAuthModalOpen, setAuthMode } = useUIStore();
     const { addOnNewCommentCallback, addOnNewReplyCallback } = useCommentWebSocketContext();
@@ -293,7 +295,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
         {isLoading && (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-            <span className="ml-2 text-gray-600">Loading comments...</span>
+            <span className="ml-2 text-gray-600">{t('chat.loading') || 'Loading...'}</span>
           </div>
         )}
 
@@ -301,7 +303,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           <div className="rounded-lg border border-red-200 bg-red-50 p-4">
             <p className="text-red-600">{error}</p>
             <Button variant="outline" size="sm" onClick={() => fetchComments()} className="mt-2">
-              Try Again
+              {t('common.retry') || 'Try Again'}
             </Button>
           </div>
         )}
@@ -313,7 +315,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           !isAuthLoading && (
             <div className="py-8 text-center text-gray-500">
               <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-              <p>No comments yet. Be the first to comment!</p>
+              <p>{'No comments yet. Be the first to comment!'}</p>
             </div>
           )}
 
@@ -345,7 +347,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                   className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
                   {loadingMore ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                  {loadingMore ? 'Thinking...' : 'Load older comments'}
+                  {loadingMore ? t('chat.loading') : t('comments.loadMoreComments')}
                 </Button>
               </div>
             )}
@@ -358,7 +360,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
             <CommentForm
               articleId={articleId}
               onCommentAdded={handleCommentAdded}
-              placeholder="Write a comment..."
+              placeholder={t('comments.writeComment')}
             />
           </div>
         )}

@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, Smile, Send, Check, CheckCheck } from 'lucide-react';
+import { useI18n } from '@/components/providers';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useWebSocket } from './websocket-context';
 import { formatChatTime, isNewDay, formatDate } from '@/lib/utils';
@@ -24,6 +25,7 @@ interface ChatWindowProps {
 
 export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: ChatWindowProps) {
   const { user } = useAuthState();
+  const { t } = useI18n();
   const [text, setText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
@@ -349,7 +351,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
                 className={`h-2 w-2 rounded-full ${isUserOnline(peerId) ? 'bg-green-400' : 'bg-gray-400'}`}
               />
               <span className="text-xs text-gray-300">
-                {isUserOnline(peerId) ? 'Online' : 'Offline'}
+                {isUserOnline(peerId) ? t('chat.online') : t('chat.offline')}
               </span>
             </div>
           </div>
@@ -376,7 +378,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
         onClick={(e) => e.stopPropagation()}
       >
         {loading && messages.length === 0 ? (
-          <div className="py-4 text-center text-sm text-gray-500">Loading messages...</div>
+          <div className="py-4 text-center text-sm text-gray-500">{t('chat.loadingMessages')}</div>
         ) : (
           <>
             {/* Load More Button */}
@@ -392,7 +394,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
                   disabled={loadingMore}
                   className="text-xs"
                 >
-                  {loadingMore ? 'Loading...' : 'Load More Messages'}
+                  {loadingMore ? t('chat.loading') : t('chat.loadMore')}
                 </Button>
               </div>
             )}
@@ -491,7 +493,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
               inputRef.current?.focus();
               setShowEmoji(false);
             }}
-            placeholder="Type a message..."
+            placeholder={t('chat.typeMessage')}
             disabled={!canChat || loading}
             className="flex-1"
           />
@@ -522,8 +524,8 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
             className={`flex h-11 w-11 items-center justify-center p-0 transition-colors ${
               canSend ? 'text-brand hover:bg-brand/10 hover:text-brand-700' : 'text-gray-300'
             }`}
-            aria-label="Send message"
-            title="Send"
+            aria-label={t('chat.send')}
+            title={t('chat.send')}
           >
             <Send className="h-6 w-6" />
           </Button>

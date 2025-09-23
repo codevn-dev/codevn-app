@@ -15,8 +15,12 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { findCategoryById } from '@/features/articles';
 import { apiGet } from '@/lib/utils';
 import { Category, ArticleListResponse } from '@/types/shared';
+import { useI18n } from '@/components/providers';
 
 export function HomepageContent() {
+  const { t } = useI18n();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuthState();
   const {
     categories,
@@ -352,7 +356,7 @@ export function HomepageContent() {
                 <Input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search articles, author or email..."
+                  placeholder={mounted ? t('home.searchPlaceholder') : ''}
                   className="focus:ring-brand/20 w-full pl-10 focus:ring-2"
                 />
               </div>
@@ -366,7 +370,7 @@ export function HomepageContent() {
                       onlyMine ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'
                     }`}
                   >
-                    My Articles
+                    <span suppressHydrationWarning>{mounted ? t('home.myArticles') : ''}</span>
                   </Button>
                 )}
                 <Button
@@ -380,7 +384,7 @@ export function HomepageContent() {
                   disabled={!(onlyMine || selectedCategoryNames.length > 0 || debouncedSearch)}
                   className="font-medium text-gray-700"
                 >
-                  Clear Filters
+                  <span suppressHydrationWarning>{mounted ? t('home.clearFilters') : ''}</span>
                 </Button>
               </div>
             </div>
@@ -423,11 +427,14 @@ export function HomepageContent() {
             )}
           </div>
           <div>
-            <h2 className="mb-1 text-2xl font-bold text-gray-900 sm:mb-2 sm:text-3xl">
-              Latest Articles
+            <h2
+              className="mb-1 text-2xl font-bold text-gray-900 sm:mb-2 sm:text-3xl"
+              suppressHydrationWarning
+            >
+              {mounted ? t('home.latestArticles') : ''}
             </h2>
-            <p className="mb-10 text-base text-gray-600 sm:text-lg">
-              Fresh insights from the Vietnamese developer community
+            <p className="mb-10 text-base text-gray-600 sm:text-lg" suppressHydrationWarning>
+              {mounted ? t('home.tagline') : ''}
             </p>
           </div>
           {(() => {
@@ -636,8 +643,11 @@ export function HomepageContent() {
           )}
           {!isLoadingMore && !isLoading && !hasMoreArticles && filteredArticles.length > 0 && (
             <MotionContainer delay={0.04}>
-              <div className="mt-3 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-500 shadow-md shadow-gray-200/50 backdrop-blur-sm">
-                No more articles to show
+              <div
+                className="mt-3 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-500 shadow-md shadow-gray-200/50 backdrop-blur-sm"
+                suppressHydrationWarning
+              >
+                {mounted ? t('home.noMore') : ''}
               </div>
             </MotionContainer>
           )}

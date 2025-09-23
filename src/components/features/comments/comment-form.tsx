@@ -10,6 +10,7 @@ import { useCommentWebSocketContext } from './websocket-context';
 import { apiPut } from '@/lib/utils/api-client';
 import { UpdateCommentRequest, Comment } from '@/types/shared/comment';
 import data from '@emoji-mart/data';
+import { useI18n } from '@/components/providers';
 import Picker from '@emoji-mart/react';
 
 interface CommentFormProps {
@@ -41,6 +42,7 @@ export function CommentForm({
   onReady,
   suppressAuthPrompt = false,
 }: CommentFormProps) {
+  const { t } = useI18n();
   const { isAuthenticated, user } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const { sendComment, sendReply } = useCommentWebSocketContext();
@@ -287,7 +289,9 @@ export function CommentForm({
           )}
         </div>
         <div className="mt-1 flex items-center justify-between">
-          <span className="text-xs text-gray-500">{content.length}/1000 characters</span>
+          <span className="text-xs text-gray-500">
+            {content.length}/1000 {t('comments.characters')}
+          </span>
           {error && <span className="text-xs text-red-600">{error}</span>}
         </div>
       </div>
@@ -301,7 +305,7 @@ export function CommentForm({
             disabled={isSubmitting}
             className="text-gray-600 hover:text-gray-800"
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         )}
         <Button
@@ -316,7 +320,7 @@ export function CommentForm({
           ) : (
             <Send className="h-4 w-4" />
           )}
-          <span>{parentId ? 'Reply' : 'Comment'}</span>
+          <span>{parentId ? t('comments.reply') : t('comments.comment')}</span>
         </Button>
       </div>
     </form>

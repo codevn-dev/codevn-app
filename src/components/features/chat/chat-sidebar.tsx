@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, Search, X } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
+import { useI18n } from '@/components/providers';
 import { useWebSocket } from './websocket-context';
+import { formatRelativeTime, formatDate, formatTime } from '@/lib/utils/time-format';
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -25,6 +27,7 @@ export function ChatSidebar({
 }: ChatSidebarProps) {
   const { user: _user } = useAuthState();
   const [searchTerm, setSearchTerm] = useState('');
+  const { t } = useI18n();
 
   // Use WebSocket hook
   const {
@@ -65,35 +68,21 @@ export function ChatSidebar({
     conv.peer?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatTime = (timestamp: string) => {
+  const formatDisplayTime = (timestamp: string) => {
     try {
       const date = new Date(timestamp);
       if (isNaN(date.getTime())) {
-        return 'Just now';
+        return formatRelativeTime(Date.now());
       }
 
       const now = new Date();
       const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
-      if (diffInHours < 1) {
-        return 'Just now';
-      } else if (diffInHours < 24) {
-        return date.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-      } else if (diffInHours < 168) {
-        // 7 days
-        return date.toLocaleDateString('en-US', { weekday: 'short' });
-      } else {
-        return date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        });
-      }
+      if (diffInHours < 1) return formatDate(timestamp);
+      if (diffInHours < 24) return formatTime(timestamp);
+      return formatDate(timestamp);
     } catch {
-      return 'Just now';
+      return formatRelativeTime(Date.now());
     }
   };
 
@@ -127,12 +116,14 @@ export function ChatSidebar({
         <div className="flex items-center justify-between border-b border-transparent p-4">
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-[#B8956A]" />
-            <h2 className="text-lg font-semibold">Chat</h2>
+            <h2 className="text-lg font-semibold">{t('chat.title')}</h2>
             <div className="flex items-center gap-1">
               <div
                 className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}
               />
-              <span className="text-xs text-gray-500">{isConnected ? 'Online' : 'Offline'}</span>
+              <span className="text-xs text-gray-500">
+                {isConnected ? t('chat.online') : t('chat.offline')}
+              </span>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onCloseAll || onClose} className="h-8 w-8 p-0">
@@ -145,7 +136,7 @@ export function ChatSidebar({
           <div className="relative">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <Input
-              placeholder="Find a conversation..."
+              placeholder={t('chat.findConversation')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -158,9 +149,7 @@ export function ChatSidebar({
           {filteredConversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <MessageCircle className="mb-2 h-12 w-12 text-gray-300" />
-              <div className="text-sm text-gray-500">
-                {searchTerm ? 'No conversation found' : 'No conversation found'}
-              </div>
+              <div className="text-sm text-gray-500">{t('chat.noConversation')}</div>
             </div>
           ) : (
             <div className="space-y-1">
@@ -204,7 +193,7 @@ export function ChatSidebar({
                         {conversation.peer?.name || 'Unknown User'}
                       </div>
                       <div className="ml-2 text-xs text-gray-500">
-                        {formatTime(
+                        {formatDisplayTime(
                           conversation.lastMessage?.createdAt || new Date().toISOString()
                         )}
                       </div>

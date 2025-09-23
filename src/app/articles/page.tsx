@@ -46,8 +46,10 @@ import {
   UpdateArticleRequest,
 } from '@/types/shared';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/utils/api-client';
+import { useI18n } from '@/components/providers';
 
 function ArticlesContent() {
+  const { t } = useI18n();
   const { user, isAuthenticated, isLoading } = useAuthState();
   const router = useRouter();
   const [articles, setArticles] = useState<Article[]>([]);
@@ -405,19 +407,17 @@ function ArticlesContent() {
         <MotionContainer>
           <div className="rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mb-6 sm:mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">My Articles</h1>
-              <p className="mt-1 text-gray-700 sm:mt-2">
-                Manage your articles and share your knowledge
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t('articles.my')}</h1>
+              <p className="mt-1 text-gray-700 sm:mt-2">{t('articles.manageIntro')}</p>
             </div>
 
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold sm:text-xl">
-                Articles ({pagination.totalItems})
+                {t('articles.total')} ({pagination.totalItems})
               </h2>
               <Button className="w-full sm:w-auto" onClick={() => setShowArticleForm(true)}>
                 <Plus className="mr-1 h-4 w-4" />
-                New Article
+                {t('articles.new')}
               </Button>
             </div>
 
@@ -429,7 +429,7 @@ function ArticlesContent() {
                   <div className="relative">
                     <Search className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 transform cursor-pointer text-gray-500" />
                     <Input
-                      placeholder="Search your articles..."
+                      placeholder={t('articles.searchPlaceholder')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="focus:ring-brand/20 pl-10 focus:ring-2"
@@ -443,9 +443,9 @@ function ArticlesContent() {
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Articles</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="all">{t('articles.all')}</SelectItem>
+                    <SelectItem value="published">{t('articles.published')}</SelectItem>
+                    <SelectItem value="draft">{t('articles.draft')}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -458,7 +458,7 @@ function ArticlesContent() {
                     <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="all">{t('articles.allCategories')}</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
@@ -486,7 +486,7 @@ function ArticlesContent() {
                   }`}
                 >
                   <ArrowUpDown className="mr-1 h-4 w-4" />
-                  Title
+                  {t('articles.sort.title')}
                   {sortBy === 'title' && (
                     <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                   )}
@@ -508,7 +508,7 @@ function ArticlesContent() {
                   }`}
                 >
                   <ArrowUpDown className="mr-1 h-4 w-4" />
-                  Created
+                  {t('articles.sort.created')}
                   {sortBy === 'createdAt' && (
                     <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                   )}
@@ -530,7 +530,7 @@ function ArticlesContent() {
                   }`}
                 >
                   <ArrowUpDown className="mr-1 h-4 w-4" />
-                  Updated
+                  {t('articles.sort.updated')}
                   {sortBy === 'updatedAt' && (
                     <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                   )}
@@ -655,12 +655,12 @@ function ArticlesContent() {
                                         {article.published ? (
                                           <>
                                             <EyeOff className="mr-2 h-4 w-4" />
-                                            Unpublish
+                                            {t('articles.menu.unpublish')}
                                           </>
                                         ) : (
                                           <>
                                             <Eye className="mr-2 h-4 w-4" />
-                                            Publish
+                                            {t('articles.menu.publish')}
                                           </>
                                         )}
                                       </div>
@@ -680,7 +680,9 @@ function ArticlesContent() {
                                           className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
                                         >
                                           <ExternalLink className="mr-2 h-4 w-4" />
-                                          {article.published ? 'View' : 'Preview'}
+                                          {article.published
+                                            ? t('articles.menu.view')
+                                            : t('articles.menu.preview')}
                                         </div>
                                       )}
 
@@ -692,7 +694,7 @@ function ArticlesContent() {
                                         className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
                                       >
                                         <Edit className="mr-2 h-4 w-4" />
-                                        Edit
+                                        {t('articles.menu.edit')}
                                       </div>
 
                                       <div
@@ -703,7 +705,7 @@ function ArticlesContent() {
                                         className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
                                       >
                                         <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
+                                        {t('articles.menu.delete')}
                                       </div>
                                     </div>
                                   )}
@@ -721,7 +723,7 @@ function ArticlesContent() {
                                   article.published ? 'bg-brand hover:bg-brand-600 text-white' : ''
                                 }
                               >
-                                {article.published ? 'Published' : 'Draft'}
+                                {article.published ? t('articles.published') : t('articles.draft')}
                               </Badge>
                             </div>
 
@@ -786,7 +788,9 @@ function ArticlesContent() {
                 <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6">
                   <div className="mb-4">
                     <h2 className="text-lg font-semibold">
-                      {editingArticle ? 'Edit Article' : 'Create New Article'}
+                      {editingArticle
+                        ? t('articles.menu.edit') + ' Article'
+                        : t('articles.form.createNew')}
                     </h2>
                   </div>
 
@@ -796,9 +800,9 @@ function ArticlesContent() {
                   >
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Title *</label>
+                        <label className="text-sm font-medium">{t('articles.form.title')} *</label>
                         <Input
-                          placeholder="Enter article title"
+                          placeholder={t('articles.form.titlePlaceholder')}
                           value={articleForm.title}
                           onChange={(e) => {
                             const title = e.target.value;
@@ -813,9 +817,9 @@ function ArticlesContent() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Slug *</label>
+                        <label className="text-sm font-medium">{t('articles.form.slug')} *</label>
                         <Input
-                          placeholder="article-slug"
+                          placeholder={t('articles.form.slugPlaceholder')}
                           value={articleForm.slug}
                           onChange={(e) => setArticleForm({ ...articleForm, slug: e.target.value })}
                           required
@@ -824,7 +828,7 @@ function ArticlesContent() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Thumbnail</label>
+                      <label className="text-sm font-medium">{t('articles.form.thumbnail')}</label>
                       {articleForm.thumbnail ? (
                         <div className="space-y-2">
                           <div className="relative w-full max-w-sm">
@@ -862,18 +866,18 @@ function ArticlesContent() {
                           >
                             <Upload className="h-8 w-8 text-gray-600" />
                             <span className="text-sm font-medium text-gray-700">
-                              Click to upload thumbnail
+                              {t('articles.form.clickToUpload')}
                             </span>
                           </button>
                           <p className="mt-2 text-xs text-gray-500">
-                            PNG, JPG, GIF, WebP up to 5MB
+                            {t('articles.form.thumbHint')}
                           </p>
                         </div>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Category *</label>
+                      <label className="text-sm font-medium">{t('articles.form.category')} *</label>
                       <Select
                         value={articleForm.categoryId || 'placeholder'}
                         onValueChange={(value) =>
@@ -890,11 +894,11 @@ function ArticlesContent() {
                               : 'bg-white text-gray-700'
                           }`}
                         >
-                          <SelectValue placeholder="Select a category" />
+                          <SelectValue placeholder={t('articles.form.selectCategory')} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="placeholder" disabled>
-                            Select a category
+                            {t('articles.form.selectCategory')}
                           </SelectItem>
                           {categories.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
@@ -912,7 +916,7 @@ function ArticlesContent() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Content *</label>
+                      <label className="text-sm font-medium">{t('articles.form.content')} *</label>
                       <TiptapRichTextEditor
                         value={articleForm.content}
                         onChange={(value) => setArticleForm({ ...articleForm, content: value })}
@@ -932,21 +936,21 @@ function ArticlesContent() {
                         className="accent-brand focus:ring-brand h-4 w-4 rounded border-gray-300"
                       />
                       <label htmlFor="published" className="text-sm font-medium">
-                        Publish immediately
+                        {t('articles.form.publishNow')}
                       </label>
                     </div>
                   </form>
 
                   <div className="mt-6 flex justify-end gap-2">
                     <Button variant="outline" onClick={resetForm}>
-                      Cancel
+                      {t('articles.form.cancel')}
                     </Button>
                     <Button
                       type="submit"
                       onClick={editingArticle ? handleUpdateArticle : handleCreateArticle}
                       disabled={!editingArticle && isCreateDisabled}
                     >
-                      {editingArticle ? 'Update' : 'Create'}
+                      {editingArticle ? t('articles.menu.edit') : t('articles.form.create')}
                     </Button>
                   </div>
                 </div>

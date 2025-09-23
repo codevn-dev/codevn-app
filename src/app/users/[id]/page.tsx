@@ -26,8 +26,10 @@ import { apiGet } from '@/lib/utils/api-client';
 
 import { User as UserProfile } from '@/types/shared/auth';
 import { UserResponse } from '@/types/shared/user';
+import { useI18n } from '@/components/providers';
 
 function UserProfileContent() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const { user: currentUser, isAuthenticated, isLoading } = useAuthState();
@@ -94,11 +96,11 @@ function UserProfileContent() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <User className="h-6 w-6 text-red-600" />
             </div>
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">User Not Found</h2>
+            <h2 className="mb-2 text-xl font-semibold text-gray-900">{t('profile.notFound')}</h2>
             <p className="mb-6 text-gray-600">{error}</p>
             <Button onClick={handleBack} variant="back">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Go Back
+              {t('common.back') || 'Back'}
             </Button>
           </CardBody>
         </Card>
@@ -109,7 +111,7 @@ function UserProfileContent() {
   if (!profile) {
     return (
       <div className="py-12 text-center">
-        <p className="text-gray-600">Profile not found</p>
+        <p className="text-gray-600">{t('profile.notFound')}</p>
       </div>
     );
   }
@@ -136,7 +138,9 @@ function UserProfileContent() {
             </Avatar>
             <div className="ml-6">
               <h1 className="text-3xl font-bold text-gray-900">{profile.name}</h1>
-              <p className="mt-2 text-gray-600">{isOwnProfile ? 'Your Profile' : 'User Profile'}</p>
+              <p className="mt-2 text-gray-600">
+                {isOwnProfile ? t('profile.yourProfile') : t('profile.userProfile')}
+              </p>
             </div>
           </div>
         </CardHeader>
@@ -144,7 +148,7 @@ function UserProfileContent() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Full Name</label>
+                <label className="text-sm font-medium text-gray-700">{t('profile.fullName')}</label>
                 <div className="relative">
                   <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                   <div className="py-2 pl-10 text-gray-900">{profile.name}</div>
@@ -152,7 +156,9 @@ function UserProfileContent() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Email Address</label>
+                <label className="text-sm font-medium text-gray-700">
+                  {t('profile.emailAddress')}
+                </label>
                 <div className="relative">
                   <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                   <div className="py-2 pl-10 text-gray-900">{profile.email}</div>
@@ -166,9 +172,9 @@ function UserProfileContent() {
                   <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
                     <p className="text-brand-600 mb-1 font-semibold">
-                      {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
+                      {profile.role === 'admin' ? t('admin.role.admin') : t('admin.role.user')}
                     </p>
-                    <p className="text-brand-600 text-sm">Access level</p>
+                    <p className="text-brand-600 text-sm">{t('profile.accessLevel')}</p>
                   </div>
                 </CardBody>
               </Card>
@@ -178,7 +184,7 @@ function UserProfileContent() {
                   <Calendar className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
                     <p className="text-brand-600 font-semibold">{formatDate(profile.createdAt)}</p>
-                    <p className="text-brand-600 text-sm">Member since</p>
+                    <p className="text-brand-600 text-sm">{t('profile.memberSince')}</p>
                   </div>
                 </CardBody>
               </Card>
@@ -194,7 +200,7 @@ function UserProfileContent() {
                       <p className="text-brand-600 text-2xl font-bold">
                         {profile.statistics.totalArticles}
                       </p>
-                      <p className="text-brand-600 text-sm">Total Articles</p>
+                      <p className="text-brand-600 text-sm">{t('profile.totalArticles')}</p>
                     </div>
                   </CardBody>
                 </Card>
@@ -206,7 +212,9 @@ function UserProfileContent() {
                       <p className="text-brand-600 text-2xl font-bold">
                         {profile.statistics.totalComments}
                       </p>
-                      <p className="text-brand-600 text-sm">Total Comments</p>
+                      <p className="text-brand-600 text-sm">
+                        {t('profile.totalComments') || 'Total Comments'}
+                      </p>
                     </div>
                   </CardBody>
                 </Card>
@@ -218,7 +226,9 @@ function UserProfileContent() {
                       <p className="text-brand-600 text-2xl font-bold">
                         {profile.statistics.totalLikes}
                       </p>
-                      <p className="text-brand-600 text-sm">Total Likes</p>
+                      <p className="text-brand-600 text-sm">
+                        {t('profile.totalLikes') || 'Total Likes'}
+                      </p>
                     </div>
                   </CardBody>
                 </Card>
@@ -230,7 +240,9 @@ function UserProfileContent() {
                       <p className="text-brand-600 text-2xl font-bold">
                         {profile.statistics.totalDislikes}
                       </p>
-                      <p className="text-brand-600 text-sm">Total Dislikes</p>
+                      <p className="text-brand-600 text-sm">
+                        {t('profile.totalDislikes') || 'Total Dislikes'}
+                      </p>
                     </div>
                   </CardBody>
                 </Card>
@@ -241,7 +253,7 @@ function UserProfileContent() {
               <div className="flex justify-end pt-6">
                 <Button onClick={handleMessage} size="lg">
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  Send Message
+                  {t('chat.sendMessage') || 'Send Message'}
                 </Button>
               </div>
             )}

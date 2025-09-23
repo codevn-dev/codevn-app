@@ -14,10 +14,12 @@ import { AvatarUpload } from '@/features/upload';
 import { ProfileInfoStats } from '@/features/profile/profile-info-stats';
 import { formatDate } from '@/lib/utils';
 import { apiGet, apiPut } from '@/lib/utils/api-client';
+import { useI18n } from '@/components/providers';
 
 import { User as UserProfile } from '@/types/shared/auth';
 
 function ProfilePageContent() {
+  const { t } = useI18n();
   const { user, isAuthenticated, isLoading } = useAuthState();
   const { updateUser } = useFastifyAuthStore();
   const router = useRouter();
@@ -174,10 +176,8 @@ function ProfilePageContent() {
                   }}
                 />
                 <div className="ml-6">
-                  <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-                  <p className="mt-2 text-gray-600">
-                    Manage your account information and preferences
-                  </p>
+                  <h1 className="text-3xl font-bold text-gray-900">{t('profile.settings')}</h1>
+                  <p className="mt-2 text-gray-600">{t('profile.manageIntro')}</p>
                 </div>
               </div>
             </CardHeader>
@@ -186,13 +186,13 @@ function ProfilePageContent() {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-medium text-gray-700">
-                      Full Name
+                      {t('profile.fullName')}
                     </label>
                     <div className="relative">
                       <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                       <Input
                         id="name"
-                        placeholder="Enter your full name"
+                        placeholder={t('profile.fullNamePlaceholder')}
                         value={profile.name || ''}
                         onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                         className="pl-10"
@@ -203,7 +203,7 @@ function ProfilePageContent() {
 
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium text-gray-700">
-                      Email Address
+                      {t('profile.emailAddress')}
                     </label>
                     <div className="relative">
                       <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
@@ -220,9 +220,9 @@ function ProfilePageContent() {
                 </div>
 
                 <ProfileInfoStats
-                  roleLabel="Access level"
-                  createdAtLabel="Member since"
-                  role={profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
+                  roleLabel={t('profile.accessLevel')}
+                  createdAtLabel={t('profile.memberSince')}
+                  role={profile.role === 'admin' ? t('admin.role.admin') : t('admin.role.user')}
                   createdAtFormatted={formatDate(profile.createdAt)}
                   statistics={profile.statistics}
                 />
@@ -249,11 +249,11 @@ function ProfilePageContent() {
                 <div className="flex justify-end pt-6">
                   <Button type="submit" disabled={saving || !hasChanges()} size="lg">
                     {saving ? (
-                      <LoadingScreen message="Saving" />
+                      <LoadingScreen message={t('profile.saving')} />
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        Save
+                        {t('profile.save')}
                       </>
                     )}
                   </Button>

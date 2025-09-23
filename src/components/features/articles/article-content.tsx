@@ -47,6 +47,7 @@ import {
 import { TiptapRichTextEditor } from '@/features/articles';
 import { ImageUpload } from '@/features/upload';
 import { SuccessResponse } from '@/types/shared/common';
+import { useI18n } from '@/components/providers';
 import { ReactionRequest } from '@/types/shared/article';
 
 interface ArticleContentProps {
@@ -55,6 +56,9 @@ interface ArticleContentProps {
 }
 
 export function ArticleContent({ article, isPreview = false }: ArticleContentProps) {
+  const { t } = useI18n();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const { isAuthenticated, user } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const [isLiked, setIsLiked] = useState((isAuthenticated && article.userHasLiked) || false);
@@ -235,7 +239,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 <Button asChild variant="back" size="sm">
                   <Link href="/" className="flex items-center">
                     <ArrowLeft className="mr-1 h-4 w-4" />
-                    Back
+                    <span suppressHydrationWarning>{mounted ? t('comments.back') : ''}</span>
                   </Link>
                 </Button>
                 {canManage && (

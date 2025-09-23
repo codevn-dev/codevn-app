@@ -9,6 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -36,8 +43,10 @@ import { User } from '@/types/shared/auth';
 import { UserListResponse } from '@/types/shared/user';
 import { SuccessResponse } from '@/types/shared/common';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/utils/api-client';
+import { useI18n } from '@/components/providers';
 
 function AdminPageContent() {
+  const { t } = useI18n();
   const { user, isAuthenticated, isLoading } = useAuthState();
   const router = useRouter();
   const currentUserId = user?.id;
@@ -301,7 +310,7 @@ function AdminPageContent() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="text-center">
-          <p className="text-gray-600">Access denied. Admin privileges required.</p>
+          <p className="text-gray-600">{t('admin.accessDenied')}</p>
         </div>
       </div>
     );
@@ -317,7 +326,7 @@ function AdminPageContent() {
         <MotionContainer>
           <div className="shadow-brand/30 rounded-2xl bg-white p-6 shadow-2xl drop-shadow-2xl">
             <div className="mb-6 sm:mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Admin Panel</h1>
+              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{t('admin.panel')}</h1>
             </div>
 
             {/* Simple Tab Navigation */}
@@ -334,7 +343,7 @@ function AdminPageContent() {
                   >
                     <div className="flex items-center">
                       <Users className="mr-2 h-4 w-4" />
-                      Users ({pagination.totalItems})
+                      {t('admin.users')} ({pagination.totalItems})
                     </div>
                   </button>
                   <button
@@ -347,7 +356,7 @@ function AdminPageContent() {
                   >
                     <div className="flex items-center">
                       <Tag className="mr-2 h-4 w-4" />
-                      Categories
+                      {t('admin.categories')}
                     </div>
                   </button>
                 </nav>
@@ -358,10 +367,11 @@ function AdminPageContent() {
             {activeTab === 'users' && (
               <div className="mt-6">
                 <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="text-lg font-semibold sm:text-xl">Users Management</h2>
+                  <h2 className="text-lg font-semibold sm:text-xl">{t('admin.userManagement')}</h2>
                   <div className="text-xs text-gray-500 sm:text-sm">
-                    Showing: {currentUsers.length} user(s) on page {pagination.currentPage} of{' '}
-                    {pagination.totalPages} ({pagination.totalItems} total)
+                    {t('admin.showing')} {currentUsers.length} {t('admin.usersAbbrev')}{' '}
+                    {t('admin.onPage')} {pagination.currentPage} {t('admin.of')}{' '}
+                    {pagination.totalPages} ({pagination.totalItems} {t('admin.totalSuffix')})
                   </div>
                 </div>
 
@@ -373,7 +383,7 @@ function AdminPageContent() {
                       <div className="relative">
                         <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                         <Input
-                          placeholder="Search by name or email..."
+                          placeholder={t('admin.searchPlaceholder')}
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           className="focus:ring-brand/20 pl-10 focus:ring-2"
@@ -403,7 +413,7 @@ function AdminPageContent() {
                         }`}
                       >
                         <ArrowUpDown className="mr-1 h-4 w-4" />
-                        Name
+                        {t('admin.sort.name')}
                         {sortBy === 'name' && (
                           <span className="ml-1">
                             {sortOrder === 'asc' ? (
@@ -435,7 +445,7 @@ function AdminPageContent() {
                         }`}
                       >
                         <ArrowUpDown className="mr-1 h-4 w-4" />
-                        Joined
+                        {t('admin.sort.joined')}
                         {sortBy === 'joined' && (
                           <span className="ml-1">
                             {sortOrder === 'asc' ? (
@@ -467,13 +477,13 @@ function AdminPageContent() {
                             <thead className="bg-gray-50/50">
                               <tr>
                                 <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
-                                  User
+                                  {t('admin.table.user')}
                                 </th>
                                 <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
-                                  Role
+                                  {t('admin.table.role')}
                                 </th>
                                 <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
-                                  Joined
+                                  {t('admin.table.joined')}
                                 </th>
                               </tr>
                             </thead>
@@ -536,13 +546,13 @@ function AdminPageContent() {
                                         <SelectItem value="user">
                                           <div className="flex items-center space-x-2">
                                             <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                                            <span>User</span>
+                                            <span>{t('admin.role.user')}</span>
                                           </div>
                                         </SelectItem>
                                         <SelectItem value="admin">
                                           <div className="flex items-center space-x-2">
                                             <div className="bg-brand h-2 w-2 rounded-full"></div>
-                                            <span>Admin</span>
+                                            <span>{t('admin.role.admin')}</span>
                                           </div>
                                         </SelectItem>
                                       </SelectContent>
@@ -568,8 +578,9 @@ function AdminPageContent() {
                           <div className="flex flex-col items-start justify-between gap-3 border-t border-gray-100 bg-white px-4 py-5 sm:flex-row sm:items-center sm:px-6">
                             <div className="flex items-center text-sm text-gray-700">
                               <span>
-                                Page {pagination.currentPage} of {pagination.totalPages} |{' '}
-                                {pagination.itemsPerPage} users per page
+                                {t('admin.page')} {pagination.currentPage} {t('admin.of')}{' '}
+                                {pagination.totalPages} | {pagination.itemsPerPage}{' '}
+                                {t('admin.usersPerPage')}
                               </span>
                             </div>
                             <div className="flex w-full flex-wrap items-center gap-2 overflow-x-auto sm:w-auto">
@@ -580,7 +591,7 @@ function AdminPageContent() {
                                 disabled={!pagination.hasPrevPage}
                                 className="border-transparent bg-transparent px-3 py-1 shadow-none hover:bg-gray-50"
                               >
-                                Previous
+                                {t('admin.previous')}
                               </Button>
 
                               <div className="flex flex-wrap items-center gap-1">
@@ -670,7 +681,7 @@ function AdminPageContent() {
                                 disabled={!pagination.hasNextPage}
                                 className="border-transparent bg-transparent px-3 py-1 shadow-none hover:bg-gray-50"
                               >
-                                Next
+                                {t('admin.next')}
                               </Button>
                             </div>
                           </div>
@@ -685,108 +696,118 @@ function AdminPageContent() {
             {activeTab === 'categories' && (
               <div className="mt-6">
                 <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="text-lg font-semibold sm:text-xl">Categories Management</h2>
+                  <h2 className="text-lg font-semibold sm:text-xl">
+                    {t('admin.categoriesManagement')}
+                  </h2>
                   <Button className="w-full sm:w-auto" onClick={() => setShowCategoryForm(true)}>
                     <Plus className="mr-1 h-4 w-4" />
-                    New Category
+                    {t('admin.newCategory')}
                   </Button>
                 </div>
 
-                {showCategoryForm && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                    <div className="w-full max-w-lg rounded-lg bg-white p-6">
-                      <div className="mb-4">
-                        <h2 className="text-lg font-semibold">
-                          {editingCategory ? 'Edit Category' : 'Create New Category'}
-                        </h2>
+                <Dialog
+                  open={showCategoryForm}
+                  onOpenChange={(open) => {
+                    setShowCategoryForm(open);
+                    if (!open) resetForm();
+                  }}
+                >
+                  <DialogContent className="p-6">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingCategory
+                          ? t('common.update') + ' ' + t('admin.categories')
+                          : t('admin.category.new')}
+                      </DialogTitle>
+                    </DialogHeader>
+
+                    <form
+                      id="category-form"
+                      onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory}
+                      className="space-y-4"
+                    >
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('admin.category.name')}</label>
+                        <Input
+                          placeholder={t('admin.category.namePlaceholder')}
+                          value={categoryForm.name}
+                          onChange={(e) =>
+                            setCategoryForm({ ...categoryForm, name: e.target.value })
+                          }
+                          required
+                        />
                       </div>
-                      <div>
-                        <form
-                          id="category-form"
-                          onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory}
-                          className="space-y-4"
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          {t('admin.category.description')}
+                        </label>
+                        <Input
+                          placeholder={t('admin.category.descriptionPlaceholder')}
+                          value={categoryForm.description}
+                          onChange={(e) =>
+                            setCategoryForm({ ...categoryForm, description: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('admin.category.color')}</label>
+                        <Input
+                          type="color"
+                          value={categoryForm.color}
+                          onChange={(e) =>
+                            setCategoryForm({ ...categoryForm, color: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('admin.parentCategory')}</label>
+                        <Select
+                          value={categoryForm.parentId || 'none'}
+                          onValueChange={(value) =>
+                            setCategoryForm({
+                              ...categoryForm,
+                              parentId: value === 'none' ? '' : value,
+                            })
+                          }
                         >
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">Name</label>
-                            <Input
-                              placeholder="Enter category name"
-                              value={categoryForm.name}
-                              onChange={(e) =>
-                                setCategoryForm({ ...categoryForm, name: e.target.value })
-                              }
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">Description</label>
-                            <Input
-                              placeholder="Enter category description"
-                              value={categoryForm.description}
-                              onChange={(e) =>
-                                setCategoryForm({ ...categoryForm, description: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">Color</label>
-                            <Input
-                              type="color"
-                              value={categoryForm.color}
-                              onChange={(e) =>
-                                setCategoryForm({ ...categoryForm, color: e.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">Parent Category</label>
-                            <Select
-                              value={categoryForm.parentId || 'none'}
-                              onValueChange={(value) =>
-                                setCategoryForm({
-                                  ...categoryForm,
-                                  parentId: value === 'none' ? '' : value,
-                                })
-                              }
-                            >
-                              <SelectTrigger className="focus:ring-brand/20 bg-white transition-colors focus:ring-2">
-                                <SelectValue placeholder="Select a parent category (optional)" />
-                              </SelectTrigger>
-                              <SelectContent className="z-50">
-                                <SelectItem value="none">No parent (Root category)</SelectItem>
-                                {categories.map((category) => (
-                                  <SelectItem key={category.id} value={category.id}>
-                                    {category.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {/* Error Message */}
-                          {categoryError && <p className="text-sm text-red-600">{categoryError}</p>}
-                        </form>
+                          <SelectTrigger className="focus:ring-brand/20 bg-white transition-colors focus:ring-2">
+                            <SelectValue placeholder={'Select a parent category (optional)'} />
+                          </SelectTrigger>
+                          <SelectContent className="z-[80]">
+                            <SelectItem value="none">{t('admin.category.noParentRoot')}</SelectItem>
+                            {categories.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
-                      <div className="mt-6 flex justify-end gap-2">
-                        <Button variant="outline" onClick={resetForm}>
-                          Cancel
-                        </Button>
-                        <Button type="submit" form="category-form" disabled={isSubmitting}>
-                          {isSubmitting ? (
-                            <>
-                              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                              {editingCategory ? 'Updating...' : 'Creating...'}
-                            </>
-                          ) : editingCategory ? (
-                            'Update'
-                          ) : (
-                            'Create'
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                      {categoryError && <p className="text-sm text-red-600">{categoryError}</p>}
+                    </form>
+
+                    <DialogFooter>
+                      <Button variant="outline" onClick={resetForm}>
+                        {t('common.cancel')}
+                      </Button>
+                      <Button type="submit" form="category-form" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                          <>
+                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            {editingCategory
+                              ? t('common.update') + '...'
+                              : t('common.create') + '...'}
+                          </>
+                        ) : editingCategory ? (
+                          t('common.update')
+                        ) : (
+                          t('common.create')
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
                 <div className="grid gap-4 sm:gap-6">
                   {categories.length === 0 ? (
@@ -845,7 +866,7 @@ function AdminPageContent() {
                                           <h3 className="line-clamp-2 text-lg font-bold text-gray-900 sm:text-xl">
                                             {category.name}
                                           </h3>
-                                          <Badge>Root Category</Badge>
+                                          <Badge>{t('admin.rootCategory')}</Badge>
                                         </div>
                                         {category.description && (
                                           <p className="mb-3 text-sm text-gray-600">
@@ -854,7 +875,7 @@ function AdminPageContent() {
                                         )}
                                         <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500 sm:text-sm">
                                           <span className="font-medium">
-                                            Created by {category.createdBy.name}
+                                            {t('admin.createdBy')} {category.createdBy.name}
                                           </span>
                                           <span className="mx-2 hidden sm:inline">•</span>
                                           <span>
@@ -871,7 +892,8 @@ function AdminPageContent() {
                                             <>
                                               <span className="mx-2 hidden sm:inline">•</span>
                                               <span className="text-brand font-medium">
-                                                {category.children.length} Sub Categories
+                                                {t('admin.subCategories')} (
+                                                {category.children.length})
                                               </span>
                                             </>
                                           )}
@@ -885,7 +907,7 @@ function AdminPageContent() {
                                         onClick={() => handleEditCategory(category)}
                                       >
                                         <Edit className="mr-1 h-4 w-4" />
-                                        Edit
+                                        {t('admin.edit')}
                                       </Button>
                                       <Button
                                         variant="outline"
@@ -894,7 +916,7 @@ function AdminPageContent() {
                                         className="border-red-600 text-red-600 hover:bg-red-50"
                                       >
                                         <Trash2 className="mr-1 h-4 w-4" />
-                                        Delete
+                                        {t('admin.delete')}
                                       </Button>
                                     </div>
                                   </div>
@@ -906,7 +928,7 @@ function AdminPageContent() {
                                     <div className="rounded-lg bg-gray-50/50 p-6">
                                       <h4 className="mb-4 flex items-center text-sm font-semibold text-gray-700">
                                         <div className="mr-2 h-2 w-2 rounded-full bg-gray-400"></div>
-                                        Sub Categories ({category.children.length})
+                                        {t('admin.subCategories')} ({category.children.length})
                                       </h4>
                                       <div className="grid gap-3">
                                         {category.children.map((child: Category) => (
@@ -931,7 +953,10 @@ function AdminPageContent() {
                                                       </p>
                                                     )}
                                                     <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
-                                                      <span>Created by {child.createdBy.name}</span>
+                                                      <span>
+                                                        {t('admin.createdBy')}{' '}
+                                                        {child.createdBy.name}
+                                                      </span>
                                                       <span className="mx-2 hidden sm:inline">
                                                         •
                                                       </span>
@@ -954,7 +979,7 @@ function AdminPageContent() {
                                                     onClick={() => handleEditCategory(child)}
                                                   >
                                                     <Edit className="mr-1 h-3 w-3" />
-                                                    Edit
+                                                    {t('admin.edit')}
                                                   </Button>
                                                   <Button
                                                     variant="outline"
@@ -963,7 +988,7 @@ function AdminPageContent() {
                                                     className="border-red-600 text-red-600 hover:bg-red-50"
                                                   >
                                                     <Trash2 className="mr-1 h-3 w-3" />
-                                                    Delete
+                                                    {t('admin.delete')}
                                                   </Button>
                                                 </div>
                                               </div>
@@ -985,77 +1010,81 @@ function AdminPageContent() {
               </div>
             )}
 
-            {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                <div className="w-full max-w-md rounded-lg bg-white p-6">
-                  <h2 className="mb-4 text-lg font-semibold">Delete Category</h2>
-                  <p className="mb-6 text-gray-600">
-                    Are you sure you want to delete &quot;{showDeleteConfirm?.name}&quot;? This
-                    action cannot be undone.
-                  </p>
+            <Dialog
+              open={!!showDeleteConfirm}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setShowDeleteConfirm(null);
+                  setDeleteError(null);
+                }
+              }}
+            >
+              <DialogContent className="p-6">
+                <DialogHeader>
+                  <DialogTitle>Delete Category</DialogTitle>
+                </DialogHeader>
+                <p className="mb-2 text-gray-600">
+                  Are you sure you want to delete &quot;{showDeleteConfirm?.name}&quot;? This action
+                  cannot be undone.
+                </p>
 
-                  {/* Error Message */}
-                  {deleteError && (
-                    <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <XCircle className="h-5 w-5 text-red-400" />
-                        </div>
-                        <div className="ml-3">
-                          <h3 className="text-sm font-medium text-red-800">
-                            Cannot Delete Category
-                          </h3>
-                          <div className="mt-2 text-sm text-red-700">
-                            <p>{deleteError}</p>
-                            {deleteError.includes('articles') && (
-                              <div className="mt-2">
-                                <p className="font-medium">To delete this category:</p>
-                                <ul className="mt-1 list-inside list-disc space-y-1">
-                                  <li>Move all articles to another category, or</li>
-                                  <li>Delete all articles in this category first</li>
-                                </ul>
-                              </div>
-                            )}
-                          </div>
+                {deleteError && (
+                  <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <XCircle className="h-5 w-5 text-red-400" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-red-800">Cannot Delete Category</h3>
+                        <div className="mt-2 text-sm text-red-700">
+                          <p>{deleteError}</p>
+                          {deleteError.includes('articles') && (
+                            <div className="mt-2">
+                              <p className="font-medium">To delete this category:</p>
+                              <ul className="mt-1 list-inside list-disc space-y-1">
+                                <li>Move all articles to another category, or</li>
+                                <li>Delete all articles in this category first</li>
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
-                  )}
-
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowDeleteConfirm(null);
-                        setDeleteError(null);
-                      }}
-                      disabled={isDeleting}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => showDeleteConfirm && handleDeleteCategory(showDeleteConfirm)}
-                      className="border-red-600 text-red-600 hover:bg-red-50"
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? (
-                        <>
-                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
-                          Deleting...
-                        </>
-                      ) : (
-                        <>
-                          <Trash2 className="mr-1 h-4 w-4" />
-                          Delete
-                        </>
-                      )}
-                    </Button>
                   </div>
-                </div>
-              </div>
-            )}
+                )}
+
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowDeleteConfirm(null);
+                      setDeleteError(null);
+                    }}
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => showDeleteConfirm && handleDeleteCategory(showDeleteConfirm)}
+                    className="border-red-600 text-red-600 hover:bg-red-50"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="mr-1 h-4 w-4" />
+                        Delete
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </MotionContainer>
       </div>

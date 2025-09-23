@@ -24,6 +24,7 @@ import { useClientOnly } from '@/hooks/use-client-only';
 import { Comment, CommentListResponse, SuccessResponse } from '@/types/shared';
 import { apiDelete, apiGet, apiPost } from '@/lib/utils/api-client';
 import { ReactionRequest } from '@/types/shared/article';
+import { useI18n } from '@/components/providers';
 
 interface CommentItemProps {
   comment: Comment;
@@ -44,6 +45,7 @@ export function CommentItem({
   depth = 0,
   onRequestParentReply,
 }: CommentItemProps) {
+  const { t } = useI18n();
   const { user, isAuthenticated } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   // Removed inline reply state; reply is handled via the persistent bottom textbox
@@ -433,7 +435,7 @@ export function CommentItem({
                   className="h-6 rounded-md px-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
                   <Reply className="mr-1 h-3 w-3" />
-                  <span className="text-xs">Reply</span>
+                  <span className="text-xs">{t('comments.reply')}</span>
                 </Button>
               )}
               {depth >= maxDepth && onRequestParentReply && (
@@ -451,12 +453,13 @@ export function CommentItem({
                   className="h-6 rounded-md px-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
                   <Reply className="mr-1 h-3 w-3" />
-                  <span className="text-xs">Reply</span>
+                  <span className="text-xs">{t('comments.reply')}</span>
                 </Button>
               )}
               {comment.replies && comment.replies.length > 0 && (
                 <span className="text-sm text-gray-500">
-                  {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+                  {comment.replies.length}{' '}
+                  {comment.replies.length === 1 ? t('comments.reply') : t('comments.showReplies')}
                 </span>
               )}
             </div>
@@ -478,7 +481,7 @@ export function CommentItem({
                 className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
               >
                 {loadingReplies ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                {`Show replies (${comment.replyCount})`}
+                {t('comments.showReplies')} ({comment.replyCount})
               </Button>
             </div>
           )}
@@ -545,7 +548,7 @@ export function CommentItem({
                     className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                   >
                     {loadingReplies ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                    {loadingReplies ? 'Thinking...' : 'Load more replies'}
+                    {loadingReplies ? t('chat.loading') : t('comments.loadMoreReplies')}
                   </Button>
                 </div>
               )}
@@ -573,7 +576,7 @@ export function CommentItem({
                     placeholder={
                       childReplyingTo
                         ? `Reply to ${childReplyingTo.author.name}...`
-                        : 'Write a reply...'
+                        : t('comments.writeReply')
                     }
                     initialContent={childReplyPrefill}
                     autoFocus={shouldFocusReply}
