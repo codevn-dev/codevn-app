@@ -354,7 +354,7 @@ function AdminPageContent() {
               </div>
             </div>
 
-          {/* Tab Content */}
+            {/* Tab Content */}
             {activeTab === 'users' && (
               <div className="mt-6">
                 <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -450,7 +450,7 @@ function AdminPageContent() {
                   </div>
                 </div>
 
-              {users.length === 0 ? (
+                {users.length === 0 ? (
                   <div className="py-12 text-center">
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
                       <Users className="h-8 w-8 text-gray-400" />
@@ -458,239 +458,253 @@ function AdminPageContent() {
                     <h3 className="mb-2 text-lg font-medium text-gray-900">No users found</h3>
                     <p className="text-gray-500">Users will appear here once they register</p>
                   </div>
-              ) : (
-                (() => {
-                  const containerVariants = {
-                    hidden: { opacity: 1 },
-                    visible: { opacity: 1, transition: { staggerChildren: 0.04, delayChildren: 0.02 } },
-                  } as const;
+                ) : (
+                  (() => {
+                    const containerVariants = {
+                      hidden: { opacity: 1 },
+                      visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.04, delayChildren: 0.02 },
+                      },
+                    } as const;
 
-                  const rowVariants = {
-                    hidden: { opacity: 0, y: 12 },
-                    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 } },
-                  } as const;
+                    const rowVariants = {
+                      hidden: { opacity: 0, y: 12 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 },
+                      },
+                    } as const;
 
-                  return (
-                    <div className="overflow-hidden rounded-lg bg-white/90 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead className="bg-gray-50/50">
-                            <tr>
-                            <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
-                              User
-                            </th>
-                            <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
-                              Role
-                            </th>
-                            <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
-                              Joined
-                            </th>
-                            </tr>
-                          </thead>
-                          <motion.tbody
-                            className="bg-white/90 backdrop-blur-sm"
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                          >
-                            {currentUsers.map((user, _index) => (
-                              <motion.tr key={user.id} variants={rowVariants} className="transition-colors hover:bg-gray-50/50">
-                              <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
-                                <div className="flex items-center">
-                                  <div className="h-10 w-10 flex-shrink-0 sm:h-12 sm:w-12">
-                                    <AvatarWithDropdown
-                                      user={{
-                                        id: user.id,
-                                        name: user.name,
-                                        email: user.email,
-                                        avatar: user.avatar || undefined,
-                                        role: user.role,
-                                        createdAt: user.createdAt,
-                                      }}
-                                      size="lg"
-                                      className="shadow-sm ring-2 ring-white"
-                                    />
-                                  </div>
-                                  <div className="ml-3 sm:ml-4">
-                                    <div className="line-clamp-1 max-w-[160px] text-sm font-semibold text-gray-900 sm:max-w-none">
-                                      <button
-                                        onClick={() => router.push(`/users/${user.id}`)}
-                                        className="transition-colors hover:text-[#B8956A] hover:underline"
-                                      >
-                                        {user.name}
-                                      </button>
-                                    </div>
-                                    <div className="line-clamp-1 max-w-[200px] text-xs text-gray-500 sm:max-w-none sm:text-sm">
-                                      {user.email}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
-                                <Select
-                                  value={user.role}
-                                  onValueChange={(newRole) => {
-                                    handleRoleChange(user.id, newRole);
-                                  }}
-                                  disabled={
-                                    user.id === currentUserId ||
-                                    (isAdmin(user.role) && user.id !== currentUserId)
-                                  }
+                    return (
+                      <div className="overflow-hidden rounded-lg bg-white/90 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead className="bg-gray-50/50">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
+                                  User
+                                </th>
+                                <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
+                                  Role
+                                </th>
+                                <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
+                                  Joined
+                                </th>
+                              </tr>
+                            </thead>
+                            <motion.tbody
+                              className="bg-white/90 backdrop-blur-sm"
+                              variants={containerVariants}
+                              initial="hidden"
+                              animate="visible"
+                            >
+                              {currentUsers.map((user, _index) => (
+                                <motion.tr
+                                  key={user.id}
+                                  variants={rowVariants}
+                                  className="transition-colors hover:bg-gray-50/50"
                                 >
-                                  <SelectTrigger
-                                    className={`h-9 w-36 transition-colors focus:ring-2 focus:ring-[#B8956A]/20 sm:h-10 sm:w-40 ${
-                                      user.id === currentUserId ||
-                                      (isAdmin(user.role) && user.id !== currentUserId)
-                                        ? 'cursor-not-allowed bg-gray-100 opacity-60'
-                                        : 'bg-white hover:border-gray-400'
-                                    }`}
-                                  >
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent className="z-50 min-w-[160px]">
-                                    <SelectItem value="user">
-                                      <div className="flex items-center space-x-2">
-                                        <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                                        <span>User</span>
+                                  <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
+                                    <div className="flex items-center">
+                                      <div className="h-10 w-10 flex-shrink-0 sm:h-12 sm:w-12">
+                                        <AvatarWithDropdown
+                                          user={{
+                                            id: user.id,
+                                            name: user.name,
+                                            email: user.email,
+                                            avatar: user.avatar || undefined,
+                                            role: user.role,
+                                            createdAt: user.createdAt,
+                                          }}
+                                          size="lg"
+                                          className="shadow-sm ring-2 ring-white"
+                                        />
                                       </div>
-                                    </SelectItem>
-                                    <SelectItem value="admin">
-                                      <div className="flex items-center space-x-2">
-                                        <div className="h-2 w-2 rounded-full bg-[#B8956A]"></div>
-                                        <span>Admin</span>
+                                      <div className="ml-3 sm:ml-4">
+                                        <div className="line-clamp-1 max-w-[160px] text-sm font-semibold text-gray-900 sm:max-w-none">
+                                          <button
+                                            onClick={() => router.push(`/users/${user.id}`)}
+                                            className="transition-colors hover:text-[#B8956A] hover:underline"
+                                          >
+                                            {user.name}
+                                          </button>
+                                        </div>
+                                        <div className="line-clamp-1 max-w-[200px] text-xs text-gray-500 sm:max-w-none sm:text-sm">
+                                          {user.email}
+                                        </div>
                                       </div>
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </td>
-                              <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
-                                <span className="text-xs font-medium text-gray-600 sm:text-sm">
-                                  {new Date(user.createdAt).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                  })}
-                                </span>
-                                </td>
-                              </motion.tr>
-                            ))}
-                          </motion.tbody>
-                        </table>
-                      </div>
-
-                      {/* Pagination */}
-                    {totalPages > 1 && (
-                      <div className="flex flex-col items-start justify-between gap-3 bg-white px-4 py-4 sm:flex-row sm:items-center sm:px-6">
-                        <div className="flex items-center text-sm text-gray-700">
-                          <span>
-                            Page {pagination.currentPage} of {pagination.totalPages} |{' '}
-                            {pagination.itemsPerPage} users per page
-                          </span>
-                        </div>
-                        <div className="flex w-full items-center space-x-2 overflow-x-auto sm:w-auto">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePageChange(pagination.currentPage - 1)}
-                            disabled={!pagination.hasPrevPage}
-                            className="px-3 py-1"
-                          >
-                            Previous
-                          </Button>
-
-                          <div className="flex items-center space-x-1">
-                            {(() => {
-                              const pages = [];
-                              const currentPage = pagination.currentPage;
-                              const totalPages = pagination.totalPages;
-                              const maxVisiblePages = 5;
-
-                              if (totalPages <= maxVisiblePages + 1) {
-                                // Show all pages if total is less than or equal to 6
-                                for (let i = 1; i <= totalPages; i++) {
-                                  pages.push(i);
-                                }
-                              } else {
-                                // Calculate start and end pages around current page
-                                let startPage = Math.max(1, currentPage - 2);
-                                const endPage = Math.min(
-                                  totalPages,
-                                  startPage + maxVisiblePages - 1
-                                );
-
-                                // Adjust start page if we're near the end
-                                if (endPage - startPage < maxVisiblePages - 1) {
-                                  startPage = Math.max(1, endPage - maxVisiblePages + 1);
-                                }
-
-                                // Add first page if not included
-                                if (startPage > 1) {
-                                  pages.push(1);
-                                  if (startPage > 2) {
-                                    pages.push('...');
-                                  }
-                                }
-
-                                // Add pages around current page
-                                for (let i = startPage; i <= endPage; i++) {
-                                  pages.push(i);
-                                }
-
-                                // Add last page if not included
-                                if (endPage < totalPages) {
-                                  if (endPage < totalPages - 1) {
-                                    pages.push('...');
-                                  }
-                                  pages.push(totalPages);
-                                }
-                              }
-
-                              return pages.map((page, index) => {
-                                if (page === '...') {
-                                  return (
-                                    <span key={`ellipsis-${index}`} className="px-2 text-gray-500">
-                                      ...
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
+                                    <Select
+                                      value={user.role}
+                                      onValueChange={(newRole) => {
+                                        handleRoleChange(user.id, newRole);
+                                      }}
+                                      disabled={
+                                        user.id === currentUserId ||
+                                        (isAdmin(user.role) && user.id !== currentUserId)
+                                      }
+                                    >
+                                      <SelectTrigger
+                                        className={`h-9 w-36 transition-colors focus:ring-2 focus:ring-[#B8956A]/20 sm:h-10 sm:w-40 ${
+                                          user.id === currentUserId ||
+                                          (isAdmin(user.role) && user.id !== currentUserId)
+                                            ? 'cursor-not-allowed bg-gray-100 opacity-60'
+                                            : 'bg-white hover:border-gray-400'
+                                        }`}
+                                      >
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent className="z-50 min-w-[160px]">
+                                        <SelectItem value="user">
+                                          <div className="flex items-center space-x-2">
+                                            <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                                            <span>User</span>
+                                          </div>
+                                        </SelectItem>
+                                        <SelectItem value="admin">
+                                          <div className="flex items-center space-x-2">
+                                            <div className="h-2 w-2 rounded-full bg-[#B8956A]"></div>
+                                            <span>Admin</span>
+                                          </div>
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
+                                    <span className="text-xs font-medium text-gray-600 sm:text-sm">
+                                      {new Date(user.createdAt).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                      })}
                                     </span>
-                                  );
-                                }
-
-                                return (
-                                  <Button
-                                    key={page}
-                                    variant={
-                                      pagination.currentPage === page ? 'default' : 'outline'
-                                    }
-                                    size="sm"
-                                    onClick={() => handlePageChange(page as number)}
-                                    className={`min-w-[40px] px-3 py-1 ${
-                                      pagination.currentPage === page
-                                        ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]'
-                                        : 'hover:bg-gray-50'
-                                    }`}
-                                  >
-                                    {page}
-                                  </Button>
-                                );
-                              });
-                            })()}
-                          </div>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePageChange(pagination.currentPage + 1)}
-                            disabled={!pagination.hasNextPage}
-                            className="px-3 py-1"
-                          >
-                            Next
-                          </Button>
+                                  </td>
+                                </motion.tr>
+                              ))}
+                            </motion.tbody>
+                          </table>
                         </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                          <div className="flex flex-col items-start justify-between gap-3 bg-white px-4 py-4 sm:flex-row sm:items-center sm:px-6">
+                            <div className="flex items-center text-sm text-gray-700">
+                              <span>
+                                Page {pagination.currentPage} of {pagination.totalPages} |{' '}
+                                {pagination.itemsPerPage} users per page
+                              </span>
+                            </div>
+                            <div className="flex w-full items-center space-x-2 overflow-x-auto sm:w-auto">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                disabled={!pagination.hasPrevPage}
+                                className="px-3 py-1"
+                              >
+                                Previous
+                              </Button>
+
+                              <div className="flex items-center space-x-1">
+                                {(() => {
+                                  const pages = [];
+                                  const currentPage = pagination.currentPage;
+                                  const totalPages = pagination.totalPages;
+                                  const maxVisiblePages = 5;
+
+                                  if (totalPages <= maxVisiblePages + 1) {
+                                    // Show all pages if total is less than or equal to 6
+                                    for (let i = 1; i <= totalPages; i++) {
+                                      pages.push(i);
+                                    }
+                                  } else {
+                                    // Calculate start and end pages around current page
+                                    let startPage = Math.max(1, currentPage - 2);
+                                    const endPage = Math.min(
+                                      totalPages,
+                                      startPage + maxVisiblePages - 1
+                                    );
+
+                                    // Adjust start page if we're near the end
+                                    if (endPage - startPage < maxVisiblePages - 1) {
+                                      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                                    }
+
+                                    // Add first page if not included
+                                    if (startPage > 1) {
+                                      pages.push(1);
+                                      if (startPage > 2) {
+                                        pages.push('...');
+                                      }
+                                    }
+
+                                    // Add pages around current page
+                                    for (let i = startPage; i <= endPage; i++) {
+                                      pages.push(i);
+                                    }
+
+                                    // Add last page if not included
+                                    if (endPage < totalPages) {
+                                      if (endPage < totalPages - 1) {
+                                        pages.push('...');
+                                      }
+                                      pages.push(totalPages);
+                                    }
+                                  }
+
+                                  return pages.map((page, index) => {
+                                    if (page === '...') {
+                                      return (
+                                        <span
+                                          key={`ellipsis-${index}`}
+                                          className="px-2 text-gray-500"
+                                        >
+                                          ...
+                                        </span>
+                                      );
+                                    }
+
+                                    return (
+                                      <Button
+                                        key={page}
+                                        variant={
+                                          pagination.currentPage === page ? 'default' : 'outline'
+                                        }
+                                        size="sm"
+                                        onClick={() => handlePageChange(page as number)}
+                                        className={`min-w-[40px] px-3 py-1 ${
+                                          pagination.currentPage === page
+                                            ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]'
+                                            : 'hover:bg-gray-50'
+                                        }`}
+                                      >
+                                        {page}
+                                      </Button>
+                                    );
+                                  });
+                                })()}
+                              </div>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                disabled={!pagination.hasNextPage}
+                                className="px-3 py-1"
+                              >
+                                Next
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      )}
-                    </div>
-                  );
-                })()
-              )}
+                    );
+                  })()
+                )}
               </div>
             )}
 
@@ -800,8 +814,8 @@ function AdminPageContent() {
                   </div>
                 )}
 
-              <div className="grid gap-4 sm:gap-6">
-                {categories.length === 0 ? (
+                <div className="grid gap-4 sm:gap-6">
+                  {categories.length === 0 ? (
                     <div className="py-12 text-center">
                       <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
                         <Tag className="h-8 w-8 text-gray-400" />
@@ -815,169 +829,184 @@ function AdminPageContent() {
                         New Category
                       </Button>
                     </div>
-                ) : (
-                  (() => {
-                    const containerVariants = {
-                      hidden: { opacity: 1 },
-                      visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.02 } },
-                    } as const;
+                  ) : (
+                    (() => {
+                      const containerVariants = {
+                        hidden: { opacity: 1 },
+                        visible: {
+                          opacity: 1,
+                          transition: { staggerChildren: 0.05, delayChildren: 0.02 },
+                        },
+                      } as const;
 
-                    const itemVariants = {
-                      hidden: { opacity: 0, y: 14, scale: 0.99 },
-                      visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 } },
-                    } as const;
+                      const itemVariants = {
+                        hidden: { opacity: 0, y: 14, scale: 0.99 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          scale: 1,
+                          transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 },
+                        },
+                      } as const;
 
-                    return (
-                      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid gap-4 sm:gap-6">
-                        {categories.map((category) => (
-                          <motion.div key={category.id} variants={itemVariants}>
-                            <Card
-                              className="shadow-xl shadow-gray-300/60 transition-all duration-300 hover:shadow-2xl hover:shadow-gray-400/70"
-                            >
-                        <CardHeader className="pb-4">
-                          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                            <div className="flex flex-1 items-center">
-                              <div
-                                className="mr-3 h-5 w-5 rounded-full shadow-sm sm:mr-4"
-                                style={{ backgroundColor: category.color }}
-                              ></div>
-                              <div className="flex-1">
-                                <div className="mb-2 flex items-center gap-2 sm:gap-3">
-                                  <h3 className="line-clamp-2 text-lg font-bold text-gray-900 sm:text-xl">
-                                    {category.name}
-                                  </h3>
-                                  <Badge>Root Category</Badge>
-                                </div>
-                                {category.description && (
-                                  <p className="mb-3 text-sm text-gray-600">
-                                    {category.description}
-                                  </p>
-                                )}
-                                <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500 sm:text-sm">
-                                  <span className="font-medium">
-                                    Created by {category.createdBy.name}
-                                  </span>
-                                  <span className="mx-2 hidden sm:inline">•</span>
-                                  <span>
-                                    {new Date(category.createdAt).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'short',
-                                      day: 'numeric',
-                                    })}
-                                  </span>
-                                  {category.children && category.children.length > 0 && (
-                                    <>
-                                      <span className="mx-2 hidden sm:inline">•</span>
-                                      <span className="font-medium text-[#B8956A]">
-                                        {category.children.length} Sub Categories
-                                      </span>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="ml-0 flex space-x-2 sm:ml-4">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEditCategory(category)}
-                              >
-                                <Edit className="mr-1 h-4 w-4" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setShowDeleteConfirm(category)}
-                                className="border-red-600 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="mr-1 h-4 w-4" />
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
-                        </CardHeader>
-
-                      {/* Children Categories */}
-                      {category.children && category.children.length > 0 && (
-                        <CardBody className="pt-0">
-                          <div className="rounded-lg bg-gray-50/50 p-6">
-                              <h4 className="mb-4 flex items-center text-sm font-semibold text-gray-700">
-                                <div className="mr-2 h-2 w-2 rounded-full bg-gray-400"></div>
-                                Sub Categories ({category.children.length})
-                              </h4>
-                            <div className="grid gap-3">
-                              {category.children.map((child: Category) => (
-                                <Card
-                                  key={child.id}
-                                  className="bg-white/90 shadow-lg shadow-gray-300/60 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-gray-400/70"
-                                >
-                                    <CardBody className="p-4">
-                                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div className="flex items-center">
-                                          <div
-                                            className="mr-3 h-4 w-4 rounded-full shadow-sm"
-                                            style={{ backgroundColor: child.color }}
-                                          ></div>
-                                          <div>
-                                            <h5 className="line-clamp-2 font-semibold text-gray-900">
-                                              {child.name}
-                                            </h5>
-                                            {child.description && (
-                                              <p className="mt-1 text-sm text-gray-600">
-                                                {child.description}
-                                              </p>
-                                            )}
-                                            <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
-                                              <span>Created by {child.createdBy.name}</span>
-                                              <span className="mx-2 hidden sm:inline">•</span>
-                                              <span>
-                                                {new Date(child.createdAt).toLocaleDateString(
-                                                  'en-US',
-                                                  {
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                  }
-                                                )}
-                                              </span>
-                                            </div>
-                                          </div>
+                      return (
+                        <motion.div
+                          variants={containerVariants}
+                          initial="hidden"
+                          animate="visible"
+                          className="grid gap-4 sm:gap-6"
+                        >
+                          {categories.map((category) => (
+                            <motion.div key={category.id} variants={itemVariants}>
+                              <Card className="shadow-xl shadow-gray-300/60 transition-all duration-300 hover:shadow-2xl hover:shadow-gray-400/70">
+                                <CardHeader className="pb-4">
+                                  <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                                    <div className="flex flex-1 items-center">
+                                      <div
+                                        className="mr-3 h-5 w-5 rounded-full shadow-sm sm:mr-4"
+                                        style={{ backgroundColor: category.color }}
+                                      ></div>
+                                      <div className="flex-1">
+                                        <div className="mb-2 flex items-center gap-2 sm:gap-3">
+                                          <h3 className="line-clamp-2 text-lg font-bold text-gray-900 sm:text-xl">
+                                            {category.name}
+                                          </h3>
+                                          <Badge>Root Category</Badge>
                                         </div>
-                                        <div className="flex space-x-2">
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleEditCategory(child)}
-                                          >
-                                            <Edit className="mr-1 h-3 w-3" />
-                                            Edit
-                                          </Button>
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setShowDeleteConfirm(child)}
-                                            className="border-red-600 text-red-600 hover:bg-red-50"
-                                          >
-                                            <Trash2 className="mr-1 h-3 w-3" />
-                                            Delete
-                                          </Button>
+                                        {category.description && (
+                                          <p className="mb-3 text-sm text-gray-600">
+                                            {category.description}
+                                          </p>
+                                        )}
+                                        <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500 sm:text-sm">
+                                          <span className="font-medium">
+                                            Created by {category.createdBy.name}
+                                          </span>
+                                          <span className="mx-2 hidden sm:inline">•</span>
+                                          <span>
+                                            {new Date(category.createdAt).toLocaleDateString(
+                                              'en-US',
+                                              {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric',
+                                              }
+                                            )}
+                                          </span>
+                                          {category.children && category.children.length > 0 && (
+                                            <>
+                                              <span className="mx-2 hidden sm:inline">•</span>
+                                              <span className="font-medium text-[#B8956A]">
+                                                {category.children.length} Sub Categories
+                                              </span>
+                                            </>
+                                          )}
                                         </div>
                                       </div>
-                                    </CardBody>
-                                </Card>
-                              ))}
-                              </div>
-                          </div>
-                        </CardBody>
-                      )}
-                            </Card>
-                          </motion.div>
-                        ))}
-                      </motion.div>
-                    );
-                  })()
-                )}
+                                    </div>
+                                    <div className="ml-0 flex space-x-2 sm:ml-4">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleEditCategory(category)}
+                                      >
+                                        <Edit className="mr-1 h-4 w-4" />
+                                        Edit
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setShowDeleteConfirm(category)}
+                                        className="border-red-600 text-red-600 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="mr-1 h-4 w-4" />
+                                        Delete
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </CardHeader>
+
+                                {/* Children Categories */}
+                                {category.children && category.children.length > 0 && (
+                                  <CardBody className="pt-0">
+                                    <div className="rounded-lg bg-gray-50/50 p-6">
+                                      <h4 className="mb-4 flex items-center text-sm font-semibold text-gray-700">
+                                        <div className="mr-2 h-2 w-2 rounded-full bg-gray-400"></div>
+                                        Sub Categories ({category.children.length})
+                                      </h4>
+                                      <div className="grid gap-3">
+                                        {category.children.map((child: Category) => (
+                                          <Card
+                                            key={child.id}
+                                            className="bg-white/90 shadow-lg shadow-gray-300/60 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-gray-400/70"
+                                          >
+                                            <CardBody className="p-4">
+                                              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                                <div className="flex items-center">
+                                                  <div
+                                                    className="mr-3 h-4 w-4 rounded-full shadow-sm"
+                                                    style={{ backgroundColor: child.color }}
+                                                  ></div>
+                                                  <div>
+                                                    <h5 className="line-clamp-2 font-semibold text-gray-900">
+                                                      {child.name}
+                                                    </h5>
+                                                    {child.description && (
+                                                      <p className="mt-1 text-sm text-gray-600">
+                                                        {child.description}
+                                                      </p>
+                                                    )}
+                                                    <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
+                                                      <span>Created by {child.createdBy.name}</span>
+                                                      <span className="mx-2 hidden sm:inline">
+                                                        •
+                                                      </span>
+                                                      <span>
+                                                        {new Date(
+                                                          child.createdAt
+                                                        ).toLocaleDateString('en-US', {
+                                                          year: 'numeric',
+                                                          month: 'short',
+                                                          day: 'numeric',
+                                                        })}
+                                                      </span>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                <div className="flex space-x-2">
+                                                  <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleEditCategory(child)}
+                                                  >
+                                                    <Edit className="mr-1 h-3 w-3" />
+                                                    Edit
+                                                  </Button>
+                                                  <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setShowDeleteConfirm(child)}
+                                                    className="border-red-600 text-red-600 hover:bg-red-50"
+                                                  >
+                                                    <Trash2 className="mr-1 h-3 w-3" />
+                                                    Delete
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            </CardBody>
+                                          </Card>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </CardBody>
+                                )}
+                              </Card>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      );
+                    })()
+                  )}
                 </div>
               </div>
             )}

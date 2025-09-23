@@ -58,7 +58,7 @@ export function HomepageContent() {
   const getCategoryById = (id: string) => findCategoryById(categories, id);
   const getCategoryByName = (name: string) => {
     const target = name.toLowerCase();
-    const dfs = (list: typeof categories): typeof categories[number] | undefined => {
+    const dfs = (list: typeof categories): (typeof categories)[number] | undefined => {
       for (const c of list) {
         if (c.name.toLowerCase() === target) return c;
         if (Array.isArray(c.children) && c.children.length > 0) {
@@ -128,10 +128,7 @@ export function HomepageContent() {
         sortOrder: 'desc',
       });
       if (selectedCategoryNames.length > 0)
-        params.set(
-          'categories',
-          selectedCategoryNames.map((name) => name.toLowerCase()).join(',')
-        );
+        params.set('categories', selectedCategoryNames.map((name) => name.toLowerCase()).join(','));
       if (onlyMine && isAuthenticated && authUserId) params.set('authorId', authUserId);
       const fetchKey = params.toString();
 
@@ -216,10 +213,7 @@ export function HomepageContent() {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams();
     if (selectedCategoryNames.length > 0)
-      params.set(
-        'categories',
-        selectedCategoryNames.map((name) => name.toLowerCase()).join(',')
-      );
+      params.set('categories', selectedCategoryNames.map((name) => name.toLowerCase()).join(','));
     if (onlyMine) params.set('mine', '1');
     const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
     window.history.replaceState(null, '', newUrl);
@@ -433,7 +427,7 @@ export function HomepageContent() {
                     whileTap={{ scale: 0.99 }}
                   >
                     <Link href={`/articles/${article.slug}`} className="block h-full">
-                      <div className="group hover:shadow-3xl block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80 transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-[1.02] hover:ring-2 hover:shadow-gray-500/60 hover:ring-[#B8956A]/20">
+                      <div className="group hover:shadow-3xl block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80 transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-[1.02] hover:shadow-gray-500/60">
                         {/* Thumbnail (consistent height whether exists or not) */}
                         <div className="relative h-28 w-full overflow-hidden sm:h-32">
                           {article.thumbnail ? (

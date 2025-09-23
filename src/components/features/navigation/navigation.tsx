@@ -70,7 +70,7 @@ export function Navigation() {
                 className="h-10 w-10"
                 priority
               />
-              <span className="bg-gradient-to-r from-[#B8956A] to-[#A6825A] bg-clip-text text-[22px] leading-tight font-semibold tracking-tight text-transparent sm:text-2xl">
+              <span className="bg-gradient-to-r from-brand to-brand-600 bg-clip-text text-[22px] leading-tight font-semibold tracking-tight text-transparent sm:text-2xl">
                 CodeVN
               </span>
             </button>
@@ -80,9 +80,9 @@ export function Navigation() {
               {isAuthLoading ? null : isAuthenticated && user ? (
                 <>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="cursor-pointer hover:bg-gray-100"
+                    className="cursor-pointer border-brand text-brand hover:bg-brand/10 shadow-md shadow-brand/20 hover:shadow-lg hover:shadow-brand/30 transition-shadow"
                     onClick={() => router.push('/articles')}
                   >
                     <FileText className="mr-2 h-4 w-4" />
@@ -91,9 +91,9 @@ export function Navigation() {
 
                   {isAdmin(user.role) && (
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="cursor-pointer hover:bg-gray-100"
+                      className="cursor-pointer border-brand text-brand hover:bg-brand/10 shadow-md shadow-brand/20 hover:shadow-lg hover:shadow-brand/30 transition-shadow"
                       onClick={() => router.push('/admin')}
                     >
                       <Settings className="mr-2 h-4 w-4" />

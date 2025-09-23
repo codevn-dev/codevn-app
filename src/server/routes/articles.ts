@@ -99,9 +99,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
             : typeof categoriesParam === 'string'
               ? (categoriesParam as string).split(',')
               : undefined;
-          const combined = [...(partsNew || [])]
-            .map((s) => s.trim().toLowerCase())
-            .filter(Boolean);
+          const combined = [...(partsNew || [])].map((s) => s.trim().toLowerCase()).filter(Boolean);
           return combined.length > 0 ? combined : undefined;
         })();
 
