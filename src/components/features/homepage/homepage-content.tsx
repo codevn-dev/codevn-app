@@ -153,7 +153,8 @@ export function HomepageContent() {
       isFetchInFlightRef.current = true;
       lastFetchKeyRef.current = fetchKey;
 
-      setLoading(articlesPage === 1);
+      // Match My Articles: only show page-level loading on the very first load
+      setLoading(!initialPageLoadedRef.current);
       setIsLoadingMore(articlesPage > 1);
       setError(null);
       let nextHasMore = hasMoreArticles;
@@ -284,7 +285,7 @@ export function HomepageContent() {
     ? articles.filter((a) => (a as any)?.published === true)
     : [];
 
-  if (isLoading) {
+  if (isLoading && !initialPageLoadedRef.current) {
     return <LoadingScreen />;
   }
 
@@ -343,56 +344,53 @@ export function HomepageContent() {
               </div>
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                 <div className="relative sm:w-72">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-search absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400"
+                  >
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                  </svg>
                   <Input
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search articles, author or email..."
-                    className="pr-10"
+                    className="focus:ring-brand/20 pl-10 focus:ring-2"
                   />
-                  <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-400">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="lucide lucide-search"
-                    >
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <path d="m21 21-4.3-4.3"></path>
-                    </svg>
-                  </span>
                 </div>
                 {isAuthenticated && (
                   <Button
-                    variant={onlyMine ? 'default' : 'outline'}
+                    size="sm"
+                    variant="outline"
                     onClick={() => setOnlyMine((v) => !v)}
-                    className={
-                      onlyMine
-                        ? 'bg-brand hover:bg-brand-600 font-semibold text-white'
-                        : 'font-medium text-gray-700'
-                    }
+                    className={`px-3 transition-colors ${
+                      onlyMine ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'
+                    }`}
                   >
                     My Articles
                   </Button>
                 )}
-                {(onlyMine || selectedCategoryNames.length > 0 || debouncedSearch) && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setOnlyMine(false);
-                      setSelectedCategoryNames([]);
-                      setSearchTerm('');
-                    }}
-                    className="font-medium text-gray-700"
-                  >
-                    Clear all
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setOnlyMine(false);
+                    setSelectedCategoryNames([]);
+                    setSearchTerm('');
+                  }}
+                  disabled={!(onlyMine || selectedCategoryNames.length > 0 || debouncedSearch)}
+                  className="font-medium text-gray-700"
+                >
+                  Clear Filters
+                </Button>
               </div>
             </div>
             {selectedCategoryNames.length > 0 && (
@@ -616,6 +614,7 @@ export function HomepageContent() {
               <Button
                 size="sm"
                 onClick={() => {
+                  setOnlyMine(false);
                   setSelectedCategoryNames([]);
                 }}
                 className="from-brand to-brand-700 hover:from-brand-600 hover:to-brand-700 bg-gradient-to-r font-semibold text-white"

@@ -35,13 +35,14 @@ export function CategorySelector({
             {category.children && category.children.length > 0 ? (
               <div className="relative">
                 <Button
-                  className={`group flex h-[42px] items-center rounded-xl pr-10 pl-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
+                  size="sm"
+                  className={`pr-10 pl-4 transition-colors ${
                     isSelected(category.id)
-                      ? 'from-brand to-brand-700 bg-gradient-to-r text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  } `}
+                      ? 'bg-brand border-brand font-semibold text-white'
+                      : 'bg-white text-gray-800'
+                  }`}
                   onClick={() => onCategoryToggle(category.id)}
-                  variant={isSelected(category.id) ? 'default' : 'outline'}
+                  variant="outline"
                 >
                   <div className="flex items-center">
                     <div
@@ -124,13 +125,14 @@ export function CategorySelector({
               </div>
             ) : (
               <Button
-                className={`group flex h-[42px] items-center rounded-xl px-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
+                size="sm"
+                className={`px-4 transition-colors ${
                   isSelected(category.id)
-                    ? 'from-brand to-brand-700 shadow-brand/25 bg-gradient-to-r text-white shadow-lg'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md'
-                } `}
+                    ? 'bg-brand border-brand font-semibold text-white'
+                    : 'bg-white text-gray-800'
+                }`}
                 onClick={() => onCategoryToggle(category.id)}
-                variant={isSelected(category.id) ? 'default' : 'outline'}
+                variant="outline"
               >
                 <div className="flex items-center">
                   <div
