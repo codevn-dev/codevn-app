@@ -23,7 +23,7 @@ export interface CommentsSectionRef {
 
 export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
   ({ articleId, initialComments = [], commentCount = 0 }, ref) => {
-    const { isAuthenticated } = useAuthState();
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuthState();
     const { setAuthModalOpen, setAuthMode } = useUIStore();
     const { addOnNewCommentCallback, addOnNewReplyCallback } = useCommentWebSocketContext();
     const [comments, setComments] = useState<Comment[]>(initialComments);
@@ -313,12 +313,16 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           </div>
         )}
 
-        {!isLoading && !error && topLevelComments.length === 0 && isAuthenticated && (
-          <div className="py-8 text-center text-gray-500">
-            <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-            <p>No comments yet. Be the first to comment!</p>
-          </div>
-        )}
+        {!isLoading &&
+          !error &&
+          topLevelComments.length === 0 &&
+          isAuthenticated &&
+          !isAuthLoading && (
+            <div className="py-8 text-center text-gray-500">
+              <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+              <p>No comments yet. Be the first to comment!</p>
+            </div>
+          )}
 
         {!isLoading && !error && topLevelComments.length > 0 && (
           <div className="space-y-3">
@@ -356,7 +360,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
         )}
 
         {/* Comment form moved to bottom for better UX */}
-        {isAuthenticated && (
+        {isAuthenticated && !isAuthLoading && (
           <div ref={commentFormRef} className="mt-6">
             <CommentForm
               articleId={articleId}
@@ -366,7 +370,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           </div>
         )}
 
-        {!isAuthenticated && (
+        {!isAuthLoading && !isAuthenticated && (
           <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
             <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
             <p className="text-gray-600">

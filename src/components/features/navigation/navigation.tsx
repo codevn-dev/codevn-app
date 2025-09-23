@@ -12,6 +12,7 @@ import {
 import { AuthModal } from '@/features/auth';
 import { User, Settings, LogOut, FileText, Menu as MenuIcon, X as CloseIcon } from 'lucide-react';
 import { useFastifyAuthStore, useUIStore } from '@/stores';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { useAuthActions } from '@/hooks/use-auth-actions';
 import { useState } from 'react';
 import Image from 'next/image';
@@ -19,7 +20,8 @@ import { isAdmin } from '@/lib/utils';
 
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { user, isAuthenticated, signOut } = useFastifyAuthStore();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuthState();
+  const { signOut } = useFastifyAuthStore();
   const { signOut: authSignOut } = useAuthActions();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();
@@ -75,7 +77,7 @@ export function Navigation() {
 
             {/* Navigation Items - Desktop */}
             <div className="hidden items-center space-x-4 md:flex">
-              {isAuthenticated && user ? (
+              {isAuthLoading ? null : isAuthenticated && user ? (
                 <>
                   <Button
                     variant="ghost"
@@ -183,7 +185,7 @@ export function Navigation() {
         className={`bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
       >
         <div className="mx-auto max-w-7xl space-y-2 px-4 py-3 sm:px-6 lg:px-8">
-          {isAuthenticated && user ? (
+          {isAuthLoading ? null : isAuthenticated && user ? (
             <>
               <button
                 className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
