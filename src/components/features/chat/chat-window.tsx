@@ -338,7 +338,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src={peerAvatar || undefined} />
-            <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-xs text-white">
+            <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-xs text-white">
               {peerName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>

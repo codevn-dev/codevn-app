@@ -329,7 +329,7 @@ export function HomepageContent() {
                     onClick={() => setOnlyMine((v) => !v)}
                     className={
                       onlyMine
-                        ? 'bg-[#B8956A] font-semibold text-white hover:bg-[#A6825A]'
+                        ? 'bg-brand hover:bg-brand-600 font-semibold text-white'
                         : 'font-medium text-gray-700'
                     }
                   >
@@ -484,7 +484,7 @@ export function HomepageContent() {
                             </div>
                           </div>
 
-                          <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-all duration-300 ease-out group-hover:scale-[1.02] group-hover:text-[#B8956A] sm:mb-3 sm:text-xl">
+                          <h3 className="group-hover:text-brand mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-all duration-300 ease-out group-hover:scale-[1.02] sm:mb-3 sm:text-xl">
                             {article.title}
                           </h3>
 
@@ -500,20 +500,20 @@ export function HomepageContent() {
                                 </AvatarFallback>
                               </Avatar>
                             </div>
-                            <span className="font-medium transition-colors duration-300 ease-out group-hover:text-[#B8956A]">
+                            <span className="group-hover:text-brand font-medium transition-colors duration-300 ease-out">
                               {article.author.name}
                             </span>
                           </div>
                         </div>
 
                         {/* Article Footer */}
-                        <div className="bg-gray-50/50 px-4 py-3 transition-all duration-300 ease-out group-hover:bg-gradient-to-r group-hover:from-[#B8956A]/5 group-hover:to-[#8B6F47]/5 sm:px-6 sm:py-4">
+                        <div className="group-hover:from-brand/5 group-hover:to-brand-700/5 bg-gray-50/50 px-4 py-3 transition-all duration-300 ease-out group-hover:bg-gradient-to-r sm:px-6 sm:py-4">
                           <div className="grid grid-cols-3 text-xs text-gray-700 sm:text-sm">
                             {/* Views - Left */}
                             <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
-                              <Eye className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]" />
+                              <Eye className="group-hover:text-brand h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110" />
                               <span
-                                className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
+                                className="group-hover:text-brand font-medium tabular-nums transition-colors duration-300 ease-out"
                                 aria-label="views count"
                               >
                                 {typeof article.views === 'number' ? article.views : 0}
@@ -522,11 +522,11 @@ export function HomepageContent() {
                             {/* Likes - Center */}
                             <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
                               <ThumbsUp
-                                className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]"
+                                className="group-hover:text-brand h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110"
                                 aria-hidden="true"
                               />
                               <span
-                                className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
+                                className="group-hover:text-brand font-medium tabular-nums transition-colors duration-300 ease-out"
                                 aria-label="likes count"
                               >
                                 {article._count.likes}
@@ -535,11 +535,11 @@ export function HomepageContent() {
                             {/* Comments - Right */}
                             <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
                               <MessageSquare
-                                className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]"
+                                className="group-hover:text-brand h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110"
                                 aria-hidden="true"
                               />
                               <span
-                                className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
+                                className="group-hover:text-brand font-medium tabular-nums transition-colors duration-300 ease-out"
                                 aria-label="comments count"
                               >
                                 {article._count.comments}
@@ -557,8 +557,8 @@ export function HomepageContent() {
 
           {filteredArticles.length === 0 && (
             <div className="px-4 py-12 text-center sm:py-16">
-              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-[#B8956A]/20 to-[#8B6F47]/20 sm:mb-6 sm:h-20 sm:w-20">
-                <BookOpen className="h-8 w-8 text-[#B8956A] sm:h-10 sm:w-10" />
+              <div className="from-brand/20 to-brand-700/20 mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br sm:mb-6 sm:h-20 sm:w-20">
+                <BookOpen className="text-brand h-8 w-8 sm:h-10 sm:w-10" />
               </div>
               <h3 className="mb-2 text-xl font-bold text-gray-900 sm:mb-3 sm:text-2xl">
                 No articles found
@@ -573,7 +573,7 @@ export function HomepageContent() {
                 onClick={() => {
                   setSelectedCategoryNames([]);
                 }}
-                className="bg-gradient-to-r from-[#B8956A] to-[#8B6F47] font-semibold text-white hover:from-[#A6825A] hover:to-[#7A5F3F]"
+                className="from-brand to-brand-700 hover:from-brand-600 hover:to-brand-700 bg-gradient-to-r font-semibold text-white"
               >
                 {selectedCategoryNames.length > 0 ? 'Clear Filters' : 'Explore Topics'}
               </Button>
@@ -606,7 +606,7 @@ export function HomepageContent() {
           aria-label="Back to top"
           title="Back to top"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 left-4 z-[40] flex h-12 w-12 items-center justify-center rounded-full bg-[#B8956A] text-white shadow-xl ring-1 ring-[#B8956A]/30 backdrop-blur transition-all duration-200 hover:scale-105 hover:bg-[#A6825A] hover:shadow-2xl hover:ring-[#B8956A]/40 supports-[backdrop-filter]:bg-[#B8956A]/90 sm:bottom-6 sm:left-6"
+          className="bg-brand ring-brand/30 hover:bg-brand-600 hover:ring-brand/40 supports-[backdrop-filter]:bg-brand/90 fixed bottom-6 left-4 z-[40] flex h-12 w-12 items-center justify-center rounded-full text-white shadow-xl ring-1 backdrop-blur transition-all duration-200 hover:scale-105 hover:shadow-2xl sm:bottom-6 sm:left-6"
         >
           <ArrowUp className="h-5 w-5" />
         </button>

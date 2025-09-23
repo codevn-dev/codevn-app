@@ -218,7 +218,7 @@ export function AuthModal() {
           <Button
             type="button"
             variant="outline"
-            className="w-full border-[#B8956A] bg-[#B8956A] font-semibold text-white shadow-lg hover:border-[#A6825A] hover:bg-[#A6825A]"
+            className="border-brand bg-brand hover:border-brand-600 hover:bg-brand-600 w-full font-semibold text-white shadow-lg"
             onClick={handleGoogleLogin}
             disabled={isOauthLoading}
           >
@@ -342,7 +342,7 @@ export function AuthModal() {
 
             <Button
               type="submit"
-              className="w-full bg-[#B8956A] py-3 text-lg font-bold text-white shadow-xl shadow-gray-400/50 hover:bg-[#A6825A]"
+              className="bg-brand hover:bg-brand-600 w-full py-3 text-lg font-bold text-white shadow-xl shadow-gray-400/50"
               disabled={isLoading}
             >
               {isLoading ? (

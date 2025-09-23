@@ -328,7 +328,7 @@ function AdminPageContent() {
                     onClick={() => setActiveTab('users')}
                     className={`border-b-2 px-1 py-2 text-sm font-medium ${
                       activeTab === 'users'
-                        ? 'border-[#B8956A] text-[#B8956A]'
+                        ? 'border-brand text-brand'
                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     }`}
                   >
@@ -341,7 +341,7 @@ function AdminPageContent() {
                     onClick={() => setActiveTab('categories')}
                     className={`border-b-2 px-1 py-2 text-sm font-medium ${
                       activeTab === 'categories'
-                        ? 'border-[#B8956A] text-[#B8956A]'
+                        ? 'border-brand text-brand'
                         : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                     }`}
                   >
@@ -376,7 +376,7 @@ function AdminPageContent() {
                           placeholder="Search by name or email..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10 focus:ring-2 focus:ring-[#B8956A]/20"
+                          className="focus:ring-brand/20 pl-10 focus:ring-2"
                         />
                       </div>
                     </div>
@@ -398,7 +398,7 @@ function AdminPageContent() {
                         }}
                         className={`px-3 transition-colors ${
                           sortBy === 'name'
-                            ? 'bg-[#B8956A]/10 text-[#A6825A]'
+                            ? 'bg-brand/10 text-brand-600'
                             : 'bg-white text-gray-700'
                         }`}
                       >
@@ -430,7 +430,7 @@ function AdminPageContent() {
                         }}
                         className={`px-3 transition-colors ${
                           sortBy === 'joined'
-                            ? 'bg-[#B8956A]/10 text-[#A6825A]'
+                            ? 'bg-brand/10 text-brand-600'
                             : 'bg-white text-gray-700'
                         }`}
                       >
@@ -526,7 +526,7 @@ function AdminPageContent() {
                                         <div className="line-clamp-1 max-w-[160px] text-sm font-semibold text-gray-900 sm:max-w-none">
                                           <button
                                             onClick={() => router.push(`/users/${user.id}`)}
-                                            className="transition-colors hover:text-[#B8956A] hover:underline"
+                                            className="hover:text-brand transition-colors hover:underline"
                                           >
                                             {user.name}
                                           </button>
@@ -549,7 +549,7 @@ function AdminPageContent() {
                                       }
                                     >
                                       <SelectTrigger
-                                        className={`h-9 w-36 transition-colors focus:ring-2 focus:ring-[#B8956A]/20 sm:h-10 sm:w-40 ${
+                                        className={`focus:ring-brand/20 h-9 w-36 transition-colors focus:ring-2 sm:h-10 sm:w-40 ${
                                           user.id === currentUserId ||
                                           (isAdmin(user.role) && user.id !== currentUserId)
                                             ? 'cursor-not-allowed bg-gray-100 opacity-60'
@@ -567,7 +567,7 @@ function AdminPageContent() {
                                         </SelectItem>
                                         <SelectItem value="admin">
                                           <div className="flex items-center space-x-2">
-                                            <div className="h-2 w-2 rounded-full bg-[#B8956A]"></div>
+                                            <div className="bg-brand h-2 w-2 rounded-full"></div>
                                             <span>Admin</span>
                                           </div>
                                         </SelectItem>
@@ -678,7 +678,7 @@ function AdminPageContent() {
                                         onClick={() => handlePageChange(page as number)}
                                         className={`min-w-[40px] px-3 py-1 ${
                                           pagination.currentPage === page
-                                            ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]'
+                                            ? 'bg-brand hover:bg-brand-600 text-white'
                                             : 'hover:bg-gray-50'
                                         }`}
                                       >
@@ -774,7 +774,7 @@ function AdminPageContent() {
                                 })
                               }
                             >
-                              <SelectTrigger className="bg-white transition-colors focus:ring-2 focus:ring-[#B8956A]/20">
+                              <SelectTrigger className="focus:ring-brand/20 bg-white transition-colors focus:ring-2">
                                 <SelectValue placeholder="Select a parent category (optional)" />
                               </SelectTrigger>
                               <SelectContent className="z-50">
@@ -896,7 +896,7 @@ function AdminPageContent() {
                                           {category.children && category.children.length > 0 && (
                                             <>
                                               <span className="mx-2 hidden sm:inline">•</span>
-                                              <span className="font-medium text-[#B8956A]">
+                                              <span className="text-brand font-medium">
                                                 {category.children.length} Sub Categories
                                               </span>
                                             </>

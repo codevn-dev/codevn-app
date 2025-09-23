@@ -94,7 +94,7 @@ export function AvatarWithDropdown({
           <div className="flex items-center gap-2">
             <Avatar className={sizeClasses[size]}>
               <AvatarImage src={user.avatar || undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-white">
+              <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
                 {user.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -105,7 +105,7 @@ export function AvatarWithDropdown({
         </Button>
 
         {isOpen && (
-          <div className="absolute top-full left-0 z-50 mt-2 w-40 rounded-md border border-gray-200 bg-white shadow-lg">
+          <div className="shadow-brand/40 absolute top-full left-0 z-50 mt-2 w-40 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md">
             <div className="py-1">
               {/* View Profile button for current user */}
               <div className="py-1">
@@ -113,7 +113,7 @@ export function AvatarWithDropdown({
                   onClick={handleViewProfile}
                   className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
                 >
-                  <UserIcon className="h-4 w-4 text-green-600" />
+                  <UserIcon className="text-brand h-4 w-4" />
                   <span>View Profile</span>
                 </button>
               </div>
@@ -134,7 +134,7 @@ export function AvatarWithDropdown({
         <div className="flex items-center gap-2">
           <Avatar className={sizeClasses[size]}>
             <AvatarImage src={user.avatar || undefined} />
-            <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-white">
+            <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
               {user.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -143,7 +143,7 @@ export function AvatarWithDropdown({
       </Button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 z-50 mt-2 w-40 rounded-md border border-gray-200 bg-white shadow-lg">
+        <div className="shadow-brand/40 absolute top-full left-0 z-50 mt-2 w-40 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md">
           <div className="py-1">
             {/* View Profile button */}
             <div className="py-1">
@@ -151,7 +151,7 @@ export function AvatarWithDropdown({
                 onClick={handleViewProfile}
                 className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
               >
-                <UserIcon className="h-4 w-4 text-green-600" />
+                <UserIcon className="text-brand h-4 w-4" />
                 <span>View Profile</span>
               </button>
             </div>
@@ -161,7 +161,7 @@ export function AvatarWithDropdown({
                 onClick={handleChat}
                 className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
               >
-                <MessageCircle className="h-4 w-4 text-blue-600" />
+                <MessageCircle className="text-brand-600 h-4 w-4" />
                 <span>Chat</span>
               </button>
             </div>

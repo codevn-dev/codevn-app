@@ -130,7 +130,7 @@ function UserProfileContent() {
           <div className="flex items-center">
             <Avatar className="h-20 w-20">
               <AvatarImage src={profile.avatar || undefined} alt={profile.name} />
-              <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-2xl text-white">
+              <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-2xl text-white">
                 {profile.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -165,10 +165,10 @@ function UserProfileContent() {
                 <CardBody className="flex flex-row items-center p-4">
                   <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
-                    <p className="mb-1 font-semibold text-[#A6825A]">
+                    <p className="text-brand-600 mb-1 font-semibold">
                       {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
                     </p>
-                    <p className="text-sm text-[#A6825A]">Access level</p>
+                    <p className="text-brand-600 text-sm">Access level</p>
                   </div>
                 </CardBody>
               </Card>
@@ -177,7 +177,7 @@ function UserProfileContent() {
                 <CardBody className="flex flex-row items-center p-4">
                   <Calendar className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
-                    <p className="font-semibold text-[#A6825A]">{formatDate(profile.createdAt)}</p>
+                    <p className="text-brand-600 font-semibold">{formatDate(profile.createdAt)}</p>
                     <p className="text-sm text-[#A6825A]">Member since</p>
                   </div>
                 </CardBody>
@@ -191,10 +191,10 @@ function UserProfileContent() {
                   <CardBody className="flex flex-row items-center p-4">
                     <FileText className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
-                      <p className="text-2xl font-bold text-[#A6825A]">
+                      <p className="text-brand-600 text-2xl font-bold">
                         {profile.statistics.totalArticles}
                       </p>
-                      <p className="text-sm text-[#A6825A]">Total Articles</p>
+                      <p className="text-brand-600 text-sm">Total Articles</p>
                     </div>
                   </CardBody>
                 </Card>
@@ -203,10 +203,10 @@ function UserProfileContent() {
                   <CardBody className="flex flex-row items-center p-4">
                     <MessageSquare className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
-                      <p className="text-2xl font-bold text-[#A6825A]">
+                      <p className="text-brand-600 text-2xl font-bold">
                         {profile.statistics.totalComments}
                       </p>
-                      <p className="text-sm text-[#A6825A]">Total Comments</p>
+                      <p className="text-brand-600 text-sm">Total Comments</p>
                     </div>
                   </CardBody>
                 </Card>
@@ -215,10 +215,10 @@ function UserProfileContent() {
                   <CardBody className="flex flex-row items-center p-4">
                     <ThumbsUp className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
-                      <p className="text-2xl font-bold text-[#A6825A]">
+                      <p className="text-brand-600 text-2xl font-bold">
                         {profile.statistics.totalLikes}
                       </p>
-                      <p className="text-sm text-[#A6825A]">Total Likes</p>
+                      <p className="text-brand-600 text-sm">Total Likes</p>
                     </div>
                   </CardBody>
                 </Card>
@@ -227,10 +227,10 @@ function UserProfileContent() {
                   <CardBody className="flex flex-row items-center p-4">
                     <ThumbsDown className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
-                      <p className="text-2xl font-bold text-[#A6825A]">
+                      <p className="text-brand-600 text-2xl font-bold">
                         {profile.statistics.totalDislikes}
                       </p>
-                      <p className="text-sm text-[#A6825A]">Total Dislikes</p>
+                      <p className="text-brand-600 text-sm">Total Dislikes</p>
                     </div>
                   </CardBody>
                 </Card>

@@ -70,7 +70,7 @@ export function Navigation() {
                 className="h-10 w-10"
                 priority
               />
-              <span className="bg-gradient-to-r from-brand to-brand-600 bg-clip-text text-[22px] leading-tight font-semibold tracking-tight text-transparent sm:text-2xl">
+              <span className="from-brand to-brand-600 bg-gradient-to-r bg-clip-text text-[22px] leading-tight font-semibold tracking-tight text-transparent sm:text-2xl">
                 CodeVN
               </span>
             </button>
@@ -82,7 +82,7 @@ export function Navigation() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="cursor-pointer border-brand text-brand hover:bg-brand/10 shadow-md shadow-brand/20 hover:shadow-lg hover:shadow-brand/30 transition-shadow"
+                    className="border-brand text-brand hover:bg-brand/10 shadow-brand/20 hover:shadow-brand/30 cursor-pointer shadow-md transition-shadow hover:shadow-lg"
                     onClick={() => router.push('/articles')}
                   >
                     <FileText className="mr-2 h-4 w-4" />
@@ -93,7 +93,7 @@ export function Navigation() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="cursor-pointer border-brand text-brand hover:bg-brand/10 shadow-md shadow-brand/20 hover:shadow-lg hover:shadow-brand/30 transition-shadow"
+                      className="border-brand text-brand hover:bg-brand/10 shadow-brand/20 hover:shadow-brand/30 cursor-pointer shadow-md transition-shadow hover:shadow-lg"
                       onClick={() => router.push('/admin')}
                     >
                       <Settings className="mr-2 h-4 w-4" />
@@ -107,14 +107,14 @@ export function Navigation() {
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={user.avatar || undefined} />
-                            <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-white">
+                            <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
                               {user.name?.charAt(0).toUpperCase() || 'U'}
                             </AvatarFallback>
                           </Avatar>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
-                        className="w-56 rounded-md bg-white shadow-lg"
+                        className="shadow-brand/40 w-56 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md"
                         align="end"
                         forceMount
                       >

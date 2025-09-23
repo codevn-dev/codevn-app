@@ -229,9 +229,9 @@ function ProfilePageContent() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                  <Card className="border-brand/20 bg-brand/10">
                     <CardBody className="flex flex-row items-center p-4">
-                      <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
+                      <Shield className="text-brand mr-3 h-5 w-5" />
                       <div>
                         <p className="mb-1 font-semibold text-[#A6825A]">
                           {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
@@ -241,9 +241,9 @@ function ProfilePageContent() {
                     </CardBody>
                   </Card>
 
-                  <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                  <Card className="border-brand/20 bg-brand/10">
                     <CardBody className="flex flex-row items-center p-4">
-                      <Calendar className="mr-3 h-5 w-5 text-[#B8956A]" />
+                      <Calendar className="text-brand mr-3 h-5 w-5" />
                       <div>
                         <p className="font-semibold text-[#A6825A]">
                           {formatDate(profile.createdAt)}
@@ -257,9 +257,9 @@ function ProfilePageContent() {
                 {/* User Statistics */}
                 {profile.statistics && (
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                    <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                    <Card className="border-brand/20 bg-brand/10">
                       <CardBody className="flex flex-row items-center p-4">
-                        <FileText className="mr-3 h-5 w-5 text-[#B8956A]" />
+                        <FileText className="text-brand mr-3 h-5 w-5" />
                         <div>
                           <p className="text-2xl font-bold text-[#A6825A]">
                             {profile.statistics.totalArticles}
@@ -269,9 +269,9 @@ function ProfilePageContent() {
                       </CardBody>
                     </Card>
 
-                    <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                    <Card className="border-brand/20 bg-brand/10">
                       <CardBody className="flex flex-row items-center p-4">
-                        <MessageSquare className="mr-3 h-5 w-5 text-[#B8956A]" />
+                        <MessageSquare className="text-brand mr-3 h-5 w-5" />
                         <div>
                           <p className="text-2xl font-bold text-[#A6825A]">
                             {profile.statistics.totalComments}
@@ -281,9 +281,9 @@ function ProfilePageContent() {
                       </CardBody>
                     </Card>
 
-                    <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                    <Card className="border-brand/20 bg-brand/10">
                       <CardBody className="flex flex-row items-center p-4">
-                        <ThumbsUp className="mr-3 h-5 w-5 text-[#B8956A]" />
+                        <ThumbsUp className="text-brand mr-3 h-5 w-5" />
                         <div>
                           <p className="text-2xl font-bold text-[#A6825A]">
                             {profile.statistics.totalLikes}
@@ -293,9 +293,9 @@ function ProfilePageContent() {
                       </CardBody>
                     </Card>
 
-                    <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                    <Card className="border-brand/20 bg-brand/10">
                       <CardBody className="flex flex-row items-center p-4">
-                        <ThumbsDown className="mr-3 h-5 w-5 text-[#B8956A]" />
+                        <ThumbsDown className="text-brand mr-3 h-5 w-5" />
                         <div>
                           <p className="text-2xl font-bold text-[#A6825A]">
                             {profile.statistics.totalDislikes}

@@ -180,7 +180,7 @@ export function ChatSidebar({
                   <div className="relative">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={conversation.peer?.avatar || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-white">
+                      <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
                         {conversation.peer?.name?.charAt(0).toUpperCase() || '?'}
                       </AvatarFallback>
                     </Avatar>

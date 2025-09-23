@@ -72,7 +72,7 @@ export function FloatingChatButton() {
               setChatSidebarOpen(true);
             }
           }}
-          className="h-14 w-14 rounded-full bg-[#B8956A] p-0 shadow-lg transition-all duration-200 hover:bg-[#A6825A] hover:shadow-xl"
+          className="bg-brand hover:bg-brand-600 h-14 w-14 rounded-full p-0 shadow-lg transition-all duration-200 hover:shadow-xl"
           size="lg"
         >
           <MessageCircle className="h-6 w-6 text-white" />

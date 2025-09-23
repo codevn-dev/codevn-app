@@ -399,14 +399,14 @@ function ArticlesContent() {
                       placeholder="Search your articles..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 focus:ring-2 focus:ring-[#B8956A]/20"
+                      className="focus:ring-brand/20 pl-10 focus:ring-2"
                     />
                   </div>
                 </div>
 
                 {/* Status Filter */}
                 <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                  <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
+                  <SelectTrigger className="focus:ring-brand/20 focus:ring-2">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -421,7 +421,7 @@ function ArticlesContent() {
                   value={categoryFilter || 'all'}
                   onValueChange={(value) => setCategoryFilter(value === 'all' ? '' : value)}
                 >
-                  <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
+                  <SelectTrigger className="focus:ring-brand/20 focus:ring-2">
                     <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -449,7 +449,7 @@ function ArticlesContent() {
                     }
                   }}
                   className={`px-3 transition-colors ${
-                    sortBy === 'title' ? 'bg-[#B8956A]/10 text-[#A6825A]' : 'bg-white text-gray-700'
+                    sortBy === 'title' ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'
                   }`}
                 >
                   <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -471,9 +471,7 @@ function ArticlesContent() {
                     }
                   }}
                   className={`px-3 transition-colors ${
-                    sortBy === 'createdAt'
-                      ? 'bg-[#B8956A]/10 text-[#A6825A]'
-                      : 'bg-white text-gray-700'
+                    sortBy === 'createdAt' ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'
                   }`}
                 >
                   <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -495,9 +493,7 @@ function ArticlesContent() {
                     }
                   }}
                   className={`px-3 transition-colors ${
-                    sortBy === 'updatedAt'
-                      ? 'bg-[#B8956A]/10 text-[#A6825A]'
-                      : 'bg-white text-gray-700'
+                    sortBy === 'updatedAt' ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'
                   }`}
                 >
                   <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -613,7 +609,7 @@ function ArticlesContent() {
                                   </Button>
 
                                   {openDropdown === article.id && (
-                                    <div className="dropdown-container absolute top-8 right-0 z-50 w-48 rounded-xl bg-white py-1 shadow-xl shadow-gray-300/60">
+                                    <div className="dropdown-container shadow-brand/40 absolute top-8 right-0 z-50 w-48 rounded-2xl bg-white/95 py-1 shadow-2xl drop-shadow-2xl backdrop-blur-md">
                                       <div
                                         onClick={() => {
                                           handleTogglePublish(article);
@@ -687,9 +683,7 @@ function ArticlesContent() {
                               <Badge
                                 variant={article.published ? 'default' : 'secondary'}
                                 className={
-                                  article.published
-                                    ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]'
-                                    : ''
+                                  article.published ? 'bg-brand hover:bg-brand-600 text-white' : ''
                                 }
                               >
                                 {article.published ? 'Published' : 'Draft'}
@@ -704,7 +698,7 @@ function ArticlesContent() {
                             </div>
 
                             <div className="flex items-center text-xs text-gray-700 sm:text-sm">
-                              <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#B8956A] to-[#8B6F47] text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
+                              <div className="from-brand to-brand-700 mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
                                 {article.author.name.charAt(0).toUpperCase()}
                               </div>
                               <span className="font-medium">{article.author.name}</span>
@@ -854,7 +848,7 @@ function ArticlesContent() {
                           })
                         }
                       >
-                        <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
+                        <SelectTrigger className="focus:ring-brand/20 focus:ring-2">
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent>
@@ -894,7 +888,7 @@ function ArticlesContent() {
                         onChange={(e) =>
                           setArticleForm({ ...articleForm, published: e.target.checked })
                         }
-                        className="h-4 w-4 rounded border-gray-300 text-[#B8956A] focus:ring-[#B8956A]"
+                        className="text-brand focus:ring-brand h-4 w-4 rounded border-gray-300"
                       />
                       <label htmlFor="published" className="text-sm font-medium">
                         Publish immediately

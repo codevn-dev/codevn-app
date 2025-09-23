@@ -387,6 +387,10 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  /* Brand palette tokens */
+  --color-brand: #b8956a;
+  --color-brand-600: #a6825a;
+  --color-brand-700: #8b6f47;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --radius: var(--radius);

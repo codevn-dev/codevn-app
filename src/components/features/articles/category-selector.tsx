@@ -37,7 +37,7 @@ export function CategorySelector({
                 <Button
                   className={`group flex h-[42px] items-center rounded-xl pr-10 pl-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
                     isSelected(category.id)
-                      ? 'bg-gradient-to-r from-[#B8956A] to-[#8B6F47] text-white'
+                      ? 'from-brand to-brand-700 bg-gradient-to-r text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   } `}
                   onClick={() => onCategoryToggle(category.id)}
@@ -83,14 +83,14 @@ export function CategorySelector({
                       <ChevronDown className="h-4 w-4" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="z-[100] w-64 rounded-xl bg-white shadow-lg">
+                  <DropdownMenuContent className="shadow-brand/40 z-[100] w-64 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md">
                     {(category.children || []).map((child) => (
                       <DropdownMenuItem
                         key={child.id}
                         onClick={() => onCategoryToggle(child.id)}
                         className={`group flex transform items-center rounded-lg px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:text-sm ${
                           isSelected(child.id)
-                            ? 'bg-gradient-to-r from-[#B8956A] to-[#8B6F47] text-white'
+                            ? 'from-brand to-brand-700 bg-gradient-to-r text-white'
                             : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
@@ -126,7 +126,7 @@ export function CategorySelector({
               <Button
                 className={`group flex h-[42px] items-center rounded-xl px-4 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:h-[46px] sm:text-sm ${
                   isSelected(category.id)
-                    ? 'bg-gradient-to-r from-[#B8956A] to-[#8B6F47] text-white shadow-lg shadow-[#B8956A]/25'
+                    ? 'from-brand to-brand-700 shadow-brand/25 bg-gradient-to-r text-white shadow-lg'
                     : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md'
                 } `}
                 onClick={() => onCategoryToggle(category.id)}
