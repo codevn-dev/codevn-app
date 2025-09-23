@@ -389,6 +389,7 @@
   --color-ring: var(--ring);
   /* Brand palette tokens */
   --color-brand: #b8956a;
+  --color-brand-400: #d9b78c;
   --color-brand-600: #a6825a;
   --color-brand-700: #8b6f47;
   --font-sans: var(--font-geist-sans);
@@ -428,6 +429,35 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   line-height: 1.6;
+}
+
+/* Custom Cursor: hide native cursor; restore for select text areas if needed */
+html,
+body,
+#__next,
+[data-nextjs-router] {
+  cursor: none;
+}
+
+/* Ensure native cursor stays hidden over interactive elements */
+button,
+[role='button'],
+a,
+[role='link'],
+input,
+textarea,
+select,
+[contenteditable='true'],
+.cursor-pointer,
+[data-cursor='interactive'] {
+  cursor: none !important;
+}
+
+/* Allow text caret in editable areas if custom cursor is hidden */
+input,
+textarea,
+[contenteditable='true'] {
+  caret-color: currentColor;
 }
 
 /* Custom scrollbar */

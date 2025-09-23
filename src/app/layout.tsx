@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
 import { PageTransition } from '@/components/layout';
+import { CustomCursor } from '@/components/layout/custom-cursor';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,6 +31,7 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <Providers>
+          <CustomCursor />
           <PageTransition>{children}</PageTransition>
         </Providers>
       </body>
