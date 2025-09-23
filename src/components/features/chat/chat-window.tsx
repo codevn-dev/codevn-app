@@ -326,7 +326,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
 
   return (
     <div
-      className="pointer-events-auto fixed right-80 bottom-0 z-[110] flex h-[28.8rem] w-[24rem] flex-col rounded-lg bg-white shadow-lg"
+      className="pointer-events-auto fixed right-4 bottom-4 z-[110] flex h-[28.8rem] w-[calc(100vw-2rem)] max-w-[24rem] flex-col rounded-lg bg-white shadow-lg lg:right-80 lg:bottom-0 lg:w-[24rem]"
       data-chat-window="true"
       onClick={(e) => e.stopPropagation()}
     >

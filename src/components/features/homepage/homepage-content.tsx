@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { MessageSquare, BookOpen, Calendar, Eye, X, ThumbsUp } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MessageSquare, BookOpen, Calendar, Eye, X, ThumbsUp, ArrowUp } from 'lucide-react';
 import { useForumStore } from '@/stores';
 import { CategorySelector } from '@/features/articles';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -13,7 +14,7 @@ import { apiGet } from '@/lib/utils';
 import { Category, ArticleListResponse } from '@/types/shared';
 
 export function HomepageContent() {
-  const { user, isAuthenticated } = useAuthState();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuthState();
   const {
     categories,
     articles,
@@ -33,7 +34,18 @@ export function HomepageContent() {
   const [selectedCategoryNames, setSelectedCategoryNames] = useState<string[]>([]);
   const [onlyMine, setOnlyMine] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const isFiltersInitializedRef = useRef(false);
+  const lastFetchKeyRef = useRef<string | null>(null);
+  const isFetchInFlightRef = useRef(false);
+  const initialPageLoadedRef = useRef(false);
+  const isPaginatingRef = useRef(false);
+  const articlesPageRef = useRef(articlesPage);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const lastLoadedFilterSigRef = useRef<string | null>(null);
+  const lastLoadedPageRef = useRef<number>(0);
+  const prevFilterSigRef = useRef<string | null>(null);
 
   // Helpers
   const getCategoryById = (id: string) => findCategoryById(categories, id);
@@ -70,63 +82,110 @@ export function HomepageContent() {
     const mine = params.get('mine') === '1';
     if (names.length > 0) setSelectedCategoryNames(names);
     if (mine) setOnlyMine(true);
+    isFiltersInitializedRef.current = true;
   }, []);
 
   // Fetch articles with pagination and server-side filters
   useEffect(() => {
+    if (!isFiltersInitializedRef.current) return; // wait until URL filters parsed
+    if (onlyMine && (isAuthLoading || !isAuthenticated || !user)) return; // wait for auth
+
     const fetchArticlesPage = async () => {
+      const filterSig = `${[...selectedCategoryNames].sort().join(',')}|${onlyMine ? '1' : '0'}|${
+        isAuthenticated && user ? user.id : ''
+      }`;
+
+      // Prevent refetching page=1 for the same filters once it's already loaded
+      // Only block duplicate fetch for the same page+filters (not just page 1)
+      if (
+        lastLoadedFilterSigRef.current === filterSig &&
+        lastLoadedPageRef.current === articlesPage
+      ) {
+        return;
+      }
+      const params = new URLSearchParams({
+        publishedOnly: 'true',
+        page: String(articlesPage),
+        limit: '9',
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      });
+      if (selectedCategoryNames.length > 0)
+        params.set(
+          'categoryNames',
+          selectedCategoryNames.map((name) => name.toLowerCase()).join(',')
+        );
+      if (onlyMine && isAuthenticated && user) params.set('authorId', user.id);
+      const fetchKey = params.toString();
+
+      if (isFetchInFlightRef.current && lastFetchKeyRef.current === fetchKey) return; // in-flight duplicate
+      if (lastFetchKeyRef.current === fetchKey) return; // already fetched with same key
+
+      isFetchInFlightRef.current = true;
+      lastFetchKeyRef.current = fetchKey;
+
       setLoading(articlesPage === 1);
       setIsLoadingMore(articlesPage > 1);
       setError(null);
+      let nextHasMore = hasMoreArticles;
 
       try {
-        const params = new URLSearchParams({
-          publishedOnly: 'true',
-          page: String(articlesPage),
-          limit: '9',
-          sortBy: 'createdAt',
-          sortOrder: 'desc',
-        });
-        if (selectedCategoryNames.length > 0)
-          params.set(
-            'categoryNames',
-            selectedCategoryNames.map((name) => name.toLowerCase()).join(',')
-          );
-        if (onlyMine && isAuthenticated && user) params.set('authorId', user.id);
-
-        const res = await apiGet<ArticleListResponse>(`/api/articles?${params.toString()}`);
+        const res = await apiGet<ArticleListResponse>(`/api/articles?${fetchKey}`);
         if (articlesPage === 1) {
           setArticles(res.articles);
+          initialPageLoadedRef.current = true;
         } else {
           addArticles(res.articles);
         }
         setHasMoreArticles(res.pagination.hasNext);
+        nextHasMore = res.pagination.hasNext;
+
+        // Mark last loaded page and filter signature
+        lastLoadedFilterSigRef.current = filterSig;
+        lastLoadedPageRef.current = articlesPage;
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
         setIsLoadingMore(false);
+        isFetchInFlightRef.current = false;
+        isPaginatingRef.current = false;
+        // Re-observe sentinel after load completes
+        const el = loadMoreRef.current;
+        if (el && nextHasMore) {
+          observerRef.current?.observe(el);
+        }
       }
     };
 
     fetchArticlesPage();
   }, [
     articlesPage,
-    selectedCategoryNames,
+    // compress arrays and auth into stable primitives to reduce redundant triggers
+    selectedCategoryNames.join(','),
     onlyMine,
     isAuthenticated,
-    user,
-    setArticles,
-    addArticles,
-    setHasMoreArticles,
-    setLoading,
-    setError,
+    isAuthLoading,
+    user?.id,
   ]);
 
-  // Reset to first page when filter changes
+  // Reset to first page only when filters actually change
   useEffect(() => {
-    setArticlesPage(1);
-  }, [selectedCategoryNames, onlyMine, setArticlesPage]);
+    if (!isFiltersInitializedRef.current) return;
+    const sig = `${[...selectedCategoryNames].sort().join(',')}|${onlyMine ? '1' : '0'}`;
+    if (prevFilterSigRef.current !== null && prevFilterSigRef.current !== sig) {
+      setArticlesPage(1);
+      // Reset last loaded markers so pagination restarts cleanly for new filters
+      lastLoadedFilterSigRef.current = null;
+      lastLoadedPageRef.current = 0;
+    }
+    prevFilterSigRef.current = sig;
+  }, [selectedCategoryNames.join(','), onlyMine, setArticlesPage]);
+
+  // Keep a ref of latest page to avoid stale closure in observer
+  useEffect(() => {
+    articlesPageRef.current = articlesPage;
+  }, [articlesPage]);
 
   // Sync filters to URL
   useEffect(() => {
@@ -146,20 +205,45 @@ export function HomepageContent() {
   useEffect(() => {
     const el = loadMoreRef.current;
     if (!el) return;
+    if (!initialPageLoadedRef.current) return; // do not trigger pagination until first page loaded
 
     const observer = new IntersectionObserver(
       (entries) => {
         const first = entries[0];
-        if (first.isIntersecting && hasMoreArticles && !isLoadingMore && !isLoading) {
-          setArticlesPage(articlesPage + 1);
+        if (
+          first.isIntersecting &&
+          hasMoreArticles &&
+          !isLoadingMore &&
+          !isLoading &&
+          !isFetchInFlightRef.current &&
+          !isPaginatingRef.current
+        ) {
+          isPaginatingRef.current = true;
+          const nextPage = (articlesPageRef.current || 1) + 1;
+          articlesPageRef.current = nextPage;
+          setArticlesPage(nextPage);
+          // Pause observing until the load finishes to avoid rapid retriggers
+          observer.unobserve(el);
         }
       },
-      { root: null, rootMargin: '600px 0px', threshold: 0 }
+      { root: null, rootMargin: '200px 0px', threshold: 0.1 }
     );
 
     observer.observe(el);
+    observerRef.current = observer;
     return () => observer.disconnect();
-  }, [hasMoreArticles, isLoadingMore, isLoading, articles.length, articlesPage, setArticlesPage]);
+  }, [hasMoreArticles, isLoadingMore, isLoading, setArticlesPage]);
+
+  // Show back-to-top button after scrolling down
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onScroll = () => {
+      setShowBackToTop(window.scrollY > 600);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const filteredArticles = Array.isArray(articles) ? articles : [];
 
@@ -177,10 +261,10 @@ export function HomepageContent() {
   }
 
   return (
-    <div className="py-8">
+    <div className="py-6">
       {/* Articles Section with Categories */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-white p-8 shadow-2xl">
+      <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
+        <div className="rounded-2xl bg-white p-5 shadow-2xl sm:p-6 lg:p-6">
           {/* Categories Section */}
           <div className="mb-8">
             <CategorySelector
@@ -287,7 +371,7 @@ export function HomepageContent() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
             {filteredArticles.map((article) => (
               <Link
                 key={article.id}
@@ -355,8 +439,16 @@ export function HomepageContent() {
                   </h3>
 
                   <div className="flex items-center text-xs text-gray-700 transition-all duration-300 ease-out group-hover:translate-x-1 sm:text-sm">
-                    <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#B8956A] to-[#8B6F47] text-[10px] font-bold text-white transition-all duration-300 ease-out group-hover:scale-110 group-hover:shadow-lg sm:mr-3 sm:text-xs">
-                      {article.author.name.charAt(0).toUpperCase()}
+                    <div className="mr-2 sm:mr-3">
+                      <Avatar className="h-6 w-6 transition-all duration-300 ease-out group-hover:scale-110 group-hover:shadow-lg">
+                        <AvatarImage
+                          src={article.author.avatar || undefined}
+                          alt={article.author.name}
+                        />
+                        <AvatarFallback className="text-[10px] font-bold">
+                          {article.author.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
                     <span className="font-medium transition-colors duration-300 ease-out group-hover:text-[#B8956A]">
                       {article.author.name}
@@ -441,8 +533,24 @@ export function HomepageContent() {
               Loading more...
             </div>
           )}
+          {!isLoadingMore && !isLoading && !hasMoreArticles && filteredArticles.length > 0 && (
+            <div className="mt-3 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-500 shadow-md shadow-gray-200/50 backdrop-blur-sm">
+              No more articles to show
+            </div>
+          )}
         </div>
       </div>
+      {showBackToTop && (
+        <button
+          type="button"
+          aria-label="Back to top"
+          title="Back to top"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 left-4 z-[40] flex h-12 w-12 items-center justify-center rounded-full bg-[#B8956A] text-white shadow-xl ring-1 ring-[#B8956A]/30 backdrop-blur transition-all duration-200 hover:scale-105 hover:bg-[#A6825A] hover:shadow-2xl hover:ring-[#B8956A]/40 supports-[backdrop-filter]:bg-[#B8956A]/90 sm:bottom-6 sm:left-6"
+        >
+          <ArrowUp className="h-5 w-5" />
+        </button>
+      )}
     </div>
   );
 }

@@ -95,8 +95,22 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
 /**
  * GET request helper
  */
+const inFlightGetRequests: Map<string, Promise<any>> = new Map();
+
 export async function apiGet<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  return apiFetch<T>(endpoint, { ...options, method: 'GET' });
+  // Use the normalized URL string as the cache key
+  const urlKey = createApiUrl(endpoint);
+
+  // If an identical GET is already in flight, return the same promise
+  const existing = inFlightGetRequests.get(urlKey);
+  if (existing) return existing as Promise<T>;
+
+  const promise = apiFetch<T>(endpoint, { ...options, method: 'GET' }).finally(() => {
+    inFlightGetRequests.delete(urlKey);
+  });
+
+  inFlightGetRequests.set(urlKey, promise);
+  return promise;
 }
 
 /**

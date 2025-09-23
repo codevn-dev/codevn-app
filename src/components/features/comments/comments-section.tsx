@@ -40,6 +40,8 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
     const fetchCommentsRef = useRef<typeof fetchComments | null>(null);
     const articleIdRef = useRef(articleId);
     const _hasLoadedRef = useRef(false);
+    const isFetchingRef = useRef(false);
+    const lastFetchKeyRef = useRef<string | null>(null);
 
     // Expose scroll function to parent component
     useImperativeHandle(ref, () => ({
@@ -65,6 +67,14 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
 
     const fetchComments = useCallback(
       async (showLoading = true, page = 1, append = false) => {
+        const fetchKey = `${articleId}|${page}|${append ? '1' : '0'}`;
+        if (isFetchingRef.current && lastFetchKeyRef.current === fetchKey) return;
+        if (lastFetchKeyRef.current === fetchKey && comments.length > 0 && page === currentPage)
+          return;
+
+        isFetchingRef.current = true;
+        lastFetchKeyRef.current = fetchKey;
+
         if (showLoading) setIsLoading(true);
         else if (page > 1) setLoadingMore(true);
         else setIsRefreshing(true);
@@ -95,9 +105,10 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           setIsLoading(false);
           setIsRefreshing(false);
           setLoadingMore(false);
+          isFetchingRef.current = false;
         }
       },
-      [articleId] // Keep articleId dependency but manage it properly
+      [articleId, comments.length, currentPage] // Keep dependencies minimal and stable
     );
 
     // Update refs when they change
@@ -232,7 +243,10 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
     // Load comments on mount if not provided initially
     useEffect(() => {
       if (initialComments.length === 0) {
-        fetchComments(true, 1, false);
+        if (!_hasLoadedRef.current) {
+          _hasLoadedRef.current = true; // prevent Strict Mode double fetch
+          fetchComments(true, 1, false);
+        }
       } else {
         // Set last comment ID from initial comments (use first comment as it's most recent)
         if (initialComments.length > 0) {
@@ -252,6 +266,9 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
       setCurrentPage(1);
       setHasMoreComments(true);
       setVisibleTopCount(5);
+      _hasLoadedRef.current = false;
+      lastFetchKeyRef.current = null;
+      isFetchingRef.current = false;
     }, [articleId]);
 
     // Register WebSocket callbacks

@@ -28,10 +28,14 @@ export function FloatingChatButton() {
     handleStartChat(userId, userName, userAvatar);
   };
 
-  // Keep sidebar open when chat window is open
+  // On mobile, close sidebar when opening chat window to avoid overlap
   useEffect(() => {
-    if (chatWindowOpen && !chatSidebarOpen) {
-      setChatSidebarOpen(true);
+    if (typeof window === 'undefined') return;
+    if (chatWindowOpen) {
+      const isMobile = window.innerWidth < 1024; // treat <lg as mobile/tablet
+      if (isMobile && chatSidebarOpen) {
+        setChatSidebarOpen(false);
+      }
     }
   }, [chatWindowOpen, chatSidebarOpen, setChatSidebarOpen]);
 

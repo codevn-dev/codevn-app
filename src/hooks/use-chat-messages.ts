@@ -65,6 +65,8 @@ export function useChatMessages({
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef(0);
   const isConnectingRef = useRef(false);
+  const isFetchingConversationsRef = useRef(false);
+  const conversationsLoadedRef = useRef(false);
   const maxReconnectAttempts = 5;
 
   // Use refs to store current values
@@ -80,6 +82,8 @@ export function useChatMessages({
   conversationsRef.current = conversations;
 
   const fetchConversations = useCallback(async () => {
+    if (isFetchingConversationsRef.current) return;
+    isFetchingConversationsRef.current = true;
     try {
       const response = await fetch('/api/chat/conversations');
       if (response.ok) {
@@ -111,11 +115,14 @@ export function useChatMessages({
           } as Conversation;
         });
         setConversations(normalized);
+        conversationsLoadedRef.current = true;
       } else {
         console.error('Failed to fetch conversations:', response.status);
       }
     } catch (error) {
       console.error('Error fetching conversations:', error);
+    } finally {
+      isFetchingConversationsRef.current = false;
     }
   }, []);
 
@@ -124,7 +131,9 @@ export function useChatMessages({
       switch (message.type) {
         case 'connected':
           // Fetch initial conversations
-          fetchConversations();
+          if (!conversationsLoadedRef.current) {
+            fetchConversations();
+          }
           // Initialize presence from server payload if available
           if (message.data?.onlineUsers && Array.isArray(message.data.onlineUsers)) {
             setOnlineUsers(message.data.onlineUsers as string[]);
@@ -543,7 +552,9 @@ export function useChatMessages({
     if (user?.id) {
       connect();
       // Also fetch conversations immediately
-      fetchConversations();
+      if (!conversationsLoadedRef.current) {
+        fetchConversations();
+      }
     }
 
     return () => {
