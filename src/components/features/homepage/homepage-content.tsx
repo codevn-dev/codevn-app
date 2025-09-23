@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { MotionContainer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -54,8 +56,20 @@ export function HomepageContent() {
 
   // Helpers
   const getCategoryById = (id: string) => findCategoryById(categories, id);
-  const getCategoryByName = (name: string) =>
-    categories.find((c) => c.name.toLowerCase() === name.toLowerCase());
+  const getCategoryByName = (name: string) => {
+    const target = name.toLowerCase();
+    const dfs = (list: typeof categories): typeof categories[number] | undefined => {
+      for (const c of list) {
+        if (c.name.toLowerCase() === target) return c;
+        if (Array.isArray(c.children) && c.children.length > 0) {
+          const found = dfs(c.children as any);
+          if (found) return found;
+        }
+      }
+      return undefined;
+    };
+    return dfs(categories);
+  };
   const getDescendantNames = (name: string): string[] => {
     const cat = getCategoryByName(name);
     if (!cat) return [];
@@ -80,7 +94,7 @@ export function HomepageContent() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    const names = (params.get('categoryNames') || '')
+    const names = (params.get('categories') || '')
       .split(',')
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
@@ -115,7 +129,7 @@ export function HomepageContent() {
       });
       if (selectedCategoryNames.length > 0)
         params.set(
-          'categoryNames',
+          'categories',
           selectedCategoryNames.map((name) => name.toLowerCase()).join(',')
         );
       if (onlyMine && isAuthenticated && authUserId) params.set('authorId', authUserId);
@@ -203,7 +217,7 @@ export function HomepageContent() {
     const params = new URLSearchParams();
     if (selectedCategoryNames.length > 0)
       params.set(
-        'categoryNames',
+        'categories',
         selectedCategoryNames.map((name) => name.toLowerCase()).join(',')
       );
     if (onlyMine) params.set('mine', '1');
@@ -274,7 +288,7 @@ export function HomepageContent() {
     <div className="py-6">
       {/* Articles Section with Categories */}
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
-        <div className="rounded-2xl bg-white p-5 shadow-2xl sm:p-6 lg:p-6">
+        <MotionContainer className="rounded-2xl bg-white p-5 shadow-2xl sm:p-6 lg:p-6">
           {/* Categories Section */}
           <div className="mb-8">
             <CategorySelector
@@ -381,135 +395,171 @@ export function HomepageContent() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {filteredArticles.map((article) => (
-              <Link
-                key={article.id}
-                href={`/articles/${article.slug}`}
-                className="group hover:shadow-3xl block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80 transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-[1.02] hover:ring-2 hover:shadow-gray-500/60 hover:ring-[#B8956A]/20"
+          {(() => {
+            const containerVariants = {
+              hidden: { opacity: 1 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.06, delayChildren: 0.02 },
+              },
+            } as const;
+
+            const itemVariants = {
+              hidden: { opacity: 0, y: 16, scale: 0.98 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 },
+              },
+            } as const;
+
+            return (
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3"
               >
-                {/* Thumbnail (consistent height whether exists or not) */}
-                <div className="relative h-28 w-full overflow-hidden sm:h-32">
-                  {article.thumbnail ? (
-                    <img
-                      src={article.thumbnail}
-                      alt={article.title}
-                      className="h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
-                    />
-                  ) : (
-                    <div
-                      className="h-full w-full transition-all duration-500 ease-out group-hover:scale-110"
-                      style={{
-                        background: `linear-gradient(135deg, ${article.category.color}12, #ffffff)`,
-                      }}
-                    />
-                  )}
-                  {/* Overlay effect */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
-                </div>
+                {filteredArticles.map((article) => (
+                  <motion.div
+                    key={article.id}
+                    variants={itemVariants}
+                    whileHover={{
+                      y: -12,
+                      scale: 1.02,
+                      transition: { type: 'spring', stiffness: 380, damping: 28 },
+                    }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <Link href={`/articles/${article.slug}`} className="block h-full">
+                      <div className="group hover:shadow-3xl block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80 transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-[1.02] hover:ring-2 hover:shadow-gray-500/60 hover:ring-[#B8956A]/20">
+                        {/* Thumbnail (consistent height whether exists or not) */}
+                        <div className="relative h-28 w-full overflow-hidden sm:h-32">
+                          {article.thumbnail ? (
+                            <img
+                              src={article.thumbnail}
+                              alt={article.title}
+                              className="h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
+                            />
+                          ) : (
+                            <div
+                              className="h-full w-full transition-all duration-500 ease-out group-hover:scale-110"
+                              style={{
+                                background: `linear-gradient(135deg, ${article.category.color}12, #ffffff)`,
+                              }}
+                            />
+                          )}
+                          {/* Overlay effect */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
+                        </div>
 
-                {/* Article Header */}
-                <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
-                  <div className="mb-3 flex items-center justify-between sm:mb-4">
-                    <button
-                      className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition-all duration-300 ease-out hover:scale-110 hover:shadow-lg sm:px-3 sm:text-xs"
-                      style={{
-                        backgroundColor: `${article.category.color}15`,
-                        color: article.category.color,
-                      }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const categoryName = article.category.name.toLowerCase();
-                        setSelectedCategoryNames((prev) =>
-                          prev.includes(categoryName)
-                            ? prev.filter((x) => x !== categoryName)
-                            : [...prev, categoryName]
-                        );
-                      }}
-                    >
-                      <div
-                        className="mr-2 h-2 w-2 rounded-full"
-                        style={{ backgroundColor: article.category.color }}
-                      ></div>
-                      {article.category.name}
-                    </button>
-                    <div className="flex items-center text-xs text-gray-600">
-                      <Calendar className="mr-1 h-3 w-3" />
-                      {new Date(article.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </div>
-                  </div>
+                        {/* Article Header */}
+                        <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
+                          <div className="mb-3 flex items-center justify-between sm:mb-4">
+                            <button
+                              className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition-all duration-300 ease-out hover:scale-110 hover:shadow-lg sm:px-3 sm:text-xs"
+                              style={{
+                                backgroundColor: `${article.category.color}15`,
+                                color: article.category.color,
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const categoryName = article.category.name.toLowerCase();
+                                setSelectedCategoryNames((prev) =>
+                                  prev.includes(categoryName)
+                                    ? prev.filter((x) => x !== categoryName)
+                                    : [...prev, categoryName]
+                                );
+                              }}
+                            >
+                              <div
+                                className="mr-2 h-2 w-2 rounded-full"
+                                style={{ backgroundColor: article.category.color }}
+                              ></div>
+                              {article.category.name}
+                            </button>
+                            <div className="flex items-center text-xs text-gray-600">
+                              <Calendar className="mr-1 h-3 w-3" />
+                              {new Date(article.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </div>
+                          </div>
 
-                  <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-all duration-300 ease-out group-hover:scale-[1.02] group-hover:text-[#B8956A] sm:mb-3 sm:text-xl">
-                    {article.title}
-                  </h3>
+                          <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-all duration-300 ease-out group-hover:scale-[1.02] group-hover:text-[#B8956A] sm:mb-3 sm:text-xl">
+                            {article.title}
+                          </h3>
 
-                  <div className="flex items-center text-xs text-gray-700 transition-all duration-300 ease-out group-hover:translate-x-1 sm:text-sm">
-                    <div className="mr-2 sm:mr-3">
-                      <Avatar className="h-6 w-6 transition-all duration-300 ease-out group-hover:scale-110 group-hover:shadow-lg">
-                        <AvatarImage
-                          src={article.author.avatar || undefined}
-                          alt={article.author.name}
-                        />
-                        <AvatarFallback className="text-[10px] font-bold">
-                          {article.author.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <span className="font-medium transition-colors duration-300 ease-out group-hover:text-[#B8956A]">
-                      {article.author.name}
-                    </span>
-                  </div>
-                </div>
+                          <div className="flex items-center text-xs text-gray-700 transition-all duration-300 ease-out group-hover:translate-x-1 sm:text-sm">
+                            <div className="mr-2 sm:mr-3">
+                              <Avatar className="h-6 w-6 transition-all duration-300 ease-out group-hover:scale-110 group-hover:shadow-lg">
+                                <AvatarImage
+                                  src={article.author.avatar || undefined}
+                                  alt={article.author.name}
+                                />
+                                <AvatarFallback className="text-[10px] font-bold">
+                                  {article.author.name.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
+                            <span className="font-medium transition-colors duration-300 ease-out group-hover:text-[#B8956A]">
+                              {article.author.name}
+                            </span>
+                          </div>
+                        </div>
 
-                {/* Article Footer */}
-                <div className="bg-gray-50/50 px-4 py-3 transition-all duration-300 ease-out group-hover:bg-gradient-to-r group-hover:from-[#B8956A]/5 group-hover:to-[#8B6F47]/5 sm:px-6 sm:py-4">
-                  <div className="grid grid-cols-3 text-xs text-gray-700 sm:text-sm">
-                    {/* Views - Left */}
-                    <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
-                      <Eye className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]" />
-                      <span
-                        className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
-                        aria-label="views count"
-                      >
-                        {typeof article.views === 'number' ? article.views : 0}
-                      </span>
-                    </div>
-                    {/* Likes - Center */}
-                    <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
-                      <ThumbsUp
-                        className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]"
-                        aria-hidden="true"
-                      />
-                      <span
-                        className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
-                        aria-label="likes count"
-                      >
-                        {article._count.likes}
-                      </span>
-                    </div>
-                    {/* Comments - Right */}
-                    <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
-                      <MessageSquare
-                        className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]"
-                        aria-hidden="true"
-                      />
-                      <span
-                        className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
-                        aria-label="comments count"
-                      >
-                        {article._count.comments}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                        {/* Article Footer */}
+                        <div className="bg-gray-50/50 px-4 py-3 transition-all duration-300 ease-out group-hover:bg-gradient-to-r group-hover:from-[#B8956A]/5 group-hover:to-[#8B6F47]/5 sm:px-6 sm:py-4">
+                          <div className="grid grid-cols-3 text-xs text-gray-700 sm:text-sm">
+                            {/* Views - Left */}
+                            <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
+                              <Eye className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]" />
+                              <span
+                                className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
+                                aria-label="views count"
+                              >
+                                {typeof article.views === 'number' ? article.views : 0}
+                              </span>
+                            </div>
+                            {/* Likes - Center */}
+                            <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
+                              <ThumbsUp
+                                className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]"
+                                aria-hidden="true"
+                              />
+                              <span
+                                className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
+                                aria-label="likes count"
+                              >
+                                {article._count.likes}
+                              </span>
+                            </div>
+                            {/* Comments - Right */}
+                            <div className="flex items-center justify-center gap-1.5 transition-all duration-300 ease-out group-hover:scale-105 sm:gap-2">
+                              <MessageSquare
+                                className="h-4 w-4 text-gray-600 transition-all duration-300 ease-out group-hover:scale-110 group-hover:text-[#B8956A]"
+                                aria-hidden="true"
+                              />
+                              <span
+                                className="font-medium tabular-nums transition-colors duration-300 ease-out group-hover:text-[#B8956A]"
+                                aria-label="comments count"
+                              >
+                                {article._count.comments}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+            );
+          })()}
 
           {filteredArticles.length === 0 && (
             <div className="px-4 py-12 text-center sm:py-16">
@@ -537,18 +587,24 @@ export function HomepageContent() {
           )}
 
           {/* Lazy load sentinel */}
-          <div ref={loadMoreRef} className="h-10 w-full" />
+          <MotionContainer delay={0.02}>
+            <div ref={loadMoreRef} className="h-10 w-full" />
+          </MotionContainer>
           {isLoadingMore && (
-            <div className="mt-2 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-600 shadow-md shadow-gray-200/50 backdrop-blur-sm">
-              Loading more...
-            </div>
+            <MotionContainer delay={0.04}>
+              <div className="mt-2 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-600 shadow-md shadow-gray-200/50 backdrop-blur-sm">
+                Loading more...
+              </div>
+            </MotionContainer>
           )}
           {!isLoadingMore && !isLoading && !hasMoreArticles && filteredArticles.length > 0 && (
-            <div className="mt-3 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-500 shadow-md shadow-gray-200/50 backdrop-blur-sm">
-              No more articles to show
-            </div>
+            <MotionContainer delay={0.04}>
+              <div className="mt-3 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-500 shadow-md shadow-gray-200/50 backdrop-blur-sm">
+                No more articles to show
+              </div>
+            </MotionContainer>
           )}
-        </div>
+        </MotionContainer>
       </div>
       {showBackToTop && (
         <button

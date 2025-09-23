@@ -71,8 +71,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         const status = query.status || 'all';
         const categoryIdsParam = (query as any).categoryIds;
-        const categoryNameParam = (query as any).categoryName;
-        const categoryNamesParam = (query as any).categoryNames;
+        const categoriesParam = (query as any).categories;
         const authorId = query.authorId || '';
         const publishedOnlyParam = query.publishedOnly;
 
@@ -95,13 +94,12 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         // Prepare categoryNames (CSV or array). Lowercase for lookup; repository will handle exists subquery
         const categoryNames: string[] | undefined = (() => {
-          const parts = Array.isArray(categoryNamesParam)
-            ? (categoryNamesParam as string[])
-            : typeof categoryNamesParam === 'string'
-              ? (categoryNamesParam as string).split(',')
+          const partsNew = Array.isArray(categoriesParam)
+            ? (categoriesParam as string[])
+            : typeof categoriesParam === 'string'
+              ? (categoriesParam as string).split(',')
               : undefined;
-          const single = categoryNameParam ? [String(categoryNameParam)] : [];
-          const combined = [...(parts || []), ...single]
+          const combined = [...(partsNew || [])]
             .map((s) => s.trim().toLowerCase())
             .filter(Boolean);
           return combined.length > 0 ? combined : undefined;

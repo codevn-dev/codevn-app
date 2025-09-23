@@ -31,7 +31,8 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
-import { ClientOnly } from '@/components/layout';
+import { ClientOnly, MotionContainer } from '@/components/layout';
+import { motion } from 'framer-motion';
 import { TiptapRichTextEditor, CodeHighlighter } from '@/features/articles';
 import { ImageUpload } from '@/features/upload';
 import {
@@ -368,552 +369,592 @@ function ArticlesContent() {
   return (
     <div className="py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-white p-6 shadow-2xl">
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">My Articles</h1>
-            <p className="mt-1 text-gray-700 sm:mt-2">
-              Manage your articles and share your knowledge
-            </p>
-          </div>
-
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold sm:text-xl">Articles ({pagination.totalItems})</h2>
-            <Button className="w-full sm:w-auto" onClick={() => setShowArticleForm(true)}>
-              <Plus className="mr-1 h-4 w-4" />
-              New Article
-            </Button>
-          </div>
-
-          {/* Search and Filter Controls */}
-          <div className="mb-6 rounded-xl bg-white/80 p-4 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {/* Search Input */}
-              <div className="lg:col-span-2">
-                <div className="relative">
-                  <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-500" />
-                  <Input
-                    placeholder="Search your articles..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 focus:ring-2 focus:ring-[#B8956A]/20"
-                  />
-                </div>
-              </div>
-
-              {/* Status Filter */}
-              <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Articles</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Category Filter */}
-              <Select
-                value={categoryFilter || 'all'}
-                onValueChange={(value) => setCategoryFilter(value === 'all' ? '' : value)}
-              >
-                <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
-                  <SelectValue placeholder="Filter by category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Sort Controls */}
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (sortBy === 'title') {
-                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                  } else {
-                    setSortBy('title');
-                    setSortOrder('asc');
-                  }
-                }}
-                className={`px-3 transition-colors ${
-                  sortBy === 'title' ? 'bg-[#B8956A]/10 text-[#A6825A]' : 'bg-white text-gray-700'
-                }`}
-              >
-                <ArrowUpDown className="mr-1 h-4 w-4" />
-                Title
-                {sortBy === 'title' && (
-                  <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (sortBy === 'createdAt') {
-                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                  } else {
-                    setSortBy('createdAt');
-                    setSortOrder('desc');
-                  }
-                }}
-                className={`px-3 transition-colors ${
-                  sortBy === 'createdAt'
-                    ? 'bg-[#B8956A]/10 text-[#A6825A]'
-                    : 'bg-white text-gray-700'
-                }`}
-              >
-                <ArrowUpDown className="mr-1 h-4 w-4" />
-                Created
-                {sortBy === 'createdAt' && (
-                  <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (sortBy === 'updatedAt') {
-                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                  } else {
-                    setSortBy('updatedAt');
-                    setSortOrder('desc');
-                  }
-                }}
-                className={`px-3 transition-colors ${
-                  sortBy === 'updatedAt'
-                    ? 'bg-[#B8956A]/10 text-[#A6825A]'
-                    : 'bg-white text-gray-700'
-                }`}
-              >
-                <ArrowUpDown className="mr-1 h-4 w-4" />
-                Updated
-                {sortBy === 'updatedAt' && (
-                  <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Articles List */}
-          {articles.length === 0 ? (
-            <div className="py-12 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-                <FileText className="h-8 w-8 text-gray-600" />
-              </div>
-              <h3 className="mb-2 text-lg font-medium text-gray-900">No articles found</h3>
-              <p className="mb-4 text-gray-700">
-                Start sharing your knowledge by creating your first article
+        <MotionContainer>
+          <div className="rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">My Articles</h1>
+              <p className="mt-1 text-gray-700 sm:mt-2">
+                Manage your articles and share your knowledge
               </p>
-              <Button onClick={() => setShowArticleForm(true)}>
+            </div>
+
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-lg font-semibold sm:text-xl">
+                Articles ({pagination.totalItems})
+              </h2>
+              <Button className="w-full sm:w-auto" onClick={() => setShowArticleForm(true)}>
                 <Plus className="mr-1 h-4 w-4" />
                 New Article
               </Button>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {articles.map((article) => (
-                <div
-                  key={article.id}
-                  className="block flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80"
-                >
-                  {/* Thumbnail (consistent height whether exists or not) */}
-                  <div className="relative h-28 w-full overflow-hidden sm:h-32">
-                    {article.thumbnail ? (
-                      <img
-                        src={article.thumbnail}
-                        alt={article.title}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div
-                        className="h-full w-full"
-                        style={{
-                          background: `linear-gradient(135deg, ${article.category.color}12, #ffffff)`,
-                        }}
-                      />
-                    )}
+
+            {/* Search and Filter Controls */}
+            <div className="mb-6 rounded-xl bg-white/80 p-4 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {/* Search Input */}
+                <div className="lg:col-span-2">
+                  <div className="relative">
+                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-500" />
+                    <Input
+                      placeholder="Search your articles..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 focus:ring-2 focus:ring-[#B8956A]/20"
+                    />
                   </div>
+                </div>
 
-                  {/* Article Header */}
-                  <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
-                    <div className="mb-3 flex items-center justify-between sm:mb-4">
-                      <button
-                        className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
-                        style={{
-                          backgroundColor: `${article.category.color}15`,
-                          color: article.category.color,
-                        }}
-                      >
-                        <div
-                          className="mr-2 h-2 w-2 rounded-full"
-                          style={{ backgroundColor: article.category.color }}
-                        />
-                        {article.category.name}
-                      </button>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center text-xs text-gray-600">
-                          <Calendar className="mr-1 h-3 w-3" />
-                          {new Date(article.createdAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </div>
-                        <div className="dropdown-container relative">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenDropdown(openDropdown === article.id ? null : article.id);
-                            }}
-                            className="h-8 w-8 p-0"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
+                {/* Status Filter */}
+                <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+                  <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Articles</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
 
-                          {openDropdown === article.id && (
-                            <div className="dropdown-container absolute top-8 right-0 z-50 w-48 rounded-xl bg-white py-1 shadow-xl shadow-gray-300/60">
+                {/* Category Filter */}
+                <Select
+                  value={categoryFilter || 'all'}
+                  onValueChange={(value) => setCategoryFilter(value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort Controls */}
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (sortBy === 'title') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('title');
+                      setSortOrder('asc');
+                    }
+                  }}
+                  className={`px-3 transition-colors ${
+                    sortBy === 'title' ? 'bg-[#B8956A]/10 text-[#A6825A]' : 'bg-white text-gray-700'
+                  }`}
+                >
+                  <ArrowUpDown className="mr-1 h-4 w-4" />
+                  Title
+                  {sortBy === 'title' && (
+                    <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (sortBy === 'createdAt') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('createdAt');
+                      setSortOrder('desc');
+                    }
+                  }}
+                  className={`px-3 transition-colors ${
+                    sortBy === 'createdAt'
+                      ? 'bg-[#B8956A]/10 text-[#A6825A]'
+                      : 'bg-white text-gray-700'
+                  }`}
+                >
+                  <ArrowUpDown className="mr-1 h-4 w-4" />
+                  Created
+                  {sortBy === 'createdAt' && (
+                    <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (sortBy === 'updatedAt') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('updatedAt');
+                      setSortOrder('desc');
+                    }
+                  }}
+                  className={`px-3 transition-colors ${
+                    sortBy === 'updatedAt'
+                      ? 'bg-[#B8956A]/10 text-[#A6825A]'
+                      : 'bg-white text-gray-700'
+                  }`}
+                >
+                  <ArrowUpDown className="mr-1 h-4 w-4" />
+                  Updated
+                  {sortBy === 'updatedAt' && (
+                    <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Articles List */}
+            {articles.length === 0 ? (
+              <div className="py-12 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                  <FileText className="h-8 w-8 text-gray-600" />
+                </div>
+                <h3 className="mb-2 text-lg font-medium text-gray-900">No articles found</h3>
+                <p className="mb-4 text-gray-700">
+                  Start sharing your knowledge by creating your first article
+                </p>
+                <Button onClick={() => setShowArticleForm(true)}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  New Article
+                </Button>
+              </div>
+            ) : (
+              (() => {
+                const containerVariants = {
+                  hidden: { opacity: 1 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.06, delayChildren: 0.02 },
+                  },
+                } as const;
+
+                const itemVariants = {
+                  hidden: { opacity: 0, y: 16, scale: 0.98 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 },
+                  },
+                } as const;
+
+                return (
+                  <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3"
+                  >
+                    {articles.map((article) => (
+                      <motion.div key={article.id} variants={itemVariants} className="block h-full">
+                        <div className="block flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
+                          {/* Thumbnail (consistent height whether exists or not) */}
+                          <div className="relative h-28 w-full overflow-hidden sm:h-32">
+                            {article.thumbnail ? (
+                              <img
+                                src={article.thumbnail}
+                                alt={article.title}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
                               <div
-                                onClick={() => {
-                                  handleTogglePublish(article);
-                                  setOpenDropdown(null);
+                                className="h-full w-full"
+                                style={{
+                                  background: `linear-gradient(135deg, ${article.category.color}12, #ffffff)`,
                                 }}
-                                className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
-                              >
-                                {article.published ? (
-                                  <>
-                                    <EyeOff className="mr-2 h-4 w-4" />
-                                    Unpublish
-                                  </>
-                                ) : (
-                                  <>
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    Publish
-                                  </>
-                                )}
-                              </div>
+                              />
+                            )}
+                          </div>
 
-                              {user && article.author.id === user.id && (
+                          {/* Article Header */}
+                          <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
+                            <div className="mb-3 flex items-center justify-between sm:mb-4">
+                              <button
+                                className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
+                                style={{
+                                  backgroundColor: `${article.category.color}15`,
+                                  color: article.category.color,
+                                }}
+                              >
                                 <div
-                                  onClick={() => {
-                                    if (article.published) {
-                                      // Open published article in new tab
-                                      window.open(`/articles/${article.slug}`, '_blank');
-                                    } else {
-                                      // Open preview for draft
-                                      handlePreviewArticle(article);
-                                    }
-                                    setOpenDropdown(null);
-                                  }}
-                                  className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
-                                >
-                                  <ExternalLink className="mr-2 h-4 w-4" />
-                                  {article.published ? 'View' : 'Preview'}
+                                  className="mr-2 h-2 w-2 rounded-full"
+                                  style={{ backgroundColor: article.category.color }}
+                                />
+                                {article.category.name}
+                              </button>
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center text-xs text-gray-600">
+                                  <Calendar className="mr-1 h-3 w-3" />
+                                  {new Date(article.createdAt).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                  })}
                                 </div>
-                              )}
+                                <div className="dropdown-container relative">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenDropdown(
+                                        openDropdown === article.id ? null : article.id
+                                      );
+                                    }}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
 
-                              <div
-                                onClick={() => {
-                                  handleEditArticle(article);
-                                  setOpenDropdown(null);
-                                }}
-                                className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </div>
+                                  {openDropdown === article.id && (
+                                    <div className="dropdown-container absolute top-8 right-0 z-50 w-48 rounded-xl bg-white py-1 shadow-xl shadow-gray-300/60">
+                                      <div
+                                        onClick={() => {
+                                          handleTogglePublish(article);
+                                          setOpenDropdown(null);
+                                        }}
+                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
+                                      >
+                                        {article.published ? (
+                                          <>
+                                            <EyeOff className="mr-2 h-4 w-4" />
+                                            Unpublish
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            Publish
+                                          </>
+                                        )}
+                                      </div>
 
-                              <div
-                                onClick={() => {
-                                  setShowDeleteConfirm(article);
-                                  setOpenDropdown(null);
-                                }}
-                                className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                                      {user && article.author.id === user.id && (
+                                        <div
+                                          onClick={() => {
+                                            if (article.published) {
+                                              // Open published article in new tab
+                                              window.open(`/articles/${article.slug}`, '_blank');
+                                            } else {
+                                              // Open preview for draft
+                                              handlePreviewArticle(article);
+                                            }
+                                            setOpenDropdown(null);
+                                          }}
+                                          className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
+                                        >
+                                          <ExternalLink className="mr-2 h-4 w-4" />
+                                          {article.published ? 'View' : 'Preview'}
+                                        </div>
+                                      )}
+
+                                      <div
+                                        onClick={() => {
+                                          handleEditArticle(article);
+                                          setOpenDropdown(null);
+                                        }}
+                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
+                                      >
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Edit
+                                      </div>
+
+                                      <div
+                                        onClick={() => {
+                                          setShowDeleteConfirm(article);
+                                          setOpenDropdown(null);
+                                        }}
+                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          )}
+
+                            <div className="mb-2 flex items-start justify-between gap-2">
+                              <h3 className="line-clamp-2 flex-1 text-lg font-bold text-gray-900 sm:text-xl">
+                                {article.title}
+                              </h3>
+                              <Badge
+                                variant={article.published ? 'default' : 'secondary'}
+                                className={
+                                  article.published
+                                    ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]'
+                                    : ''
+                                }
+                              >
+                                {article.published ? 'Published' : 'Draft'}
+                              </Badge>
+                            </div>
+
+                            <div className="mb-3 line-clamp-2 text-sm text-gray-700">
+                              <CodeHighlighter
+                                content={article.content.substring(0, 150) + '...'}
+                                className="text-sm"
+                              />
+                            </div>
+
+                            <div className="flex items-center text-xs text-gray-700 sm:text-sm">
+                              <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#B8956A] to-[#8B6F47] text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
+                                {article.author.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="font-medium">{article.author.name}</span>
+                            </div>
+                          </div>
+
+                          {/* Article Footer */}
+                          <div className="bg-gray-50/50 px-4 py-3 sm:px-6 sm:py-4">
+                            <div className="grid grid-cols-3 text-xs text-gray-700 sm:text-sm">
+                              {/* Views - Left */}
+                              <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                                <Eye className="h-4 w-4 text-gray-600" />
+                                <span className="font-medium tabular-nums">
+                                  {typeof article.views === 'number' ? article.views : 0}
+                                </span>
+                              </div>
+                              {/* Likes - Center */}
+                              <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                                <ThumbsUp className="h-4 w-4 text-gray-600" />
+                                <span className="font-medium tabular-nums">
+                                  {article._count.likes}
+                                </span>
+                              </div>
+                              {/* Comments - Right */}
+                              <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                                <MessageSquare className="h-4 w-4 text-gray-600" />
+                                <span className="font-medium tabular-nums">
+                                  {article._count.comments}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                );
+              })()
+            )}
 
-                    <div className="mb-2 flex items-start justify-between gap-2">
-                      <h3 className="line-clamp-2 flex-1 text-lg font-bold text-gray-900 sm:text-xl">
-                        {article.title}
-                      </h3>
-                      <Badge
-                        variant={article.published ? 'default' : 'secondary'}
-                        className={
-                          article.published ? 'bg-[#B8956A] text-white hover:bg-[#A6825A]' : ''
-                        }
-                      >
-                        {article.published ? 'Published' : 'Draft'}
-                      </Badge>
-                    </div>
+            {/* Lazy load sentinel */}
+            <div ref={loadMoreRef} className="h-10 w-full" />
+            {isLoadingMore && (
+              <div className="mt-2 text-center text-sm text-gray-600">Loading more...</div>
+            )}
 
-                    <div className="mb-3 line-clamp-2 text-sm text-gray-700">
-                      <CodeHighlighter
-                        content={article.content.substring(0, 150) + '...'}
-                        className="text-sm"
-                      />
-                    </div>
-
-                    <div className="flex items-center text-xs text-gray-700 sm:text-sm">
-                      <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#B8956A] to-[#8B6F47] text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
-                        {article.author.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="font-medium">{article.author.name}</span>
-                    </div>
+            {/* Article Form Modal */}
+            {showArticleForm && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6">
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold">
+                      {editingArticle ? 'Edit Article' : 'Create New Article'}
+                    </h2>
                   </div>
 
-                  {/* Article Footer */}
-                  <div className="bg-gray-50/50 px-4 py-3 sm:px-6 sm:py-4">
-                    <div className="grid grid-cols-3 text-xs text-gray-700 sm:text-sm">
-                      {/* Views - Left */}
-                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        <Eye className="h-4 w-4 text-gray-600" />
-                        <span className="font-medium tabular-nums">
-                          {typeof article.views === 'number' ? article.views : 0}
-                        </span>
-                      </div>
-                      {/* Likes - Center */}
-                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        <ThumbsUp className="h-4 w-4 text-gray-600" />
-                        <span className="font-medium tabular-nums">{article._count.likes}</span>
-                      </div>
-                      {/* Comments - Right */}
-                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        <MessageSquare className="h-4 w-4 text-gray-600" />
-                        <span className="font-medium tabular-nums">{article._count.comments}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Lazy load sentinel */}
-          <div ref={loadMoreRef} className="h-10 w-full" />
-          {isLoadingMore && (
-            <div className="mt-2 text-center text-sm text-gray-600">Loading more...</div>
-          )}
-
-          {/* Article Form Modal */}
-          {showArticleForm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-              <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6">
-                <div className="mb-4">
-                  <h2 className="text-lg font-semibold">
-                    {editingArticle ? 'Edit Article' : 'Create New Article'}
-                  </h2>
-                </div>
-
-                <form
-                  onSubmit={editingArticle ? handleUpdateArticle : handleCreateArticle}
-                  className="space-y-4"
-                >
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Title *</label>
-                      <Input
-                        placeholder="Enter article title"
-                        value={articleForm.title}
-                        onChange={(e) => {
-                          const title = e.target.value;
-                          setArticleForm({
-                            ...articleForm,
-                            title,
-                            slug: editingArticle ? articleForm.slug : generateSlug(title),
-                          });
-                        }}
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Slug *</label>
-                      <Input
-                        placeholder="article-slug"
-                        value={articleForm.slug}
-                        onChange={(e) => setArticleForm({ ...articleForm, slug: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Thumbnail Image</label>
-                    {articleForm.thumbnail ? (
+                  <form
+                    onSubmit={editingArticle ? handleUpdateArticle : handleCreateArticle}
+                    className="space-y-4"
+                  >
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <div className="relative w-full max-w-sm">
-                          <img
-                            src={articleForm.thumbnail}
-                            alt="Thumbnail preview"
-                            className="h-40 w-full rounded-lg object-cover"
-                          />
+                        <label className="text-sm font-medium">Title *</label>
+                        <Input
+                          placeholder="Enter article title"
+                          value={articleForm.title}
+                          onChange={(e) => {
+                            const title = e.target.value;
+                            setArticleForm({
+                              ...articleForm,
+                              title,
+                              slug: editingArticle ? articleForm.slug : generateSlug(title),
+                            });
+                          }}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Slug *</label>
+                        <Input
+                          placeholder="article-slug"
+                          value={articleForm.slug}
+                          onChange={(e) => setArticleForm({ ...articleForm, slug: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Thumbnail Image</label>
+                      {articleForm.thumbnail ? (
+                        <div className="space-y-2">
+                          <div className="relative w-full max-w-sm">
+                            <img
+                              src={articleForm.thumbnail}
+                              alt="Thumbnail preview"
+                              className="h-40 w-full rounded-lg object-cover"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setArticleForm({ ...articleForm, thumbnail: '' })}
+                              className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                           <Button
                             type="button"
                             variant="outline"
-                            size="sm"
-                            onClick={() => setArticleForm({ ...articleForm, thumbnail: '' })}
-                            className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                            onClick={() => setShowImageUpload(true)}
+                            className="w-full max-w-sm"
                           >
-                            <X className="h-4 w-4" />
+                            <Upload className="mr-2 h-4 w-4" />
+                            Change Image
                           </Button>
                         </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setShowImageUpload(true)}
-                          className="w-full max-w-sm"
-                        >
-                          <Upload className="mr-2 h-4 w-4" />
-                          Change Image
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="w-full max-w-sm">
-                        <button
-                          type="button"
-                          onClick={() => setShowImageUpload(true)}
-                          className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg bg-white transition-colors"
-                        >
-                          <Upload className="h-8 w-8 text-gray-600" />
-                          <span className="text-sm font-medium text-gray-700">
-                            Click to upload thumbnail
-                          </span>
-                        </button>
-                        <p className="mt-2 text-xs text-gray-500">PNG, JPG, GIF, WebP up to 5MB</p>
-                      </div>
-                    )}
-                  </div>
+                      ) : (
+                        <div className="w-full max-w-sm">
+                          <button
+                            type="button"
+                            onClick={() => setShowImageUpload(true)}
+                            className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg bg-white transition-colors"
+                          >
+                            <Upload className="h-8 w-8 text-gray-600" />
+                            <span className="text-sm font-medium text-gray-700">
+                              Click to upload thumbnail
+                            </span>
+                          </button>
+                          <p className="mt-2 text-xs text-gray-500">
+                            PNG, JPG, GIF, WebP up to 5MB
+                          </p>
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Category *</label>
-                    <Select
-                      value={articleForm.categoryId || 'placeholder'}
-                      onValueChange={(value) =>
-                        setArticleForm({
-                          ...articleForm,
-                          categoryId: value === 'placeholder' ? '' : value,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="placeholder" disabled>
-                          Select a category
-                        </SelectItem>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="h-3 w-3 rounded-full"
-                                style={{ backgroundColor: category.color }}
-                              />
-                              {category.name}
-                            </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Category *</label>
+                      <Select
+                        value={articleForm.categoryId || 'placeholder'}
+                        onValueChange={(value) =>
+                          setArticleForm({
+                            ...articleForm,
+                            categoryId: value === 'placeholder' ? '' : value,
+                          })
+                        }
+                      >
+                        <SelectTrigger className="focus:ring-2 focus:ring-[#B8956A]/20">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="placeholder" disabled>
+                            Select a category
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="h-3 w-3 rounded-full"
+                                  style={{ backgroundColor: category.color }}
+                                />
+                                {category.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Content *</label>
-                    <TiptapRichTextEditor
-                      value={articleForm.content}
-                      onChange={(value) => setArticleForm({ ...articleForm, content: value })}
-                      placeholder="Write your article content here..."
-                      className="min-h-[400px]"
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Content *</label>
+                      <TiptapRichTextEditor
+                        value={articleForm.content}
+                        onChange={(value) => setArticleForm({ ...articleForm, content: value })}
+                        placeholder="Write your article content here..."
+                        className="min-h-[400px]"
+                      />
+                    </div>
 
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="published"
-                      checked={articleForm.published}
-                      onChange={(e) =>
-                        setArticleForm({ ...articleForm, published: e.target.checked })
-                      }
-                      className="h-4 w-4 rounded border-gray-300 text-[#B8956A] focus:ring-[#B8956A]"
-                    />
-                    <label htmlFor="published" className="text-sm font-medium">
-                      Publish immediately
-                    </label>
-                  </div>
-                </form>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="published"
+                        checked={articleForm.published}
+                        onChange={(e) =>
+                          setArticleForm({ ...articleForm, published: e.target.checked })
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-[#B8956A] focus:ring-[#B8956A]"
+                      />
+                      <label htmlFor="published" className="text-sm font-medium">
+                        Publish immediately
+                      </label>
+                    </div>
+                  </form>
 
-                <div className="mt-6 flex justify-end gap-2">
-                  <Button variant="outline" onClick={resetForm}>
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    onClick={editingArticle ? handleUpdateArticle : handleCreateArticle}
-                  >
-                    {editingArticle ? 'Update Article' : 'Create Article'}
-                  </Button>
+                  <div className="mt-6 flex justify-end gap-2">
+                    <Button variant="outline" onClick={resetForm}>
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      onClick={editingArticle ? handleUpdateArticle : handleCreateArticle}
+                    >
+                      {editingArticle ? 'Update Article' : 'Create Article'}
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Delete Confirmation Modal */}
-          {showDeleteConfirm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-              <div className="w-full max-w-md rounded-lg bg-white p-6">
-                <h2 className="mb-4 text-lg font-semibold">Delete Article</h2>
-                <p className="mb-6 text-gray-700">
-                  Are you sure you want to delete &quot;{showDeleteConfirm?.title}&quot;? This
-                  action cannot be undone and will also delete all comments and likes.
-                </p>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setShowDeleteConfirm(null)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => showDeleteConfirm && handleDeleteArticle(showDeleteConfirm)}
-                    className="border-red-600 text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 className="mr-1 h-4 w-4" />
-                    Delete
-                  </Button>
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div className="w-full max-w-md rounded-lg bg-white p-6">
+                  <h2 className="mb-4 text-lg font-semibold">Delete Article</h2>
+                  <p className="mb-6 text-gray-700">
+                    Are you sure you want to delete &quot;{showDeleteConfirm?.title}&quot;? This
+                    action cannot be undone and will also delete all comments and likes.
+                  </p>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setShowDeleteConfirm(null)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => showDeleteConfirm && handleDeleteArticle(showDeleteConfirm)}
+                      className="border-red-600 text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Image Upload Modal */}
-          {showImageUpload && (
-            <ImageUpload
-              onImageUploaded={(imageUrl) => {
-                setArticleForm({ ...articleForm, thumbnail: imageUrl });
-                setShowImageUpload(false);
-              }}
-              onClose={() => setShowImageUpload(false)}
-            />
-          )}
-        </div>
+            {/* Image Upload Modal */}
+            {showImageUpload && (
+              <ImageUpload
+                onImageUploaded={(imageUrl) => {
+                  setArticleForm({ ...articleForm, thumbnail: imageUrl });
+                  setShowImageUpload(false);
+                }}
+                onClose={() => setShowImageUpload(false)}
+              />
+            )}
+          </div>
+        </MotionContainer>
       </div>
     </div>
   );

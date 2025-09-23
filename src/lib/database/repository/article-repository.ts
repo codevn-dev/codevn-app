@@ -11,7 +11,7 @@ export interface ArticleFilters {
   limit?: number;
   status?: 'all' | 'published' | 'draft';
   categoryIds?: string[];
-  categoryNames?: string[];
+  categoryNames?: string[]; // kept as internal name, maps from query "categories"
   authorId?: string;
   publishedOnly?: boolean;
   userId?: string; // For checking user like/unlike status
