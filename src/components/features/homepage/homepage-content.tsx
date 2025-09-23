@@ -47,6 +47,11 @@ export function HomepageContent() {
   const lastLoadedPageRef = useRef<number>(0);
   const prevFilterSigRef = useRef<string | null>(null);
 
+  // Stable derived keys for deps
+  const selectedNamesKey = selectedCategoryNames.join(',');
+  const filterSigBase = `${[...selectedCategoryNames].sort().join(',')}|${onlyMine ? '1' : '0'}`;
+  const authUserId = user?.id || '';
+
   // Helpers
   const getCategoryById = (id: string) => findCategoryById(categories, id);
   const getCategoryByName = (name: string) =>
@@ -88,12 +93,10 @@ export function HomepageContent() {
   // Fetch articles with pagination and server-side filters
   useEffect(() => {
     if (!isFiltersInitializedRef.current) return; // wait until URL filters parsed
-    if (onlyMine && (isAuthLoading || !isAuthenticated || !user)) return; // wait for auth
+    if (onlyMine && (isAuthLoading || !isAuthenticated || !authUserId)) return; // wait for auth
 
     const fetchArticlesPage = async () => {
-      const filterSig = `${[...selectedCategoryNames].sort().join(',')}|${onlyMine ? '1' : '0'}|${
-        isAuthenticated && user ? user.id : ''
-      }`;
+      const filterSig = `${filterSigBase}|${isAuthenticated && authUserId ? authUserId : ''}`;
 
       // Prevent refetching page=1 for the same filters once it's already loaded
       // Only block duplicate fetch for the same page+filters (not just page 1)
@@ -115,7 +118,7 @@ export function HomepageContent() {
           'categoryNames',
           selectedCategoryNames.map((name) => name.toLowerCase()).join(',')
         );
-      if (onlyMine && isAuthenticated && user) params.set('authorId', user.id);
+      if (onlyMine && isAuthenticated && authUserId) params.set('authorId', authUserId);
       const fetchKey = params.toString();
 
       if (isFetchInFlightRef.current && lastFetchKeyRef.current === fetchKey) return; // in-flight duplicate
@@ -161,18 +164,25 @@ export function HomepageContent() {
     fetchArticlesPage();
   }, [
     articlesPage,
-    // compress arrays and auth into stable primitives to reduce redundant triggers
-    selectedCategoryNames.join(','),
+    selectedNamesKey,
+    selectedCategoryNames,
     onlyMine,
     isAuthenticated,
     isAuthLoading,
-    user?.id,
+    authUserId,
+    hasMoreArticles,
+    filterSigBase,
+    setArticles,
+    addArticles,
+    setHasMoreArticles,
+    setLoading,
+    setError,
   ]);
 
   // Reset to first page only when filters actually change
   useEffect(() => {
     if (!isFiltersInitializedRef.current) return;
-    const sig = `${[...selectedCategoryNames].sort().join(',')}|${onlyMine ? '1' : '0'}`;
+    const sig = filterSigBase;
     if (prevFilterSigRef.current !== null && prevFilterSigRef.current !== sig) {
       setArticlesPage(1);
       // Reset last loaded markers so pagination restarts cleanly for new filters
@@ -180,7 +190,7 @@ export function HomepageContent() {
       lastLoadedPageRef.current = 0;
     }
     prevFilterSigRef.current = sig;
-  }, [selectedCategoryNames.join(','), onlyMine, setArticlesPage]);
+  }, [filterSigBase, setArticlesPage]);
 
   // Keep a ref of latest page to avoid stale closure in observer
   useEffect(() => {
