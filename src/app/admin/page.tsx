@@ -460,23 +460,6 @@ function AdminPageContent() {
                   </div>
                 ) : (
                   (() => {
-                    const containerVariants = {
-                      hidden: { opacity: 1 },
-                      visible: {
-                        opacity: 1,
-                        transition: { staggerChildren: 0.04, delayChildren: 0.02 },
-                      },
-                    } as const;
-
-                    const rowVariants = {
-                      hidden: { opacity: 0, y: 12 },
-                      visible: {
-                        opacity: 1,
-                        y: 0,
-                        transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 },
-                      },
-                    } as const;
-
                     return (
                       <div className="shadow-brand/30 overflow-hidden rounded-lg bg-white/90 shadow-2xl drop-shadow-2xl backdrop-blur-sm">
                         <div className="overflow-x-auto">
