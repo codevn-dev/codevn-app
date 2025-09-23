@@ -124,7 +124,7 @@ export function ChatSidebar({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b p-4">
+        <div className="flex items-center justify-between border-b border-transparent p-4">
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-[#B8956A]" />
             <h2 className="text-lg font-semibold">Chat</h2>
@@ -141,7 +141,7 @@ export function ChatSidebar({
         </div>
 
         {/* Search */}
-        <div className="border-b p-4">
+        <div className="border-b border-transparent p-4">
           <div className="relative">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <Input

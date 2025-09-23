@@ -39,6 +39,11 @@ export function CustomCursor() {
   const [visible, setVisible] = useState<boolean>(false);
   const [mode, setMode] = useState<CursorMode>('default');
   const color = usePrimaryColor();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const Icon = useMemo(() => {
     switch (mode) {
@@ -110,7 +115,7 @@ export function CustomCursor() {
 
   // Hide on touch devices to avoid conflicts
   const isTouch = typeof window !== 'undefined' && matchMedia('(pointer: coarse)').matches;
-  if (isTouch) return null;
+  if (!mounted || isTouch) return null;
 
   const baseSize = mode === 'text' ? 18 : mode === 'interactive' ? 22 : 18;
   const size = baseSize * 1.2; // increase by 20%

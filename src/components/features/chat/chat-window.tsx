@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, Smile, Send } from 'lucide-react';
+import { X, Smile, Send, Check, CheckCheck } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useWebSocket } from './websocket-context';
 import { formatChatTime, isNewDay, formatDate } from '@/lib/utils';
@@ -419,27 +419,22 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
                     ) : (
                       <div
                         className={`max-w-[70%] rounded-lg px-4 py-3 ${
-                          m.from === userId ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-900'
+                          m.from === userId ? 'bg-brand text-white' : 'bg-gray-100 text-gray-900'
                         }`}
                       >
                         <div className="text-sm">{m.text}</div>
                         <div
                           className={`mt-1 flex items-center gap-1 text-xs ${
-                            m.from === userId ? 'text-gray-300' : 'text-gray-500'
+                            m.from === userId ? 'text-white/80' : 'text-gray-500'
                           }`}
                         >
                           <span>{formatChatTime(m.timestamp)}</span>
                           {m.from === userId && (
-                            <div className="flex items-center">
+                            <div className="flex items-center text-white">
                               {m.seen ? (
-                                <div className="flex items-center text-gray-400">
-                                  <span className="text-xs">✓</span>
-                                  <span className="-ml-1 text-xs">✓</span>
-                                </div>
+                                <CheckCheck className="h-4 w-4" aria-label="Seen" />
                               ) : (
-                                <div className="flex items-center text-gray-400">
-                                  <span className="text-xs">✓</span>
-                                </div>
+                                <Check className="h-4 w-4" aria-label="Sent" />
                               )}
                             </div>
                           )}
@@ -468,7 +463,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
           <button
             type="button"
             aria-label="Emoji"
-            className={`flex h-10 w-10 items-center justify-center text-gray-500 transition-colors hover:text-gray-700 ${
+            className={`text-brand hover:text-brand-700 flex h-10 w-10 items-center justify-center transition-colors ${
               showEmoji ? 'text-gray-700' : ''
             }`}
             onClick={(e) => {
@@ -525,7 +520,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
             size="sm"
             variant="ghost"
             className={`flex h-11 w-11 items-center justify-center p-0 transition-colors ${
-              canSend ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-800' : 'text-gray-300'
+              canSend ? 'text-brand hover:bg-brand/10 hover:text-brand-700' : 'text-gray-300'
             }`}
             aria-label="Send message"
             title="Send"
