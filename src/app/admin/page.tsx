@@ -321,7 +321,7 @@ function AdminPageContent() {
             </div>
 
             {/* Simple Tab Navigation */}
-            <div className="mb-6 sm:mb-8">
+            <div className="sticky top-16 z-40 mb-6 sm:mb-8">
               <div className="shadow-brand/30 rounded-xl bg-white/80 p-4 shadow-2xl drop-shadow-2xl backdrop-blur-sm">
                 <nav className="no-scrollbar -mb-px flex space-x-6 overflow-x-auto">
                   <button

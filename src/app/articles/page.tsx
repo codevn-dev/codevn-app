@@ -88,6 +88,16 @@ function ArticlesContent() {
   // Create stable reference for user to prevent unnecessary re-renders
   const stableUser = useMemo(() => user, [user]);
 
+  // Disable Create when required fields are missing
+  const isCreateDisabled = useMemo(() => {
+    return (
+      !articleForm.title.trim() ||
+      !articleForm.slug.trim() ||
+      !articleForm.content.trim() ||
+      !articleForm.categoryId.trim()
+    );
+  }, [articleForm.title, articleForm.slug, articleForm.content, articleForm.categoryId]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -411,13 +421,13 @@ function ArticlesContent() {
               </Button>
             </div>
 
-            {/* Search and Filter Controls */}
-            <div className="mb-6 rounded-xl bg-white/80 p-4 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
+            {/* Search and Filter Controls (sticky under global header) */}
+            <div className="sticky top-16 z-40 mb-6 rounded-xl bg-white/80 p-4 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Search Input */}
                 <div className="lg:col-span-2">
                   <div className="relative">
-                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-500" />
+                    <Search className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 transform cursor-pointer text-gray-500" />
                     <Input
                       placeholder="Search your articles..."
                       value={searchTerm}
@@ -429,7 +439,7 @@ function ArticlesContent() {
 
                 {/* Status Filter */}
                 <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                  <SelectTrigger className="focus:ring-brand/20 focus:ring-2">
+                  <SelectTrigger className="focus:ring-brand/20 bg-brand/10 text-brand-600 focus:ring-2">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -444,7 +454,7 @@ function ArticlesContent() {
                   value={categoryFilter || 'all'}
                   onValueChange={(value) => setCategoryFilter(value === 'all' ? '' : value)}
                 >
-                  <SelectTrigger className="focus:ring-brand/20 focus:ring-2">
+                  <SelectTrigger className="focus:ring-brand/20 bg-brand/10 text-brand-600 focus:ring-2">
                     <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -580,6 +590,8 @@ function ArticlesContent() {
                                 src={article.thumbnail}
                                 alt={article.title}
                                 className="h-full w-full object-cover"
+                                loading="lazy"
+                                decoding="async"
                               />
                             ) : (
                               <div
@@ -812,7 +824,7 @@ function ArticlesContent() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Thumbnail Image</label>
+                      <label className="text-sm font-medium">Thumbnail</label>
                       {articleForm.thumbnail ? (
                         <div className="space-y-2">
                           <div className="relative w-full max-w-sm">
@@ -871,7 +883,13 @@ function ArticlesContent() {
                           })
                         }
                       >
-                        <SelectTrigger className="focus:ring-brand/20 focus:ring-2">
+                        <SelectTrigger
+                          className={`focus:ring-brand/20 focus:ring-2 ${
+                            articleForm.categoryId
+                              ? 'bg-brand/10 text-brand-600'
+                              : 'bg-white text-gray-700'
+                          }`}
+                        >
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent>
@@ -911,7 +929,7 @@ function ArticlesContent() {
                         onChange={(e) =>
                           setArticleForm({ ...articleForm, published: e.target.checked })
                         }
-                        className="text-brand focus:ring-brand h-4 w-4 rounded border-gray-300"
+                        className="accent-brand focus:ring-brand h-4 w-4 rounded border-gray-300"
                       />
                       <label htmlFor="published" className="text-sm font-medium">
                         Publish immediately
@@ -926,8 +944,9 @@ function ArticlesContent() {
                     <Button
                       type="submit"
                       onClick={editingArticle ? handleUpdateArticle : handleCreateArticle}
+                      disabled={!editingArticle && isCreateDisabled}
                     >
-                      {editingArticle ? 'Update Article' : 'Create Article'}
+                      {editingArticle ? 'Update' : 'Create'}
                     </Button>
                   </div>
                 </div>

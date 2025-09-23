@@ -44,17 +44,18 @@ export function Navigation() {
   };
 
   const handleHomeClick = () => {
+    if (typeof window === 'undefined') return;
     if (pathname !== '/') {
       router.push('/');
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
     } else {
-      // If already on home page, just refresh
-      router.refresh();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white/80 shadow-lg backdrop-blur-md">
+      <nav className="fixed top-0 right-0 left-0 z-50 transform-gpu bg-white/80 shadow-lg backdrop-blur-md [will-change:transform] [backface-visibility:hidden]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}

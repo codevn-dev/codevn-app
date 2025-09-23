@@ -32,7 +32,14 @@ export default function RootLayout({
       >
         <Providers>
           <CustomCursor />
-          <PageTransition>{children}</PageTransition>
+          <PageTransition>
+            <div className="flex min-h-screen flex-col pt-16">
+              <div className="flex-1">{children}</div>
+              <footer className="border-t border-gray-100 py-6 text-center text-sm text-gray-500">
+                © {new Date().getFullYear()} CodeVN. All rights reserved.
+              </footer>
+            </div>
+          </PageTransition>
         </Providers>
       </body>
     </html>

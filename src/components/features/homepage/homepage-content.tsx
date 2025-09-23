@@ -303,8 +303,8 @@ export function HomepageContent() {
       {/* Articles Section with Categories */}
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
         <MotionContainer className="rounded-2xl bg-white p-5 shadow-2xl sm:p-6 lg:p-6">
-          {/* Categories Section */}
-          <div className="mb-8">
+          {/* Combined sticky filters (categories + controls) */}
+          <div className="shadow-brand/30 sticky top-16 z-40 mb-6 rounded-xl bg-white/80 p-4 shadow-2xl drop-shadow-2xl backdrop-blur-sm sm:mb-8">
             <CategorySelector
               categories={categories}
               selectedCategoryIds={selectedCategoryNames
@@ -331,41 +331,32 @@ export function HomepageContent() {
                 });
               }}
             />
-          </div>
-          <div className="mb-6 sm:mb-8">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-              <div>
-                <h2 className="mb-1 text-2xl font-bold text-gray-900 sm:mb-2 sm:text-3xl">
-                  Latest Articles
-                </h2>
-                <p className="text-base text-gray-600 sm:text-lg">
-                  Fresh insights from the Vietnamese developer community
-                </p>
+            <div className="mt-3" />
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="relative min-w-0 flex-1">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-search absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.3-4.3"></path>
+                </svg>
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search articles, author or email..."
+                  className="focus:ring-brand/20 w-full pl-10 focus:ring-2"
+                />
               </div>
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                <div className="relative sm:w-72">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-search absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400"
-                  >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.3-4.3"></path>
-                  </svg>
-                  <Input
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search articles, author or email..."
-                    className="focus:ring-brand/20 pl-10 focus:ring-2"
-                  />
-                </div>
+              <div className="flex w-full items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
                 {isAuthenticated && (
                   <Button
                     size="sm"
@@ -431,7 +422,14 @@ export function HomepageContent() {
               </div>
             )}
           </div>
-
+          <div>
+            <h2 className="mb-1 text-2xl font-bold text-gray-900 sm:mb-2 sm:text-3xl">
+              Latest Articles
+            </h2>
+            <p className="mb-10 text-base text-gray-600 sm:text-lg">
+              Fresh insights from the Vietnamese developer community
+            </p>
+          </div>
           {(() => {
             const containerVariants = {
               hidden: { opacity: 1 },
@@ -616,6 +614,7 @@ export function HomepageContent() {
                 onClick={() => {
                   setOnlyMine(false);
                   setSelectedCategoryNames([]);
+                  setSearchTerm('');
                 }}
                 className="from-brand to-brand-700 hover:from-brand-600 hover:to-brand-700 bg-gradient-to-r font-semibold text-white"
               >

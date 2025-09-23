@@ -67,15 +67,35 @@ export function CustomCursor() {
       // Determine mode by target element
       const target = e.target as HTMLElement | null;
       const tag = target?.tagName?.toLowerCase();
-      const isTextEditable = tag === 'input' || tag === 'textarea' || target?.isContentEditable;
-      if (isTextEditable) {
+      const type = (target as HTMLInputElement | null)?.type?.toLowerCase?.() || '';
+
+      // Consider certain input types as interactive (not text), or explicit override via data-cursor
+      const forcedInteractive = !!target?.closest('[data-cursor="interactive"]');
+      const isNonTextInput =
+        tag === 'input' &&
+        (type === 'checkbox' ||
+          type === 'radio' ||
+          type === 'range' ||
+          type === 'button' ||
+          type === 'submit' ||
+          type === 'reset');
+      const isInteractive =
+        forcedInteractive ||
+        isNonTextInput ||
+        !!target?.closest(
+          'button, [role="button"], a, [role="link"], .cursor-pointer, [role="menu"], [data-state], [data-radix-collection-item]'
+        );
+
+      const isTextEditable =
+        !isInteractive && (tag === 'input' || tag === 'textarea' || target?.isContentEditable);
+
+      if (isInteractive) {
+        setMode('interactive');
+      } else if (isTextEditable) {
         setMode('text');
-        return;
+      } else {
+        setMode('default');
       }
-      const isInteractive = !!target?.closest(
-        'button, [role="button"], a, [role="link"], [data-cursor="interactive"], .cursor-pointer, [role="menu"], [data-state], [data-radix-collection-item]'
-      );
-      setMode(isInteractive ? 'interactive' : 'default');
     };
 
     const handleEnter = () => setVisible(true);

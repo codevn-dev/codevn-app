@@ -416,7 +416,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Thumbnail Image</label>
+                <label className="text-sm font-medium">Thumbnail</label>
                 {editForm.thumbnail ? (
                   <div className="space-y-2">
                     <div className="relative w-full max-w-sm">
