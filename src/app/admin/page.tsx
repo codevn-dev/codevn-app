@@ -315,14 +315,14 @@ function AdminPageContent() {
     <div className="py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <MotionContainer>
-          <div className="rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="shadow-brand/30 rounded-2xl bg-white p-6 shadow-2xl drop-shadow-2xl">
             <div className="mb-6 sm:mb-8">
               <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Admin Panel</h1>
             </div>
 
             {/* Simple Tab Navigation */}
             <div className="mb-6 sm:mb-8">
-              <div className="rounded-xl bg-white/80 p-4 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
+              <div className="shadow-brand/30 rounded-xl bg-white/80 p-4 shadow-2xl drop-shadow-2xl backdrop-blur-sm">
                 <nav className="no-scrollbar -mb-px flex space-x-6 overflow-x-auto">
                   <button
                     onClick={() => setActiveTab('users')}
@@ -366,7 +366,7 @@ function AdminPageContent() {
                 </div>
 
                 {/* Search and Sort Controls */}
-                <div className="mb-6 rounded-lg bg-white p-4">
+                <div className="shadow-brand/20 mb-6 rounded-lg bg-white p-4 shadow-lg">
                   <div className="flex flex-col gap-4 sm:flex-row">
                     {/* Search Input */}
                     <div className="flex-1">
@@ -478,7 +478,7 @@ function AdminPageContent() {
                     } as const;
 
                     return (
-                      <div className="overflow-hidden rounded-lg bg-white/90 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
+                      <div className="shadow-brand/30 overflow-hidden rounded-lg bg-white/90 shadow-2xl drop-shadow-2xl backdrop-blur-sm">
                         <div className="overflow-x-auto">
                           <table className="w-full text-sm">
                             <thead className="bg-gray-50/50">
@@ -494,18 +494,9 @@ function AdminPageContent() {
                                 </th>
                               </tr>
                             </thead>
-                            <motion.tbody
-                              className="bg-white/90 backdrop-blur-sm"
-                              variants={containerVariants}
-                              initial="hidden"
-                              animate="visible"
-                            >
+                            <tbody className="bg-white/90 backdrop-blur-sm">
                               {currentUsers.map((user, _index) => (
-                                <motion.tr
-                                  key={user.id}
-                                  variants={rowVariants}
-                                  className="transition-colors hover:bg-gray-50/50"
-                                >
+                                <tr key={user.id} className="transition-colors hover:bg-gray-50/50">
                                   <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
                                     <div className="flex items-center">
                                       <div className="h-10 w-10 flex-shrink-0 sm:h-12 sm:w-12">
@@ -583,33 +574,33 @@ function AdminPageContent() {
                                       })}
                                     </span>
                                   </td>
-                                </motion.tr>
+                                </tr>
                               ))}
-                            </motion.tbody>
+                            </tbody>
                           </table>
                         </div>
 
                         {/* Pagination */}
                         {totalPages > 1 && (
-                          <div className="flex flex-col items-start justify-between gap-3 bg-white px-4 py-4 sm:flex-row sm:items-center sm:px-6">
+                          <div className="flex flex-col items-start justify-between gap-3 border-t border-gray-100 bg-white px-4 py-5 sm:flex-row sm:items-center sm:px-6">
                             <div className="flex items-center text-sm text-gray-700">
                               <span>
                                 Page {pagination.currentPage} of {pagination.totalPages} |{' '}
                                 {pagination.itemsPerPage} users per page
                               </span>
                             </div>
-                            <div className="flex w-full items-center space-x-2 overflow-x-auto sm:w-auto">
+                            <div className="flex w-full flex-wrap items-center gap-2 overflow-x-auto sm:w-auto">
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handlePageChange(pagination.currentPage - 1)}
                                 disabled={!pagination.hasPrevPage}
-                                className="px-3 py-1"
+                                className="border-transparent bg-transparent px-3 py-1 shadow-none hover:bg-gray-50"
                               >
                                 Previous
                               </Button>
 
-                              <div className="flex items-center space-x-1">
+                              <div className="flex flex-wrap items-center gap-1">
                                 {(() => {
                                   const pages = [];
                                   const currentPage = pagination.currentPage;
@@ -678,8 +669,8 @@ function AdminPageContent() {
                                         onClick={() => handlePageChange(page as number)}
                                         className={`min-w-[40px] px-3 py-1 ${
                                           pagination.currentPage === page
-                                            ? 'bg-brand hover:bg-brand-600 text-white'
-                                            : 'hover:bg-gray-50'
+                                            ? 'bg-brand hover:bg-brand-600 shadow-brand/30 text-white shadow-2xl drop-shadow-2xl'
+                                            : 'border-transparent bg-transparent shadow-none hover:bg-gray-50'
                                         }`}
                                       >
                                         {page}
@@ -694,7 +685,7 @@ function AdminPageContent() {
                                 size="sm"
                                 onClick={() => handlePageChange(pagination.currentPage + 1)}
                                 disabled={!pagination.hasNextPage}
-                                className="px-3 py-1"
+                                className="border-transparent bg-transparent px-3 py-1 shadow-none hover:bg-gray-50"
                               >
                                 Next
                               </Button>
@@ -858,7 +849,7 @@ function AdminPageContent() {
                         >
                           {categories.map((category) => (
                             <motion.div key={category.id} variants={itemVariants}>
-                              <Card className="shadow-xl shadow-gray-300/60 transition-all duration-300 hover:shadow-2xl hover:shadow-gray-400/70">
+                              <Card className="shadow-brand/30 hover:shadow-brand/40 shadow-2xl drop-shadow-2xl transition-all duration-300 hover:shadow-2xl">
                                 <CardHeader className="pb-4">
                                   <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                                     <div className="flex flex-1 items-center">
@@ -938,7 +929,7 @@ function AdminPageContent() {
                                         {category.children.map((child: Category) => (
                                           <Card
                                             key={child.id}
-                                            className="bg-white/90 shadow-lg shadow-gray-300/60 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-gray-400/70"
+                                            className="shadow-brand/30 hover:shadow-brand/40 bg-white/90 shadow-2xl drop-shadow-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl"
                                           >
                                             <CardBody className="p-4">
                                               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

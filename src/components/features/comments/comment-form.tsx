@@ -215,7 +215,7 @@ export function CommentForm({
 
   if (!effectiveAuthenticated) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
+      <div className="border-brand/20 rounded-lg border bg-gray-50 p-4 text-center">
         <p className="text-gray-600">
           Please{' '}
           <button
@@ -264,7 +264,7 @@ export function CommentForm({
               setShowEmoji(false);
             }}
             placeholder={placeholder}
-            className="min-h-[80px] resize-none border border-gray-200 bg-white shadow-sm placeholder:text-gray-500 focus:border-[#B8956A] focus:ring-[#B8956A]"
+            className="border-brand/20 focus:border-brand focus:ring-brand min-h-[80px] resize-none border bg-white shadow-sm placeholder:text-gray-500"
             maxLength={1000}
             ref={textareaRef}
             autoFocus={autoFocus}
@@ -272,7 +272,7 @@ export function CommentForm({
           {showEmoji && (
             <div
               ref={emojiPopoverRef}
-              className="absolute right-0 bottom-12 z-[120] rounded-lg border border-gray-200 bg-white shadow-lg"
+              className="border-brand/20 absolute right-0 bottom-12 z-[120] rounded-lg border bg-white shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <Picker

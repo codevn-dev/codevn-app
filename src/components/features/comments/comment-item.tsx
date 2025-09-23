@@ -266,7 +266,9 @@ export function CommentItem({
 
   return (
     <div className={`${depth > 0 ? 'pl-4' : ''}`}>
-      <Card className={`mb-3 ${isDeleting ? 'opacity-50' : ''}`}>
+      <Card
+        className={`shadow-brand/30 mb-3 bg-white shadow-2xl drop-shadow-2xl ${isDeleting ? 'opacity-50' : ''}`}
+      >
         <CardBody className="p-3">
           <div className="mb-2 flex items-start justify-between">
             <div className="flex items-start space-x-2">
@@ -310,7 +312,7 @@ export function CommentItem({
                 </Button>
 
                 {showDropdown && (
-                  <div className="absolute top-8 right-0 z-10 min-w-[120px] rounded-md border border-gray-200 bg-white shadow-lg">
+                  <div className="border-brand/20 absolute top-8 right-0 z-10 min-w-[120px] rounded-md border bg-white shadow-lg">
                     {canEdit && (
                       <button
                         onClick={() => {

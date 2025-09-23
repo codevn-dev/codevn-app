@@ -53,9 +53,9 @@ module.exports = {
         },
         // Centralized brand palette
         brand: {
-          DEFAULT: '#B8956A', // primary brand
-          600: '#A6825A',
-          700: '#8B6F47',
+          DEFAULT: 'var(--color-brand)',
+          600: 'var(--color-brand-600)',
+          700: 'var(--color-brand-700)',
         },
       },
       borderRadius: {

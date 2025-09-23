@@ -545,11 +545,11 @@ function ArticlesContent() {
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
-                    className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3"
+                    className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3"
                   >
                     {articles.map((article) => (
                       <motion.div key={article.id} variants={itemVariants} className="block h-full">
-                        <div className="block flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
+                        <div className="shadow-brand/30 block flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl drop-shadow-2xl">
                           {/* Thumbnail (consistent height whether exists or not) */}
                           <div className="relative h-28 w-full overflow-hidden sm:h-32">
                             {article.thumbnail ? (

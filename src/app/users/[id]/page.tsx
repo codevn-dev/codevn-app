@@ -89,14 +89,14 @@ function UserProfileContent() {
   if (error) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Card className="shadow-lg">
+        <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
           <CardBody className="py-12 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <User className="h-6 w-6 text-red-600" />
             </div>
             <h2 className="mb-2 text-xl font-semibold text-gray-900">User Not Found</h2>
             <p className="mb-6 text-gray-600">{error}</p>
-            <Button onClick={handleBack} variant="outline">
+            <Button onClick={handleBack} variant="back">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Go Back
             </Button>
@@ -119,13 +119,13 @@ function UserProfileContent() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
-        <Button onClick={handleBack} variant="outline" size="sm">
+        <Button onClick={handleBack} variant="back" size="sm">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
       </div>
 
-      <Card className="shadow-lg">
+      <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
         <CardHeader className="pb-4">
           <div className="flex items-center">
             <Avatar className="h-20 w-20">
@@ -161,7 +161,7 @@ function UserProfileContent() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+              <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
                 <CardBody className="flex flex-row items-center p-4">
                   <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
@@ -173,12 +173,12 @@ function UserProfileContent() {
                 </CardBody>
               </Card>
 
-              <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+              <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
                 <CardBody className="flex flex-row items-center p-4">
                   <Calendar className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
                     <p className="text-brand-600 font-semibold">{formatDate(profile.createdAt)}</p>
-                    <p className="text-sm text-[#A6825A]">Member since</p>
+                    <p className="text-brand-600 text-sm">Member since</p>
                   </div>
                 </CardBody>
               </Card>
@@ -187,7 +187,7 @@ function UserProfileContent() {
             {/* User Statistics */}
             {profile.statistics && (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
                   <CardBody className="flex flex-row items-center p-4">
                     <FileText className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
@@ -199,7 +199,7 @@ function UserProfileContent() {
                   </CardBody>
                 </Card>
 
-                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
                   <CardBody className="flex flex-row items-center p-4">
                     <MessageSquare className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
@@ -211,7 +211,7 @@ function UserProfileContent() {
                   </CardBody>
                 </Card>
 
-                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
                   <CardBody className="flex flex-row items-center p-4">
                     <ThumbsUp className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
@@ -223,7 +223,7 @@ function UserProfileContent() {
                   </CardBody>
                 </Card>
 
-                <Card className="border-[#B8956A]/20 bg-[#B8956A]/10">
+                <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
                   <CardBody className="flex flex-row items-center p-4">
                     <ThumbsDown className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
@@ -238,7 +238,7 @@ function UserProfileContent() {
             )}
 
             {!isOwnProfile && (
-              <div className="flex justify-end border-t border-gray-200 pt-6">
+              <div className="flex justify-end pt-6">
                 <Button onClick={handleMessage} size="lg">
                   <MessageCircle className="mr-2 h-4 w-4" />
                   Send Message

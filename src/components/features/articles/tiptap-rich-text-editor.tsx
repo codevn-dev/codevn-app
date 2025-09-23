@@ -211,7 +211,7 @@ function TiptapEditorContent({
   return (
     <div className={`rounded-lg border border-gray-300 ${className}`}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 rounded-t-lg border-b border-gray-200 bg-gray-50 p-2">
+      <div className="border-brand/20 flex flex-wrap items-center gap-1 rounded-t-lg border-b bg-gray-50 p-2">
         {/* Text Formatting */}
         <div className="mr-2 flex items-center gap-1">
           <ToolbarButton

@@ -456,7 +456,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
 
       {/* Input */}
       <div
-        className="border-t border-gray-200 bg-gray-50 p-4"
+        className="border-brand/20 border-t bg-gray-50 p-4"
         onClick={(e) => e.stopPropagation()}
         onMouseEnter={() => {
           if (inputRef.current) {
@@ -503,7 +503,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
           {showEmoji && (
             <div
               ref={emojiPopoverRef}
-              className="absolute bottom-12 left-0 z-[120] rounded-lg border border-gray-200 bg-white shadow-lg"
+              className="border-brand/20 absolute bottom-12 left-0 z-[120] rounded-lg border bg-white shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <Picker

@@ -6,21 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import {
-  User,
-  Mail,
-  Calendar,
-  Shield,
-  Save,
-  FileText,
-  ThumbsUp,
-  ThumbsDown,
-  MessageSquare,
-} from 'lucide-react';
+import { User, Mail, Save } from 'lucide-react';
 import { useFastifyAuthStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly, MotionContainer } from '@/components/layout';
 import { AvatarUpload } from '@/features/upload';
+import { ProfileInfoStats } from '@/features/profile/profile-info-stats';
 import { formatDate } from '@/lib/utils';
 import { apiGet, apiPut } from '@/lib/utils/api-client';
 
@@ -169,7 +160,7 @@ function ProfilePageContent() {
     <div className="py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <MotionContainer>
-          <Card className="shadow-xl shadow-gray-300/60">
+          <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
             <CardHeader className="pb-4">
               <div className="flex items-center">
                 <AvatarUpload
@@ -228,84 +219,13 @@ function ProfilePageContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <Card className="border-brand/20 bg-brand/10">
-                    <CardBody className="flex flex-row items-center p-4">
-                      <Shield className="text-brand mr-3 h-5 w-5" />
-                      <div>
-                        <p className="mb-1 font-semibold text-[#A6825A]">
-                          {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
-                        </p>
-                        <p className="text-sm text-[#A6825A]">Access level</p>
-                      </div>
-                    </CardBody>
-                  </Card>
-
-                  <Card className="border-brand/20 bg-brand/10">
-                    <CardBody className="flex flex-row items-center p-4">
-                      <Calendar className="text-brand mr-3 h-5 w-5" />
-                      <div>
-                        <p className="font-semibold text-[#A6825A]">
-                          {formatDate(profile.createdAt)}
-                        </p>
-                        <p className="text-sm text-[#A6825A]">Member since</p>
-                      </div>
-                    </CardBody>
-                  </Card>
-                </div>
-
-                {/* User Statistics */}
-                {profile.statistics && (
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                    <Card className="border-brand/20 bg-brand/10">
-                      <CardBody className="flex flex-row items-center p-4">
-                        <FileText className="text-brand mr-3 h-5 w-5" />
-                        <div>
-                          <p className="text-2xl font-bold text-[#A6825A]">
-                            {profile.statistics.totalArticles}
-                          </p>
-                          <p className="text-sm text-[#A6825A]">Total Articles</p>
-                        </div>
-                      </CardBody>
-                    </Card>
-
-                    <Card className="border-brand/20 bg-brand/10">
-                      <CardBody className="flex flex-row items-center p-4">
-                        <MessageSquare className="text-brand mr-3 h-5 w-5" />
-                        <div>
-                          <p className="text-2xl font-bold text-[#A6825A]">
-                            {profile.statistics.totalComments}
-                          </p>
-                          <p className="text-sm text-[#A6825A]">Total Comments</p>
-                        </div>
-                      </CardBody>
-                    </Card>
-
-                    <Card className="border-brand/20 bg-brand/10">
-                      <CardBody className="flex flex-row items-center p-4">
-                        <ThumbsUp className="text-brand mr-3 h-5 w-5" />
-                        <div>
-                          <p className="text-2xl font-bold text-[#A6825A]">
-                            {profile.statistics.totalLikes}
-                          </p>
-                          <p className="text-sm text-[#A6825A]">Total Likes</p>
-                        </div>
-                      </CardBody>
-                    </Card>
-
-                    <Card className="border-brand/20 bg-brand/10">
-                      <CardBody className="flex flex-row items-center p-4">
-                        <ThumbsDown className="text-brand mr-3 h-5 w-5" />
-                        <div>
-                          <p className="text-2xl font-bold text-[#A6825A]">
-                            {profile.statistics.totalDislikes}
-                          </p>
-                          <p className="text-sm text-[#A6825A]">Total Dislikes</p>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  </div>
-                )}
+                <ProfileInfoStats
+                  roleLabel="Access level"
+                  createdAtLabel="Member since"
+                  role={profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
+                  createdAtFormatted={formatDate(profile.createdAt)}
+                  statistics={profile.statistics}
+                />
 
                 {message && (
                   <Card
@@ -326,7 +246,7 @@ function ProfilePageContent() {
                   </Card>
                 )}
 
-                <div className="flex justify-end border-t border-gray-200 pt-6">
+                <div className="flex justify-end pt-6">
                   <Button type="submit" disabled={saving || !hasChanges()} size="lg">
                     {saving ? (
                       <LoadingScreen message="Saving" />

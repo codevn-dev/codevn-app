@@ -371,7 +371,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
         )}
 
         {!isAuthLoading && !isAuthenticated && (
-          <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
+          <div className="border-brand/20 mt-6 rounded-lg border bg-gray-50 p-6 text-center">
             <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
             <p className="text-gray-600">
               Please{' '}

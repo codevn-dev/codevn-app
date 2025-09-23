@@ -114,7 +114,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
   return (
     <div className="py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="rounded-2xl bg-white p-6 shadow-2xl shadow-gray-400/80">
           {isPreview && (
             <div className="-m-6 mb-6 rounded-t-2xl border-b border-yellow-200 bg-yellow-100 px-6 py-3">
               <div className="flex items-center text-sm font-medium text-yellow-800">
@@ -125,10 +125,12 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
           )}
           <div className="pb-4">
             <div className="mb-4 flex items-center text-sm text-gray-500">
-              <Link href="/" className="flex items-center hover:text-gray-700">
-                <ArrowLeft className="mr-1 h-4 w-4" />
-                Back
-              </Link>
+              <Button asChild variant="back" size="sm">
+                <Link href="/" className="flex items-center">
+                  <ArrowLeft className="mr-1 h-4 w-4" />
+                  Back
+                </Link>
+              </Button>
             </div>
 
             <div className="mb-4">
@@ -232,7 +234,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
             <CodeHighlighter content={article.content} className="leading-relaxed text-gray-700" />
           </div>
 
-          <div className="border-t border-gray-200 pt-0">
+          <div className="border-brand/20 mt-6 border-t pt-4 sm:mt-8 sm:pt-6">
             <CommentsSection
               ref={commentsSectionRef}
               articleId={article.id}

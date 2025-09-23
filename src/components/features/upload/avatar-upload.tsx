@@ -393,7 +393,7 @@ export function AvatarUpload({
       <div className="group relative">
         <Avatar className={`${sizeClasses[size]} cursor-pointer`}>
           <AvatarImage src={currentAvatar || undefined} />
-          <AvatarFallback className="bg-gradient-to-br from-[#B8956A] to-[#A6825A] text-lg font-bold text-white">
+          <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-lg font-bold text-white">
             {user?.name?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
@@ -414,7 +414,7 @@ export function AvatarUpload({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading || isCompressing || showCrop}
-            className={`absolute -right-1 -bottom-1 ${buttonSizeClasses[size]} flex items-center justify-center rounded-full bg-[#B8956A] text-white shadow-lg transition-colors hover:bg-[#A6825A] disabled:opacity-50`}
+            className={`absolute -right-1 -bottom-1 ${buttonSizeClasses[size]} bg-brand hover:bg-brand-600 flex items-center justify-center rounded-full text-white shadow-lg transition-colors disabled:opacity-50`}
           >
             {showCrop ? <Crop className="h-3 w-3" /> : <Camera className="h-3 w-3" />}
           </button>

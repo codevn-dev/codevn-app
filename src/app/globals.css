@@ -418,7 +418,8 @@
   --ring: 224.3 76.3% 94.1%;
 }
 
-* {
+/* Use low-specificity default border color without overriding Tailwind border-* utilities */
+:where(*):not([class*='border-']) {
   border-color: var(--border);
 }
 
