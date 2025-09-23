@@ -1,6 +1,6 @@
 import { getDb } from '..';
-import { articles, comments, reactions, categories } from '../schema';
-import { and, eq, or, like, isNull, sql, count, inArray, exists } from 'drizzle-orm';
+import { articles, comments, reactions, categories, users } from '../schema';
+import { and, eq, or, ilike, isNull, sql, count, inArray, exists } from 'drizzle-orm';
 import { Article as SharedArticle } from '@/types/shared/article';
 
 export interface ArticleFilters {
@@ -118,8 +118,23 @@ export class ArticleRepository {
     whereConditions.push(isNull(articles.deletedAt));
 
     if (search) {
+      const searchTerm = `%${search}%`;
       whereConditions.push(
-        or(like(articles.title, `%${search}%`), like(articles.content, `%${search}%`))
+        or(
+          ilike(articles.title, searchTerm),
+          ilike(articles.content, searchTerm),
+          exists(
+            getDb()
+              .select()
+              .from(users)
+              .where(
+                and(
+                  eq(users.id, articles.authorId),
+                  or(ilike(users.name, searchTerm), ilike(users.email, searchTerm))
+                )
+              )
+          )
+        )
       );
     }
 

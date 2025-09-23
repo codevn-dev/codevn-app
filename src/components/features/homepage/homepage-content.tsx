@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { MotionContainer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, BookOpen, Calendar, Eye, X, ThumbsUp, ArrowUp } from 'lucide-react';
@@ -34,6 +35,8 @@ export function HomepageContent() {
   } = useForumStore();
 
   const [selectedCategoryNames, setSelectedCategoryNames] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [onlyMine, setOnlyMine] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -51,7 +54,7 @@ export function HomepageContent() {
 
   // Stable derived keys for deps
   const selectedNamesKey = selectedCategoryNames.join(',');
-  const filterSigBase = `${[...selectedCategoryNames].sort().join(',')}|${onlyMine ? '1' : '0'}`;
+  const filterSigBase = `${[...selectedCategoryNames].sort().join(',')}|${onlyMine ? '1' : '0'}|${debouncedSearch}`;
   const authUserId = user?.id || '';
 
   // Helpers
@@ -99,10 +102,21 @@ export function HomepageContent() {
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
     const mine = params.get('mine') === '1';
+    const initialSearch = (params.get('search') || '').trim();
     if (names.length > 0) setSelectedCategoryNames(names);
     if (mine) setOnlyMine(true);
+    if (initialSearch) {
+      setSearchTerm(initialSearch);
+      setDebouncedSearch(initialSearch);
+    }
     isFiltersInitializedRef.current = true;
   }, []);
+
+  // Debounce searchTerm → debouncedSearch
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
 
   // Fetch articles with pagination and server-side filters
   useEffect(() => {
@@ -130,6 +144,7 @@ export function HomepageContent() {
       if (selectedCategoryNames.length > 0)
         params.set('categories', selectedCategoryNames.map((name) => name.toLowerCase()).join(','));
       if (onlyMine && isAuthenticated && authUserId) params.set('authorId', authUserId);
+      if (debouncedSearch) params.set('search', debouncedSearch);
       const fetchKey = params.toString();
 
       if (isFetchInFlightRef.current && lastFetchKeyRef.current === fetchKey) return; // in-flight duplicate
@@ -183,6 +198,7 @@ export function HomepageContent() {
     authUserId,
     hasMoreArticles,
     filterSigBase,
+    debouncedSearch,
     setArticles,
     addArticles,
     setHasMoreArticles,
@@ -215,9 +231,10 @@ export function HomepageContent() {
     if (selectedCategoryNames.length > 0)
       params.set('categories', selectedCategoryNames.map((name) => name.toLowerCase()).join(','));
     if (onlyMine) params.set('mine', '1');
+    if (debouncedSearch) params.set('search', debouncedSearch);
     const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
     window.history.replaceState(null, '', newUrl);
-  }, [selectedCategoryNames, onlyMine]);
+  }, [selectedCategoryNames, onlyMine, debouncedSearch]);
 
   // IntersectionObserver for lazy load
   useEffect(() => {
@@ -324,7 +341,32 @@ export function HomepageContent() {
                   Fresh insights from the Vietnamese developer community
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                <div className="relative sm:w-72">
+                  <Input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search articles, author or email..."
+                    className="pr-10"
+                  />
+                  <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-400">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="lucide lucide-search"
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="m21 21-4.3-4.3"></path>
+                    </svg>
+                  </span>
+                </div>
                 {isAuthenticated && (
                   <Button
                     variant={onlyMine ? 'default' : 'outline'}
@@ -338,12 +380,13 @@ export function HomepageContent() {
                     My Articles
                   </Button>
                 )}
-                {(onlyMine || selectedCategoryNames.length > 0) && (
+                {(onlyMine || selectedCategoryNames.length > 0 || debouncedSearch) && (
                   <Button
                     variant="outline"
                     onClick={() => {
                       setOnlyMine(false);
                       setSelectedCategoryNames([]);
+                      setSearchTerm('');
                     }}
                     className="font-medium text-gray-700"
                   >

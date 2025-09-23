@@ -22,7 +22,7 @@ export interface CommentsSectionRef {
 }
 
 export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
-  ({ articleId, initialComments = [], commentCount = 0 }, ref) => {
+  ({ articleId, initialComments = [] }, ref) => {
     const { isAuthenticated, isLoading: isAuthLoading } = useAuthState();
     const { setAuthModalOpen, setAuthMode } = useUIStore();
     const { addOnNewCommentCallback, addOnNewReplyCallback } = useCommentWebSocketContext();
