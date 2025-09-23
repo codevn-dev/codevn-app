@@ -290,13 +290,6 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
 
     return (
       <div className="space-y-6">
-        <div data-comments-header className="mb-6 flex items-center space-x-2 pt-4">
-          <MessageSquare className="h-5 w-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-900">
-            Comments ({commentCount || comments.length})
-          </h3>
-        </div>
-
         {isLoading && (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
