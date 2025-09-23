@@ -123,7 +123,7 @@ services:
       - api
     restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost/status']
+      test: ['CMD', 'curl', '-f', 'http://localhost/health']
       interval: 10s
       timeout: 2s
       retries: 3
