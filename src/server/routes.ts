@@ -12,7 +12,7 @@ import { adminRoutes } from './routes/admin';
 export async function setupRoutes(fastify: FastifyInstance) {
   // Health check
   fastify.get('/api/health', async (_request, _reply) => {
-    return { status: 'ok', timestamp: new Date().toISOString() };
+    return { ok: true, timestamp: new Date().toISOString() };
   });
 
   // Register all route modules

@@ -16,6 +16,12 @@ services:
       redis:
         condition: service_started
     restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
 
   api:
     build:
@@ -36,10 +42,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:3001/api/health']
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 2s
       retries: 3
-      start_period: 40s
+      start_period: 5s
 
   postgres:
     image: postgres:17
@@ -115,7 +121,13 @@ services:
     depends_on:
       - web
       - api
-    restart: always
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost/status']
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
 
 volumes:
   postgres_data:
