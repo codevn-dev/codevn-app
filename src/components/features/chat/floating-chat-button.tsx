@@ -32,7 +32,7 @@ export function FloatingChatButton() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (chatWindowOpen) {
-      const isMobile = window.innerWidth < 1024; // treat <lg as mobile/tablet
+      const isMobile = window.innerWidth < 768; // treat <md as mobile only
       if (isMobile && chatSidebarOpen) {
         setChatSidebarOpen(false);
       }

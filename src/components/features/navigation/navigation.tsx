@@ -104,8 +104,8 @@ export function Navigation() {
                   <div className="flex items-center gap-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                          <Avatar className="h-8 w-8">
+                        <Button variant="ghost" className="relative h-[38px] w-[38px] rounded-full">
+                          <Avatar className="h-[38px] w-[38px]">
                             <AvatarImage src={user.avatar || undefined} />
                             <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
                               {user.name?.charAt(0).toUpperCase() || 'U'}

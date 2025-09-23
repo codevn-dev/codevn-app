@@ -34,6 +34,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setPeerName(userName);
     setPeerAvatar(userAvatar || '');
     setChatWindowOpen(true);
+    // On tablet/desktop, ensure sidebar is open when starting a chat
+    if (typeof window !== 'undefined') {
+      const isNonMobile = window.innerWidth >= 768; // md and up: tablet/desktop
+      if (isNonMobile) {
+        setChatSidebarOpen(true);
+      }
+    }
   };
 
   const handleCloseChat = () => {
