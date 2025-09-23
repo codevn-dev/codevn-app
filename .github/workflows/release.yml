@@ -55,6 +55,7 @@ jobs:
             # Build and deploy
             echo "Building and deploying application..."
             docker compose up -d --build
+            docker compose restart nginx
 
             # Clean up Docker to free space
             echo "Cleaning up Docker system..."
