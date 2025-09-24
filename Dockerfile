@@ -73,7 +73,7 @@ WORKDIR /app
 # node_modules already installed in deps stage, drizzle-kit included
 # Copy drizzle config and schema
 COPY drizzle.config.ts ./drizzle.config.ts
-COPY src/lib/database/schema.ts ./src/lib/database/schema.ts
+COPY src/server/database/schema.ts ./src/server/database/schema.ts
 
 # Default command for this image
 CMD ["pnpm", "db:push"]

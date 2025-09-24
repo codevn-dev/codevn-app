@@ -13,7 +13,7 @@ const buildConnectionString = () => {
 };
 
 export default {
-  schema: './src/lib/database/schema.ts',
+  schema: './src/server/database/schema.ts',
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
