@@ -291,7 +291,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                       user={{
                         id: article.author.id,
                         name: article.author.name,
-                        email: article.author.email,
+                        email: '', // Email not available in new API
                         avatar: article.author.avatar || undefined,
                         role: 'user' as const,
                         createdAt: new Date().toISOString(),

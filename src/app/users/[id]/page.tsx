@@ -133,7 +133,7 @@ function UserProfileContent() {
             <Avatar className="h-20 w-20">
               <AvatarImage src={profile.avatar || undefined} alt={profile.name} />
               <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-2xl text-white">
-                {profile.name.charAt(0).toUpperCase()}
+                {profile.name?.charAt(0).toUpperCase() || '?'}
               </AvatarFallback>
             </Avatar>
             <div className="ml-6">

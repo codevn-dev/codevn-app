@@ -16,14 +16,16 @@ import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 
 interface ChatWindowProps {
-  peerId: string;
-  peerName: string;
-  peerAvatar?: string;
+  peer: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: ChatWindowProps) {
+export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
   const { user } = useAuthState();
   const { t } = useI18n();
   const [text, setText] = useState('');
@@ -40,7 +42,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
   const emojiPopoverRef = useRef<HTMLDivElement | null>(null);
 
   const userId = user?.id || '';
-  const canChat = Boolean(userId && peerId && userId !== peerId);
+  const canChat = Boolean(userId && peer.id && userId !== peer.id);
 
   // Track last message to detect new messages
   const [lastMessageId, setLastMessageId] = useState<string>('');
@@ -66,18 +68,18 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
 
   // Load messages when chat window opens
   useEffect(() => {
-    if (!isOpen || !canChat || !peerId) return;
+    if (!isOpen || !canChat || !peer.id) return;
 
     const loadInitialMessages = async () => {
       setLoading(true);
       try {
-        const result = await loadMessages(peerId, 20);
+        const result = await loadMessages(peer.id, 20);
         if (result.messages) {
           const transformedMessages = transformMessages(result.messages);
           setMessages(transformedMessages);
           setHasMoreMessages(result.hasMore || false);
           // Mark conversation as read when opening chat
-          markConversationAsRead(peerId);
+          markConversationAsRead(peer.id);
         }
       } catch (error) {
         console.error('Error loading messages:', error);
@@ -87,13 +89,13 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
     };
 
     loadInitialMessages();
-  }, [isOpen, canChat, peerId, loadMessages, markConversationAsRead]);
+  }, [isOpen, canChat, peer.id, loadMessages, markConversationAsRead]);
 
   // Mark messages as seen when chat window is open
   useEffect(() => {
-    if (!isOpen || !canChat || !peerId) return;
+    if (!isOpen || !canChat || !peer.id) return;
 
-    const chatId = [user?.id, peerId].sort().join('|');
+    const chatId = [user?.id, peer.id].sort().join('|');
 
     // Mark as seen immediately when chat opens
     markAsSeenWebSocket(chatId);
@@ -104,13 +106,13 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isOpen, canChat, peerId, user?.id, markAsSeenWebSocket]);
+  }, [isOpen, canChat, peer.id, user?.id, markAsSeenWebSocket]);
 
   // Register WebSocket callbacks
   useEffect(() => {
     const removeOnNewMessage = addOnNewMessageCallback((message: UiMessage) => {
       // Only handle messages for current peer
-      if (message.from === peerId || message.from === user?.id) {
+      if (message.from === peer.id || message.from === user?.id) {
         setMessages((prev) => {
           // Check if message already exists
           const exists = prev.some((msg) => msg.id === message.id);
@@ -124,13 +126,13 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
     });
 
     const removeOnTyping = addOnTypingCallback((fromUserId: string, isTyping: boolean) => {
-      if (fromUserId === peerId) {
+      if (fromUserId === peer.id) {
         setIsTyping(isTyping);
       }
     });
 
     const removeOnMessagesSeen = addOnMessagesSeenCallback((chatId: string, seenBy: string) => {
-      if (seenBy === peerId) {
+      if (seenBy === peer.id) {
         // Mark messages as seen by peer
         setMessages((prev) =>
           prev.map((msg) => (msg.from === user?.id ? { ...msg, seen: true } : msg))
@@ -143,7 +145,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
       removeOnTyping();
       removeOnMessagesSeen();
     };
-  }, [peerId, user?.id, addOnNewMessageCallback, addOnTypingCallback, addOnMessagesSeenCallback]);
+  }, [peer.id, user?.id, addOnNewMessageCallback, addOnTypingCallback, addOnMessagesSeenCallback]);
 
   // Helper function to transform API messages to UI messages
   const transformMessages = (apiMessages: any[]): UiMessage[] => {
@@ -152,9 +154,9 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
         const createdAt = msg.createdAt || msg.timestamp || msg.updatedAt;
         const timestamp = createdAt ? new Date(createdAt).getTime() : Date.now();
         return {
-          id: `${msg.id || msg.timestamp || `${msg.senderId || msg.fromUserId}-${timestamp}`}-${timestamp}`,
+          id: `${msg.id || msg.timestamp || `${msg.sender?.id || msg.fromUserId}-${timestamp}`}-${timestamp}`,
           type: msg.type || 'message',
-          from: msg.fromUser?.id || msg.fromUserId || msg.senderId || msg.from,
+          from: msg.fromUser?.id || msg.fromUserId || msg.sender?.id || msg.from,
           text: msg.text || msg.content || '',
           timestamp,
           seen: msg.seen || false,
@@ -194,7 +196,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
 
     try {
       const response = await fetch(
-        `/api/chat?peerId=${encodeURIComponent(peerId)}&action=get&limit=${chatConfig.maxMessagesPerPage}&before=${oldestMessageTime}`
+        `/api/chat?peer.id=${encodeURIComponent(peer.id)}&action=get&limit=${chatConfig.maxMessagesPerPage}&before=${oldestMessageTime}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -222,7 +224,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
     if (!isTyping) {
       setIsTyping(true);
       // Send typing indicator via WebSocket
-      sendTyping(peerId, true);
+      sendTyping(peer.id, true);
     }
 
     if (typingTimeoutRef.current) {
@@ -232,7 +234,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
       // Send stop typing indicator via WebSocket
-      sendTyping(peerId, false);
+      sendTyping(peer.id, false);
     }, chatConfig.typingTimeout);
   };
 
@@ -317,7 +319,7 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
 
     try {
       // Send via WebSocket
-      sendWebSocketMessage(peerId, msg);
+      sendWebSocketMessage(peer.id, msg);
       setText('');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -339,19 +341,19 @@ export function ChatWindow({ peerId, peerName, peerAvatar, isOpen, onClose }: Ch
       >
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={peerAvatar || undefined} />
+            <AvatarImage src={peer.avatar || undefined} />
             <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-xs text-white">
-              {peerName.charAt(0).toUpperCase()}
+              {peer.name?.charAt(0).toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
           <div>
-            <div className="text-sm font-medium">{peerName}</div>
+            <div className="text-sm font-medium">{peer.name}</div>
             <div className="flex items-center gap-1">
               <div
-                className={`h-2 w-2 rounded-full ${isUserOnline(peerId) ? 'bg-green-400' : 'bg-gray-400'}`}
+                className={`h-2 w-2 rounded-full ${isUserOnline(peer.id) ? 'bg-green-400' : 'bg-gray-400'}`}
               />
               <span className="text-xs text-gray-300">
-                {isUserOnline(peerId) ? t('chat.online') : t('chat.offline')}
+                {isUserOnline(peer.id) ? t('chat.online') : t('chat.offline')}
               </span>
             </div>
           </div>

@@ -16,7 +16,7 @@ import {
   Article,
   ArticleListResponse,
 } from '@/types/shared/article';
-import { CommentListResponse } from '@/types/shared/comment';
+import { CommentListResponse, Comment } from '@/types/shared/comment';
 import { SuccessResponse } from '@/types/shared/common';
 import {
   CommentQueryParams as CommentQuery,
@@ -119,7 +119,17 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const hasNext = result.pagination.page < result.pagination.totalPages;
         const hasPrev = result.pagination.page > 1;
         const response: ArticleListResponse = {
-          articles: result.articles as any,
+          articles: result.articles.map((article: any) => {
+            const { authorId, authorName, authorAvatar, ...articleWithoutFlatFields } = article;
+            return {
+              ...articleWithoutFlatFields,
+              author: {
+                id: article.author?.id || authorId,
+                name: article.author?.name || 'Unknown',
+                avatar: article.author?.avatar || null,
+              },
+            };
+          }),
           pagination: {
             page: result.pagination.page,
             limit: result.pagination.limit,
@@ -184,7 +194,16 @@ export async function articleRoutes(fastify: FastifyInstance) {
           return reply.status(500).send({ error: 'Failed to retrieve created article' });
         }
 
-        const response = createdArticle as unknown as Article;
+        const { authorId, authorName, authorAvatar, ...articleWithoutFlatFields } =
+          createdArticle as any;
+        const response = {
+          ...articleWithoutFlatFields,
+          author: {
+            id: createdArticle.author?.id || authorId,
+            name: createdArticle.author?.name || 'Unknown',
+            avatar: createdArticle.author?.avatar || null,
+          },
+        } as unknown as Article;
         return reply.status(201).send(response);
       } catch (error) {
         logger.error('Create article error', undefined, error as Error);
@@ -245,7 +264,16 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         const updatedArticle = await articleRepository.update(id, updateData);
 
-        const response = updatedArticle as unknown as Article;
+        const { authorId, authorName, authorAvatar, ...articleWithoutFlatFields } =
+          updatedArticle as any;
+        const response = {
+          ...articleWithoutFlatFields,
+          author: {
+            id: updatedArticle?.author?.id || authorId,
+            name: updatedArticle?.author?.name || 'Unknown',
+            avatar: updatedArticle?.author?.avatar || null,
+          },
+        } as unknown as Article;
         return reply.send(response);
       } catch (error) {
         logger.error('Update article error', undefined, error as Error);
@@ -363,7 +391,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
           return reply.send({
             success: true,
             action: 'created',
-            reaction: { type: action, article: { id }, user: { id: authRequest.user!.id } },
+            reaction: { type: action },
           });
         }
       } catch (error) {
@@ -507,7 +535,33 @@ export async function articleRoutes(fastify: FastifyInstance) {
         });
 
         const response: CommentListResponse = {
-          comments: result.comments as any,
+          comments: result.comments.map((comment: any) => {
+            const { authorId, authorName, authorAvatar, ...commentWithoutFlatFields } = comment;
+            return {
+              ...commentWithoutFlatFields,
+              author: {
+                id: comment.author?.id || authorId,
+                name: comment.author?.name || 'Unknown',
+                avatar: comment.author?.avatar || null,
+              },
+              parent: comment.parent
+                ? (() => {
+                    const {
+                      authorId: parentAuthorId,
+                      authorName: parentAuthorName,
+                      ...parentWithoutFlatFields
+                    } = comment.parent;
+                    return {
+                      ...parentWithoutFlatFields,
+                      author: {
+                        id: comment.parent.author?.id || parentAuthorId,
+                        name: comment.parent.author?.name || 'Unknown',
+                      },
+                    };
+                  })()
+                : undefined,
+            };
+          }),
           pagination: result.pagination as any,
         };
         return reply.send(response);
@@ -581,7 +635,17 @@ export async function articleRoutes(fastify: FastifyInstance) {
           return reply.status(500).send({ error: 'Failed to retrieve created comment' });
         }
 
-        return reply.status(201).send(createdComment);
+        const { authorId, authorName, authorAvatar, ...commentWithoutFlatFields } =
+          createdComment as any;
+        const response = {
+          ...commentWithoutFlatFields,
+          author: {
+            id: createdComment.author?.id || authorId,
+            name: createdComment.author?.name || 'Unknown',
+            avatar: createdComment.author?.avatar || null,
+          },
+        } as unknown as Comment;
+        return reply.status(201).send(response);
       } catch (error) {
         logger.error('Create comment error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });

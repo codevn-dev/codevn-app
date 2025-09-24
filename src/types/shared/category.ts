@@ -7,11 +7,9 @@ export interface Category {
   parentId: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
-  createdById: string;
   createdBy: {
     id: string;
     name: string;
-    email: string;
   };
   parent?: Category | null;
   children?: Category[];

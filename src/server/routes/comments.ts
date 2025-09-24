@@ -45,7 +45,15 @@ export async function commentRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: 'Comment not found' });
         }
 
-        const response = comment as unknown as Comment;
+        const { authorId, authorName, authorAvatar, ...commentWithoutFlatFields } = comment;
+        const response = {
+          ...commentWithoutFlatFields,
+          author: {
+            id: comment.author?.id || authorId,
+            name: comment.author?.name || 'Unknown',
+            avatar: comment.author?.avatar || null,
+          },
+        } as unknown as Comment;
         return reply.send(response);
       } catch (error) {
         logger.error('Get comment error', undefined, error as Error);
@@ -97,7 +105,16 @@ export async function commentRoutes(fastify: FastifyInstance) {
         // Fetch the updated comment with relations
         const comment = await commentRepository.findById(id);
 
-        return reply.send(comment);
+        const { authorId, authorName, authorAvatar, ...commentWithoutFlatFields } = comment;
+        const response = {
+          ...commentWithoutFlatFields,
+          author: {
+            id: comment.author?.id || authorId,
+            name: comment.author?.name || 'Unknown',
+            avatar: comment.author?.avatar || null,
+          },
+        } as unknown as Comment;
+        return reply.send(response);
       } catch (error) {
         logger.error('Update comment error', undefined, error as Error);
         return reply.status(500).send({ error: 'Internal server error' });
@@ -215,7 +232,7 @@ export async function commentRoutes(fastify: FastifyInstance) {
           return reply.send({
             success: true,
             action: 'created',
-            reaction: { type: action, comment: { id }, user: { id: authRequest.user!.id } },
+            reaction: { type: action },
           });
         }
       } catch (error) {

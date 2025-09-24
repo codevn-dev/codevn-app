@@ -8,7 +8,30 @@ export async function categoryRoutes(fastify: FastifyInstance) {
   fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const rootCategories = await categoryRepository.findAllWithCounts();
-      const response = rootCategories as unknown as Category[];
+      const response = rootCategories.map((category: any) => {
+        const { createdById, createdByName, ...categoryWithoutFlatFields } = category;
+        return {
+          ...categoryWithoutFlatFields,
+          createdBy: {
+            id: category.createdBy?.id || createdById,
+            name: category.createdBy?.name || 'Unknown',
+          },
+          children: category.children?.map((child: any) => {
+            const {
+              createdById: childCreatedById,
+              createdByName: childCreatedByName,
+              ...childWithoutFlatFields
+            } = child;
+            return {
+              ...childWithoutFlatFields,
+              createdBy: {
+                id: child.createdBy?.id || childCreatedById,
+                name: child.createdBy?.name || 'Unknown',
+              },
+            };
+          }),
+        };
+      }) as unknown as Category[];
       return reply.send(response);
     } catch (error) {
       logger.error('Get categories error', undefined, error as Error);

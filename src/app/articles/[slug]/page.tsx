@@ -65,12 +65,19 @@ export default async function ArticlePage({
     currentUserId ? articleRepository.hasUserUnliked(article.id, currentUserId) : false,
   ]);
 
+  const author = Array.isArray(article.author) ? article.author[0] : article.author;
+  const category = Array.isArray(article.category) ? article.category[0] : article.category;
+
   const articleWithCounts = {
     ...article,
     thumbnail: article.thumbnail || undefined,
     createdAt: article.createdAt.toISOString(),
-    author: Array.isArray(article.author) ? article.author[0] : article.author,
-    category: Array.isArray(article.category) ? article.category[0] : article.category,
+    author: {
+      id: author?.id || article.authorId,
+      name: author?.name || 'Unknown',
+      avatar: author?.avatar || null,
+    },
+    category: category,
     views: (article as unknown as { views?: number }).views ?? 0,
     _count: {
       comments: commentCount,

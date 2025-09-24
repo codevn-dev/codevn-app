@@ -165,7 +165,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
               (r) =>
                 r.id.startsWith('temp-') &&
                 r.content === reply.content &&
-                r.authorId === reply.authorId
+                r.author.id === reply.author.id
             );
 
             if (optimisticIndex !== -1 && optimisticIndex !== undefined && comment.replies) {
@@ -212,7 +212,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
               (c) =>
                 c.id.startsWith('temp-') &&
                 c.content === comment.content &&
-                c.authorId === comment.authorId
+                c.author.id === comment.author.id
             );
 
             if (optimisticIndex !== -1) {

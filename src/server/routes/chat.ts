@@ -47,53 +47,33 @@ export async function chatRoutes(fastify: FastifyInstance) {
         const conversations = await messageRepository.getConversations(authRequest.user!.id);
 
         const response: ConversationListResponse = {
-          conversations: conversations.map((conv) => ({
-            id: conv.chatId,
-            participant1Id: authRequest.user!.id,
-            participant2Id: conv.otherUserId,
-            createdAt: conv.lastMessageTime,
-            updatedAt: conv.lastMessageTime,
-            participant1: {
-              id: authRequest.user!.id,
-              name: '',
-              email: '',
-              role: 'user',
-              createdAt: new Date().toISOString(),
-              avatar: undefined,
-            },
-            participant2: {
-              id: conv.otherUserId,
-              name: conv.otherUserName,
-              email: '',
-              role: 'user',
-              createdAt: new Date().toISOString(),
-              avatar: conv.otherUserAvatar || undefined,
-            },
-            lastMessage: {
-              id: `${conv.chatId}:${new Date(conv.lastMessageTime).getTime()}`,
-              content: conv.lastMessage,
-              senderId: conv.lastMessageFromUserId,
-              receiverId:
-                conv.lastMessageFromUserId === authRequest.user!.id
-                  ? conv.otherUserId
-                  : authRequest.user!.id,
-              conversationId: conv.chatId,
-              createdAt: conv.lastMessageTime,
-              updatedAt: conv.lastMessageTime,
-              sender: { id: conv.lastMessageFromUserId, name: '', email: '' },
-              receiver: {
-                id:
-                  conv.lastMessageFromUserId === authRequest.user!.id
-                    ? conv.otherUserId
-                    : authRequest.user!.id,
-                name: '',
-                email: '',
+          conversations: conversations.map((conv) => {
+            const {
+              otherUserId,
+              otherUserName,
+              otherUserAvatar,
+              lastMessageFromUserId,
+              ...convWithoutFlatFields
+            } = conv;
+            return {
+              id: conv.chatId,
+              peer: {
+                id: otherUserId,
+                name: otherUserName,
+                avatar: otherUserAvatar || undefined,
               },
-              seen: conv.lastMessageSeen,
-              seenAt: null,
-            },
-            unreadCount: conv.unreadCount,
-          })),
+              lastMessage: {
+                id: `${conv.chatId}:${new Date(conv.lastMessageTime).getTime()}`,
+                content: conv.lastMessage,
+                sender: {
+                  id: lastMessageFromUserId,
+                },
+                createdAt: conv.lastMessageTime,
+                seen: conv.lastMessageSeen,
+              },
+              unreadCount: conv.unreadCount,
+            };
+          }),
           pagination: {
             page: 1,
             limit: conversations.length,
@@ -163,19 +143,24 @@ export async function chatRoutes(fastify: FastifyInstance) {
           );
 
           const response: MessageListResponse = {
-            messages: limitedMessages.map((msg) => ({
-              id: msg.id,
-              content: msg.text,
-              senderId: msg.fromUserId,
-              receiverId: msg.toUserId,
-              conversationId: msg.chatId,
-              createdAt: msg.createdAt,
-              updatedAt: msg.updatedAt ?? msg.createdAt,
-              sender: { id: msg.fromUserId, name: '', email: '' },
-              receiver: { id: msg.toUserId, name: '', email: '' },
-              seen: msg.seen,
-              seenAt: msg.seenAt as any,
-            })),
+            messages: limitedMessages.map((msg) => {
+              const { fromUserId, toUserId, ...msgWithoutFlatFields } = msg;
+              return {
+                id: msg.id,
+                content: msg.text,
+                sender: {
+                  id: fromUserId,
+                },
+                receiver: {
+                  id: toUserId,
+                },
+                conversationId: msg.chatId,
+                createdAt: msg.createdAt,
+                updatedAt: msg.updatedAt ?? msg.createdAt,
+                seen: msg.seen,
+                seenAt: msg.seenAt as any,
+              };
+            }),
             pagination: {
               page: 1,
               limit: limitNum,
@@ -246,18 +231,21 @@ export async function chatRoutes(fastify: FastifyInstance) {
           type: 'message',
         });
 
+        const { fromUserId, toUserId, ...messageWithoutFlatFields } = message;
         const response: SendMessageResponse = {
           message: 'Message sent',
           data: {
             id: message.id,
             content: message.text,
-            senderId: message.fromUserId,
-            receiverId: message.toUserId,
+            sender: {
+              id: fromUserId,
+            },
+            receiver: {
+              id: toUserId,
+            },
             conversationId: message.chatId,
             createdAt: message.createdAt,
             updatedAt: message.updatedAt ?? message.createdAt,
-            sender: { id: message.fromUserId, name: '', email: '' },
-            receiver: { id: message.toUserId, name: '', email: '' },
             seen: message.seen,
             seenAt: message.seenAt as any,
           },

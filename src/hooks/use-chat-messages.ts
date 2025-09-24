@@ -56,7 +56,7 @@ export function useChatMessages({
 }: UseChatMessagesProps = {}) {
   const { user } = useAuthState();
   const { addNotification } = useUIStore();
-  const { handleStartChat, chatWindowOpen, peerId } = useChatContext();
+  const { handleStartChat, chatWindowOpen, peer } = useChatContext();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
@@ -72,13 +72,13 @@ export function useChatMessages({
 
   // Use refs to store current values
   const userRef = useRef(user);
-  const peerIdRef = useRef(peerId);
+  const peerIdRef = useRef(peer.id);
   const chatWindowOpenRef = useRef(chatWindowOpen);
   const conversationsRef = useRef(conversations);
 
   // Update refs when values change
   userRef.current = user;
-  peerIdRef.current = peerId;
+  peerIdRef.current = peer.id;
   chatWindowOpenRef.current = chatWindowOpen;
   conversationsRef.current = conversations;
 
@@ -104,27 +104,23 @@ export function useChatMessages({
         const data = await response.json();
         const normalized = (data.conversations || []).map((conv: any) => {
           // Normalize server response to the shape used by UI
-          const peer = conv.peer || conv.participant2 || conv.participant || {};
           const last = conv.lastMessage || {};
           return {
-            id: conv.id || conv.chatId,
+            id: conv.id,
             peer: {
-              id: peer.id || conv.participant2Id || conv.otherUserId,
-              name: peer.name || conv.participant2?.name || conv.otherUserName || 'Unknown User',
-              avatar: peer.avatar || conv.participant2?.avatar || conv.otherUserAvatar,
+              id: conv.peer.id,
+              name: conv.peer.name || 'Unknown User',
+              avatar: conv.peer.avatar,
             },
             lastMessage: {
-              text: typeof last === 'string' ? last : last.text || last.content || '',
-              createdAt:
-                last.createdAt ||
-                conv.lastMessageAt ||
-                (typeof last === 'object' ? last.updatedAt : undefined),
-              fromUserId: last.fromUserId || last.senderId || conv.lastMessageFromUserId,
-              seen: last.seen ?? conv.lastMessageSeen ?? false,
+              text: last.content || '',
+              createdAt: last.createdAt,
+              fromUserId: last.sender?.id,
+              seen: last.seen ?? false,
             },
-            lastMessageAt: conv.lastMessageAt,
-            lastMessageFromUserId: conv.lastMessageFromUserId,
-            lastMessageSeen: conv.lastMessageSeen,
+            lastMessageAt: last.createdAt,
+            lastMessageFromUserId: last.sender?.id,
+            lastMessageSeen: last.seen,
             unreadCount: conv.unreadCount || 0,
           } as Conversation;
         });

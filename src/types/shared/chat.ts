@@ -3,36 +3,35 @@ import { User } from './auth';
 export interface Message {
   id: string;
   content: string;
-  senderId: string;
-  receiverId: string;
-  conversationId: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
   sender: {
     id: string;
-    name: string;
-    email: string;
-    avatar?: string | null;
   };
   receiver: {
     id: string;
-    name: string;
-    email: string;
-    avatar?: string | null;
   };
+  conversationId: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
   seen: boolean;
   seenAt?: string | null;
 }
 
 export interface Conversation {
   id: string;
-  participant1Id: string;
-  participant2Id: string;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  participant1: User;
-  participant2: User;
-  lastMessage?: Message;
+  peer: {
+    id: string;
+    name: string;
+    avatar?: string | null;
+  };
+  lastMessage?: {
+    id: string;
+    content: string;
+    sender: {
+      id: string;
+    };
+    createdAt: Date | string;
+    seen: boolean;
+  };
   unreadCount: number;
 }
 

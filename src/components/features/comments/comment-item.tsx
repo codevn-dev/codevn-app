@@ -140,7 +140,7 @@ export function CommentItem({
             (r) =>
               r.id.startsWith('temp-') &&
               r.content === incoming.content &&
-              r.authorId === incoming.authorId
+              r.author.id === incoming.author.id
           );
           if (optimisticIndex !== -1) {
             merged[optimisticIndex] = incoming;
@@ -278,7 +278,7 @@ export function CommentItem({
                 user={{
                   id: comment.author.id,
                   name: comment.author.name,
-                  email: comment.author.email,
+                  email: '', // Email not available in new API
                   avatar: comment.author.avatar || undefined,
                   role: 'user' as const,
                   createdAt: new Date().toISOString(),

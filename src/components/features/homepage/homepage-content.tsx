@@ -544,7 +544,7 @@ export function HomepageContent() {
                                   alt={article.author.name}
                                 />
                                 <AvatarFallback className="text-[10px] font-bold">
-                                  {article.author.name.charAt(0).toUpperCase()}
+                                  {article.author.name?.charAt(0).toUpperCase() || 'U'}
                                 </AvatarFallback>
                               </Avatar>
                             </div>

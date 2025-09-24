@@ -8,11 +8,9 @@ export interface Article {
   published: boolean;
   createdAt: Date | string;
   updatedAt: Date | string | null;
-  authorId: string;
   author: {
     id: string;
     name: string;
-    email: string;
     avatar?: string | null;
   };
   category: {

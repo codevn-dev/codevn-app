@@ -67,7 +67,7 @@ export function AvatarWithDropdown({
       setIsOpen(false);
       return;
     }
-    handleStartChat(user.id, user.name, user.avatar);
+    handleStartChat(user.id, user.name || 'Unknown', user.avatar);
     setIsOpen(false);
   };
 
@@ -95,11 +95,13 @@ export function AvatarWithDropdown({
             <Avatar className={sizeClasses[size]}>
               <AvatarImage src={user.avatar || undefined} />
               <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
-                {user.name.charAt(0).toUpperCase()}
+                {user.name?.charAt(0).toUpperCase() || '?'}
               </AvatarFallback>
             </Avatar>
             {showName && (
-              <span className={`font-medium ${textSizeClasses[size]}`}>{user.name}</span>
+              <span className={`font-medium ${textSizeClasses[size]}`}>
+                {user.name || 'Unknown'}
+              </span>
             )}
           </div>
         </Button>
@@ -135,10 +137,12 @@ export function AvatarWithDropdown({
           <Avatar className={sizeClasses[size]}>
             <AvatarImage src={user.avatar || undefined} />
             <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
-              {user.name.charAt(0).toUpperCase()}
+              {user.name?.charAt(0).toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
-          {showName && <span className={`font-medium ${textSizeClasses[size]}`}>{user.name}</span>}
+          {showName && (
+            <span className={`font-medium ${textSizeClasses[size]}`}>{user.name || 'Unknown'}</span>
+          )}
         </div>
       </Button>
 

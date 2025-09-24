@@ -16,9 +16,7 @@ export function FloatingChatButton() {
     setChatWindowOpen,
     chatSidebarOpen,
     setChatSidebarOpen,
-    peerId,
-    peerName,
-    peerAvatar,
+    peer,
   } = useChat();
   const [wasChatWindowOpen, setWasChatWindowOpen] = useState(false);
   const [closingViaFloatingButton, setClosingViaFloatingButton] = useState(false);
@@ -92,13 +90,7 @@ export function FloatingChatButton() {
       />
 
       {/* Chat Window */}
-      <ChatWindow
-        peerId={peerId}
-        peerName={peerName}
-        peerAvatar={peerAvatar}
-        isOpen={chatWindowOpen}
-        onClose={handleCloseChat}
-      />
+      <ChatWindow peer={peer} isOpen={chatWindowOpen} onClose={handleCloseChat} />
     </>
   );
 }

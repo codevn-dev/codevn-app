@@ -9,12 +9,12 @@ interface ChatContextType {
   setChatPopupOpen: (open: boolean) => void;
   chatSidebarOpen: boolean;
   setChatSidebarOpen: (open: boolean) => void;
-  peerId: string;
-  setPeerId: (id: string) => void;
-  peerName: string;
-  setPeerName: (name: string) => void;
-  peerAvatar: string;
-  setPeerAvatar: (avatar: string) => void;
+  peer: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  setPeer: (peer: { id: string; name: string; avatar?: string }) => void;
   handleStartChat: (userId: string, userName: string, userAvatar?: string) => void;
   handleCloseChat: () => void;
 }
@@ -25,14 +25,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [chatWindowOpen, setChatWindowOpen] = useState(false);
   const [chatPopupOpen, setChatPopupOpen] = useState(false);
   const [chatSidebarOpen, setChatSidebarOpen] = useState(false);
-  const [peerId, setPeerId] = useState('');
-  const [peerName, setPeerName] = useState('');
-  const [peerAvatar, setPeerAvatar] = useState('');
+  const [peer, setPeer] = useState({
+    id: '',
+    name: '',
+    avatar: undefined as string | undefined,
+  });
 
   const handleStartChat = (userId: string, userName: string, userAvatar?: string) => {
-    setPeerId(userId);
-    setPeerName(userName);
-    setPeerAvatar(userAvatar || '');
+    setPeer({
+      id: userId,
+      name: userName,
+      avatar: userAvatar,
+    });
     setChatWindowOpen(true);
     // On tablet/desktop, ensure sidebar is open when starting a chat
     if (typeof window !== 'undefined') {
@@ -45,9 +49,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const handleCloseChat = () => {
     setChatWindowOpen(false);
-    setPeerId('');
-    setPeerName('');
-    setPeerAvatar('');
+    setPeer({
+      id: '',
+      name: '',
+      avatar: undefined,
+    });
   };
 
   return (
@@ -59,12 +65,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setChatPopupOpen,
         chatSidebarOpen,
         setChatSidebarOpen,
-        peerId,
-        setPeerId,
-        peerName,
-        setPeerName,
-        peerAvatar,
-        setPeerAvatar,
+        peer,
+        setPeer,
         handleStartChat,
         handleCloseChat,
       }}

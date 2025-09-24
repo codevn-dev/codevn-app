@@ -875,7 +875,7 @@ function AdminPageContent() {
                                         )}
                                         <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500 sm:text-sm">
                                           <span className="font-medium">
-                                            {t('admin.createdBy')} {category.createdBy.name}
+                                            {t('admin.createdBy')} {category.createdByName}
                                           </span>
                                           <span className="mx-2 hidden sm:inline">•</span>
                                           <span>
@@ -954,8 +954,7 @@ function AdminPageContent() {
                                                     )}
                                                     <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
                                                       <span>
-                                                        {t('admin.createdBy')}{' '}
-                                                        {child.createdBy.name}
+                                                        {t('admin.createdBy')} {child.createdByName}
                                                       </span>
                                                       <span className="mx-2 hidden sm:inline">
                                                         •

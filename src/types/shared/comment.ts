@@ -2,14 +2,12 @@ export interface Comment {
   id: string;
   content: string;
   articleId: string;
-  authorId: string;
   parentId: string | null;
   createdAt: Date | string;
   updatedAt: Date | string | null;
   author: {
     id: string;
     name: string;
-    email: string;
     avatar?: string | null;
   };
   replies?: Comment[];

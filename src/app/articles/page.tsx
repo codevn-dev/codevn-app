@@ -736,7 +736,7 @@ function ArticlesContent() {
 
                             <div className="flex items-center text-xs text-gray-700 sm:text-sm">
                               <div className="from-brand to-brand-700 mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
-                                {article.author.name.charAt(0).toUpperCase()}
+                                {article.author.name?.charAt(0).toUpperCase() || '?'}
                               </div>
                               <span className="font-medium">{article.author.name}</span>
                             </div>
