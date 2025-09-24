@@ -42,6 +42,8 @@ export const apiConfig = {
   clientUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   timeout: parseInt(process.env.API_TIMEOUT || '5000'), // 5 seconds
   retryAttempts: parseInt(process.env.API_RETRY_ATTEMPTS || '3'),
+  // Secret token for internal API calls (bypasses rate limiting)
+  internalSecret: process.env.INTERNAL_API_SECRET || '',
 } as const;
 
 // Chat configuration

@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { verifyToken, extractTokenFromHeader } from '../jwt';
+import { verifyToken, extractTokenFromHeader } from './jwt';
 import { logger } from '@/lib/utils/logger';
 
 export interface AuthenticatedRequest extends FastifyRequest {

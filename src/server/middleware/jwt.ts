@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { config } from '@/config';
-import { RedisAuthService } from './redis';
+import { RedisAuthService } from '../redis';
 
 export interface JWTPayload {
   id: string;

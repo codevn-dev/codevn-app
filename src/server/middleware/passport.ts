@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { config } from '@/config';
-import { userRepository } from './database/repository';
+import { userRepository } from '../database/repository';
 import bcrypt from 'bcryptjs';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';

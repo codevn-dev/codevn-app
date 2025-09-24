@@ -1,11 +1,11 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
 import { config } from '@/config';
-import { setupPassport } from './passport';
+import { setupPassport } from './middleware/passport';
 import { setupRoutes } from './routes';
 import { setupPlugins } from './plugins';
 import { createRedisAuthService } from './redis';
-import { setRedisService } from './jwt';
+import { setRedisService } from './middleware/jwt';
 import { logger } from '@/lib/utils/logger';
 
 async function buildServer() {

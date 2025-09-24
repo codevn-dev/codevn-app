@@ -43,10 +43,4 @@ export async function setupPlugins(fastify: FastifyInstance) {
   await fastify.register(require('@fastify/helmet'), {
     contentSecurityPolicy: false, // Disable for development
   });
-
-  // Rate limiting - DISABLED for development
-  // await fastify.register(require('@fastify/rate-limit'), {
-  //   max: config.rateLimit.maxRequests,
-  //   timeWindow: config.rateLimit.windowMs,
-  // });
 }

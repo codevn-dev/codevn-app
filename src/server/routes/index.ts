@@ -1,13 +1,13 @@
 import { FastifyInstance } from 'fastify';
-import { authRoutes } from './routes/auth';
-import { articleRoutes } from './routes/articles';
-import { categoryRoutes } from './routes/categories';
-import { commentRoutes } from './routes/comments';
-import { chatRoutes } from './routes/chat';
-import { profileRoutes } from './routes/profile';
-import { uploadRoutes } from './routes/upload';
-import { userRoutes } from './routes/users';
-import { adminRoutes } from './routes/admin';
+import { authRoutes } from './auth';
+import { articleRoutes } from './articles';
+import { categoryRoutes } from './categories';
+import { commentRoutes } from './comments';
+import { chatRoutes } from './chat';
+import { profileRoutes } from './profile';
+import { uploadRoutes } from './upload';
+import { userRoutes } from './users';
+import { adminRoutes } from './admin';
 
 export async function setupRoutes(fastify: FastifyInstance) {
   // Health check

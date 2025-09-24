@@ -1,6 +1,6 @@
 import { FastifyReply } from 'fastify';
 import { userRepository } from '../database/repository';
-import { generateToken, revokeToken, refreshToken } from '../jwt';
+import { generateToken, revokeToken, refreshToken } from '../middleware/jwt';
 import { createRedisAuthService } from '../redis';
 import { config } from '@/config';
 import { BaseService } from './base';
