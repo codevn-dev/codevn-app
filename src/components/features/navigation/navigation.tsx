@@ -104,7 +104,6 @@ export function Navigation() {
                       {t('nav.admin')}
                     </Button>
                   )}
-
                   <LanguageSwitcher />
 
                   <div className="flex items-center gap-2">
@@ -161,12 +160,14 @@ export function Navigation() {
                   >
                     {t('nav.signUp')}
                   </Button>
+                  <LanguageSwitcher />
                 </>
               )}
             </div>
 
-            {/* Mobile menu button */}
-            <div className="md:hidden">
+            {/* Mobile menu button and language switcher */}
+            <div className="flex items-center gap-2 md:hidden">
+              <LanguageSwitcher />
               <Button
                 variant="outline"
                 size="sm"
@@ -188,7 +189,7 @@ export function Navigation() {
       {/* Mobile Panel */}
       <div
         id="mobile-nav"
-        className={`bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
+        className={`sticky top-16 z-40 bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
       >
         <div className="mx-auto max-w-7xl space-y-2 px-4 py-3 sm:px-6 lg:px-8">
           {isAuthLoading ? null : isAuthenticated && user ? (
@@ -200,7 +201,7 @@ export function Navigation() {
                   router.push('/articles');
                 }}
               >
-                <FileText className="mr-2 h-4 w-4" /> Articles
+                <FileText className="mr-2 h-4 w-4" /> {t('nav.articles')}
               </button>
               {isAdmin(user.role) && (
                 <button
@@ -210,7 +211,7 @@ export function Navigation() {
                     router.push('/admin');
                   }}
                 >
-                  <Settings className="mr-2 h-4 w-4" /> Admin
+                  <Settings className="mr-2 h-4 w-4" /> {t('nav.admin')}
                 </button>
               )}
               <button
@@ -220,7 +221,7 @@ export function Navigation() {
                   router.push('/profile');
                 }}
               >
-                <User className="mr-2 h-4 w-4" /> Edit Profile
+                <User className="mr-2 h-4 w-4" /> {t('nav.editProfile')}
               </button>
               <button
                 className="flex w-full items-center rounded-md px-3 py-2 text-left text-red-600 hover:bg-gray-100"
@@ -229,7 +230,7 @@ export function Navigation() {
                   handleSignOut();
                 }}
               >
-                <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                <LogOut className="mr-2 h-4 w-4" /> {t('nav.signOut')}
               </button>
             </>
           ) : (
