@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { Separator } from '@/components/ui/separator';
 import { useUIStore } from '@/stores';
-// Removed X import - no close button needed
 
 import GoogleIcon from '@/icons/google.svg';
 import { useAuthActions } from '@/hooks/use-auth-actions';

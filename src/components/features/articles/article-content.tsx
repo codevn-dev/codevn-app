@@ -25,7 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CodeHighlighter } from '@/features/articles';
+import { CodeHighlighter, ShareMenu } from '@/features/articles';
 import { CommentsSection } from '@/features/comments';
 import type { CommentsSectionRef } from '@/features/comments';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -367,6 +367,9 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                     <MessageSquare className="mr-1 h-4 w-4" />
                     {article._count.comments}
                   </Button>
+                  <div className="ml-auto">
+                    <ShareMenu title={article.title} size="sm" />
+                  </div>
                 </div>
               </div>
 

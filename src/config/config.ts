@@ -30,6 +30,10 @@ export const uploadConfig = {
   imagePath: process.env.IMAGE_PATH || 'public/uploads/images',
 } as const;
 
+export const siteConfig = {
+  name: process.env.NEXT_PUBLIC_SITE_NAME || 'CodeVN',
+} as const;
+
 // API configuration
 export const apiConfig = {
   // Server-side API URL (internal calls)
@@ -125,6 +129,7 @@ export const config = {
   db: dbConfig,
   auth: authConfig,
   upload: uploadConfig,
+  site: siteConfig,
   api: apiConfig,
   chat: chatConfig,
   comment: commentConfig,
