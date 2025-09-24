@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
   },
   turbopack: {
     rules: {
-      // Bất kỳ file .svg import sẽ dùng SVGR để thành React component
+        // Any file .svg import will use SVGR to become a React component
       '*.svg': {
         loaders: ['@svgr/webpack'],
         as: '*.js',
