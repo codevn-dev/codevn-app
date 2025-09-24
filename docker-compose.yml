@@ -47,6 +47,19 @@ services:
       retries: 3
       start_period: 5s
 
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    container_name: codevn-migrate
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["pnpm", "db:push"]
+    restart: "no"
+
   postgres:
     image: postgres:17
     container_name: codevn-postgres
@@ -85,18 +98,6 @@ services:
     restart: unless-stopped
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-
-  migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: migrator
-    container_name: codevn-migrate
-    env_file: .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: 'no'
 
   redis:
     image: redis:8-alpine

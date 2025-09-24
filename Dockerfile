@@ -63,16 +63,3 @@ ENV NODE_ENV=production
 ENV PORT=3001
 
 CMD ["pnpm", "dev:api"]
-
-########################################
-# Migrator image
-########################################
-FROM deps AS migrator
-WORKDIR /app
-
-COPY drizzle.config.ts ./drizzle.config.ts
-COPY src/lib/database/schema.ts ./src/lib/database/schema.ts
-
-USER codevn
-
-CMD ["pnpm", "db:push"]
