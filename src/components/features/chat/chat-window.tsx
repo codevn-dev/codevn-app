@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { listItemFadeSlide, typingDot } from '@/components/layout/motion-presets';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -402,12 +404,13 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
               </div>
             )}
 
+            <AnimatePresence initial={false}>
             {messages.map((m, index) => {
               const previousMessage = index > 0 ? messages[index - 1] : null;
               const showDateSeparator = isNewDay(m.timestamp, previousMessage?.timestamp);
 
               return (
-                <div key={m.id}>
+                <motion.div key={m.id} variants={listItemFadeSlide} initial="hidden" animate="visible" exit="exit" layout>
                   {/* Date separator */}
                   {showDateSeparator && (
                     <div className="my-4 flex justify-center">
@@ -447,9 +450,21 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
+            </AnimatePresence>
+
+            {/* Typing indicator */}
+            {isTyping && (
+              <div className="mt-2 flex justify-start">
+                <div className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-2 text-gray-700">
+                  {[0,1,2].map((i) => (
+                    <motion.span key={i} className="h-1.5 w-1.5 rounded-full bg-gray-500" variants={typingDot} initial="initial" animate={(typingDot as any).animate(i)} />
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -516,6 +531,7 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
               />
             </div>
           )}
+          <motion.div whileTap={{ scale: 0.92 }}>
           <Button
             onClick={(e) => {
               e.stopPropagation();
@@ -532,6 +548,7 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
           >
             <Send className="h-6 w-6" />
           </Button>
+          </motion.div>
         </div>
       </div>
     </div>

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { listItemFadeSlide } from '@/components/layout/motion-presets';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -267,7 +269,7 @@ export function CommentItem({
   const emphasizeMentions = (text: string) => text;
 
   return (
-    <div className={`${depth > 0 ? 'pl-4' : ''}`}>
+    <motion.div className={`${depth > 0 ? 'pl-4' : ''}`} variants={listItemFadeSlide} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }}>
       <Card
         className={`shadow-brand/30 mb-3 bg-white shadow-2xl drop-shadow-2xl ${isDeleting ? 'opacity-50' : ''}`}
       >
@@ -368,44 +370,48 @@ export function CommentItem({
 
           {!isEditing && (
             <div className="mt-2 flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLike}
-                disabled={isLiking}
-                className={`h-6 px-2 transition-colors duration-200 ${
-                  isLiked
-                    ? 'bg-green-50 text-green-600 hover:bg-green-50 hover:text-green-700'
-                    : 'text-gray-600 hover:bg-green-50 hover:text-green-600'
-                }`}
-                title={isLiked ? 'Remove like' : 'Like this comment'}
-              >
-                <ThumbsUp
-                  className={`mr-1 h-3 w-3 transition-colors duration-200 ${
-                    isLiked ? 'fill-current text-green-600' : 'text-gray-500'
+              <motion.div whileTap={{ scale: 0.94 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLike}
+                  disabled={isLiking}
+                  className={`h-6 px-2 transition-colors duration-200 ${
+                    isLiked
+                      ? 'bg-green-50 text-green-600 hover:bg-green-50 hover:text-green-700'
+                      : 'text-gray-600 hover:bg-green-50 hover:text-green-600'
                   }`}
-                />
-                <span className="text-xs font-medium">{likeCount}</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleUnlike}
-                disabled={isUnliking}
-                className={`h-6 px-2 transition-colors duration-200 ${
-                  isUnliked
-                    ? 'bg-red-50 text-red-600 hover:bg-red-50 hover:text-red-700'
-                    : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
-                }`}
-                title={isUnliked ? 'Remove unlike' : 'Unlike this comment'}
-              >
-                <ThumbsDown
-                  className={`mr-1 h-3 w-3 transition-colors duration-200 ${
-                    isUnliked ? 'fill-current text-red-600' : 'text-gray-500'
+                  title={isLiked ? 'Remove like' : 'Like this comment'}
+                >
+                  <ThumbsUp
+                    className={`mr-1 h-3 w-3 transition-colors duration-200 ${
+                      isLiked ? 'fill-current text-green-600' : 'text-gray-500'
+                    }`}
+                  />
+                  <span className="text-xs font-medium">{likeCount}</span>
+                </Button>
+              </motion.div>
+              <motion.div whileTap={{ scale: 0.94 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleUnlike}
+                  disabled={isUnliking}
+                  className={`h-6 px-2 transition-colors duration-200 ${
+                    isUnliked
+                      ? 'bg-red-50 text-red-600 hover:bg-red-50 hover:text-red-700'
+                      : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
                   }`}
-                />
-                <span className="text-xs font-medium">{unlikeCount}</span>
-              </Button>
+                  title={isUnliked ? 'Remove unlike' : 'Unlike this comment'}
+                >
+                  <ThumbsDown
+                    className={`mr-1 h-3 w-3 transition-colors duration-200 ${
+                      isUnliked ? 'fill-current text-red-600' : 'text-gray-500'
+                    }`}
+                  />
+                  <span className="text-xs font-medium">{unlikeCount}</span>
+                </Button>
+              </motion.div>
               {depth < maxDepth && (
                 <Button
                   variant="ghost"
@@ -490,7 +496,8 @@ export function CommentItem({
           {showReplies && depth === 0 && (
             <div className="mt-3 space-y-3">
               {replies.slice(0, visibleRepliesCount).map((reply) => (
-                <CommentItem
+                <motion.div key={`${reply.id}-${reply.createdAt}`} variants={listItemFadeSlide} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }}>
+                  <CommentItem
                   key={`${reply.id}-${reply.createdAt}`}
                   comment={reply}
                   articleId={articleId}
@@ -519,6 +526,7 @@ export function CommentItem({
                     }, 0);
                   }}
                 />
+                </motion.div>
               ))}
 
               {/* Load More Replies Button - now above the child reply textbox */}
@@ -600,6 +608,6 @@ export function CommentItem({
           )}
         </CardBody>
       </Card>
-    </div>
+    </motion.div>
   );
 }

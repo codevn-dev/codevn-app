@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, forwardRef, useImperativeHandle, useRef, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { listContainerStagger, listItemFadeSlide } from '@/components/layout/motion-presets';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Loader2 } from 'lucide-react';
 import { CommentItem } from './comment-item';
@@ -320,18 +322,25 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           )}
 
         {!isLoading && !error && topLevelComments.length > 0 && (
-          <div className="space-y-3">
-            {topLevelComments.slice(0, visibleTopCount).map((comment) => (
-              <CommentItem
-                key={`${comment.id}-${comment.createdAt}`}
-                comment={comment}
-                articleId={articleId}
-                onCommentUpdated={handleCommentUpdated}
-                onCommentDeleted={handleCommentDeleted}
-                onReplyAdded={handleReplyAdded}
-              />
-            ))}
-
+          <motion.div
+            className="space-y-3"
+            variants={listContainerStagger}
+            initial="hidden"
+            animate="visible"
+          >
+            <AnimatePresence initial={false}>
+              {topLevelComments.slice(0, visibleTopCount).map((comment) => (
+                <motion.div key={`${comment.id}-${comment.createdAt}`} variants={listItemFadeSlide} exit="exit" layout>
+                  <CommentItem
+                    comment={comment}
+                    articleId={articleId}
+                    onCommentUpdated={handleCommentUpdated}
+                    onCommentDeleted={handleCommentDeleted}
+                    onReplyAdded={handleReplyAdded}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
             {/* Load More Button - only show if there are older comments to load */}
             {hasMoreComments && (
               <div className="mt-2">
@@ -351,7 +360,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                 </Button>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* Comment form moved to bottom for better UX */}

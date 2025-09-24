@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { modalOverlay, modalContent } from '@/components/layout/motion-presets';
+import { MotionContainer } from '@/components/layout';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -222,7 +225,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
   };
 
   return (
-    <>
+    <div data-article-root>
       <div className="py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-2xl bg-white p-6 shadow-2xl shadow-gray-400/80">
@@ -274,15 +277,17 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 )}
               </div>
 
-              <div className="mb-4">
-                <Badge className="text-white" style={{ backgroundColor: article.category.color }}>
-                  {article.category.name}
-                </Badge>
-              </div>
+              <div>
+                <div className="mb-4">
+                  <Badge className="text-white" style={{ backgroundColor: article.category.color }}>
+                    {article.category.name}
+                  </Badge>
+                </div>
 
-              <h1 className="mb-3 text-2xl font-bold text-gray-900 sm:mb-4 sm:text-3xl">
-                {article.title}
-              </h1>
+                <h1 className="mb-3 text-2xl font-bold text-gray-900 sm:mb-4 sm:text-3xl">
+                  {article.title}
+                </h1>
+              </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -369,14 +374,13 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                   </Button>
                 </div>
               </div>
-            </div>
 
-            <div className="pt-0">
+            <MotionContainer delay={0.05} className="pt-0">
               <CodeHighlighter
                 content={article.content}
                 className="leading-relaxed text-gray-700"
               />
-            </div>
+            </MotionContainer>
 
             <div className="border-brand/20 mt-6 border-t pt-4 sm:mt-8 sm:pt-6">
               <CommentsSection
@@ -386,12 +390,14 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
               />
             </div>
           </div>
+          </div>
         </div>
       </div>
 
+      <AnimatePresence>
       {isEditOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6 shadow-2xl">
+        <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" variants={modalOverlay} initial="initial" animate="animate" exit="exit">
+          <motion.div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6 shadow-2xl" variants={modalContent}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Edit Article</h2>
               <Button variant="outline" size="sm" onClick={() => setIsEditOpen(false)}>
@@ -531,9 +537,10 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 onClose={() => setShowImageUpload(false)}
               />
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-    </>
+      </AnimatePresence>
+    </div>
   );
 }
