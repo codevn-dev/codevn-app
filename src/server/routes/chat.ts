@@ -48,13 +48,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
 
         const response: ConversationListResponse = {
           conversations: conversations.map((conv) => {
-            const {
-              otherUserId,
-              otherUserName,
-              otherUserAvatar,
-              lastMessageFromUserId,
-              ...convWithoutFlatFields
-            } = conv;
+            const { otherUserId, otherUserName, otherUserAvatar, lastMessageFromUserId } = conv;
             return {
               id: conv.chatId,
               peer: {
@@ -144,7 +138,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
 
           const response: MessageListResponse = {
             messages: limitedMessages.map((msg) => {
-              const { fromUserId, toUserId, ...msgWithoutFlatFields } = msg;
+              const { fromUserId, toUserId } = msg;
               return {
                 id: msg.id,
                 content: msg.text,
@@ -231,7 +225,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
           type: 'message',
         });
 
-        const { fromUserId, toUserId, ...messageWithoutFlatFields } = message;
+        const { fromUserId, toUserId } = message;
         const response: SendMessageResponse = {
           message: 'Message sent',
           data: {

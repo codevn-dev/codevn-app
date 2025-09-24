@@ -9,7 +9,7 @@ export async function categoryRoutes(fastify: FastifyInstance) {
     try {
       const rootCategories = await categoryRepository.findAllWithCounts();
       const response = rootCategories.map((category: any) => {
-        const { createdById, createdByName, ...categoryWithoutFlatFields } = category;
+        const { createdById, /* createdByName, */ ...categoryWithoutFlatFields } = category;
         return {
           ...categoryWithoutFlatFields,
           createdBy: {
@@ -19,7 +19,7 @@ export async function categoryRoutes(fastify: FastifyInstance) {
           children: category.children?.map((child: any) => {
             const {
               createdById: childCreatedById,
-              createdByName: childCreatedByName,
+              /* createdByName: childCreatedByName, */
               ...childWithoutFlatFields
             } = child;
             return {

@@ -120,7 +120,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const hasPrev = result.pagination.page > 1;
         const response: ArticleListResponse = {
           articles: result.articles.map((article: any) => {
-            const { authorId, authorName, authorAvatar, ...articleWithoutFlatFields } = article;
+            const { authorId, /* authorName, authorAvatar, */ ...articleWithoutFlatFields } =
+              article as any;
             return {
               ...articleWithoutFlatFields,
               author: {
@@ -194,7 +195,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
           return reply.status(500).send({ error: 'Failed to retrieve created article' });
         }
 
-        const { authorId, authorName, authorAvatar, ...articleWithoutFlatFields } =
+        const { authorId, /* authorName, authorAvatar, */ ...articleWithoutFlatFields } =
           createdArticle as any;
         const response = {
           ...articleWithoutFlatFields,
@@ -264,7 +265,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         const updatedArticle = await articleRepository.update(id, updateData);
 
-        const { authorId, authorName, authorAvatar, ...articleWithoutFlatFields } =
+        const { authorId, /* authorName, authorAvatar, */ ...articleWithoutFlatFields } =
           updatedArticle as any;
         const response = {
           ...articleWithoutFlatFields,
@@ -536,7 +537,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         const response: CommentListResponse = {
           comments: result.comments.map((comment: any) => {
-            const { authorId, authorName, authorAvatar, ...commentWithoutFlatFields } = comment;
+            const { authorId, /* authorName, authorAvatar, */ ...commentWithoutFlatFields } =
+              comment as any;
             return {
               ...commentWithoutFlatFields,
               author: {
@@ -548,9 +550,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
                 ? (() => {
                     const {
                       authorId: parentAuthorId,
-                      authorName: parentAuthorName,
-                      ...parentWithoutFlatFields
-                    } = comment.parent;
+                      /* parentAuthorName, */ ...parentWithoutFlatFields
+                    } = comment.parent as any;
                     return {
                       ...parentWithoutFlatFields,
                       author: {
@@ -635,7 +636,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
           return reply.status(500).send({ error: 'Failed to retrieve created comment' });
         }
 
-        const { authorId, authorName, authorAvatar, ...commentWithoutFlatFields } =
+        const { authorId, /* authorName, authorAvatar, */ ...commentWithoutFlatFields } =
           createdComment as any;
         const response = {
           ...commentWithoutFlatFields,

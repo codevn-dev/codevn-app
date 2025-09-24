@@ -45,7 +45,8 @@ export async function commentRoutes(fastify: FastifyInstance) {
           return reply.status(404).send({ error: 'Comment not found' });
         }
 
-        const { authorId, authorName, authorAvatar, ...commentWithoutFlatFields } = comment;
+        const { authorId, /* authorName, authorAvatar, */ ...commentWithoutFlatFields } =
+          comment as any;
         const response = {
           ...commentWithoutFlatFields,
           author: {
@@ -105,7 +106,8 @@ export async function commentRoutes(fastify: FastifyInstance) {
         // Fetch the updated comment with relations
         const comment = await commentRepository.findById(id);
 
-        const { authorId, authorName, authorAvatar, ...commentWithoutFlatFields } = comment;
+        const { authorId, /* authorName, authorAvatar, */ ...commentWithoutFlatFields } =
+          comment as any;
         const response = {
           ...commentWithoutFlatFields,
           author: {
