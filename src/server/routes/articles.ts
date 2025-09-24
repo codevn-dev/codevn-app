@@ -117,6 +117,46 @@ export async function articleRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // GET /api/articles/slug/:slug - Get article by slug
+  fastify.get<{ Params: { slug: string }; Querystring: { preview?: string } }>(
+    '/slug/:slug',
+    {
+      preHandler: optionalAuthMiddleware,
+    },
+    async (
+      request: FastifyRequest<{ Params: { slug: string }; Querystring: { preview?: string } }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const authRequest = request as AuthenticatedRequest;
+        const { slug } = request.params;
+        const { preview } = request.query;
+
+        // If preview=true, use the authenticated user's ID
+        const userId = preview === 'true' ? authRequest.user?.id : undefined;
+
+        const response = await articlesService.getArticleBySlug(slug, userId);
+        return reply.send(response);
+      } catch {
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+
+  // POST /api/articles/:id/views - Increment article view count
+  fastify.post<{ Params: { id: string } }>(
+    '/:id/views',
+    async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+      try {
+        const { id } = request.params;
+        const response = await articlesService.incrementArticleViews(id);
+        return reply.send(response);
+      } catch {
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
+    }
+  );
+
   // GET /api/articles/:id/reaction - Get user's reaction to article
   fastify.get<{ Params: { id: string } }>(
     '/:id/reaction',

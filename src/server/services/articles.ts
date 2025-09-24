@@ -180,6 +180,109 @@ export class ArticlesService extends BaseService {
   }
 
   /**
+   * Get article by slug
+   */
+  async getArticleBySlug(slug: string, userId?: string): Promise<Article> {
+    try {
+      if (!slug) {
+        throw new Error('Article slug is required');
+      }
+
+      const article = await articleRepository.findBySlug(slug);
+      if (!article) {
+        throw new Error('Article not found');
+      }
+
+      // Check if article is published or if user is the author
+      if (!article.published) {
+        if (!userId || article.authorId !== userId) {
+          throw new Error('Article not found');
+        }
+      }
+
+      // Get user's reaction if authenticated
+      let userReaction = null;
+      if (userId) {
+        const likeReaction = await reactionsRepository.findByUserAndArticle(
+          userId,
+          article.id,
+          'like'
+        );
+        const unlikeReaction = await reactionsRepository.findByUserAndArticle(
+          userId,
+          article.id,
+          'unlike'
+        );
+        userReaction = likeReaction || unlikeReaction;
+      }
+
+      // Get article statistics
+      const [likeCount, unlikeCount] = await Promise.all([
+        reactionsRepository.getReactionsByArticle(article.id, 'like'),
+        reactionsRepository.getReactionsByArticle(article.id, 'unlike'),
+      ]);
+
+      const response: Article = {
+        id: article.id,
+        title: article.title,
+        content: article.content,
+        slug: article.slug,
+        thumbnail: article.thumbnail || undefined,
+        categoryId: article.categoryId,
+        published: article.published,
+        createdAt: article.createdAt as any,
+        updatedAt: article.updatedAt as any,
+        author: {
+          id: article.authorId,
+          name: article.author?.name || 'Unknown',
+          avatar: article.author?.avatar || undefined,
+        },
+        category: {
+          id: article.categoryId,
+          name: article.category?.name || 'Unknown',
+          color: article.category?.color || '#000000',
+          slug: article.category?.slug || '',
+        },
+        _count: {
+          likes: likeCount.length,
+          unlikes: unlikeCount.length,
+          comments: 0, // Will be populated separately if needed
+        },
+        userHasLiked: userReaction?.type === 'like',
+        userHasUnliked: userReaction?.type === 'unlike',
+      };
+
+      return response;
+    } catch (error) {
+      this.handleError(error, 'Get article by slug');
+    }
+  }
+
+  /**
+   * Increment article view count
+   */
+  async incrementArticleViews(articleId: string): Promise<SuccessResponse> {
+    try {
+      if (!articleId) {
+        throw new Error('Article ID is required');
+      }
+
+      // Check if article exists
+      const article = await articleRepository.findById(articleId);
+      if (!article) {
+        throw new Error('Article not found');
+      }
+
+      // Increment view count
+      await articleRepository.incrementViewsById(articleId);
+
+      return { success: true };
+    } catch (error) {
+      this.handleError(error, 'Increment article views');
+    }
+  }
+
+  /**
    * Create new article
    */
   async createArticle(body: CreateArticleRequest, userId: string): Promise<Article> {

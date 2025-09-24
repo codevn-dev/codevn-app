@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { articleRepository } from '@/lib/database/repository';
 import { ArticleContent } from '@/features/articles';
 import { PreviewGuard } from '@/components/layout';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/server/jwt';
 import { config } from '@/config';
+import { apiGet, apiPost } from '@/lib/utils/api-client';
+import type { Article } from '@/types/shared/article';
 
 interface ArticlePageProps {
   params: Promise<{
@@ -39,59 +40,28 @@ export default async function ArticlePage({
     currentUserId = null;
   }
 
-  const article = await articleRepository.findBySlug(slug);
-
-  if (!article) {
+  // Fetch article from API
+  let article: Article;
+  try {
+    const endpoint = `/api/articles/slug/${slug}${isPreview ? '?preview=true' : ''}`;
+    article = await apiGet<Article>(endpoint);
+  } catch {
     notFound();
   }
 
-  // Check if article is published or if user is previewing their own article
-  if (!article.published) {
-    if (!isPreview) {
-      notFound();
-    }
+  // Increment view count via API (fire and forget)
+  apiPost(`/api/articles/${article.id}/views`).catch(() => {}); // Ignore errors for view counting
 
-    // For preview mode, let PreviewGuard handle authentication
-    // Don't check authentication here to avoid server-side redirect issues
-  }
-
-  // Increment view count atomically (safe for many concurrent users)
-  articleRepository.incrementViewsById(article.id).catch(() => {});
-
-  // Get comment, like, and unlike counts, and check if user has liked/unliked
-  const [commentCount, likeCount, unlikeCount, userHasLiked, userHasUnliked] = await Promise.all([
-    articleRepository.getCommentCount(article.id),
-    articleRepository.getLikeCount(article.id),
-    articleRepository.getUnlikeCount(article.id),
-    currentUserId ? articleRepository.hasUserLiked(article.id, currentUserId) : false,
-    currentUserId ? articleRepository.hasUserUnliked(article.id, currentUserId) : false,
-  ]);
-
-  const author = Array.isArray(article.author) ? article.author[0] : article.author;
-  const category = Array.isArray(article.category) ? article.category[0] : article.category;
+  // Data is already complete from API response, no need for additional queries
 
   const articleWithCounts = {
     ...article,
     thumbnail: article.thumbnail || undefined,
-    createdAt: article.createdAt.toISOString(),
-    author: {
-      id: author?.id || article.authorId,
-      name: author?.name || 'Unknown',
-      avatar: author?.avatar || null,
-    },
-    category: category,
-    views: (article as unknown as { views?: number }).views ?? 0,
-    _count: {
-      comments: commentCount,
-      likes: likeCount,
-      unlikes: unlikeCount,
-    },
-    userHasLiked,
-    userHasUnliked,
+    createdAt: article.createdAt,
   };
 
   return (
-    <PreviewGuard isPreview={isPreview} articleAuthorId={article.authorId}>
+    <PreviewGuard isPreview={isPreview} articleAuthorId={article.author.id}>
       {/* JSON-LD Structured Data for Article */}
       {(() => {
         const siteUrl = config.api.clientUrl;
@@ -158,8 +128,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const article = await articleRepository.findBySlug(slug);
-    if (!article) return {};
+    const article = await apiGet<Article>(`/api/articles/slug/${slug}`);
 
     const siteUrl = config.api.clientUrl;
     const siteName = config.site.name;
