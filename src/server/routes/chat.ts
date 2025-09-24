@@ -21,13 +21,6 @@ export async function chatRoutes(fastify: FastifyInstance) {
   // WebSocket endpoint for real-time chat
   fastify.register(async function (fastify) {
     fastify.get('/ws', { websocket: true } as any, (connection: any, request: any) => {
-      logger.info('WebSocket connection received', {
-        url: request.url,
-        headers: request.headers,
-        query: request.query,
-        connectionKeys: Object.keys(connection),
-      });
-
       // In @fastify/websocket, the connection object IS the WebSocket
       // Pass the connection directly instead of connection.socket
       chatWebSocketService.addConnection(connection, request);
@@ -251,6 +244,4 @@ export async function chatRoutes(fastify: FastifyInstance) {
       }
     }
   );
-
-  // Removed /api/chat/online-users endpoint; presence is handled via WebSocket
 }

@@ -15,6 +15,7 @@ import ReactCrop, {
 } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { apiUpload } from '@/lib/utils/api-client';
+import { UploadAvatarResponse } from '@/types/shared';
 import { useI18n } from '@/components/providers';
 
 interface AvatarUploadProps {
@@ -205,7 +206,7 @@ export function AvatarUpload({
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const result = await apiUpload<{ avatar: string }>('/api/profile/avatar', formData);
+      const result = await apiUpload<UploadAvatarResponse>('/api/profile/avatar', formData);
 
       updateUser({ avatar: result.avatar });
       onAvatarChange?.(result.avatar);

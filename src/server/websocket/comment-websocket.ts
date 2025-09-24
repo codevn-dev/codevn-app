@@ -134,12 +134,6 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
 
     // Publish for cross-instance delivery
     await this.publish('comment:new_comment', commentData);
-
-    logger.info('Comment sent via WebSocket', {
-      fromUserId: connection.userId,
-      articleId: message.articleId,
-      commentId: savedComment[0].id,
-    });
   }
 
   private async handleReply(connectionId: string, message: CommentMessage) {
@@ -191,13 +185,6 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
 
     // Publish for cross-instance delivery
     await this.publish('comment:new_reply', replyData);
-
-    logger.info('Reply sent via WebSocket', {
-      fromUserId: connection.userId,
-      articleId: message.articleId,
-      parentId: message.parentId,
-      replyId: savedReply[0].id,
-    });
   }
 
   // send helpers inherited
@@ -210,14 +197,6 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
         request.headers.authorization?.replace('Bearer ', '') ||
         request.cookies?.['auth-token'];
 
-      logger.info('Comment WebSocket connection attempt', {
-        hasToken: !!token,
-        tokenLength: token?.length,
-        query: request.query,
-        cookies: request.cookies,
-        headers: Object.keys(request.headers),
-      });
-
       let userId: string | null = null;
       if (token) {
         // Verify token if provided. If invalid or throws, proceed as anonymous.
@@ -225,7 +204,6 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
           const payload = await verifyToken(token);
           if (payload && payload.id) {
             userId = payload.id;
-            logger.info('Comment WebSocket token verified', { userId });
           } else {
             logger.warn('Comment WebSocket proceeding as anonymous: Invalid token');
           }
@@ -236,8 +214,6 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
             verifyError as Error
           );
         }
-      } else {
-        logger.info('Comment WebSocket anonymous connection');
       }
 
       const connectionId = this.generateConnectionId();
@@ -288,11 +264,6 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
       this.sendToConnection(connectionId, {
         type: 'connected',
         data: { userId, connectionId },
-      });
-
-      logger.info('Comment WebSocket connection added', {
-        connectionId,
-        userId: userId ?? undefined,
       });
     } catch (error) {
       logger.error('Comment WebSocket connection error', undefined, error as Error);

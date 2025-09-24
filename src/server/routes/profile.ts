@@ -4,7 +4,7 @@ import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { fileUpload } from '@/lib/server';
 import { logger } from '@/lib/utils/logger';
 import { UpdateProfileRequest, UserResponse } from '@/types/shared/user';
-import { SuccessResponse } from '@/types/shared/common';
+import { UploadAvatarResponse } from '@/types/shared';
 
 // Use shared type directly
 
@@ -105,11 +105,11 @@ export async function profileRoutes(fastify: FastifyInstance) {
           avatar: uploadResult.publicPath,
         });
 
-        const response = {
+        const response: UploadAvatarResponse = {
           success: true,
           avatar: uploadResult.publicPath,
-          user: updatedUser[0],
-        } as SuccessResponse & { avatar: string; user: any };
+          user: updatedUser[0] as any,
+        };
         return reply.send(response);
       } catch (error) {
         logger.error('Upload avatar error', undefined, error as Error);

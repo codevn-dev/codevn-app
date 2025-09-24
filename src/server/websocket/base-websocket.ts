@@ -71,11 +71,6 @@ export abstract class BaseWebSocketService<TConnection extends BaseConnection> {
         }
       }
     }
-
-    logger.info('WebSocket connection removed', {
-      connectionId,
-      userId: connection.userId ?? undefined,
-    });
   }
 
   protected sendToConnection(connectionId: string, message: any): void {
@@ -119,7 +114,6 @@ export abstract class BaseWebSocketService<TConnection extends BaseConnection> {
         channel,
         JSON.stringify({ instanceId: this.instanceId, type: channel, data })
       );
-      logger.info('Published websocket event to Redis', { channel, deliveredCount });
     } catch (error) {
       logger.error('Error publishing websocket event to Redis', { channel }, error as Error);
     }

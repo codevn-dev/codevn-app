@@ -5,3 +5,11 @@ export interface UploadImageResponse {
   size: number;
   type: string;
 }
+
+import type { User } from './auth';
+
+export interface UploadAvatarResponse {
+  success: boolean;
+  avatar: string;
+  user?: User;
+}

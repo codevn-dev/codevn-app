@@ -159,12 +159,6 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
 
     // Publish for cross-instance delivery
     await this.publish('chat:new_message', messageData);
-
-    logger.info('Chat message sent via WebSocket', {
-      fromUserId: connection.userId,
-      toUserId: message.toUserId,
-      messageId: savedMessage.id,
-    });
   }
 
   private async handleTyping(connectionId: string, message: ChatMessage) {
@@ -227,14 +221,6 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
         request.headers.authorization?.replace('Bearer ', '') ||
         request.cookies?.['auth-token'];
 
-      logger.info('WebSocket connection attempt', {
-        hasToken: !!token,
-        tokenLength: token?.length,
-        query: request.query,
-        cookies: request.cookies,
-        headers: Object.keys(request.headers),
-      });
-
       if (!token) {
         logger.warn('WebSocket connection rejected: No token');
         socket.close(1008, 'Token required');
@@ -250,7 +236,6 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
       }
 
       const userId = payload.id;
-      logger.info('WebSocket token verified', { userId });
 
       const connectionId = this.generateConnectionId();
       const connection: ChatConnection = { userId, socket, isAlive: true };
@@ -296,8 +281,6 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
         type: 'connected',
         data: { userId, connectionId, onlineUsers: this.getOnlineUsers() },
       });
-
-      logger.info('WebSocket connection added', { connectionId, userId });
     } catch (error) {
       logger.error('WebSocket auth error', undefined, error as Error);
       socket.close(1008, 'Authentication failed');
