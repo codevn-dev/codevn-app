@@ -14,7 +14,7 @@ import { User, Settings, LogOut, FileText, Menu as MenuIcon, X as CloseIcon } fr
 import { useFastifyAuthStore, useUIStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useAuthActions } from '@/hooks/use-auth-actions';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { isAdmin } from '@/lib/utils';
 import { LanguageSwitcher } from './language-switcher';
@@ -22,6 +22,8 @@ import { useI18n } from '@/components/providers';
 
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const mobilePanelRef = useRef<HTMLDivElement | null>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement | null>(null);
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuthState();
   const { signOut } = useFastifyAuthStore();
   const { signOut: authSignOut } = useAuthActions();
@@ -29,6 +31,26 @@ export function Navigation() {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useI18n();
+
+  // Close mobile panel on outside click
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const handleOutside = (event: MouseEvent | TouchEvent) => {
+      const panel = mobilePanelRef.current;
+      const toggleBtn = mobileToggleRef.current;
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (panel && panel.contains(target)) return;
+      if (toggleBtn && toggleBtn.contains(target)) return;
+      setIsMobileOpen(false);
+    };
+    document.addEventListener('mousedown', handleOutside, true);
+    document.addEventListener('touchstart', handleOutside, true);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside, true);
+      document.removeEventListener('touchstart', handleOutside, true);
+    };
+  }, [isMobileOpen]);
 
   const handleSignOut = async () => {
     try {
@@ -174,6 +196,7 @@ export function Navigation() {
                 aria-expanded={isMobileOpen}
                 aria-controls="mobile-nav"
                 onClick={() => setIsMobileOpen((o) => !o)}
+                ref={mobileToggleRef}
               >
                 {isMobileOpen ? (
                   <CloseIcon className="h-5 w-5" aria-hidden="true" />
@@ -189,7 +212,8 @@ export function Navigation() {
       {/* Mobile Panel */}
       <div
         id="mobile-nav"
-        className={`sticky top-16 z-40 bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
+        className={`fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
+        ref={mobilePanelRef}
       >
         <div className="mx-auto max-w-7xl space-y-2 px-4 py-3 sm:px-6 lg:px-8">
           {isAuthLoading ? null : isAuthenticated && user ? (

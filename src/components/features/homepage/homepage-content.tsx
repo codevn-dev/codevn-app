@@ -308,7 +308,7 @@ export function HomepageContent() {
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
         <MotionContainer className="rounded-2xl bg-white p-5 shadow-2xl sm:p-6 lg:p-6">
           {/* Combined sticky filters (categories + controls) */}
-          <div className="shadow-brand/30 sticky top-16 z-40 mb-6 rounded-xl bg-white/80 p-4 shadow-2xl drop-shadow-2xl backdrop-blur-sm sm:mb-8">
+          <div className="shadow-brand/30 z-40 mb-6 rounded-xl bg-white/80 p-4 shadow-2xl drop-shadow-2xl backdrop-blur-sm sm:mb-8 md:sticky md:top-16">
             <CategorySelector
               categories={categories}
               selectedCategoryIds={selectedCategoryNames
