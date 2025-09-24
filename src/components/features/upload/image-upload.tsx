@@ -6,6 +6,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { imageCompressionUtils } from '@/lib/utils/image-compression';
 import { apiUpload } from '@/lib/utils';
+import { UploadImageResponse } from '@/types/shared';
 
 interface ImageUploadProps {
   onImageUploaded: (imageUrl: string) => void;
@@ -66,7 +67,7 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
       const formData = new FormData();
       formData.append('file', fileToUpload);
 
-      const result = await apiUpload('/api/upload/image', formData);
+      const result = await apiUpload<UploadImageResponse>('/api/upload/image', formData);
       onImageUploaded(result.imageUrl);
       onClose();
     } catch (error) {

@@ -111,3 +111,13 @@ export interface SendMessageResponse {
 export interface MarkAsReadResponse {
   message: string;
 }
+
+// Lightweight API response types for REST endpoints
+export interface ChatQueryResponse {
+  messages: Message[];
+  hasMore?: boolean;
+}
+
+export interface ChatConversationsResponse {
+  conversations: Conversation[];
+}

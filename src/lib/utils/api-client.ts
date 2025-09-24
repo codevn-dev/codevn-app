@@ -4,6 +4,7 @@
  */
 
 import { apiConfig } from '@/config';
+import ky, { HTTPError, KyInstance } from 'ky';
 
 /**
  * Get the appropriate API URL based on the environment
@@ -43,51 +44,102 @@ export const defaultFetchOptions: RequestInit = {
   },
 };
 
+let kyClient: KyInstance | null = null;
+
+function getKy(): KyInstance {
+  if (kyClient) return kyClient;
+
+  kyClient = ky.create({
+    prefixUrl: '',
+    credentials: 'include',
+    timeout: apiConfig.timeout,
+    retry: {
+      limit: apiConfig.retryAttempts,
+      methods: ['get', 'put', 'head', 'delete', 'options', 'trace'],
+    },
+    hooks: {
+      beforeRequest: [
+        (request) => {
+          // If there is no body, avoid forcing JSON content-type
+          const method = request.method?.toUpperCase();
+          const hasBody = !['GET', 'HEAD'].includes(method || '') && request.body != null;
+          if (!hasBody) {
+            request.headers.delete('Content-Type');
+          }
+        },
+      ],
+      afterResponse: [
+        async (_request, _options, response) => {
+          if (!response.ok) {
+            let errorData: unknown = {};
+            try {
+              errorData = await response.clone().json();
+            } catch {}
+            const message = extractMessage(
+              errorData,
+              `HTTP ${response.status}: ${response.statusText}`
+            );
+            const error = new Error(message) as Error & {
+              response?: { error: string; data: unknown };
+            };
+            error.response = { error: message, data: errorData };
+            throw error;
+          }
+          return response;
+        },
+      ],
+    },
+  });
+
+  return kyClient;
+}
+
+function extractMessage(data: unknown, fallback: string): string {
+  if (data && typeof data === 'object') {
+    const obj = data as { error?: unknown; message?: unknown };
+    if (typeof obj.error === 'string') return obj.error;
+    if (typeof obj.message === 'string') return obj.message;
+  }
+  return fallback;
+}
+
 /**
  * Enhanced fetch function with proper error handling and configuration
  * @param endpoint - API endpoint
  * @param options - Fetch options
  * @returns Promise with response data
  */
-export async function apiFetch<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function apiFetch<T = unknown>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
   const url = createApiUrl(endpoint);
-  const mergedOptions: RequestInit = {
-    ...defaultFetchOptions,
-    ...options,
-    headers: {
-      ...defaultFetchOptions.headers,
-      ...options.headers,
-    },
-  };
-
-  // If there is no body, remove JSON content-type to avoid Fastify empty JSON body errors
-  if (
-    !('body' in mergedOptions) ||
-    mergedOptions.body === undefined ||
-    mergedOptions.body === null
-  ) {
-    if (mergedOptions.headers) {
-      delete (mergedOptions.headers as any)['Content-Type'];
-    }
-  }
-
   try {
-    const response = await fetch(url, mergedOptions);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage =
-        errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
-      const error = new Error(errorMessage);
-      (error as any).response = { error: errorMessage, data: errorData };
-      throw error;
-    }
-
-    return await response.json();
+    const response = await getKy().extend({
+      headers: {
+        ...(defaultFetchOptions.headers as Record<string, string>),
+        ...(options.headers as Record<string, string>),
+      },
+      credentials: defaultFetchOptions.credentials as RequestCredentials,
+    })(url, {
+      method: options.method,
+      body: options.body as BodyInit | null | undefined,
+      // ky handles throwing on non-2xx via afterResponse hook above
+    });
+    return (await response.json()) as T;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
+    if (error instanceof HTTPError) {
+      const res = error.response;
+      let errorData: unknown = {};
+      try {
+        errorData = await res.clone().json();
+      } catch {}
+      const message = extractMessage(errorData, `HTTP ${res.status}: ${res.statusText}`);
+      const err = new Error(message) as Error & { response?: { error: string; data: unknown } };
+      err.response = { error: message, data: errorData };
+      throw err;
     }
+    if (error instanceof Error) throw error;
     throw new Error('Network error occurred');
   }
 }
@@ -95,9 +147,9 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
 /**
  * GET request helper
  */
-const inFlightGetRequests: Map<string, Promise<any>> = new Map();
+const inFlightGetRequests: Map<string, Promise<unknown>> = new Map();
 
-export async function apiGet<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function apiGet<T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> {
   // Use the normalized URL string as the cache key
   const urlKey = createApiUrl(endpoint);
 
@@ -116,9 +168,9 @@ export async function apiGet<T = any>(endpoint: string, options: RequestInit = {
 /**
  * POST request helper
  */
-export async function apiPost<T = any>(
+export async function apiPost<T = unknown>(
   endpoint: string,
-  data?: any,
+  data?: unknown,
   options: RequestInit = {}
 ): Promise<T> {
   return apiFetch<T>(endpoint, {
@@ -131,9 +183,9 @@ export async function apiPost<T = any>(
 /**
  * PUT request helper
  */
-export async function apiPut<T = any>(
+export async function apiPut<T = unknown>(
   endpoint: string,
-  data?: any,
+  data?: unknown,
   options: RequestInit = {}
 ): Promise<T> {
   return apiFetch<T>(endpoint, {
@@ -146,16 +198,19 @@ export async function apiPut<T = any>(
 /**
  * DELETE request helper
  */
-export async function apiDelete<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function apiDelete<T = unknown>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
   return apiFetch<T>(endpoint, { ...options, method: 'DELETE' });
 }
 
 /**
  * PATCH request helper
  */
-export async function apiPatch<T = any>(
+export async function apiPatch<T = unknown>(
   endpoint: string,
-  data?: any,
+  data?: unknown,
   options: RequestInit = {}
 ): Promise<T> {
   return apiFetch<T>(endpoint, {
@@ -168,41 +223,32 @@ export async function apiPatch<T = any>(
 /**
  * Upload file helper
  */
-export async function apiUpload<T = any>(
+export async function apiUpload<T = unknown>(
   endpoint: string,
   formData: FormData,
   options: RequestInit = {}
 ): Promise<T> {
   const url = createApiUrl(endpoint);
-  const mergedOptions: RequestInit = {
-    credentials: 'include',
-    ...options,
-    method: 'POST',
-    body: formData,
-    // Don't set Content-Type header, let browser set it with boundary
-    headers: {
-      ...options.headers,
-    },
-  };
-
-  // Remove Content-Type to let browser set it
-  if (mergedOptions.headers) {
-    delete (mergedOptions.headers as any)['Content-Type'];
-  }
-
   try {
-    const response = await fetch(url, mergedOptions);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    return await response.json();
+    const response = await getKy().post(url, {
+      body: formData,
+      headers: {
+        ...(options.headers as Record<string, string>),
+        // Explicitly let browser set multipart boundary
+      },
+      credentials: 'include',
+    });
+    return (await response.json()) as T;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
+    if (error instanceof HTTPError) {
+      const res = error.response;
+      let errorData: any = {};
+      try {
+        errorData = await res.clone().json();
+      } catch {}
+      throw new Error(errorData.message || `HTTP ${res.status}: ${res.statusText}`);
     }
+    if (error instanceof Error) throw error;
     throw new Error('Network error occurred');
   }
 }

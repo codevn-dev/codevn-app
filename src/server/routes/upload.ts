@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { fileUpload } from '@/lib/server';
 import { authMiddleware } from '../middleware';
 import { logger } from '@/lib/utils/logger';
-import { SuccessResponse } from '@/types/shared/common';
+import { UploadImageResponse } from '@/types/shared';
 
 export async function uploadRoutes(fastify: FastifyInstance) {
   // POST /api/upload/image - Upload image
@@ -22,13 +22,13 @@ export async function uploadRoutes(fastify: FastifyInstance) {
         // Upload image using utils
         const uploadResult = await fileUpload.uploadImage(data, 'images');
 
-        const response = {
+        const response: UploadImageResponse = {
           success: true,
           imageUrl: uploadResult.publicPath,
           fileName: uploadResult.originalName,
           size: uploadResult.size,
           type: uploadResult.type,
-        } as SuccessResponse & { imageUrl: string; fileName: string; size: number; type: string };
+        };
         return reply.send(response);
       } catch (error) {
         logger.error('Upload image error', undefined, error as Error);

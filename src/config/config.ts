@@ -36,7 +36,7 @@ export const apiConfig = {
   serverUrl: process.env.API_URL || 'http://localhost:3001',
   // Client-side API URL (public, accessible from browser)
   clientUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
-  timeout: parseInt(process.env.API_TIMEOUT || '10000'), // 10 seconds
+  timeout: parseInt(process.env.API_TIMEOUT || '5000'), // 5 seconds
   retryAttempts: parseInt(process.env.API_RETRY_ATTEMPTS || '3'),
 } as const;
 

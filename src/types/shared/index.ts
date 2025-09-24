@@ -6,3 +6,4 @@ export * from './category';
 export * from './comment';
 export * from './chat';
 export * from './common';
+export * from './upload';

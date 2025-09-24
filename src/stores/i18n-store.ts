@@ -27,6 +27,7 @@ const store: Dictionary = {
   'common.email': { en: 'Email', vi: 'Email' },
   'common.password': { en: 'Password', vi: 'Mật khẩu' },
   'common.fullName': { en: 'Full Name', vi: 'Họ và tên' },
+  'common.retry': { en: 'Try Again', vi: 'Thử lại' },
   'common.fullNamePlaceholder': { en: 'Enter your full name', vi: 'Nhập họ và tên của bạn' },
   'common.signIn': { en: 'Sign In', vi: 'Đăng nhập' },
   'common.signUp': { en: 'Sign Up', vi: 'Đăng ký' },
@@ -219,6 +220,12 @@ const store: Dictionary = {
   'comments.comment': { en: 'Comment', vi: 'Bình luận' },
   'comments.loadMoreComments': { en: 'Load more comments', vi: 'Tải thêm bình luận' },
   'comments.loadMoreReplies': { en: 'Load more replies', vi: 'Tải thêm trả lời' },
+  'comments.noCommentsYet': {
+    en: 'No comments yet. Be the first to comment!',
+    vi: 'Chưa có bình luận nào. Hãy là người bình luận đầu tiên!',
+  },
+  'comments.signInToPost.prefix': { en: 'Please', vi: 'Vui lòng' },
+  'comments.signInToPost.suffix': { en: 'to post comments.', vi: 'để bình luận.' },
 
   // Admin - Categories modal
   'admin.category.new': { en: 'New Category', vi: 'Danh mục mới' },

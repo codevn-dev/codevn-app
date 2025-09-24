@@ -7,6 +7,7 @@ import { useChat as useChatContext } from '@/components/features/chat/chat-conte
 import { UiMessage } from '@/types/shared';
 import { chatConfig } from '@/config/config';
 import { apiGet } from '@/lib/utils/api-client';
+import { ChatConversationsResponse, ChatQueryResponse } from '@/types/shared/chat';
 
 interface Conversation {
   id: string;
@@ -99,36 +100,31 @@ export function useChatMessages({
     if (isFetchingConversationsRef.current) return;
     isFetchingConversationsRef.current = true;
     try {
-      const response = await fetch('/api/chat/conversations');
-      if (response.ok) {
-        const data = await response.json();
-        const normalized = (data.conversations || []).map((conv: any) => {
-          // Normalize server response to the shape used by UI
-          const last = conv.lastMessage || {};
-          return {
-            id: conv.id,
-            peer: {
-              id: conv.peer.id,
-              name: conv.peer.name || 'Unknown User',
-              avatar: conv.peer.avatar,
-            },
-            lastMessage: {
-              text: last.content || '',
-              createdAt: last.createdAt,
-              fromUserId: last.sender?.id,
-              seen: last.seen ?? false,
-            },
-            lastMessageAt: last.createdAt,
-            lastMessageFromUserId: last.sender?.id,
-            lastMessageSeen: last.seen,
-            unreadCount: conv.unreadCount || 0,
-          } as Conversation;
-        });
-        setConversations(normalized);
-        conversationsLoadedRef.current = true;
-      } else {
-        console.error('Failed to fetch conversations:', response.status);
-      }
+      const data = await apiGet<ChatConversationsResponse>('/api/chat/conversations');
+      const normalized = (data.conversations || []).map((conv: any) => {
+        // Normalize server response to the shape used by UI
+        const last = conv.lastMessage || {};
+        return {
+          id: conv.id,
+          peer: {
+            id: conv.peer.id,
+            name: conv.peer.name || 'Unknown User',
+            avatar: conv.peer.avatar,
+          },
+          lastMessage: {
+            text: last.content || '',
+            createdAt: last.createdAt,
+            fromUserId: last.sender?.id,
+            seen: last.seen ?? false,
+          },
+          lastMessageAt: last.createdAt,
+          lastMessageFromUserId: last.sender?.id,
+          lastMessageSeen: last.seen,
+          unreadCount: conv.unreadCount || 0,
+        } as Conversation;
+      });
+      setConversations(normalized);
+      conversationsLoadedRef.current = true;
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
@@ -610,15 +606,11 @@ export function useChatMessages({
         params.append('before', before.toString());
       }
 
-      const response = await fetch(`/api/chat?${params.toString()}`);
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          messages: data.messages || [],
-          hasMore: data.hasMore || false,
-        };
-      }
-      return { messages: [], hasMore: false };
+      const data = await apiGet<ChatQueryResponse>(`/api/chat?${params.toString()}`);
+      return {
+        messages: data.messages || [],
+        hasMore: data.hasMore || false,
+      };
     } catch (error) {
       console.error('Error loading messages:', error);
       return { messages: [], hasMore: false };

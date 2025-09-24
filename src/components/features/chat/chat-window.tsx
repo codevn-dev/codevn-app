@@ -10,6 +10,8 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { useWebSocket } from './websocket-context';
 import { formatChatTime, isNewDay, formatDate } from '@/lib/utils';
 import { chatConfig } from '@/config';
+import { apiGet } from '@/lib/utils/api-client';
+import { ChatQueryResponse } from '@/types/shared/chat';
 
 import { UiMessage } from '@/types/shared';
 import data from '@emoji-mart/data';
@@ -195,21 +197,18 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
     const currentScrollHeight = listRef.current?.scrollHeight || 0;
 
     try {
-      const response = await fetch(
+      const data = await apiGet<ChatQueryResponse>(
         `/api/chat?peer.id=${encodeURIComponent(peer.id)}&action=get&limit=${chatConfig.maxMessagesPerPage}&before=${oldestMessageTime}`
       );
-      if (response.ok) {
-        const data = await response.json();
-        const olderMessages = transformMessages(data.messages);
+      const olderMessages = transformMessages(data.messages);
 
-        if (olderMessages.length > 0) {
-          setMessages((prev) => [...olderMessages, ...prev]);
-          setOldestMessageTime(olderMessages[0].timestamp);
-          setHasMoreMessages(data.hasMore || false);
-          restoreScrollPosition(currentScrollHeight);
-        } else {
-          setIsLoadingMore(false);
-        }
+      if (olderMessages.length > 0) {
+        setMessages((prev) => [...olderMessages, ...prev]);
+        setOldestMessageTime(olderMessages[0].timestamp);
+        setHasMoreMessages(data.hasMore || false);
+        restoreScrollPosition(currentScrollHeight);
+      } else {
+        setIsLoadingMore(false);
       }
     } catch (error) {
       console.error('Error loading more messages:', error);

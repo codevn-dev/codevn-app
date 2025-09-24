@@ -303,7 +303,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           <div className="rounded-lg border border-red-200 bg-red-50 p-4">
             <p className="text-red-600">{error}</p>
             <Button variant="outline" size="sm" onClick={() => fetchComments()} className="mt-2">
-              {t('common.retry') || 'Try Again'}
+              {t('common.retry')}
             </Button>
           </div>
         )}
@@ -315,7 +315,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           !isAuthLoading && (
             <div className="py-8 text-center text-gray-500">
               <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-              <p>{'No comments yet. Be the first to comment!'}</p>
+              <p>{t('comments.noCommentsYet')}</p>
             </div>
           )}
 
@@ -369,7 +369,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           <div className="border-brand/20 mt-6 rounded-lg border bg-gray-50 p-6 text-center">
             <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
             <p className="text-gray-600">
-              Please{' '}
+              {t('comments.signInToPost.prefix')}{' '}
               <button
                 onClick={() => {
                   setAuthMode('signin');
@@ -377,9 +377,9 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                 }}
                 className="cursor-pointer font-medium text-blue-600 underline hover:text-blue-800"
               >
-                sign in
+                {t('common.signIn')}
               </button>{' '}
-              to post comments.
+              {t('comments.signInToPost.suffix')}
             </p>
           </div>
         )}
