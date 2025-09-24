@@ -122,6 +122,10 @@ services:
       - web
       - api
     restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost/status']
       interval: 10s
