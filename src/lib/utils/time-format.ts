@@ -128,11 +128,11 @@ export function formatDate(timestamp: number | string | Date): string {
   const locale = getCurrentLocale();
   const date = new Date(timestamp);
   const now = new Date();
-  
+
   // Get the start of day for both dates to compare calendar days properly
   const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  
+
   const diffMs = nowStart.getTime() - dateStart.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 

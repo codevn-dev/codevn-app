@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { useChat as useChatContext } from '@/components/features/chat/chat-context';
 import { UiMessage } from '@/types/shared';
 import { chatConfig } from '@/config/config';
+import { apiGet } from '@/lib/utils/api-client';
 
 interface Conversation {
   id: string;
@@ -80,6 +81,19 @@ export function useChatMessages({
   peerIdRef.current = peerId;
   chatWindowOpenRef.current = chatWindowOpen;
   conversationsRef.current = conversations;
+
+  // Function to fetch user details by ID
+  const fetchUserDetails = useCallback(async (userId: string) => {
+    try {
+      const response = await apiGet<{ user: { id: string; name: string; avatar?: string } }>(
+        `/api/users/${userId}`
+      );
+      return response.user;
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      return { id: userId, name: 'Unknown User', avatar: undefined };
+    }
+  }, []);
 
   const fetchConversations = useCallback(async () => {
     if (isFetchingConversationsRef.current) return;
@@ -225,14 +239,15 @@ export function useChatMessages({
                     isFromCurrentUser || isCurrentlyChattingWithSender ? 0 : currentUnreadCount + 1,
                 };
               } else {
-                // Create new conversation if not exists
+                // Create new conversation if not exists - will fetch user details separately
                 const isFromCurrentUser = uiMessage.from === currentUser?.id;
                 const isCurrentlyChattingWithSender = currentPeerId === uiMessage.from;
+
                 const newConversation = {
                   id: `conv_${uiMessage.from}`,
                   peer: {
                     id: uiMessage.from,
-                    name: 'Unknown User', // Will be updated when we fetch conversations
+                    name: 'Unknown User', // Will be updated when we fetch user details
                     avatar: undefined,
                   },
                   lastMessage: {
@@ -249,6 +264,38 @@ export function useChatMessages({
 
               return updatedConversations;
             });
+
+            // If we created a new conversation, fetch user details and update it
+            const currentConversations = conversationsRef.current;
+            const targetPeerId = uiMessage.from;
+            const conversationIndex = currentConversations.findIndex(
+              (conv) => conv.peer?.id === targetPeerId
+            );
+
+            if (conversationIndex === -1) {
+              // This was a new conversation, fetch user details
+              fetchUserDetails(uiMessage.from).then((userDetails) => {
+                setConversations((prevConversations) => {
+                  const updatedConversations = [...prevConversations];
+                  const convIndex = updatedConversations.findIndex(
+                    (conv) => conv.peer?.id === uiMessage.from
+                  );
+
+                  if (convIndex >= 0) {
+                    updatedConversations[convIndex] = {
+                      ...updatedConversations[convIndex],
+                      peer: {
+                        ...updatedConversations[convIndex].peer,
+                        name: userDetails.name,
+                        avatar: userDetails.avatar,
+                      },
+                    };
+                  }
+
+                  return updatedConversations;
+                });
+              });
+            }
 
             if (onNewMessage) {
               onNewMessage(uiMessage);
@@ -278,6 +325,7 @@ export function useChatMessages({
                   unreadCount: 0,
                 } as any;
               } else if (otherUserId) {
+                // Create new conversation - will fetch user details separately
                 updated.unshift({
                   id: `conv_${otherUserId}`,
                   peer: { id: otherUserId, name: 'Unknown User', avatar: undefined },
@@ -293,6 +341,39 @@ export function useChatMessages({
               }
               return updated;
             });
+
+            // If we created a new conversation, fetch user details and update it
+            if (otherUserId) {
+              const currentConversations = conversationsRef.current;
+              const conversationIndex = currentConversations.findIndex(
+                (conv) => conv.peer?.id === otherUserId
+              );
+
+              if (conversationIndex === -1) {
+                // This was a new conversation, fetch user details
+                fetchUserDetails(otherUserId).then((userDetails) => {
+                  setConversations((prevConversations) => {
+                    const updatedConversations = [...prevConversations];
+                    const convIndex = updatedConversations.findIndex(
+                      (conv) => conv.peer?.id === otherUserId
+                    );
+
+                    if (convIndex >= 0) {
+                      updatedConversations[convIndex] = {
+                        ...updatedConversations[convIndex],
+                        peer: {
+                          ...updatedConversations[convIndex].peer,
+                          name: userDetails.name,
+                          avatar: userDetails.avatar,
+                        },
+                      };
+                    }
+
+                    return updatedConversations;
+                  });
+                });
+              }
+            }
           }
           break;
         }
@@ -337,7 +418,15 @@ export function useChatMessages({
           break;
       }
     },
-    [addNotification, fetchConversations, handleStartChat, onMessagesSeen, onNewMessage, onTyping]
+    [
+      addNotification,
+      fetchConversations,
+      handleStartChat,
+      onMessagesSeen,
+      onNewMessage,
+      onTyping,
+      fetchUserDetails,
+    ]
   );
 
   const connect = useCallback(() => {
