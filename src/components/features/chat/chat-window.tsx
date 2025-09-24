@@ -405,62 +405,75 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
             )}
 
             <AnimatePresence initial={false}>
-            {messages.map((m, index) => {
-              const previousMessage = index > 0 ? messages[index - 1] : null;
-              const showDateSeparator = isNewDay(m.timestamp, previousMessage?.timestamp);
+              {messages.map((m, index) => {
+                const previousMessage = index > 0 ? messages[index - 1] : null;
+                const showDateSeparator = isNewDay(m.timestamp, previousMessage?.timestamp);
 
-              return (
-                <motion.div key={m.id} variants={listItemFadeSlide} initial="hidden" animate="visible" exit="exit" layout>
-                  {/* Date separator */}
-                  {showDateSeparator && (
-                    <div className="my-4 flex justify-center">
-                      <div className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                        {formatDate(m.timestamp)}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Message */}
-                  <div className={`flex ${m.from === userId ? 'justify-end' : 'justify-start'}`}>
-                    {m.type === 'system' ? (
-                      <div className="w-full text-center text-xs text-gray-500">{m.text}</div>
-                    ) : (
-                      <div
-                        className={`max-w-[70%] rounded-lg px-4 py-3 ${
-                          m.from === userId ? 'bg-brand text-white' : 'bg-gray-100 text-gray-900'
-                        }`}
-                      >
-                        <div className="text-sm">{m.text}</div>
-                        <div
-                          className={`mt-1 flex items-center gap-1 text-xs ${
-                            m.from === userId ? 'text-white/80' : 'text-gray-500'
-                          }`}
-                        >
-                          <span>{formatChatTime(m.timestamp)}</span>
-                          {m.from === userId && (
-                            <div className="flex items-center text-white">
-                              {m.seen ? (
-                                <CheckCheck className="h-4 w-4" aria-label="Seen" />
-                              ) : (
-                                <Check className="h-4 w-4" aria-label="Sent" />
-                              )}
-                            </div>
-                          )}
+                return (
+                  <motion.div
+                    key={m.id}
+                    variants={listItemFadeSlide}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    layout
+                  >
+                    {/* Date separator */}
+                    {showDateSeparator && (
+                      <div className="my-4 flex justify-center">
+                        <div className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                          {formatDate(m.timestamp)}
                         </div>
                       </div>
                     )}
-                  </div>
-                </motion.div>
-              );
-            })}
+
+                    {/* Message */}
+                    <div className={`flex ${m.from === userId ? 'justify-end' : 'justify-start'}`}>
+                      {m.type === 'system' ? (
+                        <div className="w-full text-center text-xs text-gray-500">{m.text}</div>
+                      ) : (
+                        <div
+                          className={`max-w-[70%] rounded-lg px-4 py-3 ${
+                            m.from === userId ? 'bg-brand text-white' : 'bg-gray-100 text-gray-900'
+                          }`}
+                        >
+                          <div className="text-sm">{m.text}</div>
+                          <div
+                            className={`mt-1 flex items-center gap-1 text-xs ${
+                              m.from === userId ? 'text-white/80' : 'text-gray-500'
+                            }`}
+                          >
+                            <span>{formatChatTime(m.timestamp)}</span>
+                            {m.from === userId && (
+                              <div className="flex items-center text-white">
+                                {m.seen ? (
+                                  <CheckCheck className="h-4 w-4" aria-label="Seen" />
+                                ) : (
+                                  <Check className="h-4 w-4" aria-label="Sent" />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
 
             {/* Typing indicator */}
             {isTyping && (
               <div className="mt-2 flex justify-start">
                 <div className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-2 text-gray-700">
-                  {[0,1,2].map((i) => (
-                    <motion.span key={i} className="h-1.5 w-1.5 rounded-full bg-gray-500" variants={typingDot} initial="initial" animate={(typingDot as any).animate(i)} />
+                  {[0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      className="h-1.5 w-1.5 rounded-full bg-gray-500"
+                      variants={typingDot}
+                      initial="initial"
+                      animate={(typingDot as any).animate(i)}
+                    />
                   ))}
                 </div>
               </div>
@@ -532,22 +545,22 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
             </div>
           )}
           <motion.div whileTap={{ scale: 0.92 }}>
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              send();
-            }}
-            disabled={!canSend}
-            size="sm"
-            variant="ghost"
-            className={`flex h-11 w-11 items-center justify-center p-0 transition-colors ${
-              canSend ? 'text-brand hover:bg-brand/10 hover:text-brand-700' : 'text-gray-300'
-            }`}
-            aria-label={t('chat.send')}
-            title={t('chat.send')}
-          >
-            <Send className="h-6 w-6" />
-          </Button>
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                send();
+              }}
+              disabled={!canSend}
+              size="sm"
+              variant="ghost"
+              className={`flex h-11 w-11 items-center justify-center p-0 transition-colors ${
+                canSend ? 'text-brand hover:bg-brand/10 hover:text-brand-700' : 'text-gray-300'
+              }`}
+              aria-label={t('chat.send')}
+              title={t('chat.send')}
+            >
+              <Send className="h-6 w-6" />
+            </Button>
           </motion.div>
         </div>
       </div>

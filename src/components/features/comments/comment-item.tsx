@@ -269,7 +269,13 @@ export function CommentItem({
   const emphasizeMentions = (text: string) => text;
 
   return (
-    <motion.div className={`${depth > 0 ? 'pl-4' : ''}`} variants={listItemFadeSlide} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }}>
+    <motion.div
+      className={`${depth > 0 ? 'pl-4' : ''}`}
+      variants={listItemFadeSlide}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '0px 0px -60px 0px' }}
+    >
       <Card
         className={`shadow-brand/30 mb-3 bg-white shadow-2xl drop-shadow-2xl ${isDeleting ? 'opacity-50' : ''}`}
       >
@@ -496,36 +502,42 @@ export function CommentItem({
           {showReplies && depth === 0 && (
             <div className="mt-3 space-y-3">
               {replies.slice(0, visibleRepliesCount).map((reply) => (
-                <motion.div key={`${reply.id}-${reply.createdAt}`} variants={listItemFadeSlide} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '0px 0px -60px 0px' }}>
-                  <CommentItem
+                <motion.div
                   key={`${reply.id}-${reply.createdAt}`}
-                  comment={reply}
-                  articleId={articleId}
-                  onCommentUpdated={onCommentUpdated}
-                  onCommentDeleted={onCommentDeleted}
-                  onReplyAdded={onReplyAdded}
-                  depth={depth + 1}
-                  onRequestParentReply={(c) => {
-                    // Ensure replies visible
-                    if (!showReplies) {
-                      setShowReplies(true);
-                      if (!repliesLoadedRef.current) {
-                        void loadReplies(1, false);
+                  variants={listItemFadeSlide}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: '0px 0px -60px 0px' }}
+                >
+                  <CommentItem
+                    key={`${reply.id}-${reply.createdAt}`}
+                    comment={reply}
+                    articleId={articleId}
+                    onCommentUpdated={onCommentUpdated}
+                    onCommentDeleted={onCommentDeleted}
+                    onReplyAdded={onReplyAdded}
+                    depth={depth + 1}
+                    onRequestParentReply={(c) => {
+                      // Ensure replies visible
+                      if (!showReplies) {
+                        setShowReplies(true);
+                        if (!repliesLoadedRef.current) {
+                          void loadReplies(1, false);
+                        }
                       }
-                    }
-                    // Set target, prefill, and scroll to reply box
-                    setChildReplyingTo(c);
-                    setChildReplyPrefill(`@${c.author.name} `);
-                    setReplyFocusTick((t) => t + 1);
-                    setShouldFocusReply(true);
-                    setTimeout(() => {
-                      bottomReplyRef.current?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center',
-                      });
-                    }, 0);
-                  }}
-                />
+                      // Set target, prefill, and scroll to reply box
+                      setChildReplyingTo(c);
+                      setChildReplyPrefill(`@${c.author.name} `);
+                      setReplyFocusTick((t) => t + 1);
+                      setShouldFocusReply(true);
+                      setTimeout(() => {
+                        bottomReplyRef.current?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'center',
+                        });
+                      }, 0);
+                    }}
+                  />
                 </motion.div>
               ))}
 

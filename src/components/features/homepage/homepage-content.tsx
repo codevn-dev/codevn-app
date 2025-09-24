@@ -15,6 +15,7 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { findCategoryById } from '@/features/articles';
 import { apiGet } from '@/lib/utils';
 import { Category, ArticleListResponse } from '@/types/shared';
+import { formatDateTime } from '@/lib/utils/time-format';
 import { useI18n } from '@/components/providers';
 
 export function HomepageContent() {
@@ -523,11 +524,7 @@ export function HomepageContent() {
                             </button>
                             <div className="flex items-center text-xs text-gray-600">
                               <Calendar className="mr-1 h-3 w-3" />
-                              {new Date(article.createdAt).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                              })}
+                              {formatDateTime(article.createdAt)}
                             </div>
                           </div>
 

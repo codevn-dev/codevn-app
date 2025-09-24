@@ -35,6 +35,7 @@ import { ClientOnly, MotionContainer } from '@/components/layout';
 import { motion } from 'framer-motion';
 import { TiptapRichTextEditor, CodeHighlighter } from '@/features/articles';
 import { ImageUpload } from '@/features/upload';
+import { formatDateTime } from '@/lib/utils/time-format';
 import {
   Article,
   Category,
@@ -622,11 +623,7 @@ function ArticlesContent() {
                               <div className="flex items-center gap-2">
                                 <div className="flex items-center text-xs text-gray-600">
                                   <Calendar className="mr-1 h-3 w-3" />
-                                  {new Date(article.createdAt).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                  })}
+                                  {formatDateTime(article.createdAt)}
                                 </div>
                                 <div className="dropdown-container relative">
                                   <Button

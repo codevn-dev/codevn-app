@@ -330,7 +330,12 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           >
             <AnimatePresence initial={false}>
               {topLevelComments.slice(0, visibleTopCount).map((comment) => (
-                <motion.div key={`${comment.id}-${comment.createdAt}`} variants={listItemFadeSlide} exit="exit" layout>
+                <motion.div
+                  key={`${comment.id}-${comment.createdAt}`}
+                  variants={listItemFadeSlide}
+                  exit="exit"
+                  layout
+                >
                   <CommentItem
                     comment={comment}
                     articleId={articleId}

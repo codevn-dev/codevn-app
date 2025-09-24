@@ -67,5 +67,3 @@ export const typingDot: Variants = {
     transition: { duration: 0.9, repeat: Infinity, delay: i * 0.15 },
   }),
 };
-
-

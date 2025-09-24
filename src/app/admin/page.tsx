@@ -38,6 +38,7 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly, MotionContainer } from '@/components/layout';
 import { motion } from 'framer-motion';
 import { isAdmin } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils/time-format';
 import { Category } from '@/types/shared/category';
 import { User } from '@/types/shared/auth';
 import { UserListResponse } from '@/types/shared/user';
@@ -560,11 +561,7 @@ function AdminPageContent() {
                                   </td>
                                   <td className="px-4 py-3 whitespace-nowrap sm:px-6 sm:py-4">
                                     <span className="text-xs font-medium text-gray-600 sm:text-sm">
-                                      {new Date(user.createdAt).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                      })}
+                                      {formatDateTime(user.createdAt)}
                                     </span>
                                   </td>
                                 </tr>
@@ -878,16 +875,7 @@ function AdminPageContent() {
                                             {t('admin.createdBy')} {category.createdBy.name}
                                           </span>
                                           <span className="mx-2 hidden sm:inline">•</span>
-                                          <span>
-                                            {new Date(category.createdAt).toLocaleDateString(
-                                              'en-US',
-                                              {
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric',
-                                              }
-                                            )}
-                                          </span>
+                                          <span>{formatDateTime(category.createdAt)}</span>
                                           {category.children && category.children.length > 0 && (
                                             <>
                                               <span className="mx-2 hidden sm:inline">•</span>
@@ -960,15 +948,7 @@ function AdminPageContent() {
                                                       <span className="mx-2 hidden sm:inline">
                                                         •
                                                       </span>
-                                                      <span>
-                                                        {new Date(
-                                                          child.createdAt
-                                                        ).toLocaleDateString('en-US', {
-                                                          year: 'numeric',
-                                                          month: 'short',
-                                                          day: 'numeric',
-                                                        })}
-                                                      </span>
+                                                      <span>{formatDateTime(child.createdAt)}</span>
                                                     </div>
                                                   </div>
                                                 </div>

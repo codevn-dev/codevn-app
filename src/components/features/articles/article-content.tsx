@@ -52,6 +52,7 @@ import { ImageUpload } from '@/features/upload';
 import { SuccessResponse } from '@/types/shared/common';
 import { useI18n } from '@/components/providers';
 import { ReactionRequest } from '@/types/shared/article';
+import { formatDateTime } from '@/lib/utils/time-format';
 
 interface ArticleContentProps {
   article: Article;
@@ -261,16 +262,16 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                       align="end"
                     >
                       <DropdownMenuItem onClick={handleUnpublish} className="cursor-pointer">
-                        <EyeOff className="mr-2 h-4 w-4" /> Unpublish
+                        <EyeOff className="mr-2 h-4 w-4" /> {t('articles.menu.unpublish')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
-                        <EditIcon className="mr-2 h-4 w-4" /> Edit
+                        <EditIcon className="mr-2 h-4 w-4" /> {t('common.edit')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleDelete}
                         className="cursor-pointer text-red-600 focus:text-red-600"
                       >
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        <Trash2 className="mr-2 h-4 w-4" /> {t('common.delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -310,13 +311,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                       </div>
                       <div className="flex items-center text-xs text-gray-500">
                         <Calendar className="mr-1 h-3 w-3" />
-                        {new Date(article.createdAt).toLocaleString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {formatDateTime(article.createdAt)}
                       </div>
                     </div>
                   </div>
@@ -375,171 +370,180 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 </div>
               </div>
 
-            <MotionContainer delay={0.05} className="pt-0">
-              <CodeHighlighter
-                content={article.content}
-                className="leading-relaxed text-gray-700"
-              />
-            </MotionContainer>
+              <MotionContainer delay={0.05} className="mt-6 pt-0 sm:mt-8">
+                <CodeHighlighter
+                  content={article.content}
+                  className="leading-relaxed text-gray-700"
+                />
+              </MotionContainer>
 
-            <div className="border-brand/20 mt-6 border-t pt-4 sm:mt-8 sm:pt-6">
-              <CommentsSection
-                ref={commentsSectionRef}
-                articleId={article.id}
-                commentCount={article._count.comments}
-              />
+              <div className="border-brand/20 mt-6 border-t pt-4 sm:mt-8 sm:pt-6">
+                <CommentsSection
+                  ref={commentsSectionRef}
+                  articleId={article.id}
+                  commentCount={article._count.comments}
+                />
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </div>
 
       <AnimatePresence>
-      {isEditOpen && (
-        <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" variants={modalOverlay} initial="initial" animate="animate" exit="exit">
-          <motion.div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6 shadow-2xl" variants={modalContent}>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Edit Article</h2>
-              <Button variant="outline" size="sm" onClick={() => setIsEditOpen(false)}>
-                Close
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Title *</label>
-                  <Input
-                    value={editForm.title}
-                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Slug *</label>
-                  <Input
-                    value={editForm.slug}
-                    onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
-                    required
-                  />
-                </div>
+        {isEditOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+            variants={modalOverlay}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <motion.div
+              className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6 shadow-2xl"
+              variants={modalContent}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Edit Article</h2>
+                <Button variant="outline" size="sm" onClick={() => setIsEditOpen(false)}>
+                  Close
+                </Button>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Thumbnail</label>
-                {editForm.thumbnail ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <div className="relative w-full max-w-sm">
-                      <img
-                        src={editForm.thumbnail}
-                        alt="Thumbnail"
-                        className="h-40 w-full rounded-lg object-cover"
-                      />
+                    <label className="text-sm font-medium">Title *</label>
+                    <Input
+                      value={editForm.title}
+                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Slug *</label>
+                    <Input
+                      value={editForm.slug}
+                      onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Thumbnail</label>
+                  {editForm.thumbnail ? (
+                    <div className="space-y-2">
+                      <div className="relative w-full max-w-sm">
+                        <img
+                          src={editForm.thumbnail}
+                          alt="Thumbnail"
+                          className="h-40 w-full rounded-lg object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditForm({ ...editForm, thumbnail: '' })}
+                          className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                        >
+                          Remove
+                        </Button>
+                      </div>
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
-                        onClick={() => setEditForm({ ...editForm, thumbnail: '' })}
-                        className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                        onClick={() => setShowImageUpload(true)}
+                        className="w-full max-w-sm"
                       >
-                        Remove
+                        Change Image
                       </Button>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowImageUpload(true)}
-                      className="w-full max-w-sm"
-                    >
-                      Change Image
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="w-full max-w-sm">
-                    <button
-                      type="button"
-                      onClick={() => setShowImageUpload(true)}
-                      className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg bg-white transition-colors"
-                    >
-                      Upload image
-                    </button>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="w-full max-w-sm">
+                      <button
+                        type="button"
+                        onClick={() => setShowImageUpload(true)}
+                        className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg bg-white transition-colors"
+                      >
+                        Upload image
+                      </button>
+                    </div>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Category *</label>
-                <Select
-                  value={editForm.categoryId || 'placeholder'}
-                  onValueChange={(value) =>
-                    setEditForm({ ...editForm, categoryId: value === 'placeholder' ? '' : value })
-                  }
-                >
-                  <SelectTrigger className="focus:ring-brand/20 focus:ring-2">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="placeholder" disabled>
-                      Select a category
-                    </SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-3 w-3 rounded-full"
-                            style={{ backgroundColor: category.color }}
-                          />
-                          {category.name}
-                        </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Category *</label>
+                  <Select
+                    value={editForm.categoryId || 'placeholder'}
+                    onValueChange={(value) =>
+                      setEditForm({ ...editForm, categoryId: value === 'placeholder' ? '' : value })
+                    }
+                  >
+                    <SelectTrigger className="focus:ring-brand/20 focus:ring-2">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="placeholder" disabled>
+                        Select a category
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="h-3 w-3 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            {category.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Content *</label>
+                  <TiptapRichTextEditor
+                    value={editForm.content}
+                    onChange={(value) => setEditForm({ ...editForm, content: value })}
+                    placeholder="Write your article content here..."
+                    className="min-h-[400px]"
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="published-detail"
+                    checked={editForm.published}
+                    onChange={(e) => setEditForm({ ...editForm, published: e.target.checked })}
+                    className="text-brand focus:ring-brand h-4 w-4 rounded border-gray-300"
+                  />
+                  <label htmlFor="published-detail" className="text-sm font-medium">
+                    Published
+                  </label>
+                </div>
+
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveEdit}>Save changes</Button>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Content *</label>
-                <TiptapRichTextEditor
-                  value={editForm.content}
-                  onChange={(value) => setEditForm({ ...editForm, content: value })}
-                  placeholder="Write your article content here..."
-                  className="min-h-[400px]"
+              {showImageUpload && (
+                <ImageUpload
+                  onImageUploaded={(imageUrl) => {
+                    setEditForm({ ...editForm, thumbnail: imageUrl });
+                    setShowImageUpload(false);
+                  }}
+                  onClose={() => setShowImageUpload(false)}
                 />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="published-detail"
-                  checked={editForm.published}
-                  onChange={(e) => setEditForm({ ...editForm, published: e.target.checked })}
-                  className="text-brand focus:ring-brand h-4 w-4 rounded border-gray-300"
-                />
-                <label htmlFor="published-detail" className="text-sm font-medium">
-                  Published
-                </label>
-              </div>
-
-              <div className="mt-4 flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsEditOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSaveEdit}>Save changes</Button>
-              </div>
-            </div>
-
-            {showImageUpload && (
-              <ImageUpload
-                onImageUploaded={(imageUrl) => {
-                  setEditForm({ ...editForm, thumbnail: imageUrl });
-                  setShowImageUpload(false);
-                }}
-                onClose={() => setShowImageUpload(false)}
-              />
-            )}
+              )}
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
       </AnimatePresence>
     </div>
   );
