@@ -47,6 +47,10 @@ export async function commentRoutes(fastify: FastifyInstance) {
 
         const { authorId, /* authorName, authorAvatar, */ ...commentWithoutFlatFields } =
           comment as any;
+        if (!comment) {
+          return reply.status(500).send({ error: 'Failed to retrieve updated comment' });
+        }
+
         const response = {
           ...commentWithoutFlatFields,
           author: {
@@ -111,9 +115,9 @@ export async function commentRoutes(fastify: FastifyInstance) {
         const response = {
           ...commentWithoutFlatFields,
           author: {
-            id: comment.author?.id || authorId,
-            name: comment.author?.name || 'Unknown',
-            avatar: comment.author?.avatar || null,
+            id: comment?.author?.id || authorId,
+            name: comment?.author?.name || 'Unknown',
+            avatar: comment?.author?.avatar || null,
           },
         } as unknown as Comment;
         return reply.send(response);

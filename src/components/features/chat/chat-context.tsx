@@ -14,7 +14,7 @@ interface ChatContextType {
     name: string;
     avatar?: string;
   };
-  setPeer: (peer: { id: string; name: string; avatar?: string }) => void;
+  setPeer: React.Dispatch<React.SetStateAction<{ id: string; name: string; avatar?: string }>>;
   handleStartChat: (userId: string, userName: string, userAvatar?: string) => void;
   handleCloseChat: () => void;
 }
@@ -25,17 +25,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [chatWindowOpen, setChatWindowOpen] = useState(false);
   const [chatPopupOpen, setChatPopupOpen] = useState(false);
   const [chatSidebarOpen, setChatSidebarOpen] = useState(false);
-  const [peer, setPeer] = useState({
+  const [peer, setPeer] = useState<{ id: string; name: string; avatar?: string }>({
     id: '',
     name: '',
-    avatar: undefined as string | undefined,
   });
 
   const handleStartChat = (userId: string, userName: string, userAvatar?: string) => {
     setPeer({
       id: userId,
       name: userName,
-      avatar: userAvatar,
+      ...(userAvatar ? { avatar: userAvatar } : {}),
     });
     setChatWindowOpen(true);
     // On tablet/desktop, ensure sidebar is open when starting a chat
@@ -52,7 +51,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setPeer({
       id: '',
       name: '',
-      avatar: undefined,
     });
   };
 
