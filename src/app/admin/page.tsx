@@ -61,6 +61,7 @@ function AdminPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'joined'>('joined');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'user'>('all');
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -102,6 +103,7 @@ function AdminPageContent() {
           sortOrder: sortOrder,
           page: currentPage.toString(),
           limit: itemsPerPage.toString(),
+          role: roleFilter === 'all' ? '' : roleFilter,
         });
 
         const usersData = await apiGet<UserListResponse>(`/api/admin/users?${params}`);
@@ -124,19 +126,19 @@ function AdminPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [user, activeTab, searchTerm, sortBy, sortOrder, currentPage, itemsPerPage]);
+  }, [user, activeTab, searchTerm, sortBy, sortOrder, currentPage, itemsPerPage, roleFilter]);
 
   // Reset to first page when search or sort changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortBy, sortOrder]);
+  }, [searchTerm, sortBy, sortOrder, roleFilter]);
 
   // Fetch data when any relevant state changes
   useEffect(() => {
     if (stableUser && isAdmin(stableUser.role)) {
       fetchData();
     }
-  }, [activeTab, searchTerm, sortBy, sortOrder, currentPage, stableUser, fetchData]);
+  }, [activeTab, searchTerm, sortBy, sortOrder, currentPage, roleFilter, stableUser, fetchData]);
 
   useEffect(() => {
     // Wait for auth state to be determined
@@ -344,7 +346,7 @@ function AdminPageContent() {
                   >
                     <div className="flex items-center">
                       <Users className="mr-2 h-4 w-4" />
-                      {t('admin.users')} ({pagination.totalItems})
+                      {t('common.role.user')} ({pagination.totalItems})
                     </div>
                   </button>
                   <button
@@ -376,7 +378,7 @@ function AdminPageContent() {
                   </div>
                 </div>
 
-                {/* Search and Sort Controls */}
+                {/* Search, Filter and Sort Controls */}
                 <div className="shadow-brand/20 mb-6 rounded-lg bg-white p-4 shadow-lg">
                   <div className="flex flex-col gap-4 sm:flex-row">
                     {/* Search Input */}
@@ -390,6 +392,23 @@ function AdminPageContent() {
                           className="focus:ring-brand/20 pl-10 focus:ring-2"
                         />
                       </div>
+                    </div>
+
+                    {/* Role Filter */}
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={roleFilter}
+                        onValueChange={(value: any) => setRoleFilter(value)}
+                      >
+                        <SelectTrigger className="focus:ring-brand/20 bg-brand/10 text-brand-600 focus:ring-2">
+                          <SelectValue placeholder="Filter by role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">{t('admin.table.role')}</SelectItem>
+                          <SelectItem value="admin">{t('common.role.admin')}</SelectItem>
+                          <SelectItem value="user">{t('common.role.user')}</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Sort Controls */}
@@ -478,7 +497,7 @@ function AdminPageContent() {
                             <thead className="bg-gray-50/50">
                               <tr>
                                 <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
-                                  {t('admin.table.user')}
+                                  {t('common.role.user')}
                                 </th>
                                 <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
                                   {t('admin.table.role')}
@@ -547,13 +566,13 @@ function AdminPageContent() {
                                         <SelectItem value="user">
                                           <div className="flex items-center space-x-2">
                                             <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                                            <span>{t('admin.role.user')}</span>
+                                            <span>{t('common.role.user')}</span>
                                           </div>
                                         </SelectItem>
                                         <SelectItem value="admin">
                                           <div className="flex items-center space-x-2">
                                             <div className="bg-brand h-2 w-2 rounded-full"></div>
-                                            <span>{t('admin.role.admin')}</span>
+                                            <span>{t('common.role.admin')}</span>
                                           </div>
                                         </SelectItem>
                                       </SelectContent>

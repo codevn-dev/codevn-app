@@ -172,7 +172,7 @@ function UserProfileContent() {
                   <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
                     <p className="text-brand-600 mb-1 font-semibold">
-                      {profile.role === 'admin' ? t('admin.role.admin') : t('admin.role.user')}
+                      {profile.role === 'admin' ? t('common.role.admin') : t('common.role.user')}
                     </p>
                     <p className="text-brand-600 text-sm">{t('profile.accessLevel')}</p>
                   </div>
