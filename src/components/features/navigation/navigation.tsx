@@ -212,7 +212,7 @@ export function Navigation() {
       {/* Mobile Panel */}
       <div
         id="mobile-nav"
-        className={`fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
+        className={`fixed top-16 right-0 left-0 z-40 bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
         ref={mobilePanelRef}
       >
         <div className="mx-auto max-w-7xl space-y-2 px-4 py-3 sm:px-6 lg:px-8">
