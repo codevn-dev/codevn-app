@@ -51,13 +51,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: api
+      target: migrator
     container_name: codevn-migrate
     env_file: .env
     depends_on:
       postgres:
         condition: service_healthy
-    command: ['pnpm', 'db:push']
     restart: 'no'
 
   postgres:

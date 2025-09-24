@@ -63,3 +63,17 @@ ENV NODE_ENV=production
 ENV PORT=3001
 
 CMD ["pnpm", "dev:api"]
+
+########################################
+# Migrator image
+########################################
+FROM deps AS migrator
+WORKDIR /app
+
+# node_modules already installed in deps stage, drizzle-kit included
+# Copy drizzle config and schema
+COPY drizzle.config.ts ./drizzle.config.ts
+COPY src/lib/database/schema.ts ./src/lib/database/schema.ts
+
+# Default command for this image
+CMD ["pnpm", "db:push"]
