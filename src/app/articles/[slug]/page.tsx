@@ -2,8 +2,6 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ArticleContent } from '@/features/articles';
 import { PreviewGuard } from '@/components/layout';
-import { cookies } from 'next/headers';
-import { verifyToken } from '@/server/jwt';
 import { config } from '@/config';
 import { apiGet, apiPost } from '@/lib/utils/api-client';
 import type { Article } from '@/types/shared/article';
@@ -21,24 +19,6 @@ export default async function ArticlePage({
   const { slug } = await params;
   const { preview } = await searchParams;
   const isPreview = preview === 'true';
-
-  // Get current user from JWT token
-  let currentUserId: string | null = null;
-
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth-token')?.value;
-
-    if (token) {
-      const decoded = await verifyToken(token);
-      if (decoded) {
-        currentUserId = decoded.id;
-      }
-    }
-  } catch {
-    // Token invalid or expired
-    currentUserId = null;
-  }
 
   // Fetch article from API
   let article: Article;

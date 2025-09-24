@@ -4,7 +4,6 @@
  */
 
 import { apiConfig } from '@/config';
-import ky, { HTTPError, KyInstance } from 'ky';
 
 /**
  * Get the appropriate API URL based on the environment
@@ -23,15 +22,20 @@ export function getApiUrl(): string {
 
 /**
  * Create API URL that automatically handles client/server context
- * - Client-side: Uses NEXT_PUBLIC_API_URL (accessible from browser)
- * - Server-side: Uses API_URL (internal server-to-server calls)
+ * - Client-side: Uses relative URLs (Next.js rewrites handle the proxying)
+ * - Server-side: Uses absolute URLs (direct calls to Fastify server)
  */
 export function createApiUrl(endpoint: string): string {
-  // Always use relative URLs
-  // - In development: Next.js rewrites handle the proxying
-  // - In production: nginx handles the proxying
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  return cleanEndpoint;
+
+  // Check if we're on the client side
+  if (typeof window !== 'undefined') {
+    // Client-side: use relative URLs
+    return cleanEndpoint;
+  }
+
+  // Server-side: use absolute URLs to call Fastify server directly
+  return `${apiConfig.serverUrl}${cleanEndpoint}`;
 }
 
 /**
@@ -43,56 +47,6 @@ export const defaultFetchOptions: RequestInit = {
     'Content-Type': 'application/json',
   },
 };
-
-let kyClient: KyInstance | null = null;
-
-function getKy(): KyInstance {
-  if (kyClient) return kyClient;
-
-  kyClient = ky.create({
-    prefixUrl: '',
-    credentials: 'include',
-    timeout: apiConfig.timeout,
-    retry: {
-      limit: apiConfig.retryAttempts,
-      methods: ['get', 'put', 'head', 'delete', 'options', 'trace'],
-    },
-    hooks: {
-      beforeRequest: [
-        (request) => {
-          // If there is no body, avoid forcing JSON content-type
-          const method = request.method?.toUpperCase();
-          const hasBody = !['GET', 'HEAD'].includes(method || '') && request.body != null;
-          if (!hasBody) {
-            request.headers.delete('Content-Type');
-          }
-        },
-      ],
-      afterResponse: [
-        async (_request, _options, response) => {
-          if (!response.ok) {
-            let errorData: unknown = {};
-            try {
-              errorData = await response.clone().json();
-            } catch {}
-            const message = extractMessage(
-              errorData,
-              `HTTP ${response.status}: ${response.statusText}`
-            );
-            const error = new Error(message) as Error & {
-              response?: { error: string; data: unknown };
-            };
-            error.response = { error: message, data: errorData };
-            throw error;
-          }
-          return response;
-        },
-      ],
-    },
-  });
-
-  return kyClient;
-}
 
 function extractMessage(data: unknown, fallback: string): string {
   if (data && typeof data === 'object') {
@@ -114,31 +68,51 @@ export async function apiFetch<T = unknown>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = createApiUrl(endpoint);
-  try {
-    const response = await getKy().extend({
-      headers: {
-        ...(defaultFetchOptions.headers as Record<string, string>),
-        ...(options.headers as Record<string, string>),
-      },
-      credentials: defaultFetchOptions.credentials as RequestCredentials,
-    })(url, {
-      method: options.method,
-      body: options.body as BodyInit | null | undefined,
-      // ky handles throwing on non-2xx via afterResponse hook above
+
+  // Prepare headers
+  const headers = new Headers();
+
+  // Add default headers
+  if (defaultFetchOptions.headers) {
+    Object.entries(defaultFetchOptions.headers).forEach(([key, value]) => {
+      headers.set(key, value);
     });
-    return (await response.json()) as T;
-  } catch (error) {
-    if (error instanceof HTTPError) {
-      const res = error.response;
+  }
+
+  // Add custom headers
+  if (options.headers) {
+    Object.entries(options.headers).forEach(([key, value]) => {
+      headers.set(key, value);
+    });
+  }
+
+  // Remove Content-Type for requests without body
+  const method = options.method?.toUpperCase();
+  const hasBody = !['GET', 'HEAD'].includes(method || '') && options.body != null;
+  if (!hasBody) {
+    headers.delete('Content-Type');
+  }
+
+  try {
+    const response = await fetch(url, {
+      ...defaultFetchOptions,
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
       let errorData: unknown = {};
       try {
-        errorData = await res.clone().json();
+        errorData = await response.clone().json();
       } catch {}
-      const message = extractMessage(errorData, `HTTP ${res.status}: ${res.statusText}`);
-      const err = new Error(message) as Error & { response?: { error: string; data: unknown } };
-      err.response = { error: message, data: errorData };
-      throw err;
+      const message = extractMessage(errorData, `HTTP ${response.status}: ${response.statusText}`);
+      const error = new Error(message) as Error & { response?: { error: string; data: unknown } };
+      error.response = { error: message, data: errorData };
+      throw error;
     }
+
+    return (await response.json()) as T;
+  } catch (error) {
     if (error instanceof Error) throw error;
     throw new Error('Network error occurred');
   }
@@ -229,25 +203,35 @@ export async function apiUpload<T = unknown>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = createApiUrl(endpoint);
+
+  // Prepare headers for multipart upload
+  const headers = new Headers();
+
+  // Add custom headers (don't set Content-Type for FormData - let browser set it)
+  if (options.headers) {
+    Object.entries(options.headers).forEach(([key, value]) => {
+      headers.set(key, value);
+    });
+  }
+
   try {
-    const response = await getKy().post(url, {
+    const response = await fetch(url, {
+      method: 'POST',
       body: formData,
-      headers: {
-        ...(options.headers as Record<string, string>),
-        // Explicitly let browser set multipart boundary
-      },
+      headers,
       credentials: 'include',
     });
-    return (await response.json()) as T;
-  } catch (error) {
-    if (error instanceof HTTPError) {
-      const res = error.response;
+
+    if (!response.ok) {
       let errorData: any = {};
       try {
-        errorData = await res.clone().json();
+        errorData = await response.clone().json();
       } catch {}
-      throw new Error(errorData.message || `HTTP ${res.status}: ${res.statusText}`);
+      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
     }
+
+    return (await response.json()) as T;
+  } catch (error) {
     if (error instanceof Error) throw error;
     throw new Error('Network error occurred');
   }
