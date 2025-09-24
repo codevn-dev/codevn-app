@@ -1,2 +1,2 @@
-export { chatWebSocketService } from './chat-websocket';
-export { commentWebSocketService } from './comment-websocket';
+export { chatWebSocketService } from './chat';
+export { commentWebSocketService } from './comment';

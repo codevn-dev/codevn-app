@@ -11,7 +11,7 @@ export interface ReactionRow {
   createdAt?: Date;
 }
 
-export class LikeRepository {
+export class ReactionsRepository {
   // Article reactions
   async findByUserAndArticle(
     userId: string,
@@ -209,4 +209,4 @@ export class LikeRepository {
   }
 }
 
-export const likeRepository = new LikeRepository();
+export const reactionsRepository = new ReactionsRepository();

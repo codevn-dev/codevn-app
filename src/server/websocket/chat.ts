@@ -1,9 +1,9 @@
 import { WebSocket } from 'ws';
 import { FastifyRequest } from 'fastify';
-import { messageRepository } from '@/lib/database/repository';
+import { messageRepository } from '../database/repository';
 import { logger } from '@/lib/utils/logger';
 import { verifyToken } from '../jwt';
-import { BaseWebSocketService, BaseConnection } from './base-websocket';
+import { BaseWebSocketService, BaseConnection } from './base';
 
 interface ChatConnection extends BaseConnection {
   userId: string;

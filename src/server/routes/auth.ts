@@ -1,18 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { userRepository } from '@/lib/database/repository';
-import { generateToken, revokeToken, refreshToken } from '../jwt';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import fastifyPassport from '@fastify/passport';
 import { config } from '@/config';
-import { createRedisAuthService } from '../redis';
-import { logger } from '@/lib/utils/logger';
+import { authService } from '../services';
 import {
   RegisterRequest as RegisterBody,
   CheckEmailRequest as CheckEmailBody,
 } from '@/types/shared/auth';
-import { LoginResponse, RegisterResponse, CheckEmailResponse } from '@/types/shared/auth';
-import { UserResponse } from '@/types/shared/user';
-import { SuccessResponse } from '@/types/shared/common';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Sign-in endpoint
@@ -22,33 +16,13 @@ export async function authRoutes(fastify: FastifyInstance) {
       preHandler: fastifyPassport.authenticate('local', { session: false }),
     },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const user = (request as any).user;
-      const token = await generateToken(user);
-
-      reply.cookie('auth-token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        domain:
-          process.env.NODE_ENV === 'production'
-            ? process.env.COOKIE_DOMAIN || undefined
-            : 'localhost',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      });
-
-      const response: LoginResponse = {
-        message: 'Sign-in successful',
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          avatar: user.avatar || undefined,
-          role: user.role,
-          createdAt: new Date().toISOString(),
-        },
-      };
-      return reply.send(response);
+      try {
+        const user = (request as any).user;
+        const response = await authService.signIn(user, reply);
+        return reply.send(response);
+      } catch {
+        return reply.status(500).send({ error: 'Internal server error' });
+      }
     }
   );
 
@@ -58,57 +32,9 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Body: RegisterBody }>, reply: FastifyReply) => {
       try {
         const body = request.body as RegisterBody;
-        const { email, name, password } = body;
-
-        if (!email || !name || !password) {
-          return reply.status(400).send({ error: 'Email, name, and password are required' });
-        }
-
-        // Check if user already exists
-        const existingUser = await userRepository.findByEmail(email);
-
-        if (existingUser) {
-          return reply.status(400).send({ error: 'User with this email already exists' });
-        }
-
-        // Create user
-        const newUser = await userRepository.create({
-          email,
-          name,
-          password,
-          role: 'user',
-        });
-
-        // Auto-login: generate token and set cookie like sign-in
-        const createdUser = newUser[0];
-        const token = await generateToken(createdUser);
-
-        reply.cookie('auth-token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          domain:
-            process.env.NODE_ENV === 'production'
-              ? process.env.COOKIE_DOMAIN || undefined
-              : 'localhost',
-          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        });
-
-        const response: RegisterResponse = {
-          message: 'Sign-up successful',
-          user: {
-            id: createdUser.id,
-            email: createdUser.email,
-            name: createdUser.name,
-            avatar: createdUser.avatar || undefined,
-            role: (createdUser.role as any) || 'user',
-            createdAt: new Date().toISOString(),
-          },
-        };
+        const response = await authService.signUp(body, reply);
         return reply.status(201).send(response);
-      } catch (error) {
-        logger.error('Registration error', undefined, error as Error);
+      } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -120,31 +46,9 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Body: CheckEmailBody }>, reply: FastifyReply) => {
       try {
         const body = request.body as CheckEmailBody;
-        const { email } = body;
-
-        if (!email) {
-          return reply.status(400).send({ available: false, message: 'Email is required' });
-        }
-
-        // Check if email format is valid
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          return reply.status(400).send({
-            available: false,
-            message: 'Invalid email format',
-          });
-        }
-
-        // Check if email already exists
-        const existingUser = await userRepository.findByEmail(email);
-
-        const response: CheckEmailResponse = {
-          available: !existingUser,
-          message: existingUser ? 'Email already exists' : 'Email is available',
-        };
+        const response = await authService.checkEmail(body);
         return reply.send(response);
-      } catch (error) {
-        logger.error('Email check error', undefined, error as Error);
+      } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -185,38 +89,14 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const user = (request as any).user;
-        const token = await generateToken(user);
-
-        // Set token in cookie
-        reply.cookie('auth-token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          domain:
-            process.env.NODE_ENV === 'production'
-              ? process.env.COOKIE_DOMAIN || undefined
-              : 'localhost',
-          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        });
-
-        // Redirect back to original page if provided and safe
         const storedReturnUrl = request.cookies?.['oauth_return_url'];
+
         if (storedReturnUrl) {
           reply.clearCookie('oauth_return_url');
-          try {
-            const url = new URL(storedReturnUrl);
-            const appUrl = new URL(config.api.clientUrl);
-            if (url.origin === appUrl.origin) {
-              return reply.redirect(storedReturnUrl);
-            }
-          } catch {}
         }
 
-        // Fallback to app root
-        return reply.redirect(config.api.clientUrl);
-      } catch (error) {
-        console.error('[AUTH] Google OAuth callback error:', error);
+        await authService.handleGoogleOAuth(user, reply, storedReturnUrl);
+      } catch {
         return reply.status(500).send({ error: 'Authentication failed' });
       }
     }
@@ -232,26 +112,10 @@ export async function authRoutes(fastify: FastifyInstance) {
           ? request.headers.authorization.substring(7)
           : null);
 
-      if (token) {
-        // Revoke token from Redis
-        await revokeToken(token);
-      }
-
-      reply.clearCookie('auth-token');
-      const response: SuccessResponse & { message: string } = {
-        success: true,
-        message: 'Sign-out successful',
-      };
+      const response = await authService.signOut(token, reply);
       return reply.send(response);
-    } catch (error) {
-      logger.error('Sign-out error', undefined, error as Error);
-      // Still clear cookie even if Redis operation fails
-      reply.clearCookie('auth-token');
-      const response: SuccessResponse & { message: string } = {
-        success: true,
-        message: 'Sign-out successful',
-      };
-      return reply.send(response);
+    } catch {
+      return reply.status(500).send({ error: 'Internal server error' });
     }
   });
 
@@ -264,26 +128,9 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-
-        // Get fresh user data from database
-        const user = await userRepository.findById(authRequest.user!.id);
-        if (!user) {
-          return reply.status(404).send({ error: 'User not found' });
-        }
-
-        const response: UserResponse = {
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            avatar: user.avatar || undefined,
-            role: user.role,
-            createdAt: user.createdAt as any,
-          },
-        };
+        const response = await authService.getCurrentUser(authRequest.user!.id);
         return reply.send(response);
-      } catch (error) {
-        logger.error('Get user error', undefined, error as Error);
+      } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -298,21 +145,9 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const redisService = createRedisAuthService();
-
-        // Logout from all devices
-        await redisService.logoutAllDevices(authRequest.user!.id);
-
-        // Clear current session cookie
-        reply.clearCookie('auth-token');
-
-        const response: SuccessResponse & { message: string } = {
-          success: true,
-          message: 'Logged out from all devices successfully',
-        };
+        const response = await authService.logoutAllDevices(authRequest.user!.id, reply);
         return reply.send(response);
-      } catch (error) {
-        logger.error('Logout all devices error', undefined, error as Error);
+      } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -332,17 +167,9 @@ export async function authRoutes(fastify: FastifyInstance) {
             ? request.headers.authorization.substring(7)
             : null);
 
-        if (token) {
-          await refreshToken(token);
-        }
-
-        const response: SuccessResponse & { message: string } = {
-          success: true,
-          message: 'Token refreshed successfully',
-        };
+        const response = await authService.refreshUserToken(token || '');
         return reply.send(response);
-      } catch (error) {
-        logger.error('Refresh token error', undefined, error as Error);
+      } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

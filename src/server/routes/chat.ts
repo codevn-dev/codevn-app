@@ -1,21 +1,8 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { messageRepository } from '@/lib/database/repository';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
-import { logger } from '@/lib/utils/logger';
-import {
-  ChatQueryRequest,
-  ChatPostRequest,
-  ChatSeenRequest,
-  ConversationListResponse,
-  MessageListResponse,
-  SendMessageResponse,
-} from '@/types/shared/chat';
-import { SuccessResponse } from '@/types/shared/common';
-import { chatWebSocketService } from '../websocket/chat-websocket';
-
-function getChatId(userA: string, userB: string): string {
-  return [userA, userB].sort().join('|');
-}
+import { chatService } from '../services';
+import { ChatQueryRequest, ChatPostRequest, ChatSeenRequest } from '@/types/shared/chat';
+import { chatWebSocketService } from '../websocket/chat';
 
 export async function chatRoutes(fastify: FastifyInstance) {
   // WebSocket endpoint for real-time chat
@@ -36,41 +23,9 @@ export async function chatRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        // Get all conversations for this user
-        const conversations = await messageRepository.getConversations(authRequest.user!.id);
-
-        const response: ConversationListResponse = {
-          conversations: conversations.map((conv) => {
-            const { otherUserId, otherUserName, otherUserAvatar, lastMessageFromUserId } = conv;
-            return {
-              id: conv.chatId,
-              peer: {
-                id: otherUserId,
-                name: otherUserName,
-                avatar: otherUserAvatar || undefined,
-              },
-              lastMessage: {
-                id: `${conv.chatId}:${new Date(conv.lastMessageTime).getTime()}`,
-                content: conv.lastMessage,
-                sender: {
-                  id: lastMessageFromUserId,
-                },
-                createdAt: conv.lastMessageTime,
-                seen: conv.lastMessageSeen,
-              },
-              unreadCount: conv.unreadCount,
-            };
-          }),
-          pagination: {
-            page: 1,
-            limit: conversations.length,
-            total: conversations.length,
-            totalPages: 1,
-          },
-        };
+        const response = await chatService.getConversations(authRequest.user!.id);
         return reply.send(response);
-      } catch (error) {
-        logger.error('Error in conversations GET', undefined, error as Error);
+      } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -85,82 +40,10 @@ export async function chatRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Querystring: ChatQueryRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const { peerId, action = 'get', since = '0', limit = '20', before = '' } = request.query;
-
-        if (!peerId) {
-          return reply.status(400).send({ error: 'Missing peerId' });
-        }
-
-        const chatId = getChatId(authRequest.user!.id, peerId);
-
-        if (action === 'get') {
-          // Get messages for this chat from database
-          const chatMessages = await messageRepository.findByChatId(chatId);
-
-          let filteredMessages = chatMessages;
-
-          // Filter messages since the given timestamp (for polling)
-          const sinceTimestamp = parseInt(since);
-          if (sinceTimestamp > 0) {
-            filteredMessages = chatMessages.filter(
-              (msg) => new Date(msg.createdAt).getTime() > sinceTimestamp
-            );
-          }
-
-          // Filter messages before the given timestamp (for load more)
-          const beforeTimestamp = parseInt(before);
-          if (beforeTimestamp > 0) {
-            filteredMessages = chatMessages.filter(
-              (msg) => new Date(msg.createdAt).getTime() < beforeTimestamp
-            );
-          }
-
-          // Sort by timestamp descending (newest first)
-          filteredMessages.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-
-          // Apply limit
-          const limitNum = parseInt(limit);
-          const limitedMessages = filteredMessages.slice(0, limitNum);
-
-          // Sort by timestamp ascending (oldest first) for display
-          limitedMessages.sort(
-            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-
-          const response: MessageListResponse = {
-            messages: limitedMessages.map((msg) => {
-              const { fromUserId, toUserId } = msg;
-              return {
-                id: msg.id,
-                content: msg.text,
-                sender: {
-                  id: fromUserId,
-                },
-                receiver: {
-                  id: toUserId,
-                },
-                conversationId: msg.chatId,
-                createdAt: msg.createdAt,
-                updatedAt: msg.updatedAt ?? msg.createdAt,
-                seen: msg.seen,
-                seenAt: msg.seenAt as any,
-              };
-            }),
-            pagination: {
-              page: 1,
-              limit: limitNum,
-              total: filteredMessages.length,
-              totalPages: Math.max(1, Math.ceil(filteredMessages.length / limitNum)),
-            },
-          };
-          return reply.send(response);
-        }
-
-        return reply.status(400).send({ error: 'Invalid action' });
-      } catch (error) {
-        logger.error('Error in chat GET', undefined, error as Error);
+        const query = request.query as ChatQueryRequest;
+        const response = await chatService.getChatMessages(authRequest.user!.id, query);
+        return reply.send(response);
+      } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -175,19 +58,10 @@ export async function chatRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Body: ChatSeenRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const { chatId } = request.body;
-
-        if (!chatId) {
-          return reply.status(400).send({ error: 'Missing chatId' });
-        }
-
-        // Mark messages as seen
-        await messageRepository.markAsSeen(chatId, authRequest.user!.id);
-
-        const response: SuccessResponse = { success: true };
+        const body = request.body as ChatSeenRequest;
+        const response = await chatService.markMessagesAsSeen(authRequest.user!.id, body);
         return reply.send(response);
-      } catch (error) {
-        logger.error('Error in chat seen POST', undefined, error as Error);
+      } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -202,44 +76,10 @@ export async function chatRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Body: ChatPostRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const { peerId, text } = request.body;
-
-        if (!peerId || !text) {
-          return reply.status(400).send({ error: 'Missing peerId or text' });
-        }
-
-        const chatId = getChatId(authRequest.user!.id, peerId);
-        // Save message to database
-        const message = await messageRepository.create({
-          chatId,
-          fromUserId: authRequest.user!.id,
-          toUserId: peerId,
-          text: String(text).slice(0, 4000),
-          type: 'message',
-        });
-
-        const { fromUserId, toUserId } = message;
-        const response: SendMessageResponse = {
-          message: 'Message sent',
-          data: {
-            id: message.id,
-            content: message.text,
-            sender: {
-              id: fromUserId,
-            },
-            receiver: {
-              id: toUserId,
-            },
-            conversationId: message.chatId,
-            createdAt: message.createdAt,
-            updatedAt: message.updatedAt ?? message.createdAt,
-            seen: message.seen,
-            seenAt: message.seenAt as any,
-          },
-        };
+        const body = request.body as ChatPostRequest;
+        const response = await chatService.sendMessage(authRequest.user!.id, body);
         return reply.send(response);
-      } catch (error) {
-        logger.error('Error in chat POST', undefined, error as Error);
+      } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }

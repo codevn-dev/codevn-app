@@ -1,9 +1,9 @@
 import { WebSocket } from 'ws';
 import { FastifyRequest } from 'fastify';
-import { commentRepository } from '@/lib/database/repository';
+import { commentRepository } from '../database/repository';
 import { logger } from '@/lib/utils/logger';
 import { verifyToken } from '../jwt';
-import { BaseWebSocketService, BaseConnection } from './base-websocket';
+import { BaseWebSocketService, BaseConnection } from './base';
 
 interface CommentConnection extends BaseConnection {}
 
