@@ -295,7 +295,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
         {isLoading && (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-            <span className="ml-2 text-gray-600">{t('chat.loading') || 'Loading...'}</span>
+            <span className="ml-2 text-gray-600">{t('common.loading') || 'Loading...'}</span>
           </div>
         )}
 
@@ -347,7 +347,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                   className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
                   {loadingMore ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                  {loadingMore ? t('chat.loading') : t('comments.loadMoreComments')}
+                  {loadingMore ? t('common.loading') : t('comments.loadMoreComments')}
                 </Button>
               </div>
             )}

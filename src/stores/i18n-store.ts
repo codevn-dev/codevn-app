@@ -14,13 +14,78 @@ interface I18nState {
 }
 
 const store: Dictionary = {
+  // Common
+  'common.back': { en: 'Back', vi: 'Quay lại' },
+  'common.cancel': { en: 'Cancel', vi: 'Huỷ' },
+  'common.create': { en: 'Create', vi: 'Tạo' },
+  'common.update': { en: 'Update', vi: 'Cập nhật' },
+  'common.save': { en: 'Save', vi: 'Lưu' },
+  'common.saving': { en: 'Saving', vi: 'Đang lưu' },
+  'common.delete': { en: 'Delete', vi: 'Xoá' },
+  'common.edit': { en: 'Edit', vi: 'Sửa' },
+  'common.loading': { en: 'Loading...', vi: 'Đang tải...' },
+  'common.email': { en: 'Email', vi: 'Email' },
+  'common.password': { en: 'Password', vi: 'Mật khẩu' },
+  'common.fullName': { en: 'Full Name', vi: 'Họ và tên' },
+  'common.fullNamePlaceholder': { en: 'Enter your full name', vi: 'Nhập họ và tên của bạn' },
+  'common.signIn': { en: 'Sign In', vi: 'Đăng nhập' },
+  'common.signUp': { en: 'Sign Up', vi: 'Đăng ký' },
+  'common.signOut': { en: 'Sign Out', vi: 'Đăng xuất' },
+  'common.title': { en: 'Title', vi: 'Tiêu đề' },
+  'common.name': { en: 'Name', vi: 'Tên' },
+  'common.copyrightSuffix': { en: 'All rights reserved.', vi: 'Đã đăng ký bản quyền.' },
+
   // Navigation
   'nav.articles': { en: 'Articles', vi: 'Bài viết' },
   'nav.admin': { en: 'Admin', vi: 'Quản trị viên' },
   'nav.editProfile': { en: 'Edit Profile', vi: 'Chỉnh sửa hồ sơ' },
-  'nav.signOut': { en: 'Sign Out', vi: 'Đăng xuất' },
-  'nav.signIn': { en: 'Sign In', vi: 'Đăng nhập' },
-  'nav.signUp': { en: 'Sign Up', vi: 'Đăng ký' },
+  'nav.language': { en: 'Language', vi: 'Ngôn ngữ' },
+
+  // Auth Modal
+  'auth.welcomeBack': { en: 'Welcome back', vi: 'Chào mừng trở lại' },
+  'auth.createAccount': { en: 'Create an account', vi: 'Tạo tài khoản' },
+  'auth.signInDescription': {
+    en: 'Sign in to your account to continue',
+    vi: 'Đăng nhập vào tài khoản để tiếp tục',
+  },
+  'auth.signUpDescription': {
+    en: 'Enter your details to create a new account',
+    vi: 'Nhập thông tin để tạo tài khoản mới',
+  },
+  'auth.continueWithGoogle': { en: 'Continue with Google', vi: 'Tiếp tục với Google' },
+  'auth.orContinueWith': { en: 'Or continue with', vi: 'Hoặc tiếp tục với' },
+  'auth.fullNamePlaceholder': { en: 'Enter your full name', vi: 'Nhập họ và tên của bạn' },
+  'auth.emailPlaceholder': { en: 'Enter your email', vi: 'Nhập email của bạn' },
+  'auth.passwordPlaceholder': { en: 'Enter your password', vi: 'Nhập mật khẩu của bạn' },
+  'auth.confirmPassword': { en: 'Confirm Password', vi: 'Xác nhận mật khẩu' },
+  'auth.confirmPasswordPlaceholder': {
+    en: 'Confirm your password',
+    vi: 'Xác nhận mật khẩu của bạn',
+  },
+  'auth.available': { en: 'Available', vi: 'Có sẵn' },
+  'auth.taken': { en: 'Taken', vi: 'Đã được sử dụng' },
+  'auth.passwordsMatch': { en: 'Passwords match', vi: 'Mật khẩu khớp' },
+  'auth.passwordsDoNotMatch': { en: 'Passwords do not match', vi: 'Mật khẩu không khớp' },
+  'auth.signingIn': { en: 'Signing in...', vi: 'Đang đăng nhập...' },
+  'auth.creatingAccount': { en: 'Creating account...', vi: 'Đang tạo tài khoản...' },
+  'auth.dontHaveAccount': { en: "Don't have an account?", vi: 'Chưa có tài khoản?' },
+  'auth.alreadyHaveAccount': { en: 'Already have an account?', vi: 'Đã có tài khoản?' },
+  'auth.signInLink': { en: 'Sign in', vi: 'Đăng nhập' },
+  'auth.fillAllFields': { en: 'Please fill in all fields', vi: 'Vui lòng điền đầy đủ thông tin' },
+  'auth.passwordsDoNotMatchError': { en: 'Passwords do not match', vi: 'Mật khẩu không khớp' },
+  'auth.passwordTooShort': {
+    en: 'Password must be at least 8 characters long',
+    vi: 'Mật khẩu phải có ít nhất 8 ký tự',
+  },
+  'auth.emailTaken': { en: 'Email is already taken', vi: 'Email đã được sử dụng' },
+  'auth.loginSuccessful': { en: 'Login successful!', vi: 'Đăng nhập thành công!' },
+  'auth.loginFailed': { en: 'Login failed', vi: 'Đăng nhập thất bại' },
+  'auth.registrationFailed': { en: 'Registration failed', vi: 'Đăng ký thất bại' },
+  'auth.googleLoginFailed': { en: 'Google login failed', vi: 'Đăng nhập Google thất bại' },
+  'auth.emailCheckFailed': {
+    en: 'Failed to check email availability',
+    vi: 'Không thể kiểm tra email',
+  },
 
   // Chat
   'chat.title': { en: 'Chat', vi: 'Trò chuyện' },
@@ -28,7 +93,6 @@ const store: Dictionary = {
   'chat.offline': { en: 'Offline', vi: 'Ngoại tuyến' },
   'chat.loadingMessages': { en: 'Loading messages...', vi: 'Đang tải tin nhắn...' },
   'chat.loadMore': { en: 'Load More Messages', vi: 'Tải thêm tin nhắn' },
-  'chat.loading': { en: 'Loading...', vi: 'Đang tải...' },
   'chat.typeMessage': { en: 'Type a message...', vi: 'Nhập tin nhắn...' },
   'chat.findConversation': { en: 'Find a conversation...', vi: 'Tìm cuộc trò chuyện...' },
   'chat.noConversation': { en: 'No conversation found', vi: 'Không có cuộc trò chuyện' },
@@ -59,8 +123,6 @@ const store: Dictionary = {
   'articles.menu.unpublish': { en: 'Unpublish', vi: 'Gỡ xuất bản' },
   'articles.menu.preview': { en: 'Preview', vi: 'Xem thử' },
   'articles.menu.view': { en: 'View', vi: 'Xem' },
-  'articles.menu.edit': { en: 'Edit', vi: 'Sửa' },
-  'articles.menu.delete': { en: 'Delete', vi: 'Xoá' },
   'articles.form.createNew': { en: 'Create New Article', vi: 'Tạo bài viết mới' },
   'articles.form.title': { en: 'Title', vi: 'Tiêu đề' },
   'articles.form.slug': { en: 'Slug', vi: 'Slug' },
@@ -79,8 +141,6 @@ const store: Dictionary = {
   'articles.form.selectCategory': { en: 'Select a category', vi: 'Chọn danh mục' },
   'articles.form.content': { en: 'Content', vi: 'Nội dung' },
   'articles.form.publishNow': { en: 'Publish immediately', vi: 'Xuất bản ngay' },
-  'articles.form.cancel': { en: 'Cancel', vi: 'Huỷ' },
-  'articles.form.create': { en: 'Create', vi: 'Tạo' },
 
   // Profile
   'profile.notFound': { en: 'Profile not found', vi: 'Không tìm thấy hồ sơ' },
@@ -91,9 +151,7 @@ const store: Dictionary = {
     en: 'Manage your account information and preferences',
     vi: 'Quản lý thông tin tài khoản và tuỳ chọn của bạn',
   },
-  'profile.fullName': { en: 'Full Name', vi: 'Họ và tên' },
   'profile.emailAddress': { en: 'Email Address', vi: 'Địa chỉ Email' },
-  'profile.fullNamePlaceholder': { en: 'Enter your full name', vi: 'Nhập họ và tên của bạn' },
   'profile.updated': { en: 'Profile updated successfully', vi: 'Cập nhật hồ sơ thành công' },
   'profile.totalArticles': { en: 'Total Articles', vi: 'Tổng số bài viết' },
   'profile.totalComments': { en: 'Total Comments', vi: 'Tổng bình luận' },
@@ -101,13 +159,7 @@ const store: Dictionary = {
   'profile.totalDislikes': { en: 'Total Dislikes', vi: 'Tổng lượt không thích' },
   'profile.accessLevel': { en: 'Access level', vi: 'Quyền truy cập' },
   'profile.memberSince': { en: 'Member since', vi: 'Thời gian gia nhập' },
-  'profile.save': { en: 'Save', vi: 'Lưu' },
-  'profile.saving': { en: 'Saving', vi: 'Đang lưu' },
-  'profile.cancel': { en: 'Cancel', vi: 'Huỷ' },
   'profile.upload': { en: 'Upload', vi: 'Tải lên' },
-
-  // Common
-  'common.back': { en: 'Back', vi: 'Quay lại' },
 
   // Admin
   'admin.accessDenied': {
@@ -143,8 +195,6 @@ const store: Dictionary = {
   'admin.rootCategory': { en: 'Root Category', vi: 'Danh mục gốc' },
   'admin.subCategories': { en: 'Sub categories', vi: 'Danh mục con' },
   'admin.createdBy': { en: 'Created by', vi: 'Tạo bởi' },
-  'admin.edit': { en: 'Edit', vi: 'Sửa' },
-  'admin.delete': { en: 'Delete', vi: 'Xoá' },
 
   // Homepage
   'home.searchPlaceholder': {
@@ -160,14 +210,7 @@ const store: Dictionary = {
   },
   'home.noMore': { en: 'No more articles to show', vi: 'Không còn bài viết để hiển thị' },
 
-  // Common footer
-  'common.copyrightSuffix': { en: 'All rights reserved.', vi: 'Đã đăng ký bản quyền.' },
-  'common.cancel': { en: 'Cancel', vi: 'Huỷ' },
-  'common.create': { en: 'Create', vi: 'Tạo' },
-  'common.update': { en: 'Update', vi: 'Cập nhật' },
-
   // Comments/Article Content
-  'comments.back': { en: 'Back', vi: 'Quay lại' },
   'comments.showReplies': { en: 'Show replies', vi: 'Hiện trả lời' },
   'comments.writeReply': { en: 'Write a reply...', vi: 'Viết trả lời...' },
   'comments.writeComment': { en: 'Write a comment...', vi: 'Viết bình luận...' },

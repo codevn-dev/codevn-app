@@ -12,10 +12,12 @@ import { useUIStore } from '@/stores';
 
 import GoogleIcon from '@/icons/google.svg';
 import { useAuthActions } from '@/hooks/use-auth-actions';
+import { useI18n } from '@/components/providers';
 
 export function AuthModal() {
   const { authModalOpen, authMode, setAuthModalOpen, setAuthMode } = useUIStore();
   const { signIn, signUp, checkEmail } = useAuthActions();
+  const { t } = useI18n();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -56,19 +58,19 @@ export function AuthModal() {
 
   const handleLogin = async () => {
     if (!formData.email || !formData.password) {
-      setError('Please fill in all fields');
+      setError(t('auth.fillAllFields'));
       return;
     }
 
     setIsLoading(true);
     try {
       await signIn(formData.email, formData.password);
-      setSuccess('Login successful!');
+      setSuccess(t('auth.loginSuccessful'));
       setAuthModalOpen(false);
       // Do not navigate away; keep current page
       // router.refresh();
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Login failed');
+      setError(error instanceof Error ? error.message : t('auth.loginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -76,22 +78,22 @@ export function AuthModal() {
 
   const handleRegister = async () => {
     if (!formData.email || !formData.name || !formData.password) {
-      setError('Please fill in all fields');
+      setError(t('auth.fillAllFields'));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordsDoNotMatchError'));
       return;
     }
 
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setError(t('auth.passwordTooShort'));
       return;
     }
 
     if (emailAvailable === false) {
-      setError('Email is already taken');
+      setError(t('auth.emailTaken'));
       return;
     }
 
@@ -102,7 +104,7 @@ export function AuthModal() {
       setAuthModalOpen(false);
       // router.refresh();
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Registration failed');
+      setError(error instanceof Error ? error.message : t('auth.registrationFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +120,7 @@ export function AuthModal() {
         `/api/auth/google?returnUrl=${encodeURIComponent(returnUrl)}`
       );
     } catch {
-      setError('Google login failed');
+      setError(t('auth.googleLoginFailed'));
       setIsOauthLoading(false);
     }
   };
@@ -143,10 +145,10 @@ export function AuthModal() {
           const result = await checkEmail(email);
           setEmailAvailable(result.available);
           if (!result.available) {
-            setEmailError('Email is already taken');
+            setEmailError(t('auth.emailTaken'));
           }
         } catch {
-          setEmailError('Failed to check email availability');
+          setEmailError(t('auth.emailCheckFailed'));
         } finally {
           setIsCheckingEmail(false);
         }
@@ -204,12 +206,10 @@ export function AuthModal() {
       >
         <div className="mb-4">
           <h2 className="text-lg font-semibold">
-            {authMode === 'signin' ? 'Welcome back' : 'Create an account'}
+            {authMode === 'signin' ? t('auth.welcomeBack') : t('auth.createAccount')}
           </h2>
           <p className="text-sm text-gray-600">
-            {authMode === 'signin'
-              ? 'Sign in to your account to continue'
-              : 'Enter your details to create a new account'}
+            {authMode === 'signin' ? t('auth.signInDescription') : t('auth.signUpDescription')}
           </p>
         </div>
 
@@ -227,7 +227,7 @@ export function AuthModal() {
             ) : (
               <GoogleIcon className="mr-2 h-6 w-6" />
             )}
-            Continue with Google
+            {t('auth.continueWithGoogle')}
           </Button>
 
           <div className="relative">
@@ -235,7 +235,9 @@ export function AuthModal() {
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background text-muted-foreground px-2">Or continue with</span>
+              <span className="bg-background text-muted-foreground px-2">
+                {t('auth.orContinueWith')}
+              </span>
             </div>
           </div>
 
@@ -244,12 +246,12 @@ export function AuthModal() {
             {authMode === 'signup' && (
               <div className="space-y-2">
                 <label htmlFor="name" className="text-sm font-medium">
-                  Full Name
+                  {t('common.fullName')}
                 </label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Enter your full name"
+                  placeholder={t('auth.fullNamePlaceholder')}
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   required
@@ -259,13 +261,13 @@ export function AuthModal() {
 
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
-                Email
+                {t('common.email')}
               </label>
               <div className="relative">
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t('auth.emailPlaceholder')}
                   value={formData.email}
                   onChange={handleEmailChange}
                   required
@@ -278,14 +280,14 @@ export function AuthModal() {
                 {emailAvailable === true && !isCheckingEmail && (
                   <div className="absolute top-1/2 right-3 -translate-y-1/2">
                     <Badge variant="secondary" className="text-xs">
-                      Available
+                      {t('auth.available')}
                     </Badge>
                   </div>
                 )}
                 {emailAvailable === false && !isCheckingEmail && (
                   <div className="absolute top-1/2 right-3 -translate-y-1/2">
                     <Badge variant="destructive" className="text-xs">
-                      Taken
+                      {t('auth.taken')}
                     </Badge>
                   </div>
                 )}
@@ -295,12 +297,12 @@ export function AuthModal() {
 
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">
-                Password
+                {t('common.password')}
               </label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t('auth.passwordPlaceholder')}
                 value={formData.password}
                 onChange={handlePasswordChange}
                 required
@@ -310,19 +312,19 @@ export function AuthModal() {
             {authMode === 'signup' && (
               <div className="space-y-2">
                 <label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirm Password
+                  {t('auth.confirmPassword')}
                 </label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="Confirm your password"
+                  placeholder={t('auth.confirmPasswordPlaceholder')}
                   value={formData.confirmPassword}
                   onChange={handleConfirmPasswordChange}
                   required
                 />
                 {formData.confirmPassword && passwordMatch !== null && (
                   <p className={`text-sm ${passwordMatch ? 'text-green-600' : 'text-destructive'}`}>
-                    {passwordMatch ? 'Passwords match' : 'Passwords do not match'}
+                    {passwordMatch ? t('auth.passwordsMatch') : t('auth.passwordsDoNotMatch')}
                   </p>
                 )}
               </div>
@@ -348,12 +350,12 @@ export function AuthModal() {
               {isLoading ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
-                  {authMode === 'signin' ? 'Signing in...' : 'Creating account...'}
+                  {authMode === 'signin' ? t('auth.signingIn') : t('auth.creatingAccount')}
                 </>
               ) : authMode === 'signin' ? (
-                'Sign In'
+                t('common.signIn')
               ) : (
-                'Create Account'
+                t('auth.createAccount')
               )}
             </Button>
           </form>
@@ -361,16 +363,16 @@ export function AuthModal() {
           <div className="text-center text-sm">
             {authMode === 'signin' ? (
               <>
-                Don&apos;t have an account?{' '}
+                {t('auth.dontHaveAccount')}{' '}
                 <button type="button" onClick={switchMode} className="text-primary hover:underline">
-                  Sign up
+                  {t('auth.signUp')}
                 </button>
               </>
             ) : (
               <>
-                Already have an account?{' '}
+                {t('auth.alreadyHaveAccount')}{' '}
                 <button type="button" onClick={switchMode} className="text-primary hover:underline">
-                  Sign in
+                  {t('common.signIn')}
                 </button>
               </>
             )}

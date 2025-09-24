@@ -148,7 +148,7 @@ function UserProfileContent() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">{t('profile.fullName')}</label>
+                <label className="text-sm font-medium text-gray-700">{t('common.fullName')}</label>
                 <div className="relative">
                   <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                   <div className="py-2 pl-10 text-gray-900">{profile.name}</div>

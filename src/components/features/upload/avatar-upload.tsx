@@ -258,7 +258,7 @@ export function AvatarUpload({
 
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={handleCropCancel}>
-                {t('profile.cancel')}
+                {t('common.cancel')}
               </Button>
               <Button onClick={handleCropComplete} disabled={!completedCrop}>
                 <Check className="mr-2 h-4 w-4" />

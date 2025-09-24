@@ -186,13 +186,13 @@ function ProfilePageContent() {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-medium text-gray-700">
-                      {t('profile.fullName')}
+                      {t('common.fullName')}
                     </label>
                     <div className="relative">
                       <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                       <Input
                         id="name"
-                        placeholder={t('profile.fullNamePlaceholder')}
+                        placeholder={t('common.fullNamePlaceholder')}
                         value={profile.name || ''}
                         onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                         className="pl-10"
@@ -249,11 +249,11 @@ function ProfilePageContent() {
                 <div className="flex justify-end pt-6">
                   <Button type="submit" disabled={saving || !hasChanges()} size="lg">
                     {saving ? (
-                      <LoadingScreen message={t('profile.saving')} />
+                      <LoadingScreen message={t('common.saving')} />
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        {t('profile.save')}
+                        {t('common.save')}
                       </>
                     )}
                   </Button>

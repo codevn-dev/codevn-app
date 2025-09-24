@@ -135,7 +135,7 @@ export function Navigation() {
                           className="cursor-pointer bg-white text-red-600 hover:bg-gray-50 focus:bg-gray-50 focus:text-red-600"
                         >
                           <LogOut className="mr-2 h-4 w-4" />
-                          {t('nav.signOut')}
+                          {t('common.signOut')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -150,7 +150,7 @@ export function Navigation() {
                       setAuthModalOpen(true);
                     }}
                   >
-                    {t('nav.signIn')}
+                    {t('common.signIn')}
                   </Button>
                   <Button
                     onClick={() => {
@@ -158,7 +158,7 @@ export function Navigation() {
                       setAuthModalOpen(true);
                     }}
                   >
-                    {t('nav.signUp')}
+                    {t('common.signUp')}
                   </Button>
                   <LanguageSwitcher />
                 </>
@@ -230,7 +230,7 @@ export function Navigation() {
                   handleSignOut();
                 }}
               >
-                <LogOut className="mr-2 h-4 w-4" /> {t('nav.signOut')}
+                <LogOut className="mr-2 h-4 w-4" /> {t('common.signOut')}
               </button>
             </>
           ) : (
@@ -243,7 +243,7 @@ export function Navigation() {
                   setIsMobileOpen(false);
                 }}
               >
-                Sign In
+                {t('common.signIn')}
               </button>
               <button
                 className="w-full rounded-md px-3 py-2 text-left hover:bg-gray-100"
@@ -253,7 +253,7 @@ export function Navigation() {
                   setIsMobileOpen(false);
                 }}
               >
-                Sign Up
+                {t('common.signUp')}
               </button>
             </>
           )}

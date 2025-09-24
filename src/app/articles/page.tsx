@@ -694,7 +694,7 @@ function ArticlesContent() {
                                         className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
                                       >
                                         <Edit className="mr-2 h-4 w-4" />
-                                        {t('articles.menu.edit')}
+                                        {t('common.edit')}
                                       </div>
 
                                       <div
@@ -705,7 +705,7 @@ function ArticlesContent() {
                                         className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
                                       >
                                         <Trash2 className="mr-2 h-4 w-4" />
-                                        {t('articles.menu.delete')}
+                                        {t('common.delete')}
                                       </div>
                                     </div>
                                   )}
@@ -789,7 +789,7 @@ function ArticlesContent() {
                   <div className="mb-4">
                     <h2 className="text-lg font-semibold">
                       {editingArticle
-                        ? t('articles.menu.edit') + ' Article'
+                        ? t('common.edit') + ' Article'
                         : t('articles.form.createNew')}
                     </h2>
                   </div>
@@ -943,14 +943,14 @@ function ArticlesContent() {
 
                   <div className="mt-6 flex justify-end gap-2">
                     <Button variant="outline" onClick={resetForm}>
-                      {t('articles.form.cancel')}
+                      {t('common.cancel')}
                     </Button>
                     <Button
                       type="submit"
                       onClick={editingArticle ? handleUpdateArticle : handleCreateArticle}
                       disabled={!editingArticle && isCreateDisabled}
                     >
-                      {editingArticle ? t('articles.menu.edit') : t('articles.form.create')}
+                      {editingArticle ? t('common.edit') : t('common.create')}
                     </Button>
                   </div>
                 </div>

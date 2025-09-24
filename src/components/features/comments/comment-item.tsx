@@ -548,7 +548,7 @@ export function CommentItem({
                     className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                   >
                     {loadingReplies ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                    {loadingReplies ? t('chat.loading') : t('comments.loadMoreReplies')}
+                    {loadingReplies ? t('common.loading') : t('comments.loadMoreReplies')}
                   </Button>
                 </div>
               )}

@@ -907,7 +907,7 @@ function AdminPageContent() {
                                         onClick={() => handleEditCategory(category)}
                                       >
                                         <Edit className="mr-1 h-4 w-4" />
-                                        {t('admin.edit')}
+                                        {t('common.edit')}
                                       </Button>
                                       <Button
                                         variant="outline"
@@ -916,7 +916,7 @@ function AdminPageContent() {
                                         className="border-red-600 text-red-600 hover:bg-red-50"
                                       >
                                         <Trash2 className="mr-1 h-4 w-4" />
-                                        {t('admin.delete')}
+                                        {t('common.delete')}
                                       </Button>
                                     </div>
                                   </div>
@@ -979,7 +979,7 @@ function AdminPageContent() {
                                                     onClick={() => handleEditCategory(child)}
                                                   >
                                                     <Edit className="mr-1 h-3 w-3" />
-                                                    {t('admin.edit')}
+                                                    {t('common.edit')}
                                                   </Button>
                                                   <Button
                                                     variant="outline"
@@ -988,7 +988,7 @@ function AdminPageContent() {
                                                     className="border-red-600 text-red-600 hover:bg-red-50"
                                                   >
                                                     <Trash2 className="mr-1 h-3 w-3" />
-                                                    {t('admin.delete')}
+                                                    {t('common.delete')}
                                                   </Button>
                                                 </div>
                                               </div>

@@ -239,7 +239,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 <Button asChild variant="back" size="sm">
                   <Link href="/" className="flex items-center">
                     <ArrowLeft className="mr-1 h-4 w-4" />
-                    <span suppressHydrationWarning>{mounted ? t('comments.back') : ''}</span>
+                    <span suppressHydrationWarning>{mounted ? t('common.back') : ''}</span>
                   </Link>
                 </Button>
                 {canManage && (
