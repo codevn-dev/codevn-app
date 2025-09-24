@@ -34,8 +34,21 @@ export class FileUploadUtils {
     // Extract file properties from Fastify multipart
     const fileType = file.mimetype;
     const fileSize = file.file?.bytesRead || 0;
-    const fileName = file.filename;
-    const fileExtension = fileName.split('.').pop()?.toLowerCase();
+    const fileName = file.filename as string;
+    const originalExtension = fileName.includes('.')
+      ? fileName.split('.').pop()?.toLowerCase()
+      : undefined;
+
+    // Infer extension from mimetype if missing or incorrect
+    const mimeToExt: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/gif': 'gif',
+      'image/webp': 'webp',
+    };
+    const inferredExtension = mimeToExt[fileType] || originalExtension;
+    const fileExtension = inferredExtension || originalExtension || 'jpg';
 
     // Validate file type
     if (options.allowedTypes && !options.allowedTypes.includes(fileType)) {

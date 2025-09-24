@@ -17,7 +17,6 @@ import WhatsAppIcon from '../../../icons/whatsapp.svg';
 import LineIcon from '../../../icons/line.svg';
 import ZaloIcon from '../../../icons/zalo.svg';
 import ThreadsIcon from '../../../icons/threads.svg';
-import MessengerIcon from '../../../icons/messenger.svg';
 import { useUIStore } from '@/stores';
 
 interface ShareMenuProps {
@@ -64,8 +63,8 @@ export function ShareMenu({ url, title, size = 'sm' }: ShareMenuProps) {
     openWindow(link);
   }, [shareUrl, openWindow]);
 
-  const handleTwitter = useCallback(() => {
-    const link = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
+  const handleX = useCallback(() => {
+    const link = `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(
       shareTitle
     )}`;
     openWindow(link);
@@ -91,11 +90,6 @@ export function ShareMenu({ url, title, size = 'sm' }: ShareMenuProps) {
 
   const handleZalo = useCallback(() => {
     const link = `https://zalo.me/share/?url=${encodeURIComponent(shareUrl)}`;
-    openWindow(link);
-  }, [shareUrl, openWindow]);
-
-  const handleMessenger = useCallback(() => {
-    const link = `https://www.messenger.com/t/?link=${encodeURIComponent(shareUrl)}`;
     openWindow(link);
   }, [shareUrl, openWindow]);
 
@@ -144,11 +138,7 @@ export function ShareMenu({ url, title, size = 'sm' }: ShareMenuProps) {
           <FacebookIcon className="mr-2 h-4 w-4" width={16} height={16} fill="#1877F2" />
           <span>Facebook</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleMessenger} className="cursor-pointer">
-          <MessengerIcon className="mr-2 h-4 w-4" width={16} height={16} fill="#00B2FF" />
-          <span>Messenger</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleTwitter} className="cursor-pointer">
+        <DropdownMenuItem onClick={handleX} className="cursor-pointer">
           <XBrandIcon className="mr-2 h-4 w-4" />
           <span>X</span>
         </DropdownMenuItem>
