@@ -20,7 +20,7 @@ import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { CommentForm } from './comment-form';
 import { CodeHighlighter } from '../articles/code-highlighter';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 import { useClientOnly } from '@/hooks/use-client-only';
 import { Comment, CommentListResponse, SuccessResponse } from '@/types/shared';
@@ -270,113 +270,104 @@ export function CommentItem({
 
   return (
     <motion.div
-      className={`${depth > 0 ? 'pl-4' : ''}`}
+      className={`${depth > 0 ? 'pl-0 sm:pl-2' : ''}`}
       variants={listItemFadeSlide}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '0px 0px -60px 0px' }}
     >
-      <Card
-        className={`shadow-brand/30 mb-3 bg-white shadow-2xl drop-shadow-2xl ${isDeleting ? 'opacity-50' : ''}`}
-      >
-        <CardBody className="p-3">
-          <div className="mb-2 flex items-start justify-between">
-            <div className="flex items-start space-x-2">
-              <AvatarWithDropdown
-                user={{
-                  id: comment.author.id,
-                  name: comment.author.name,
-                  email: '', // Email not available in new API
-                  avatar: comment.author.avatar || undefined,
-                  role: 'user' as const,
-                  createdAt: new Date().toISOString(),
-                }}
-                size="lg"
-                className="mt-0.5"
-              />
-              <div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-900">{comment.author.name}</span>
-                </div>
-                <div className="flex items-center text-xs text-gray-500">
-                  <Calendar className="mr-1 h-3 w-3" />
-                  {isClient ? formatRelativeTime(comment.createdAt) : 'Thinking...'}
-                  {comment.updatedAt && (
-                    <Badge variant="secondary" className="ml-2 px-1 py-0 text-xs">
-                      edited
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {(canEdit || canDelete) && (
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowDropdown(!showDropdown)}
-                  className="h-6 w-6 p-0"
-                >
-                  <MoreVertical className="h-3 w-3" />
-                </Button>
-
-                {showDropdown && (
-                  <div className="border-brand/20 absolute top-8 right-0 z-10 min-w-[120px] rounded-md border bg-white shadow-lg">
-                    {canEdit && (
-                      <button
-                        onClick={() => {
-                          setIsEditing(true);
-                          setShowDropdown(false);
-                        }}
-                        className="flex w-full items-center px-3 py-2 text-left text-sm hover:bg-gray-50"
-                      >
-                        <Edit className="mr-2 h-3 w-3" />
-                        Edit
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button
-                        onClick={() => {
-                          handleDelete();
-                          setShowDropdown(false);
-                        }}
-                        className="flex w-full items-center px-3 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
-                        disabled={isDeleting}
-                      >
-                        <Trash2 className="mr-2 h-3 w-3" />
-                        Delete
-                      </button>
+      <div className={`${isDeleting ? 'opacity-50' : ''}`}>
+        <div className="flex items-start space-x-0.5 sm:space-x-1">
+          <AvatarWithDropdown
+            user={{
+              id: comment.author.id,
+              name: comment.author.name,
+              email: '',
+              avatar: comment.author.avatar || undefined,
+              role: 'user' as const,
+              createdAt: new Date().toISOString(),
+            }}
+            size={'lg'}
+            className={`${depth > 0 ? '-ml-1 sm:-ml-1' : ''} mt-0.5 shrink-0 scale-[0.8] sm:scale-100`}
+          />
+          <div className="w-full">
+            <div className="inline-block max-w-full rounded-2xl bg-gray-50 px-2.5 py-2 sm:px-3">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-900">{comment.author.name}</span>
+                <span className="text-[11px] text-gray-500">
+                  {isClient ? formatDate(comment.createdAt) : ''}
+                </span>
+                {comment.updatedAt && (
+                  <Badge variant="secondary" className="px-1 py-0 text-[10px]">
+                    edited
+                  </Badge>
+                )}
+                {(canEdit || canDelete) && (
+                  <div className="relative ml-auto">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className="h-6 w-6 p-0"
+                    >
+                      <MoreVertical className="h-3 w-3" />
+                    </Button>
+                    {showDropdown && (
+                      <div className="border-brand/20 absolute top-7 right-0 z-10 min-w-[120px] rounded-md border bg-white shadow-lg">
+                        {canEdit && (
+                          <button
+                            onClick={() => {
+                              setIsEditing(true);
+                              setShowDropdown(false);
+                            }}
+                            className="flex w-full items-center px-3 py-2 text-left text-sm hover:bg-gray-50"
+                          >
+                            <Edit className="mr-2 h-3 w-3" />
+                            Edit
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => {
+                              handleDelete();
+                              setShowDropdown(false);
+                            }}
+                            className="flex w-full items-center px-3 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                            disabled={isDeleting}
+                          >
+                            <Trash2 className="mr-2 h-3 w-3" />
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
 
-          {isEditing ? (
-            <CommentForm
-              articleId={articleId}
-              parentId={comment.parent?.id || null}
-              onCommentAdded={handleEdit}
-              onCancel={() => setIsEditing(false)}
-              placeholder="Edit your comment..."
-              initialContent={comment.content}
-              isEditing={true}
-              commentId={comment.id}
-            />
-          ) : (
-            <div className="prose prose-sm max-w-none">
-              <CodeHighlighter
-                content={emphasizeMentions(comment.content)}
-                className="text-sm text-gray-700"
-              />
+              {isEditing ? (
+                <CommentForm
+                  articleId={articleId}
+                  parentId={comment.parent?.id || null}
+                  onCommentAdded={handleEdit}
+                  onCancel={() => setIsEditing(false)}
+                  placeholder="Edit your comment..."
+                  initialContent={comment.content}
+                  isEditing={true}
+                  commentId={comment.id}
+                />
+              ) : (
+                <div className="prose prose-sm max-w-none">
+                  <CodeHighlighter
+                    content={emphasizeMentions(comment.content)}
+                    className="text-sm text-gray-800"
+                  />
+                </div>
+              )}
             </div>
-          )}
 
-          {!isEditing && (
-            <div className="mt-2 flex items-center space-x-4">
-              <motion.div whileTap={{ scale: 0.94 }}>
+            {!isEditing && (
+              <div className="mt-1 flex items-center space-x-1.5 pl-1 sm:space-x-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -396,8 +387,6 @@ export function CommentItem({
                   />
                   <span className="text-xs font-medium">{likeCount}</span>
                 </Button>
-              </motion.div>
-              <motion.div whileTap={{ scale: 0.94 }}>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -417,8 +406,6 @@ export function CommentItem({
                   />
                   <span className="text-xs font-medium">{unlikeCount}</span>
                 </Button>
-              </motion.div>
-              {depth < maxDepth && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -428,14 +415,17 @@ export function CommentItem({
                       setAuthModalOpen(true);
                       return;
                     }
-                    // Ensure replies are visible and loaded if needed
+                    const isAtOrBeyondMax = depth >= maxDepth;
+                    if (isAtOrBeyondMax && onRequestParentReply) {
+                      onRequestParentReply(comment);
+                      return;
+                    }
                     if (!showReplies) {
                       setShowReplies(true);
                       if (!repliesLoadedRef.current) {
                         void loadReplies(1, false);
                       }
                     }
-                    // Set target and prefill
                     setChildReplyingTo(comment);
                     setChildReplyPrefill('');
                     setReplyFocusTick((t) => t + 1);
@@ -449,177 +439,148 @@ export function CommentItem({
                   <Reply className="mr-1 h-3 w-3" />
                   <span className="text-xs">{t('comments.reply')}</span>
                 </Button>
-              )}
-              {depth >= maxDepth && onRequestParentReply && (
+              </div>
+            )}
+
+            {Number(comment.replyCount) > 0 && depth === 0 && !showReplies && (
+              <div className="mt-1 pl-1">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    if (!isAuthenticated) {
-                      setAuthMode('signin');
-                      setAuthModalOpen(true);
-                      return;
-                    }
-                    onRequestParentReply(comment);
+                    setShowReplies(true);
+                    loadReplies(1, false);
                   }}
-                  className="h-6 rounded-md px-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                  disabled={loadingReplies}
+                  className="h-6 rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
-                  <Reply className="mr-1 h-3 w-3" />
-                  <span className="text-xs">{t('comments.reply')}</span>
+                  {loadingReplies ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
+                  {t('comments.showReplies')} ({comment.replyCount})
                 </Button>
-              )}
-              {comment.replies && comment.replies.length > 0 && (
-                <span className="text-sm text-gray-500">
-                  {comment.replies.length}{' '}
-                  {comment.replies.length === 1 ? t('comments.reply') : t('comments.showReplies')}
-                </span>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* Inline reply box removed in favor of focusing the persistent bottom reply textbox */}
-
-          {/* Show replies toggle at parent (kept), without load more here */}
-          {Number(comment.replyCount) > 0 && depth === 0 && !showReplies && (
-            <div className="mt-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setShowReplies(true);
-                  loadReplies(1, false);
-                }}
-                disabled={loadingReplies}
-                className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
-              >
-                {loadingReplies ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                {t('comments.showReplies')} ({comment.replyCount})
-              </Button>
-            </div>
-          )}
-
-          {/* Render replies - only show if loaded */}
-          {showReplies && depth === 0 && (
-            <div className="mt-3 space-y-3">
-              {replies.slice(0, visibleRepliesCount).map((reply) => (
-                <motion.div
-                  key={`${reply.id}-${reply.createdAt}`}
-                  variants={listItemFadeSlide}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: '0px 0px -60px 0px' }}
-                >
-                  <CommentItem
+            {showReplies && depth === 0 && (
+              <div className="relative mt-2 pl-0 sm:pl-2">
+                {/* Vertical connector line from parent avatar downward */}
+                <div className="pointer-events-none absolute top-0 bottom-6 -left-6 w-px bg-gray-200 sm:-left-7" />
+                {replies.slice(0, visibleRepliesCount).map((reply) => (
+                  <motion.div
                     key={`${reply.id}-${reply.createdAt}`}
-                    comment={reply}
-                    articleId={articleId}
-                    onCommentUpdated={onCommentUpdated}
-                    onCommentDeleted={onCommentDeleted}
-                    onReplyAdded={onReplyAdded}
-                    depth={depth + 1}
-                    onRequestParentReply={(c) => {
-                      // Ensure replies visible
-                      if (!showReplies) {
-                        setShowReplies(true);
-                        if (!repliesLoadedRef.current) {
-                          void loadReplies(1, false);
-                        }
-                      }
-                      // Set target, prefill, and scroll to reply box
-                      setChildReplyingTo(c);
-                      setChildReplyPrefill(`@${c.author.name} `);
-                      setReplyFocusTick((t) => t + 1);
-                      setShouldFocusReply(true);
-                      setTimeout(() => {
-                        bottomReplyRef.current?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'center',
-                        });
-                      }, 0);
-                    }}
-                  />
-                </motion.div>
-              ))}
-
-              {/* Load More Replies Button - now above the child reply textbox */}
-              {(visibleRepliesCount < replies.length || hasMoreReplies) && (
-                <div className="mt-2 pl-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={async () => {
-                      if (visibleRepliesCount < replies.length) {
-                        setVisibleRepliesCount((c) => c + 5);
-                      } else if (hasMoreReplies) {
-                        await loadReplies(repliesPage + 1, true);
-                        setVisibleRepliesCount((c) => c + 5);
-                      }
-                      // After loading more, direct focus to the reply box
-                      setReplyFocusTick((t) => t + 1);
-                      setShouldFocusReply(true);
-                      setTimeout(() => {
-                        bottomReplyRef.current?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'center',
-                        });
-                      }, 0);
-                    }}
-                    disabled={loadingReplies}
-                    className="rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                    variants={listItemFadeSlide}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '0px 0px -60px 0px' }}
+                    className="relative"
                   >
-                    {loadingReplies ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
-                    {loadingReplies ? t('common.loading') : t('comments.loadMoreReplies')}
-                  </Button>
-                </div>
-              )}
+                    {/* Curved elbow connector into the reply bubble */}
+                    <div className="pointer-events-none absolute top-4 -left-6 h-5 w-6 sm:-left-7 sm:h-6 sm:w-7">
+                      <div className="absolute top-0 left-0 h-full w-full rounded-tl-full border-t border-l border-gray-200" />
+                    </div>
+                    <CommentItem
+                      key={`${reply.id}-${reply.createdAt}`}
+                      comment={reply}
+                      articleId={articleId}
+                      onCommentUpdated={onCommentUpdated}
+                      onCommentDeleted={onCommentDeleted}
+                      onReplyAdded={onReplyAdded}
+                      depth={depth + 1}
+                      onRequestParentReply={(c) => {
+                        if (!showReplies) {
+                          setShowReplies(true);
+                          if (!repliesLoadedRef.current) {
+                            void loadReplies(1, false);
+                          }
+                        }
+                        setChildReplyingTo(c);
+                        setChildReplyPrefill(`@${c.author.name} `);
+                        setReplyFocusTick((t) => t + 1);
+                        setShouldFocusReply(true);
+                        setTimeout(() => {
+                          bottomReplyRef.current?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                          });
+                        }, 0);
+                      }}
+                    />
+                  </motion.div>
+                ))}
 
-              {/* Child reply text box at the end of child comments */}
-              {isAuthenticated && (
-                <div ref={bottomReplyRef} className="mt-2 pl-4">
-                  <CommentForm
-                    articleId={articleId}
-                    parentId={comment.id}
-                    onCommentAdded={(newReply: any) => {
-                      onReplyAdded(newReply);
-                      setReplies((prev) => {
-                        const newRepliesList = [...prev, newReply];
-                        // Auto-expand visible count to show new reply
-                        setVisibleRepliesCount((currentVisible) =>
-                          Math.max(currentVisible, newRepliesList.length)
-                        );
-                        return newRepliesList;
-                      });
-                      repliesLoadedRef.current = true;
-                      setChildReplyingTo(null);
-                      setChildReplyPrefill('');
-                    }}
-                    placeholder={
-                      childReplyingTo
-                        ? `Reply to ${childReplyingTo.author.name}...`
-                        : t('comments.writeReply')
-                    }
-                    initialContent={childReplyPrefill}
-                    autoFocus={shouldFocusReply}
-                    focusTrigger={replyFocusTick}
-                    onReady={() => {
-                      // Ensure we scroll only after the actual textarea is focusable
-                      setTimeout(() => {
-                        bottomReplyRef.current?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'center',
+                {(visibleRepliesCount < replies.length || hasMoreReplies) && (
+                  <div className="mt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        if (visibleRepliesCount < replies.length) {
+                          setVisibleRepliesCount((c) => c + 5);
+                        } else if (hasMoreReplies) {
+                          await loadReplies(repliesPage + 1, true);
+                          setVisibleRepliesCount((c) => c + 5);
+                        }
+                        setReplyFocusTick((t) => t + 1);
+                        setShouldFocusReply(true);
+                        setTimeout(() => {
+                          bottomReplyRef.current?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                          });
+                        }, 0);
+                      }}
+                      disabled={loadingReplies}
+                      className="h-6 rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      {loadingReplies ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
+                      {loadingReplies ? t('common.loading') : t('comments.loadMoreReplies')}
+                    </Button>
+                  </div>
+                )}
+
+                {isAuthenticated && (
+                  <div ref={bottomReplyRef} className="mt-2">
+                    <CommentForm
+                      articleId={articleId}
+                      parentId={comment.id}
+                      onCommentAdded={(newReply: any) => {
+                        onReplyAdded(newReply);
+                        setReplies((prev) => {
+                          const newRepliesList = [...prev, newReply];
+                          setVisibleRepliesCount((currentVisible) =>
+                            Math.max(currentVisible, newRepliesList.length)
+                          );
+                          return newRepliesList;
                         });
-                      }, 0);
-                      // reset so it does not steal focus later
-                      setShouldFocusReply(false);
-                    }}
-                    suppressAuthPrompt={true}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-        </CardBody>
-      </Card>
+                        repliesLoadedRef.current = true;
+                        setChildReplyingTo(null);
+                        setChildReplyPrefill('');
+                      }}
+                      placeholder={
+                        childReplyingTo
+                          ? `Reply to ${childReplyingTo.author.name}...`
+                          : t('comments.writeReply')
+                      }
+                      initialContent={childReplyPrefill}
+                      autoFocus={shouldFocusReply}
+                      focusTrigger={replyFocusTick}
+                      onReady={() => {
+                        setTimeout(() => {
+                          bottomReplyRef.current?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                          });
+                        }, 0);
+                        setShouldFocusReply(false);
+                      }}
+                      suppressAuthPrompt={true}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 }

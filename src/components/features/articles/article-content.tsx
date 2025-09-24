@@ -228,8 +228,8 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
   return (
     <div data-article-root>
       <div className="py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl bg-white p-6 shadow-2xl shadow-gray-400/80">
+        <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+          <div className="rounded-2xl bg-white p-4 shadow-2xl shadow-gray-400/80 sm:p-6">
             {isPreview && (
               <div className="-m-6 mb-6 rounded-t-2xl border-b border-yellow-200 bg-yellow-100 px-6 py-3">
                 <div className="flex items-center text-sm font-medium text-yellow-800">
@@ -377,7 +377,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 />
               </MotionContainer>
 
-              <div className="border-brand/20 mt-6 border-t pt-4 sm:mt-8 sm:pt-6">
+              <div className="mt-6 pt-0 sm:mt-8 sm:pt-0">
                 <CommentsSection
                   ref={commentsSectionRef}
                   articleId={article.id}

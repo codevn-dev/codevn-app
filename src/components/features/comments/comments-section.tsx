@@ -8,6 +8,7 @@ import { MessageSquare, Loader2 } from 'lucide-react';
 import { CommentItem } from './comment-item';
 import { CommentForm } from './comment-form';
 import { useAuthState } from '@/hooks/use-auth-state';
+import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 import { useUIStore } from '@/stores';
 import { useCommentWebSocketContext } from './websocket-context';
 import { Comment, CommentListResponse } from '@/types/shared';
@@ -27,7 +28,7 @@ export interface CommentsSectionRef {
 export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
   ({ articleId, initialComments = [] }, ref) => {
     const { t } = useI18n();
-    const { isAuthenticated, isLoading: isAuthLoading } = useAuthState();
+    const { isAuthenticated, isLoading: isAuthLoading, user } = useAuthState();
     const { setAuthModalOpen, setAuthMode } = useUIStore();
     const { addOnNewCommentCallback, addOnNewReplyCallback } = useCommentWebSocketContext();
     const [comments, setComments] = useState<Comment[]>(initialComments);
@@ -294,6 +295,38 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
 
     return (
       <div className="space-y-6">
+        {!isLoading && !error && (
+          <div>
+            {isAuthenticated && !isAuthLoading && (
+              <div ref={commentFormRef} className="mb-3 sm:mb-4">
+                <div className="flex items-start space-x-1 sm:space-x-2">
+                  <div className="mt-1">
+                    <AvatarWithDropdown
+                      user={{
+                        id: user?.id || '',
+                        name: user?.name || 'You',
+                        email: user?.email || '',
+                        avatar: user?.avatar || undefined,
+                        role: (user?.role as any) || 'user',
+                        createdAt: user?.createdAt || new Date().toISOString(),
+                      }}
+                      size="lg"
+                      className="scale-[0.8] sm:scale-100"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <CommentForm
+                      articleId={articleId}
+                      onCommentAdded={handleCommentAdded}
+                      placeholder={t('comments.writeComment')}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {isLoading && (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -315,8 +348,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           topLevelComments.length === 0 &&
           isAuthenticated &&
           !isAuthLoading && (
-            <div className="py-8 text-center text-gray-500">
-              <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+            <div className="py-4 text-gray-500">
               <p>{t('comments.noCommentsYet')}</p>
             </div>
           )}
@@ -346,7 +378,6 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                 </motion.div>
               ))}
             </AnimatePresence>
-            {/* Load More Button - only show if there are older comments to load */}
             {hasMoreComments && (
               <div className="mt-2">
                 <Button
@@ -368,19 +399,8 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           </motion.div>
         )}
 
-        {/* Comment form moved to bottom for better UX */}
-        {isAuthenticated && !isAuthLoading && (
-          <div ref={commentFormRef} className="mt-6">
-            <CommentForm
-              articleId={articleId}
-              onCommentAdded={handleCommentAdded}
-              placeholder={t('comments.writeComment')}
-            />
-          </div>
-        )}
-
         {!isAuthLoading && !isAuthenticated && (
-          <div className="border-brand/20 mt-6 rounded-lg border bg-gray-50 p-6 text-center">
+          <div className="border-brand/20 mt-4 rounded-lg border bg-gray-50 p-6 text-center">
             <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
             <p className="text-gray-600">
               {t('comments.signInToPost.prefix')}{' '}
