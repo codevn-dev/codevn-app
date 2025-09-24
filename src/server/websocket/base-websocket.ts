@@ -110,7 +110,7 @@ export abstract class BaseWebSocketService<TConnection extends BaseConnection> {
 
   protected async publish(channel: string, data: any): Promise<void> {
     try {
-      const deliveredCount = await this.publisher.publish(
+      await this.publisher.publish(
         channel,
         JSON.stringify({ instanceId: this.instanceId, type: channel, data })
       );
