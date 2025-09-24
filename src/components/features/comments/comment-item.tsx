@@ -4,18 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { listItemFadeSlide } from '@/components/layout/motion-presets';
 import { Button } from '@/components/ui/button';
-import { Card, CardBody } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Reply,
-  Edit,
-  Trash2,
-  MoreVertical,
-  Calendar,
-  Loader2,
-  ThumbsUp,
-  ThumbsDown,
-} from 'lucide-react';
+import { Reply, Edit, Trash2, MoreVertical, Loader2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { CommentForm } from './comment-form';
@@ -36,6 +26,8 @@ interface CommentItemProps {
   onReplyAdded: (comment: Comment) => void;
   depth?: number;
   onRequestParentReply?: (comment: Comment) => void;
+  highlightCommentId?: string;
+  onHighlightTarget?: (id: string | null) => void;
 }
 
 export function CommentItem({
@@ -46,6 +38,8 @@ export function CommentItem({
   onReplyAdded,
   depth = 0,
   onRequestParentReply,
+  highlightCommentId,
+  onHighlightTarget,
 }: CommentItemProps) {
   const { t } = useI18n();
   const { user, isAuthenticated } = useAuthState();
@@ -73,6 +67,7 @@ export function CommentItem({
   const [unlikeCount, setUnlikeCount] = useState(comment.unlikeCount || 0);
   const [isLiking, setIsLiking] = useState(false);
   const [isUnliking, setIsUnliking] = useState(false);
+  const isHighlighted = (highlightCommentId && highlightCommentId === comment.id) || false;
 
   const isAuthor = user?.id === comment.author.id;
   const canEdit = isAuthor;
@@ -291,7 +286,11 @@ export function CommentItem({
             className={`${depth > 0 ? '-ml-1 sm:-ml-1' : ''} mt-0.5 shrink-0 scale-[0.8] sm:scale-100`}
           />
           <div className="w-full">
-            <div className="inline-block max-w-full rounded-2xl bg-gray-50 px-2.5 py-2 sm:px-3">
+            <div
+              className={`inline-block max-w-full rounded-2xl px-2.5 py-2 transition-colors sm:px-3 ${
+                isHighlighted ? 'border border-blue-300 bg-blue-100' : 'bg-gray-100'
+              }`}
+            >
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium text-gray-900">{comment.author.name}</span>
                 <span className="text-[11px] text-gray-500">
@@ -417,6 +416,7 @@ export function CommentItem({
                     }
                     const isAtOrBeyondMax = depth >= maxDepth;
                     if (isAtOrBeyondMax && onRequestParentReply) {
+                      onHighlightTarget?.(comment.id);
                       onRequestParentReply(comment);
                       return;
                     }
@@ -426,6 +426,7 @@ export function CommentItem({
                         void loadReplies(1, false);
                       }
                     }
+                    onHighlightTarget?.(comment.id);
                     setChildReplyingTo(comment);
                     setChildReplyPrefill('');
                     setReplyFocusTick((t) => t + 1);
@@ -485,6 +486,8 @@ export function CommentItem({
                       onCommentDeleted={onCommentDeleted}
                       onReplyAdded={onReplyAdded}
                       depth={depth + 1}
+                      highlightCommentId={highlightCommentId}
+                      onHighlightTarget={onHighlightTarget}
                       onRequestParentReply={(c) => {
                         if (!showReplies) {
                           setShowReplies(true);
@@ -492,6 +495,7 @@ export function CommentItem({
                             void loadReplies(1, false);
                           }
                         }
+                        onHighlightTarget?.(c.id);
                         setChildReplyingTo(c);
                         setChildReplyPrefill(`@${c.author.name} `);
                         setReplyFocusTick((t) => t + 1);
@@ -573,6 +577,11 @@ export function CommentItem({
                         setShouldFocusReply(false);
                       }}
                       suppressAuthPrompt={true}
+                      onFocusInput={() => {
+                        if (!highlightCommentId || highlightCommentId !== comment.id) {
+                          onHighlightTarget?.(null);
+                        }
+                      }}
                     />
                   </div>
                 )}

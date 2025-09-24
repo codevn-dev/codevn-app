@@ -42,6 +42,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
     const lastCommentIdRef = useRef<string | null>(null);
     const commentFormRef = useRef<HTMLDivElement>(null);
     const [visibleTopCount, setVisibleTopCount] = useState(5);
+    const [highlightCommentId, setHighlightCommentId] = useState<string | null>(null);
     const fetchCommentsRef = useRef<typeof fetchComments | null>(null);
     const articleIdRef = useRef(articleId);
     const _hasLoadedRef = useRef(false);
@@ -319,6 +320,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                       articleId={articleId}
                       onCommentAdded={handleCommentAdded}
                       placeholder={t('comments.writeComment')}
+                      onFocusInput={() => setHighlightCommentId(null)}
                     />
                   </div>
                 </div>
@@ -374,6 +376,8 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                     onCommentUpdated={handleCommentUpdated}
                     onCommentDeleted={handleCommentDeleted}
                     onReplyAdded={handleReplyAdded}
+                    highlightCommentId={highlightCommentId || undefined}
+                    onHighlightTarget={setHighlightCommentId}
                   />
                 </motion.div>
               ))}

@@ -26,6 +26,7 @@ interface CommentFormProps {
   focusTrigger?: number;
   onReady?: () => void;
   suppressAuthPrompt?: boolean;
+  onFocusInput?: () => void;
 }
 
 export function CommentForm({
@@ -41,6 +42,7 @@ export function CommentForm({
   focusTrigger,
   onReady,
   suppressAuthPrompt = false,
+  onFocusInput,
 }: CommentFormProps) {
   const { t } = useI18n();
   const { isAuthenticated, user } = useAuthState();
@@ -242,7 +244,7 @@ export function CommentForm({
           <button
             type="button"
             aria-label="Emoji"
-            className={`absolute right-2 bottom-2 flex h-8 w-8 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 ${
+            className={`absolute right-14 bottom-2 inline-flex h-9 w-9 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 ${
               showEmoji ? 'text-gray-700' : ''
             }`}
             onClick={(e) => {
@@ -250,7 +252,7 @@ export function CommentForm({
               setShowEmoji((v) => !v);
             }}
           >
-            <Smile className="h-5 w-5" />
+            <Smile className="h-6 w-6" />
           </button>
           <Textarea
             value={content}
@@ -258,23 +260,42 @@ export function CommentForm({
             onFocus={() => {
               // Ensure the focused textarea is brought into view on any focus event
               textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              if (onFocusInput) {
+                onFocusInput();
+              }
             }}
             onKeyDown={handleKeyDown}
             onClick={(e) => {
               e.stopPropagation();
               textareaRef.current?.focus();
               setShowEmoji(false);
+              if (onFocusInput) {
+                onFocusInput();
+              }
             }}
             placeholder={placeholder}
-            className="border-brand/20 focus:border-brand focus:ring-brand min-h-[80px] resize-none border bg-white shadow-sm placeholder:text-gray-500"
+            className="border-brand/20 focus:border-brand focus:ring-brand min-h-[80px] resize-none border bg-white pr-20 pl-3 shadow-sm placeholder:text-gray-500"
             maxLength={1000}
             ref={textareaRef}
             autoFocus={autoFocus}
           />
+          {/* Submit button - bottom-right inside the field */}
+          <button
+            type="submit"
+            disabled={isSubmitting || !content.trim()}
+            aria-label={parentId ? t('comments.reply') : t('comments.comment')}
+            className="absolute right-2 bottom-2 inline-flex h-9 w-9 items-center justify-center rounded text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
+              <Send className="h-6 w-6" />
+            )}
+          </button>
           {showEmoji && (
             <div
               ref={emojiPopoverRef}
-              className="border-brand/20 absolute right-0 bottom-12 z-[120] rounded-lg border bg-white shadow-lg"
+              className="border-brand/20 absolute right-14 bottom-12 z-[120] rounded-lg border bg-white shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <Picker
@@ -308,20 +329,7 @@ export function CommentForm({
             {t('common.cancel')}
           </Button>
         )}
-        <Button
-          type="submit"
-          variant="outline"
-          size="sm"
-          disabled={isSubmitting || !content.trim()}
-          className="flex items-center space-x-2 border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-        >
-          {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-          <span>{parentId ? t('comments.reply') : t('comments.comment')}</span>
-        </Button>
+        {/* Submit moved into the textarea corner; keep this area free */}
       </div>
     </form>
   );
