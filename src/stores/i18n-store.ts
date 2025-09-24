@@ -238,6 +238,19 @@ const store: Dictionary = {
   'admin.category.color': { en: 'Color', vi: 'Màu' },
   'admin.parentCategory': { en: 'Parent Category', vi: 'Danh mục cha' },
   'admin.category.noParentRoot': { en: 'No parent (Root Category)', vi: 'Không có (Danh mục gốc)' },
+
+  // Share
+  'share.share': { en: 'Share', vi: 'Chia sẻ' },
+  'share.copyLink': { en: 'Copy link', vi: 'Sao chép liên kết' },
+  'share.viaDevice': { en: 'Share via device', vi: 'Chia sẻ qua thiết bị' },
+  'share.defaultTitle': { en: 'Check out this article', vi: 'Xem bài viết này' },
+  'share.copiedTitle': { en: 'Copied', vi: 'Đã sao chép' },
+  'share.copiedMessage': {
+    en: 'Article link copied to clipboard',
+    vi: 'Đã sao chép liên kết bài viết',
+  },
+  'share.failedTitle': { en: 'Failed', vi: 'Thất bại' },
+  'share.failedMessage': { en: 'Could not copy link', vi: 'Không thể sao chép liên kết' },
 };
 
 export const useI18nStore = create<I18nState>()(

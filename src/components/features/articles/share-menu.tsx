@@ -18,6 +18,7 @@ import LineIcon from '../../../icons/line.svg';
 import ZaloIcon from '../../../icons/zalo.svg';
 import ThreadsIcon from '../../../icons/threads.svg';
 import { useUIStore } from '@/stores';
+import { useI18n } from '@/components/providers';
 
 interface ShareMenuProps {
   url?: string;
@@ -27,13 +28,14 @@ interface ShareMenuProps {
 
 export function ShareMenu({ url, title, size = 'sm' }: ShareMenuProps) {
   const { addNotification } = useUIStore();
+  const { t } = useI18n();
 
   const shareUrl = useMemo(() => {
     if (typeof window === 'undefined') return url || '';
     return url || window.location.href;
   }, [url]);
 
-  const shareTitle = title || 'Check out this article';
+  const shareTitle = title || t('share.defaultTitle');
 
   const openWindow = useCallback((shareLink: string) => {
     if (typeof window === 'undefined') return;
@@ -45,13 +47,17 @@ export function ShareMenu({ url, title, size = 'sm' }: ShareMenuProps) {
       await navigator.clipboard.writeText(shareUrl);
       addNotification({
         type: 'success',
-        title: 'Copied',
-        message: 'Article link copied to clipboard',
+        title: t('share.copiedTitle'),
+        message: t('share.copiedMessage'),
       });
     } catch {
-      addNotification({ type: 'error', title: 'Failed', message: 'Could not copy link' });
+      addNotification({
+        type: 'error',
+        title: t('share.failedTitle'),
+        message: t('share.failedMessage'),
+      });
     }
-  }, [shareUrl, addNotification]);
+  }, [shareUrl, addNotification, t]);
 
   const handleFacebook = useCallback(() => {
     const link = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
@@ -127,12 +133,12 @@ export function ShareMenu({ url, title, size = 'sm' }: ShareMenuProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size={size} className="hover:border-blue-600 hover:text-blue-600">
-          <Share className="mr-1 h-4 w-4" /> Share
+          <Share className="mr-1 h-4 w-4" /> {t('share.share')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="rounded-2xl">
         <DropdownMenuItem onClick={handleCopy} className="cursor-pointer">
-          <LinkIcon className="mr-2 h-4 w-4" /> Copy link
+          <LinkIcon className="mr-2 h-4 w-4" /> {t('share.copyLink')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleFacebook} className="cursor-pointer">
           <FacebookIcon className="mr-2 h-4 w-4" width={16} height={16} fill="#1877F2" />
@@ -171,10 +177,10 @@ export function ShareMenu({ url, title, size = 'sm' }: ShareMenuProps) {
           <span>Reddit</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleEmail} className="cursor-pointer">
-          <Mail className="mr-2 h-4 w-4" /> Email
+          <Mail className="mr-2 h-4 w-4" /> {t('common.email')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer">
-          <Share className="mr-2 h-4 w-4" /> Share via device
+          <Share className="mr-2 h-4 w-4" /> {t('share.viaDevice')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
