@@ -1,6 +1,6 @@
 import { getDb } from '..';
 import { users, articles, comments, reactions, articleViews } from '../schema';
-import { eq, and, or, ilike, count, desc, asc, isNull, ne, gte } from 'drizzle-orm';
+import { eq, and, or, ilike, count, desc, asc, isNull, ne, gte, inArray } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { authConfig } from '@/config';
 
@@ -293,6 +293,139 @@ export class UserRepository {
         createdAt: users.createdAt,
       })
       .from(users);
+  }
+
+  /**
+   * Get users who have published articles (more efficient for leaderboard)
+   */
+  async getActiveUsersForLeaderboard() {
+    const db = getDb();
+    return await db
+      .selectDistinct({
+        id: users.id,
+        name: users.name,
+        avatar: users.avatar,
+        email: users.email,
+        role: users.role,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .innerJoin(articles, eq(articles.authorId, users.id))
+      .where(and(eq(articles.published, true), isNull(articles.deletedAt)));
+  }
+
+  /**
+   * Batch get user statistics for multiple users
+   */
+  async getBatchUserStats(userIds: string[], startDate?: Date | null) {
+    const db = getDb();
+
+    // Build date conditions
+    const dateConditions = startDate ? [gte(articles.createdAt, startDate)] : [];
+    const viewDateConditions = startDate ? [gte(articleViews.createdAt, startDate)] : [];
+
+    // Batch queries for all users at once
+    const [articleCounts, likeCounts, dislikeCounts, commentCounts, viewCounts] = await Promise.all(
+      [
+        // Articles count per user
+        db
+          .select({ authorId: articles.authorId, count: count() })
+          .from(articles)
+          .where(
+            and(
+              eq(articles.published, true),
+              ...dateConditions,
+              inArray(articles.authorId, userIds)
+            )
+          )
+          .groupBy(articles.authorId),
+
+        // Likes count per user
+        db
+          .select({ authorId: articles.authorId, count: count() })
+          .from(reactions)
+          .innerJoin(articles, eq(reactions.articleId, articles.id))
+          .where(
+            and(
+              eq(reactions.type, 'like'),
+              isNull(reactions.commentId),
+              eq(articles.published, true),
+              ...dateConditions,
+              inArray(articles.authorId, userIds)
+            )
+          )
+          .groupBy(articles.authorId),
+
+        // Dislikes count per user
+        db
+          .select({ authorId: articles.authorId, count: count() })
+          .from(reactions)
+          .innerJoin(articles, eq(reactions.articleId, articles.id))
+          .where(
+            and(
+              eq(reactions.type, 'unlike'),
+              isNull(reactions.commentId),
+              eq(articles.published, true),
+              ...dateConditions,
+              inArray(articles.authorId, userIds)
+            )
+          )
+          .groupBy(articles.authorId),
+
+        // Comments count per user (comments on their articles)
+        db
+          .select({ authorId: articles.authorId, count: count() })
+          .from(comments)
+          .innerJoin(articles, eq(comments.articleId, articles.id))
+          .where(
+            and(
+              eq(articles.published, true),
+              ...dateConditions,
+              inArray(articles.authorId, userIds)
+            )
+          )
+          .groupBy(articles.authorId),
+
+        // Views count per user
+        db
+          .select({ authorId: articles.authorId, count: count() })
+          .from(articleViews)
+          .innerJoin(articles, eq(articleViews.articleId, articles.id))
+          .where(
+            and(
+              eq(articles.published, true),
+              ...viewDateConditions,
+              inArray(articles.authorId, userIds)
+            )
+          )
+          .groupBy(articles.authorId),
+      ]
+    );
+
+    // Convert to maps for fast lookup
+    const toMap = (rows: { authorId: string; count: number }[]) => {
+      const map = new Map<string, number>();
+      for (const row of rows) {
+        map.set(row.authorId, Number(row.count) || 0);
+      }
+      return map;
+    };
+
+    const articlesMap = toMap(articleCounts);
+    const likesMap = toMap(likeCounts);
+    const dislikesMap = toMap(dislikeCounts);
+    const commentsMap = toMap(commentCounts);
+    const viewsMap = toMap(viewCounts);
+
+    // Return stats for each user
+    return userIds.map((userId) => ({
+      userId,
+      posts: articlesMap.get(userId) || 0,
+      likes: likesMap.get(userId) || 0,
+      dislikes: dislikesMap.get(userId) || 0,
+      comments: commentsMap.get(userId) || 0,
+      views: viewsMap.get(userId) || 0,
+    }));
   }
 
   /**

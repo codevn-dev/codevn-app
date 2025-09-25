@@ -16,12 +16,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { apiGet } from '@/lib/utils';
-import { LeaderboardResponse, LeaderboardEntry } from '@/types/shared/user';
+import { LeaderboardEntry } from '@/types/shared/user';
 import { useI18n } from '@/components/providers';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useChat } from '@/components/features/chat/chat-context';
-import { useUIStore } from '@/stores/ui-store';
+import { useUIStore, useLeaderboardStore } from '@/stores';
 import { useRouter } from 'next/navigation';
 
 interface LeaderboardProps {
@@ -36,8 +35,10 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
   const { handleStartChat } = useChat();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const router = useRouter();
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const { fetchLeaderboard, getCachedData } = useLeaderboardStore();
+
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('7d');
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
@@ -46,33 +47,38 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
   const fetchLimit = typeof limit === 'number' ? limit : isPageVariant ? 100 : 10;
   const onTimeframeClick = (tf: '7d' | '30d' | '90d' | '1y' | 'all') => {
     if (tf === timeframe) return;
-    setIsLoading(true); // show skeleton immediately
-    setError(null);
-    setLeaderboard([]); // avoid flashing old data
     setTimeframe(tf);
   };
 
-  const fetchLeaderboard = useCallback(
+  const loadLeaderboard = useCallback(
     async (selectedTimeframe: '7d' | '30d' | '90d' | '1y' | 'all') => {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await apiGet<LeaderboardResponse>(
-          `/api/users/leaderboard?timeframe=${selectedTimeframe}&limit=${fetchLimit}`
-        );
-        setLeaderboard(response.leaderboard);
+
+        // Check cache first
+        const cachedData = getCachedData(selectedTimeframe, fetchLimit);
+        if (cachedData) {
+          setLeaderboard(cachedData);
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch from API (will be cached by the store)
+        const data = await fetchLeaderboard(selectedTimeframe, fetchLimit);
+        setLeaderboard(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
       } finally {
         setIsLoading(false);
       }
     },
-    [fetchLimit]
+    [fetchLimit, fetchLeaderboard, getCachedData]
   );
 
   useEffect(() => {
-    fetchLeaderboard(timeframe);
-  }, [timeframe, fetchLeaderboard]);
+    loadLeaderboard(timeframe);
+  }, [timeframe, loadLeaderboard]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -217,7 +223,7 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
           ) : error ? (
             <div className="text-center">
               <p className="mb-4 text-red-600">{error}</p>
-              <Button onClick={() => fetchLeaderboard(timeframe)} size="sm">
+              <Button onClick={() => loadLeaderboard(timeframe)} size="sm">
                 {t('leaderboard.tryAgain')}
               </Button>
             </div>

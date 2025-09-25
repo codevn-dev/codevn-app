@@ -2,7 +2,7 @@ import { WebSocket } from 'ws';
 import { FastifyRequest } from 'fastify';
 import { commentRepository } from '../database/repository';
 import { logger } from '@/lib/utils/logger';
-import { verifyToken } from '../middleware/jwt';
+import { getUserFromToken } from '../middleware/jwt';
 import { BaseWebSocketService, BaseConnection } from './base';
 
 interface CommentConnection extends BaseConnection {}
@@ -201,9 +201,9 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
       if (token) {
         // Verify token if provided. If invalid or throws, proceed as anonymous.
         try {
-          const payload = await verifyToken(token);
-          if (payload && payload.id) {
-            userId = payload.id;
+          const user = await getUserFromToken(token);
+          if (user && user.id) {
+            userId = user.id;
           } else {
             logger.warn('Comment WebSocket proceeding as anonymous: Invalid token');
           }

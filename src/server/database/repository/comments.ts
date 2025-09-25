@@ -1,6 +1,6 @@
 import { getDb } from '..';
 import { comments, reactions } from '../schema';
-import { eq, and, desc, asc, count, sql, isNull } from 'drizzle-orm';
+import { eq, and, desc, asc, count, sql, isNull, inArray } from 'drizzle-orm';
 import { Comment as SharedComment } from '@/types/shared/comment';
 
 export interface CommentFilters {
@@ -100,54 +100,92 @@ export class CommentRepository {
       offset,
     });
 
-    // Add reply count, like/unlike counts, and user status for each comment
-    const commentsWithCounts: SharedComment[] = await Promise.all(
-      commentsData.map(async (comment) => {
-        const [replyCount, likeCount, unlikeCount, userHasLiked, userHasUnliked] =
-          await Promise.all([
-            this.getCommentCountByParent(articleId, comment.id),
-            getDb()
-              .select({ count: count() })
-              .from(reactions)
-              .where(and(eq(reactions.commentId, comment.id), eq(reactions.type, 'like'))),
-            getDb()
-              .select({ count: count() })
-              .from(reactions)
-              .where(and(eq(reactions.commentId, comment.id), eq(reactions.type, 'unlike'))),
-            userId
-              ? getDb().query.reactions.findFirst({
-                  where: and(
-                    eq(reactions.commentId, comment.id),
-                    eq(reactions.userId, userId),
-                    eq(reactions.type, 'like')
-                  ),
-                })
-              : null,
-            userId
-              ? getDb().query.reactions.findFirst({
-                  where: and(
-                    eq(reactions.commentId, comment.id),
-                    eq(reactions.userId, userId),
-                    eq(reactions.type, 'unlike')
-                  ),
-                })
-              : null,
-          ]);
+    // Batch reply/like/unlike counts and user reaction flags to avoid N+1
+    const commentIds = commentsData.map((c) => c.id);
 
-        return {
-          ...comment,
-          replyCount,
-          likeCount: likeCount[0]?.count || 0,
-          unlikeCount: unlikeCount[0]?.count || 0,
-          userHasLiked: !!userHasLiked,
-          userHasUnliked: !!userHasUnliked,
-          _count: {
-            replies: replyCount,
-            likes: likeCount[0]?.count || 0,
-          },
-        } as unknown as SharedComment;
-      })
-    );
+    const [likeCountsRows, unlikeCountsRows, userLikedRows, userUnlikedRows] = await Promise.all([
+      getDb()
+        .select({ commentId: reactions.commentId, count: count() })
+        .from(reactions)
+        .where(and(inArray(reactions.commentId, commentIds), eq(reactions.type, 'like')))
+        .groupBy(reactions.commentId),
+      getDb()
+        .select({ commentId: reactions.commentId, count: count() })
+        .from(reactions)
+        .where(and(inArray(reactions.commentId, commentIds), eq(reactions.type, 'unlike')))
+        .groupBy(reactions.commentId),
+      userId
+        ? getDb()
+            .select({ commentId: reactions.commentId })
+            .from(reactions)
+            .where(
+              and(
+                inArray(reactions.commentId, commentIds),
+                eq(reactions.userId, userId),
+                eq(reactions.type, 'like')
+              )
+            )
+        : Promise.resolve([]),
+      userId
+        ? getDb()
+            .select({ commentId: reactions.commentId })
+            .from(reactions)
+            .where(
+              and(
+                inArray(reactions.commentId, commentIds),
+                eq(reactions.userId, userId),
+                eq(reactions.type, 'unlike')
+              )
+            )
+        : Promise.resolve([]),
+    ]);
+
+    const toCountMap = (
+      rows: { commentId: string; count: number }[],
+      key: 'commentId' | 'parentId' = 'commentId'
+    ) => {
+      const map = new Map<string, number>();
+      for (const r of rows as any[]) {
+        const id = (r as any)[key] as string;
+        map.set(id, Number(r.count) || 0);
+      }
+      return map;
+    };
+    // Compute replies by counting children per parent among the fetched ids
+    const repliesCountMap = new Map<string, number>();
+    {
+      const rows = await getDb()
+        .select({ parentId: comments.parentId, count: count() })
+        .from(comments)
+        .where(and(eq(comments.articleId, articleId)))
+        .groupBy(comments.parentId);
+      for (const r of rows as any[]) {
+        if (!r.parentId) continue;
+        repliesCountMap.set(r.parentId as string, Number(r.count) || 0);
+      }
+    }
+    const likesMap = toCountMap(likeCountsRows as any);
+    const unlikesMap = toCountMap(unlikeCountsRows as any);
+    const userLikedSet = new Set((userLikedRows as any[]).map((r) => r.commentId));
+    const userUnlikedSet = new Set((userUnlikedRows as any[]).map((r) => r.commentId));
+
+    const commentsWithCounts: SharedComment[] = commentsData.map((comment) => {
+      const replyCount = repliesCountMap.get(comment.id) || 0;
+      const likeCount = likesMap.get(comment.id) || 0;
+      const unlikeCount = unlikesMap.get(comment.id) || 0;
+      return {
+        ...comment,
+        replyCount,
+        likeCount,
+        unlikeCount,
+        userHasLiked: userId ? userLikedSet.has(comment.id) : false,
+        userHasUnliked: userId ? userUnlikedSet.has(comment.id) : false,
+        _count: {
+          replies: replyCount,
+          likes: likeCount,
+        },
+      } as unknown as SharedComment;
+    });
 
     return {
       comments: commentsWithCounts,

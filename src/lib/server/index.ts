@@ -18,6 +18,12 @@ export function getRedis(): Redis {
       lazyConnect: false,
       maxRetriesPerRequest: 3,
       enableReadyCheck: true,
+      // Performance optimizations
+      connectTimeout: 10000,
+      commandTimeout: 5000,
+      // Connection pooling
+      family: 4, // IPv4
+      keepAlive: 30000, // 30 seconds
     });
   }
   return redisClient;

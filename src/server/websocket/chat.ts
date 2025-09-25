@@ -2,7 +2,7 @@ import { WebSocket } from 'ws';
 import { FastifyRequest } from 'fastify';
 import { messageRepository } from '../database/repository';
 import { logger } from '@/lib/utils/logger';
-import { verifyToken } from '../middleware/jwt';
+import { getUserFromToken } from '../middleware/jwt';
 import { BaseWebSocketService, BaseConnection } from './base';
 
 interface ChatConnection extends BaseConnection {
@@ -227,15 +227,15 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
         return;
       }
 
-      // Verify token
-      const payload = await verifyToken(token);
-      if (!payload) {
+      // Verify token using same method as HTTP routes
+      const user = await getUserFromToken(token);
+      if (!user) {
         logger.warn('WebSocket connection rejected: Invalid token');
         socket.close(1008, 'Invalid token');
         return;
       }
 
-      const userId = payload.id;
+      const userId = user.id;
 
       const connectionId = this.generateConnectionId();
       const connection: ChatConnection = { userId, socket, isAlive: true };

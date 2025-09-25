@@ -3,6 +3,7 @@ import { BaseService } from './base';
 import { CreateCategoryRequest, UpdateCategoryRequest, Category } from '@/types/shared/category';
 import { UpdateUserRoleRequest, UserListResponse } from '@/types/shared/user';
 import { SuccessResponse } from '@/types/shared/common';
+import { getRedis } from '@/lib/server';
 
 export class AdminService extends BaseService {
   /**
@@ -182,6 +183,12 @@ export class AdminService extends BaseService {
         createdById: currentUserId,
       });
 
+      // Invalidate categories cache
+      try {
+        const redis = getRedis();
+        await redis.del('categories:all');
+      } catch {}
+
       return newCategory[0] as unknown as Category;
     } catch (error: any) {
       // Handle duplicate key constraint errors
@@ -249,6 +256,12 @@ export class AdminService extends BaseService {
         parentId: parentId || null,
       });
 
+      // Invalidate categories cache
+      try {
+        const redis = getRedis();
+        await redis.del('categories:all');
+      } catch {}
+
       return updatedCategory[0] as unknown as Category;
     } catch (error: any) {
       // Handle duplicate key constraint errors
@@ -308,8 +321,45 @@ export class AdminService extends BaseService {
       // Delete category
       await categoryRepository.delete(categoryId);
 
+      // Invalidate categories cache
+      try {
+        const redis = getRedis();
+        await redis.del('categories:all');
+      } catch {}
+
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
+      // Handle specific database constraint violations
+      if (error?.cause?.code === '23503') {
+        // Foreign key constraint violation
+        const constraintName = error?.cause?.constraint_name;
+
+        if (constraintName?.includes('articles')) {
+          throw new Error(
+            'Cannot delete category because it has associated articles. Please move or delete the articles first.'
+          );
+        } else if (constraintName?.includes('categories')) {
+          throw new Error(
+            'Cannot delete category because it has child categories. Please delete child categories first.'
+          );
+        } else {
+          throw new Error(
+            'Cannot delete category due to database relationships. Please check for associated data.'
+          );
+        }
+      }
+
+      // Handle other database errors
+      if (error?.cause?.code === '23505') {
+        throw new Error('Category deletion failed due to database constraints.');
+      }
+
+      // Re-throw custom error messages
+      if (error.message && !error.message.includes('Database operation failed')) {
+        throw error;
+      }
+
+      // Handle generic database errors
       this.handleError(error, 'Delete category');
     }
   }

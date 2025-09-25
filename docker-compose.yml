@@ -110,6 +110,18 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
+  redisinsight:
+    image: redis/redisinsight:2.70
+    container_name: codevn-redisinsight
+    env_file: .env
+    ports:
+      - '5540:5540'
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - redisinsight_data:/data
+
   nginx:
     image: nginx:1.29-alpine
     container_name: codevn-nginx
@@ -137,3 +149,4 @@ volumes:
   postgres_data:
   pgadmin_data:
   redis_data:
+  redisinsight_data:

@@ -1,11 +1,14 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { verifyToken, extractTokenFromHeader } from './jwt';
+import { extractTokenFromHeader, getUserFromToken } from './jwt';
 import { logger } from '@/lib/utils/logger';
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user?: {
     id: string;
     email: string;
+    name: string;
+    avatar?: string | null;
+    role: 'user' | 'admin';
   };
 }
 
@@ -24,16 +27,19 @@ export async function authMiddleware(request: FastifyRequest, reply: FastifyRepl
       return reply.status(401).send({ error: 'Unauthorized' });
     }
 
-    // Use Redis-verified token validation
-    const payload = await verifyToken(token);
-    if (!payload) {
+    // Use Redis-verified token validation with cached user data
+    const user = await getUserFromToken(token);
+    if (!user) {
       return reply.status(401).send({ error: 'Invalid or expired token' });
     }
 
-    // Attach minimal user info to request (id, email, and role from JWT)
+    // Attach user info to request (from Redis cache)
     (request as AuthenticatedRequest).user = {
-      id: payload.id,
-      email: payload.email,
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatar: user.avatar,
+      role: user.role,
     };
   } catch (error) {
     logger.error('Auth middleware error', undefined, error as Error);
@@ -56,13 +62,16 @@ export async function optionalAuthMiddleware(
     }
 
     if (token) {
-      // Use Redis-verified token validation
-      const payload = await verifyToken(token);
-      if (payload) {
-        // Attach minimal user info to request if token is valid
+      // Use Redis-verified token validation with cached user data
+      const user = await getUserFromToken(token);
+      if (user) {
+        // Attach user info to request if token is valid
         (request as AuthenticatedRequest).user = {
-          id: payload.id,
-          email: payload.email,
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          role: user.role,
         };
       }
     }

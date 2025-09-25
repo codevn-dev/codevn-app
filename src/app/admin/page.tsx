@@ -118,7 +118,7 @@ function AdminPageContent() {
         });
       } else if (activeTab === 'categories') {
         // Only fetch categories data when on categories tab
-        const categoriesData = await apiGet<Category[]>('/api/admin/categories');
+        const categoriesData = await apiGet<Category[]>('/api/categories');
         setCategories(categoriesData);
       }
     } catch {
@@ -179,7 +179,7 @@ function AdminPageContent() {
     setCategoryError(null);
 
     try {
-      const _res = await apiPost<Category>('/api/admin/categories', categoryForm);
+      const _res = await apiPost<Category>('/api/categories', categoryForm);
       setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
       setShowCategoryForm(false);
       setCategoryError(null);
@@ -218,7 +218,7 @@ function AdminPageContent() {
     setCategoryError(null);
 
     try {
-      const _res = await apiPut<Category>('/api/admin/categories', {
+      const _res = await apiPut<Category>('/api/categories', {
         id: editingCategory.id,
         ...categoryForm,
       });
@@ -246,12 +246,15 @@ function AdminPageContent() {
     setDeleteError(null);
 
     try {
-      const _res = await apiDelete<SuccessResponse>(`/api/admin/categories?id=${category.id}`);
+      const _res = await apiDelete<SuccessResponse>(`/api/categories?id=${category.id}`);
       setShowDeleteConfirm(null);
       setDeleteError(null);
       fetchData();
-    } catch {
-      setDeleteError('Network error. Please try again.');
+    } catch (error: any) {
+      // Display specific error message from server
+      const errorMessage =
+        error?.response?.data?.error || error?.message || 'Network error. Please try again.';
+      setDeleteError(errorMessage);
     } finally {
       setIsDeleting(false);
     }

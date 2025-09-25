@@ -2,6 +2,7 @@ import { userRepository } from '../database/repository';
 import { maskUserEmail, isAdmin } from '@/lib/utils';
 import { BaseService } from './base';
 import { UserResponse } from '@/types/shared/user';
+import { getRedis } from '@/lib/server';
 
 export class UsersService extends BaseService {
   /**
@@ -82,55 +83,73 @@ export class UsersService extends BaseService {
   }
 
   /**
-   * Get user statistics for leaderboard
-   */
-  private async getUserStatsForLeaderboard(userId: string, startDate?: Date | null) {
-    const [posts, likes, dislikes, comments, views] = await Promise.all([
-      userRepository.getUserArticleCount(userId, startDate),
-      userRepository.getUserLikesCount(userId, startDate),
-      userRepository.getUserDislikesCount(userId, startDate),
-      userRepository.getUserCommentsCount(userId, startDate),
-      userRepository.getUserViewsCount(userId, startDate),
-    ]);
-
-    const stats = { posts, likes, dislikes, comments, views };
-    const score = this.calculateScore(stats);
-
-    return { ...stats, score };
-  }
-
-  /**
-   * Get leaderboard data
+   * Get leaderboard data (optimized with batched queries and Redis caching)
    */
   async getLeaderboard(timeframe: '7d' | '30d' | '90d' | '1y' | 'all' = '7d', limit: number = 10) {
     try {
       const startDate = this.getDateFilter(timeframe);
+      const cacheKey = `leaderboard:${timeframe}:${limit}`;
 
-      // Get all users
-      const users = await userRepository.getAllUsersForLeaderboard();
+      // Try to get from Redis cache first
+      try {
+        const redis = getRedis();
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return JSON.parse(cached);
+        }
+      } catch {
+        // If Redis fails, continue without cache
+      }
 
-      // Calculate statistics for each user
-      const leaderboardData = await Promise.all(
-        users.map(async (user) => {
-          const stats = await this.getUserStatsForLeaderboard(user.id, startDate);
+      // Get only users who have published articles (more efficient)
+      const users = await userRepository.getActiveUsersForLeaderboard();
+
+      if (users.length === 0) {
+        return { leaderboard: [] };
+      }
+
+      // Extract user IDs for batch processing
+      const userIds = users.map((user) => user.id);
+
+      // Get all user stats in batched queries (much faster than N+1)
+      const batchStats = await userRepository.getBatchUserStats(userIds, startDate);
+
+      // Create a map for fast lookup
+      const statsMap = new Map();
+      batchStats.forEach((stat) => {
+        const score = this.calculateScore({
+          posts: stat.posts,
+          likes: stat.likes,
+          dislikes: stat.dislikes,
+          comments: stat.comments,
+          views: stat.views,
+        });
+        statsMap.set(stat.userId, {
+          posts: stat.posts,
+          likes: stat.likes,
+          dislikes: stat.dislikes,
+          comments: stat.comments,
+          views: stat.views,
+          score,
+        });
+      });
+
+      // Build leaderboard data
+      const leaderboardData = users
+        .map((user) => {
+          const stats = statsMap.get(user.id);
+          if (!stats) return null;
 
           return {
-            user: {
-              id: user.id,
-              name: user.name,
-              avatar: user.avatar,
-              email: user.email,
-              role: user.role,
-              createdAt: user.createdAt,
-            },
+            user,
             stats,
           };
         })
-      );
+        .filter(Boolean); // Remove null entries
 
       // Apply business logic: filter, sort, and limit
       const filteredAndSorted = leaderboardData
-        .filter((item) => item.stats.score > 0) // Only include users with positive scores
+        .filter((item): item is NonNullable<typeof item> => item !== null && item.stats.score > 0) // Only include users with positive scores
         .sort((a, b) => b.stats.score - a.stats.score) // Sort by score descending
         .slice(0, limit); // Limit results
 
@@ -140,7 +159,19 @@ export class UsersService extends BaseService {
         user: maskUserEmail(item.user),
       }));
 
-      return { leaderboard: maskedData };
+      const result = { leaderboard: maskedData };
+
+      // Cache the result in Redis
+      try {
+        const redis = getRedis();
+        const cacheTTL = 600; // 10 minutes cache
+        await redis.setex(cacheKey, cacheTTL, JSON.stringify(result));
+      } catch (error) {
+        // If Redis fails, continue without caching
+        console.warn('Failed to cache leaderboard:', error);
+      }
+
+      return result;
     } catch (error) {
       this.handleError(error, 'Get leaderboard');
     }

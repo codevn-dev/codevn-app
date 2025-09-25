@@ -5,6 +5,9 @@ import { RedisAuthService } from '../redis';
 export interface JWTPayload {
   id: string;
   email: string;
+  name: string;
+  avatar?: string | null;
+  role: 'user' | 'admin';
   iat?: number;
   exp?: number;
 }
@@ -21,12 +24,15 @@ export async function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): P
     expiresIn: config.auth.maxAge,
   });
 
-  // Store minimal data in Redis (only id and email)
+  // Store user data in Redis for fast access
   if (redisService) {
     try {
       const redisPayload = {
         id: payload.id,
         email: payload.email,
+        name: payload.name,
+        avatar: payload.avatar,
+        role: payload.role,
       };
       await redisService.storeToken(token, redisPayload);
     } catch (error) {
@@ -73,4 +79,33 @@ export function extractTokenFromHeader(authHeader?: string): string | null {
     return null;
   }
   return authHeader.substring(7);
+}
+
+export async function getUserFromToken(token: string): Promise<JWTPayload | null> {
+  try {
+    // First verify JWT signature and expiration
+    const payload = jwt.verify(token, config.auth.secret) as JWTPayload;
+
+    // Then check if token exists in Redis and get cached user data
+    if (redisService) {
+      const cachedUser = await redisService.getToken(token);
+      if (!cachedUser) {
+        return null; // Token was revoked
+      }
+      // Return cached user data (more up-to-date than JWT payload)
+      return {
+        id: cachedUser.id,
+        email: cachedUser.email,
+        name: cachedUser.name,
+        avatar: cachedUser.avatar,
+        role: cachedUser.role,
+        iat: payload.iat,
+        exp: payload.exp,
+      };
+    }
+
+    return payload;
+  } catch {
+    return null;
+  }
 }

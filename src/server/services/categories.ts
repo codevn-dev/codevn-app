@@ -1,6 +1,7 @@
 import { categoryRepository } from '../database/repository';
 import { BaseService } from './base';
 import { Category } from '@/types/shared/category';
+import { getRedis } from '@/lib/server';
 
 export class CategoriesService extends BaseService {
   /**
@@ -8,6 +9,19 @@ export class CategoriesService extends BaseService {
    */
   async getCategories(): Promise<Category[]> {
     try {
+      const redis = getRedis();
+      const cacheKey = 'categories:all';
+
+      // Try cache first
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return JSON.parse(cached) as Category[];
+        }
+      } catch {
+        // ignore cache read errors
+      }
+
       const rootCategories = await categoryRepository.findAllWithCounts();
       const response = rootCategories.map((category: any) => {
         const { createdById, /* createdByName, */ ...categoryWithoutFlatFields } = category;
@@ -33,6 +47,14 @@ export class CategoriesService extends BaseService {
           }),
         };
       }) as unknown as Category[];
+      // Store in cache (best-effort)
+      try {
+        const cacheTTL = 3600; // 60 minutes
+        await redis.setex(cacheKey, cacheTTL, JSON.stringify(response));
+      } catch {
+        // ignore cache write errors
+      }
+
       return response;
     } catch (error) {
       this.handleError(error, 'Get categories');

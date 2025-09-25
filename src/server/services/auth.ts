@@ -193,11 +193,25 @@ export class AuthService extends BaseService {
   }
 
   /**
-   * Get current user profile
+   * Get current user profile (optimized - uses cached data from middleware)
    */
-  async getCurrentUser(userId: string): Promise<UserResponse> {
+  async getCurrentUser(userId: string, cachedUser?: any): Promise<UserResponse> {
     try {
-      // Get fresh user data from database
+      // If we have cached user data from middleware, use it (much faster)
+      if (cachedUser) {
+        return {
+          user: {
+            id: cachedUser.id,
+            email: cachedUser.email,
+            name: cachedUser.name,
+            avatar: cachedUser.avatar || undefined,
+            role: cachedUser.role,
+            createdAt: new Date().toISOString(), // Use current time as fallback
+          },
+        };
+      }
+
+      // Fallback to database query (slower but ensures fresh data)
       const user = await userRepository.findById(userId);
       if (!user) {
         throw new Error('User not found');
