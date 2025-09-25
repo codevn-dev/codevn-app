@@ -19,6 +19,7 @@ import {
   UserPlus,
   Menu as MenuIcon,
   X as CloseIcon,
+  Trophy,
 } from 'lucide-react';
 import { useFastifyAuthStore, useUIStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -87,6 +88,10 @@ export function Navigation() {
     }
   };
 
+  const handleLeaderboardClick = () => {
+    router.push('/leaderboard');
+  };
+
   return (
     <>
       <nav className="fixed top-0 right-0 left-0 z-50 transform-gpu bg-white/80 shadow-lg backdrop-blur-md [will-change:transform] [backface-visibility:hidden]">
@@ -119,12 +124,18 @@ export function Navigation() {
                     {t('nav.articles')}
                   </Button>
 
+                  <Button variant="back" size="sm" onClick={handleLeaderboardClick}>
+                    <Trophy className="mr-2 h-4 w-4" />
+                    {t('leaderboard.title')}
+                  </Button>
+
                   {isAdmin(user.role) && (
                     <Button variant="back" size="sm" onClick={() => router.push('/admin')}>
                       <Settings className="mr-2 h-4 w-4" />
                       {t('nav.admin')}
                     </Button>
                   )}
+
                   <LanguageSwitcher />
 
                   <div className="flex items-center gap-2">
@@ -164,6 +175,10 @@ export function Navigation() {
                 </>
               ) : (
                 <>
+                  <Button variant="back" size="sm" onClick={handleLeaderboardClick}>
+                    <Trophy className="mr-2 h-4 w-4" />
+                    {t('leaderboard.title')}
+                  </Button>
                   <Button
                     variant="back"
                     size="sm"
@@ -229,6 +244,31 @@ export function Navigation() {
               >
                 <FileText className="mr-2 h-4 w-4" /> {t('nav.articles')}
               </button>
+              <button
+                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                onClick={() => {
+                  setIsMobileOpen(false);
+                  router.push('/leaderboard');
+                }}
+              >
+                <svg
+                  className="mr-2 h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M8 21h8" />
+                  <path d="M12 17v4" />
+                  <path d="M7 4h10" />
+                  <path d="M17 4v8a5 5 0 0 1-10 0V4" />
+                  <path d="M3 4h4v4a2 2 0 0 1-2 2H3z" />
+                  <path d="M17 4h4v4a2 2 0 0 1-2 2h-2z" />
+                </svg>
+                {t('leaderboard.title')}
+              </button>
               {isAdmin(user.role) && (
                 <button
                   className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
@@ -261,6 +301,31 @@ export function Navigation() {
             </>
           ) : (
             <>
+              <button
+                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                onClick={() => {
+                  setIsMobileOpen(false);
+                  router.push('/leaderboard');
+                }}
+              >
+                <svg
+                  className="mr-2 h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M8 21h8" />
+                  <path d="M12 17v4" />
+                  <path d="M7 4h10" />
+                  <path d="M17 4v8a5 5 0 0 1-10 0V4" />
+                  <path d="M3 4h4v4a2 2 0 0 1-2 2H3z" />
+                  <path d="M17 4h4v4a2 2 0 0 1-2 2h-2z" />
+                </svg>
+                {t('leaderboard.title')}
+              </button>
               <button
                 className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
                 onClick={() => {

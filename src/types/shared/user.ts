@@ -54,3 +54,22 @@ export interface UserListResponse {
 export interface UserResponse {
   user: User;
 }
+
+// Leaderboard types
+export interface LeaderboardStats {
+  posts: number;
+  likes: number;
+  dislikes: number;
+  comments: number;
+  views: number;
+  score: number;
+}
+
+export interface LeaderboardEntry {
+  user: User;
+  stats: LeaderboardStats;
+}
+
+export interface LeaderboardResponse {
+  leaderboard: LeaderboardEntry[];
+}

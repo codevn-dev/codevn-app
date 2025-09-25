@@ -1,6 +1,6 @@
 import { getDb } from '..';
-import { users, articles, comments, reactions } from '../schema';
-import { eq, and, or, ilike, count, desc, asc, isNull, ne } from 'drizzle-orm';
+import { users, articles, comments, reactions, articleViews } from '../schema';
+import { eq, and, or, ilike, count, desc, asc, isNull, ne, gte } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { authConfig } from '@/config';
 
@@ -276,6 +276,132 @@ export class UserRepository {
       totalDislikes: totalDislikes[0]?.count || 0,
       totalComments: totalComments[0]?.count || 0,
     };
+  }
+
+  /**
+   * Get all users with basic info for leaderboard
+   */
+  async getAllUsersForLeaderboard() {
+    const db = getDb();
+    return await db
+      .select({
+        id: users.id,
+        name: users.name,
+        avatar: users.avatar,
+        email: users.email,
+        role: users.role,
+        createdAt: users.createdAt,
+      })
+      .from(users);
+  }
+
+  /**
+   * Get user's article count within a date range
+   */
+  async getUserArticleCount(userId: string, startDate?: Date | null) {
+    const db = getDb();
+    const conditions = [eq(articles.authorId, userId), eq(articles.published, true)];
+
+    if (startDate) {
+      conditions.push(gte(articles.createdAt, startDate));
+    }
+
+    const result = await db
+      .select({ count: count() })
+      .from(articles)
+      .where(and(...conditions));
+
+    return result[0]?.count || 0;
+  }
+
+  /**
+   * Get user's likes count within a date range
+   */
+  async getUserLikesCount(userId: string, startDate?: Date | null) {
+    const db = getDb();
+    const conditions = [
+      eq(articles.authorId, userId),
+      eq(reactions.type, 'like'),
+      isNull(reactions.commentId),
+      eq(articles.published, true),
+    ];
+
+    if (startDate) {
+      conditions.push(gte(articles.createdAt, startDate));
+    }
+
+    const result = await db
+      .select({ count: count() })
+      .from(reactions)
+      .innerJoin(articles, eq(reactions.articleId, articles.id))
+      .where(and(...conditions));
+
+    return result[0]?.count || 0;
+  }
+
+  /**
+   * Get user's dislikes count within a date range
+   */
+  async getUserDislikesCount(userId: string, startDate?: Date | null) {
+    const db = getDb();
+    const conditions = [
+      eq(articles.authorId, userId),
+      eq(reactions.type, 'unlike'),
+      isNull(reactions.commentId),
+      eq(articles.published, true),
+    ];
+
+    if (startDate) {
+      conditions.push(gte(articles.createdAt, startDate));
+    }
+
+    const result = await db
+      .select({ count: count() })
+      .from(reactions)
+      .innerJoin(articles, eq(reactions.articleId, articles.id))
+      .where(and(...conditions));
+
+    return result[0]?.count || 0;
+  }
+
+  /**
+   * Get user's comments count within a date range
+   */
+  async getUserCommentsCount(userId: string, startDate?: Date | null) {
+    const db = getDb();
+    const conditions = [eq(articles.authorId, userId), eq(articles.published, true)];
+
+    if (startDate) {
+      conditions.push(gte(articles.createdAt, startDate));
+    }
+
+    const result = await db
+      .select({ count: count() })
+      .from(comments)
+      .innerJoin(articles, eq(comments.articleId, articles.id))
+      .where(and(...conditions));
+
+    return result[0]?.count || 0;
+  }
+
+  /**
+   * Get user's views count within a date range
+   */
+  async getUserViewsCount(userId: string, startDate?: Date | null) {
+    const db = getDb();
+    const conditions = [eq(articles.authorId, userId), eq(articles.published, true)];
+
+    if (startDate) {
+      conditions.push(gte(articleViews.createdAt, startDate));
+    }
+
+    const result = await db
+      .select({ count: count() })
+      .from(articleViews)
+      .innerJoin(articles, eq(articleViews.articleId, articles.id))
+      .where(and(...conditions));
+
+    return result[0]?.count || 0;
   }
 }
 

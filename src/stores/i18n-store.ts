@@ -222,6 +222,18 @@ const store: Dictionary = {
   },
   'home.noMore': { en: 'No more articles to show', vi: 'Không còn bài viết để hiển thị' },
 
+  // Leaderboard
+  'leaderboard.title': { en: 'Leaderboard', vi: 'Bảng xếp hạng' },
+  'leaderboard.subtitle': {
+    en: 'See the most active members in the community',
+    vi: 'Xem những thành viên tích cực nhất trong cộng đồng',
+  },
+  'leaderboard.tryAgain': { en: 'Try Again', vi: 'Thử lại' },
+  'leaderboard.noData': {
+    en: 'No data available for this timeframe',
+    vi: 'Không có dữ liệu cho khoảng thời gian này',
+  },
+
   // Comments/Article Content
   'comments.showReplies': { en: 'Show replies', vi: 'Hiện trả lời' },
   'comments.writeReply': { en: 'Write a reply...', vi: 'Viết trả lời...' },

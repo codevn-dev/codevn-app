@@ -15,6 +15,7 @@ interface AvatarWithDropdownProps {
   size?: 'sm' | 'md' | 'lg';
   showName?: boolean;
   className?: string;
+  onContainerClick?: () => void;
 }
 
 export function AvatarWithDropdown({
@@ -22,6 +23,7 @@ export function AvatarWithDropdown({
   size = 'md',
   showName = false,
   className = '',
+  onContainerClick,
 }: AvatarWithDropdownProps) {
   const { user: currentUser, isAuthenticated } = useAuthState();
   const { handleStartChat } = useChat();
@@ -59,6 +61,13 @@ export function AvatarWithDropdown({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Expose toggle function to parent
+  useEffect(() => {
+    if (onContainerClick) {
+      onContainerClick();
+    }
+  }, [onContainerClick]);
 
   const handleChat = () => {
     if (!isAuthenticated) {
@@ -107,7 +116,7 @@ export function AvatarWithDropdown({
         </Button>
 
         {isOpen && (
-          <div className="shadow-brand/40 absolute top-full left-0 z-50 mt-2 w-40 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md">
+          <div className="shadow-brand/40 absolute top-full left-0 z-[100] mt-2 w-40 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md">
             <div className="py-1">
               {/* View Profile button for current user */}
               <div className="py-1">
@@ -147,7 +156,7 @@ export function AvatarWithDropdown({
       </Button>
 
       {isOpen && (
-        <div className="shadow-brand/40 absolute top-full left-0 z-50 mt-2 w-40 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md">
+        <div className="shadow-brand/40 absolute top-full left-0 z-[100] mt-2 w-40 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md">
           <div className="py-1">
             {/* View Profile button */}
             <div className="py-1">
