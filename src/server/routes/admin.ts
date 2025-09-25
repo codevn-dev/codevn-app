@@ -16,7 +16,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
         try {
           const authRequest = request as AuthenticatedRequest;
           const query = request.query as any;
-          const response = await adminService.getUsers(authRequest.user!.id, query);
+          const response = await adminService.getUsers(authRequest.user!, query);
           return reply.send(response);
         } catch {
           return reply.status(500).send({ error: 'Internal server error' });
@@ -34,7 +34,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
         try {
           const authRequest = request as AuthenticatedRequest;
           const body = request.body as UpdateUserRoleRequest;
-          const response = await adminService.updateUserRole(authRequest.user!.id, body);
+          const response = await adminService.updateUserRole(authRequest.user!, body);
           return reply.send(response);
         } catch {
           return reply.status(500).send({ error: 'Internal server error' });

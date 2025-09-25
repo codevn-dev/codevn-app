@@ -126,12 +126,29 @@ function ProfilePageContent() {
     setMessage('');
 
     try {
-      await apiPut<UserProfile>('/api/profile', {
+      const response = await apiPut<{ user: UserProfile }>('/api/profile', {
         name: profile.name,
       });
 
-      // Refresh profile data from API
-      await refreshProfileData();
+      // Update local state with response data (no need for additional API call)
+      const updatedUser = response.user;
+      updateUser({
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+      });
+
+      const updatedProfileData = {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role || 'user',
+        avatar: updatedUser.avatar,
+        createdAt: updatedUser.createdAt || new Date().toISOString(),
+        statistics: updatedUser.statistics,
+      };
+      setProfile(updatedProfileData);
+      setOriginalProfile(updatedProfileData);
 
       setMessage('Profile updated successfully');
     } catch (error) {

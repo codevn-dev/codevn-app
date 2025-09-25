@@ -24,7 +24,7 @@ export async function categoryRoutes(fastify: FastifyInstance) {
       try {
         const authRequest = request as AuthenticatedRequest;
         const body = request.body as CreateCategoryRequest;
-        const response = await adminService.createCategory(authRequest.user!.id, body);
+        const response = await adminService.createCategory(authRequest.user!, body);
         return reply.status(201).send(response);
       } catch (err: any) {
         const message = err?.message || 'Unable to create category. Please try again.';
@@ -43,7 +43,7 @@ export async function categoryRoutes(fastify: FastifyInstance) {
       try {
         const authRequest = request as AuthenticatedRequest;
         const body = request.body as UpdateCategoryRequest;
-        const response = await adminService.updateCategory(authRequest.user!.id, body);
+        const response = await adminService.updateCategory(authRequest.user!, body);
         return reply.send(response);
       } catch (err: any) {
         const message = err?.message || 'Unable to update category. Please try again.';
@@ -63,7 +63,7 @@ export async function categoryRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const query = request.query as any;
         const categoryId = query.id;
-        const response = await adminService.deleteCategory(authRequest.user!.id, categoryId);
+        const response = await adminService.deleteCategory(authRequest.user!, categoryId);
         return reply.send(response);
       } catch (err: any) {
         const message = err?.message || 'Unable to delete category. Please try again.';

@@ -4,6 +4,7 @@ import { CreateCategoryRequest, UpdateCategoryRequest, Category } from '@/types/
 import { UpdateUserRoleRequest, UserListResponse } from '@/types/shared/user';
 import { SuccessResponse } from '@/types/shared/common';
 import { getRedis } from '@/lib/server';
+import { createRedisAuthService } from '../redis';
 
 export class AdminService extends BaseService {
   /**
@@ -49,10 +50,9 @@ export class AdminService extends BaseService {
   /**
    * Get all users with pagination
    */
-  async getUsers(currentUserId: string, query: any): Promise<UserListResponse> {
+  async getUsers(currentUser: any, query: any): Promise<UserListResponse> {
     try {
-      const user = await userRepository.findById(currentUserId);
-      this.requireAdmin(user!);
+      this.requireAdmin(currentUser);
 
       const search = this.getSearchParam(query);
       const { sortBy: rawSortBy, sortOrder } = this.getSortParams(query, [
@@ -97,10 +97,9 @@ export class AdminService extends BaseService {
   /**
    * Update user role
    */
-  async updateUserRole(currentUserId: string, body: UpdateUserRoleRequest): Promise<any> {
+  async updateUserRole(currentUser: any, body: UpdateUserRoleRequest): Promise<any> {
     try {
-      const user = await userRepository.findById(currentUserId);
-      this.requireAdmin(user!);
+      this.requireAdmin(currentUser);
 
       const { userId, role } = body;
 
@@ -120,11 +119,16 @@ export class AdminService extends BaseService {
       }
 
       // Prevent admin from updating another admin's role
-      if (targetUser.role === 'admin' && targetUser.id !== currentUserId) {
+      if (targetUser.role === 'admin' && targetUser.id !== currentUser.id) {
         throw new Error('You cannot change the role of another admin');
       }
 
       const updatedUser = await userRepository.updateRole(userId, role as 'user' | 'admin');
+      
+      // Invalidate user profile cache to ensure fresh data on next fetch
+      const redis = createRedisAuthService();
+      await redis.deleteUserProfile(userId);
+      
       return updatedUser[0];
     } catch (error) {
       this.handleError(error, 'Update user role');
@@ -134,10 +138,9 @@ export class AdminService extends BaseService {
   /**
    * Get all categories for admin
    */
-  async getCategories(currentUserId: string): Promise<Category[]> {
+  async getCategories(currentUser: any): Promise<Category[]> {
     try {
-      const user = await userRepository.findById(currentUserId);
-      this.requireAdmin(user!);
+      this.requireAdmin(currentUser);
 
       const rootCategories = await categoryRepository.findAllForAdmin();
       return rootCategories as unknown as Category[];
@@ -149,10 +152,9 @@ export class AdminService extends BaseService {
   /**
    * Create category
    */
-  async createCategory(currentUserId: string, body: CreateCategoryRequest): Promise<Category> {
+  async createCategory(currentUser: any, body: CreateCategoryRequest): Promise<Category> {
     try {
-      const user = await userRepository.findById(currentUserId);
-      this.requireAdmin(user!);
+      this.requireAdmin(currentUser);
 
       const { name, description, color, parentId } = body;
 
@@ -180,7 +182,7 @@ export class AdminService extends BaseService {
         description,
         color,
         parentId,
-        createdById: currentUserId,
+        createdById: currentUser.id,
       });
 
       // Invalidate categories cache
@@ -211,10 +213,9 @@ export class AdminService extends BaseService {
   /**
    * Update category
    */
-  async updateCategory(currentUserId: string, body: UpdateCategoryRequest): Promise<Category> {
+  async updateCategory(currentUser: any, body: UpdateCategoryRequest): Promise<Category> {
     try {
-      const user = await userRepository.findById(currentUserId);
-      this.requireAdmin(user!);
+      this.requireAdmin(currentUser);
 
       const { id, name, description, color, parentId } = body;
 
@@ -284,10 +285,9 @@ export class AdminService extends BaseService {
   /**
    * Delete category
    */
-  async deleteCategory(currentUserId: string, categoryId: string): Promise<SuccessResponse> {
+  async deleteCategory(currentUser: any, categoryId: string): Promise<SuccessResponse> {
     try {
-      const user = await userRepository.findById(currentUserId);
-      this.requireAdmin(user!);
+      this.requireAdmin(currentUser);
 
       if (!categoryId) {
         throw new Error('Category ID is required');
