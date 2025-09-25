@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import { User, Mail, Save } from 'lucide-react';
+import { User, Mail } from 'lucide-react';
 import { useFastifyAuthStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly, MotionContainer } from '@/components/layout';
@@ -86,7 +86,6 @@ function ProfilePageContent() {
 
     return profile.name !== originalProfile.name;
   };
-
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,7 +213,6 @@ function ProfilePageContent() {
                   statistics={profile.statistics}
                 />
 
-
                 {message && (
                   <Card
                     className={`border ${
@@ -235,12 +233,13 @@ function ProfilePageContent() {
                 )}
 
                 <div className="flex justify-end pt-6">
-                  <Button type="submit" variant="primary" disabled={saving || !hasChanges()} size="lg">
-                    {saving ? (
-                      <LoadingScreen message={t('common.saving')} />
-                    ) : (
-                      t('common.save')
-                    )}
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={saving || !hasChanges()}
+                    size="lg"
+                  >
+                    {saving ? <LoadingScreen message={t('common.saving')} /> : t('common.save')}
                   </Button>
                 </div>
               </form>

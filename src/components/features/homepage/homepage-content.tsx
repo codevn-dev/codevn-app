@@ -503,9 +503,7 @@ export function HomepageContent() {
                           {/* Article Header */}
                           <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
                             <div className="mb-3 flex items-center justify-between sm:mb-4">
-                              <Button
-                                variant="back"
-                                size="sm"
+                              <button
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
@@ -516,14 +514,18 @@ export function HomepageContent() {
                                       : [...prev, categoryName]
                                   );
                                 }}
-                                className="px-3 py-1.5 text-xs"
+                                className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
+                                style={{
+                                  backgroundColor: `${article.category.color}15`,
+                                  color: article.category.color,
+                                }}
                               >
-                                <span
-                                  className="mr-2 inline-block h-2 w-2 rounded-full"
+                                <div
+                                  className="mr-2 h-2 w-2 rounded-full"
                                   style={{ backgroundColor: article.category.color }}
                                 />
                                 {article.category.name}
-                              </Button>
+                              </button>
                               <div className="flex items-center text-xs text-gray-600">
                                 <Calendar className="mr-1 h-3 w-3" />
                                 {formatDateTime(article.createdAt)}

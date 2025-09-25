@@ -158,14 +158,14 @@ export function Navigation() {
                       >
                         <DropdownMenuItem
                           onClick={() => router.push('/profile')}
-                          className="cursor-pointer bg-white text-gray-900 hover:bg-brand/10 focus:bg-brand/10"
+                          className="hover:bg-brand/10 focus:bg-brand/10 cursor-pointer bg-white text-gray-900"
                         >
                           <User className="mr-2 h-4 w-4" />
                           {t('nav.editProfile')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => router.push('/sessions')}
-                          className="cursor-pointer bg-white text-gray-900 hover:bg-brand/10 focus:bg-brand/10"
+                          className="hover:bg-brand/10 focus:bg-brand/10 cursor-pointer bg-white text-gray-900"
                         >
                           <Shield className="mr-2 h-4 w-4" />
                           {t('sessions.title')}
@@ -237,7 +237,7 @@ export function Navigation() {
       {/* Mobile Panel */}
       <div
         id="mobile-nav"
-        className={`fixed top-16 right-0 left-0 z-40 bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
+        className={`fixed top-16 right-0 left-0 z-[110] bg-white/95 backdrop-blur md:hidden ${isMobileOpen ? 'block' : 'hidden'}`}
         ref={mobilePanelRef}
       >
         <div className="mx-auto max-w-7xl space-y-2 px-4 py-3 sm:px-6 lg:px-8">

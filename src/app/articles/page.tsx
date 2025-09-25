@@ -653,7 +653,7 @@ function ArticlesContent() {
                                           handleTogglePublish(article);
                                           setOpenDropdown(null);
                                         }}
-                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-brand hover:bg-brand/10"
+                                        className="text-brand hover:bg-brand/10 flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm"
                                       >
                                         {article.published ? (
                                           <>
@@ -680,7 +680,7 @@ function ArticlesContent() {
                                             }
                                             setOpenDropdown(null);
                                           }}
-                                          className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-brand hover:bg-brand/10"
+                                          className="text-brand hover:bg-brand/10 flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm"
                                         >
                                           <ExternalLink className="mr-2 h-4 w-4" />
                                           {article.published
@@ -694,7 +694,7 @@ function ArticlesContent() {
                                           handleEditArticle(article);
                                           setOpenDropdown(null);
                                         }}
-                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-brand hover:bg-brand/10"
+                                        className="text-brand hover:bg-brand/10 flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm"
                                       >
                                         <Edit className="mr-2 h-4 w-4" />
                                         {t('common.edit')}

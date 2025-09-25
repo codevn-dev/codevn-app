@@ -397,7 +397,7 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
                             <div className="py-1">
                               <button
                                 onClick={() => handleViewProfile(entry.user)}
-                                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-brand transition-colors hover:bg-brand/10"
+                                className="text-brand hover:bg-brand/10 flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors"
                               >
                                 <UserIcon className="text-brand h-4 w-4" />
                                 <span>View Profile</span>
@@ -408,7 +408,7 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
                               <div className="py-1">
                                 <button
                                   onClick={() => handleChat(entry.user)}
-                                  className="flex w-full items-center gap-3 px-4 py-2 text-sm text-brand transition-colors hover:bg-brand/10"
+                                  className="text-brand hover:bg-brand/10 flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors"
                                 >
                                   <MessageCircle className="text-brand-600 h-4 w-4" />
                                   <span>Chat</span>

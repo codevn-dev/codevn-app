@@ -156,7 +156,7 @@ export function ChatSidebar({
               {filteredConversations.map((conversation) => (
                 <div
                   key={conversation.peer.id}
-                  className="flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-brand/10"
+                  className="hover:bg-brand/10 flex cursor-pointer items-center gap-3 p-3 transition-colors"
                   onClick={() => {
                     onStartChat(
                       conversation.peer.id,

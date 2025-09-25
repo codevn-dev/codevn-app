@@ -6,7 +6,6 @@ import { modalOverlay, modalContent } from '@/components/layout/motion-presets';
 import { MotionContainer } from '@/components/layout';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   ThumbsUp,
   ThumbsDown,
@@ -409,9 +408,19 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
 
               <div>
                 <div className="mb-4">
-                  <Badge className="text-white" style={{ backgroundColor: article.category.color }}>
+                  <button
+                    className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
+                    style={{
+                      backgroundColor: `${article.category.color}15`,
+                      color: article.category.color,
+                    }}
+                  >
+                    <div
+                      className="mr-2 h-2 w-2 rounded-full"
+                      style={{ backgroundColor: article.category.color }}
+                    />
                     {article.category.name}
-                  </Badge>
+                  </button>
                 </div>
 
                 <h1 className="mb-3 text-2xl font-bold text-gray-900 sm:mb-4 sm:text-3xl">

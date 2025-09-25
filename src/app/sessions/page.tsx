@@ -13,16 +13,8 @@ import {
   Globe,
   Clock,
   RefreshCw,
-  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { MotionContainer, ClientOnly } from '@/components/layout';
@@ -293,7 +285,11 @@ function SessionsPageContent() {
                       initial={{ opacity: 0, x: 24 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05, duration: 0.3 }}
-                      className={`flex min-h-[72px] items-center gap-3 rounded-xl p-3 ${
+                      onClick={() => {
+                        setSelectedSession(session);
+                        setShowDetails(true);
+                      }}
+                      className={`flex min-h-[72px] cursor-pointer items-center gap-3 rounded-xl p-3 ${
                         session.isCurrent
                           ? 'border border-blue-200 bg-gradient-to-r from-blue-50 to-white'
                           : 'hover:bg-brand/10'
@@ -338,23 +334,14 @@ function SessionsPageContent() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedSession(session);
-                            setShowDetails(true);
-                          }}
-                          className="text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                        >
-                          <Info className="mr-1 h-4 w-4" />
-                          {t('sessions.info')}
-                        </Button>
                         {!session.isCurrent && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleTerminateSession(session.token)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTerminateSession(session.token);
+                            }}
                             disabled={logoutLoading === session.token}
                             className="text-red-600 hover:bg-red-50"
                           >
@@ -373,13 +360,24 @@ function SessionsPageContent() {
             </div>
 
             {/* Session Details Modal */}
-            <Dialog open={showDetails} onOpenChange={setShowDetails}>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>{t('sessions.sessionDetails')}</DialogTitle>
-                  <DialogDescription>{t('sessions.sessionDetailsDescription')}</DialogDescription>
-                </DialogHeader>
-                {selectedSession && (
+            {showDetails && selectedSession && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4 backdrop-blur-sm sm:px-0"
+                onClick={() => setShowDetails(false)}
+              >
+                <div
+                  className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl shadow-gray-300/60"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {t('sessions.sessionDetails')}
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      {t('sessions.sessionDetailsDescription')}
+                    </p>
+                  </div>
+
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-medium text-gray-900">
@@ -423,9 +421,35 @@ function SessionsPageContent() {
                       </div>
                     </div>
                   </div>
-                )}
-              </DialogContent>
-            </Dialog>
+
+                  <div className="mt-6 flex justify-end gap-2">
+                    <Button variant="back" onClick={() => setShowDetails(false)}>
+                      {t('common.close')}
+                    </Button>
+                    {!selectedSession.isCurrent && (
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          setShowDetails(false);
+                          handleTerminateSession(selectedSession.token);
+                        }}
+                        disabled={logoutLoading === selectedSession.token}
+                        className="text-red-600 hover:bg-red-50"
+                      >
+                        {logoutLoading === selectedSession.token ? (
+                          <LoadingScreen size="sm" />
+                        ) : (
+                          <>
+                            <X className="mr-1 h-4 w-4" />
+                            {t('sessions.terminate')}
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Terminate Session Confirmation Modal */}
             {showLogoutOther && (

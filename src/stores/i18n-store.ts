@@ -23,6 +23,7 @@ const store: Dictionary = {
   'common.saving': { en: 'Saving', vi: 'Đang lưu' },
   'common.delete': { en: 'Delete', vi: 'Xoá' },
   'common.edit': { en: 'Edit', vi: 'Sửa' },
+  'common.close': { en: 'Close', vi: 'Đóng' },
   'common.loading': { en: 'Loading...', vi: 'Đang tải...' },
   'common.email': { en: 'Email', vi: 'Email' },
   'common.password': { en: 'Password', vi: 'Mật khẩu' },

@@ -722,8 +722,8 @@ function AdminPageContent() {
 
                 {/* Category Form Modal */}
                 {showCategoryForm && (
-                  <div 
-                    className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 backdrop-blur-sm pt-8"
+                  <div
+                    className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 pt-8 backdrop-blur-sm"
                     onClick={(e) => {
                       if (e.target === e.currentTarget) {
                         setShowCategoryForm(false);
@@ -740,74 +740,76 @@ function AdminPageContent() {
                         </h2>
                       </div>
 
-                    <form
-                      id="category-form"
-                      onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory}
-                      className="space-y-4"
-                    >
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('admin.category.name')}</label>
-                        <Input
-                          placeholder={t('admin.category.namePlaceholder')}
-                          value={categoryForm.name}
-                          onChange={(e) =>
-                            setCategoryForm({ ...categoryForm, name: e.target.value })
-                          }
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">
-                          {t('admin.category.description')}
-                        </label>
-                        <Input
-                          placeholder={t('admin.category.descriptionPlaceholder')}
-                          value={categoryForm.description}
-                          onChange={(e) =>
-                            setCategoryForm({ ...categoryForm, description: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('admin.category.color')}</label>
-                        <Input
-                          type="color"
-                          value={categoryForm.color}
-                          onChange={(e) =>
-                            setCategoryForm({ ...categoryForm, color: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">{t('admin.parentCategory')}</label>
-                        <Select
-                          value={categoryForm.parentId || 'none'}
-                          onValueChange={(value) =>
-                            setCategoryForm({
-                              ...categoryForm,
-                              parentId: value === 'none' ? '' : value,
-                            })
-                          }
-                        >
-                          <SelectTrigger className="focus:ring-brand/20 bg-white transition-colors focus:ring-2">
-                            <SelectValue placeholder={'Select a parent category (optional)'} />
-                          </SelectTrigger>
-                          <SelectContent className="z-[80]">
-                            <SelectItem value="none">{t('admin.category.noParentRoot')}</SelectItem>
-                            {categories.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className="h-3 w-3 rounded-full"
-                                    style={{ backgroundColor: category.color }}
-                                  />
-                                  {category.name}
-                                </div>
+                      <form
+                        id="category-form"
+                        onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory}
+                        className="space-y-4"
+                      >
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">{t('admin.category.name')}</label>
+                          <Input
+                            placeholder={t('admin.category.namePlaceholder')}
+                            value={categoryForm.name}
+                            onChange={(e) =>
+                              setCategoryForm({ ...categoryForm, name: e.target.value })
+                            }
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">
+                            {t('admin.category.description')}
+                          </label>
+                          <Input
+                            placeholder={t('admin.category.descriptionPlaceholder')}
+                            value={categoryForm.description}
+                            onChange={(e) =>
+                              setCategoryForm({ ...categoryForm, description: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">{t('admin.category.color')}</label>
+                          <Input
+                            type="color"
+                            value={categoryForm.color}
+                            onChange={(e) =>
+                              setCategoryForm({ ...categoryForm, color: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">{t('admin.parentCategory')}</label>
+                          <Select
+                            value={categoryForm.parentId || 'none'}
+                            onValueChange={(value) =>
+                              setCategoryForm({
+                                ...categoryForm,
+                                parentId: value === 'none' ? '' : value,
+                              })
+                            }
+                          >
+                            <SelectTrigger className="focus:ring-brand/20 bg-white transition-colors focus:ring-2">
+                              <SelectValue placeholder={'Select a parent category (optional)'} />
+                            </SelectTrigger>
+                            <SelectContent className="z-[80]">
+                              <SelectItem value="none">
+                                {t('admin.category.noParentRoot')}
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                              {categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className="h-3 w-3 rounded-full"
+                                      style={{ backgroundColor: category.color }}
+                                    />
+                                    {category.name}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
 
                         {categoryError && <p className="text-sm text-red-600">{categoryError}</p>}
 
