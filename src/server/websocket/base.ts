@@ -1,6 +1,7 @@
 import { WebSocket } from 'ws';
 import { logger } from '@/lib/utils/logger';
 import { createSubscriber, getRedis } from '@/lib/server';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface BaseConnection {
   userId: string | null;
@@ -24,9 +25,7 @@ export abstract class BaseWebSocketService<TConnection extends BaseConnection> {
   }
 
   protected generateConnectionId(): string {
-    return (
-      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-    );
+    return uuidv4();
   }
 
   protected pingConnections(): void {
