@@ -10,7 +10,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AuthModal } from '@/features/auth';
-import { User, Settings, LogOut, FileText, Menu as MenuIcon, X as CloseIcon } from 'lucide-react';
+import {
+  User,
+  Settings,
+  LogOut,
+  FileText,
+  LogIn,
+  UserPlus,
+  Menu as MenuIcon,
+  X as CloseIcon,
+} from 'lucide-react';
 import { useFastifyAuthStore, useUIStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useAuthActions } from '@/hooks/use-auth-actions';
@@ -264,24 +273,24 @@ export function Navigation() {
           ) : (
             <>
               <button
-                className="border-brand text-brand hover:bg-brand/10 shadow-brand/20 hover:shadow-brand/30 w-full cursor-pointer rounded-md border px-3 py-2 text-left shadow-md transition-shadow hover:shadow-lg"
+                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
                 onClick={() => {
                   setAuthMode('signin');
                   setAuthModalOpen(true);
                   setIsMobileOpen(false);
                 }}
               >
-                {t('common.signIn')}
+                <LogIn className="mr-2 h-4 w-4" /> {t('common.signIn')}
               </button>
               <button
-                className="bg-brand hover:bg-brand-600 shadow-brand/20 hover:shadow-brand/30 w-full cursor-pointer rounded-md px-3 py-2 text-left text-white shadow-md transition-shadow hover:shadow-lg"
+                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
                 onClick={() => {
                   setAuthMode('signup');
                   setAuthModalOpen(true);
                   setIsMobileOpen(false);
                 }}
               >
-                {t('common.signUp')}
+                <UserPlus className="mr-2 h-4 w-4" /> {t('common.signUp')}
               </button>
             </>
           )}

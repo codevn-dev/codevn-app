@@ -2,6 +2,7 @@ import { getDb } from '..';
 import { users, articles, comments, reactions } from '../schema';
 import { eq, and, or, ilike, count, desc, asc, isNull, ne } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { authConfig } from '@/config';
 
 export interface UserFilters {
   search?: string;
@@ -58,7 +59,7 @@ export class UserRepository {
       createdAt: Date;
     }>
   > {
-    const hashedPassword = await bcrypt.hash(userData.password, 12);
+    const hashedPassword = await bcrypt.hash(userData.password, authConfig.bcryptSaltRounds);
 
     return await getDb()
       .insert(users)

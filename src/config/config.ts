@@ -19,6 +19,7 @@ export const authConfig = {
   url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   trustHost: true,
   maxAge: 30 * 24 * 60 * 60, // 30 days
+  bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS || '12'),
 } as const;
 
 // File upload configuration
