@@ -6,6 +6,9 @@ export interface RedisService {
   storeToken(token: string, payload: any, ttl?: number): Promise<void>;
   getToken(token: string): Promise<any | null>;
   deleteToken(token: string): Promise<void>;
+  setUserProfile(userId: string, data: any, ttlSeconds?: number): Promise<void>;
+  getUserProfile(userId: string): Promise<any | null>;
+  deleteUserProfile(userId: string): Promise<void>;
   storeSession(sessionId: string, data: any, ttl?: number): Promise<void>;
   getSession(sessionId: string): Promise<any | null>;
   deleteSession(sessionId: string): Promise<void>;
@@ -54,6 +57,37 @@ export class RedisAuthService implements RedisService {
    */
   async deleteToken(token: string): Promise<void> {
     const key = `auth:token:${token}`;
+    await this.redis.del(key);
+  }
+
+  /**
+   * Cache user profile payload by user id
+   */
+  async setUserProfile(userId: string, data: any, ttlSeconds: number = 3600): Promise<void> {
+    const key = `user:profile:${userId}`;
+    await this.redis.setex(key, ttlSeconds, JSON.stringify(data));
+  }
+
+  /**
+   * Get cached user profile payload by user id
+   */
+  async getUserProfile(userId: string): Promise<any | null> {
+    const key = `user:profile:${userId}`;
+    const data = await this.redis.get(key);
+    if (!data) return null;
+    try {
+      return JSON.parse(data);
+    } catch (error) {
+      logger.error('Error parsing user profile from Redis', undefined, error as Error);
+      return null;
+    }
+  }
+
+  /**
+   * Delete cached user profile payload by user id
+   */
+  async deleteUserProfile(userId: string): Promise<void> {
+    const key = `user:profile:${userId}`;
     await this.redis.del(key);
   }
 

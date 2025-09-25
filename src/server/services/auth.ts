@@ -195,20 +195,13 @@ export class AuthService extends BaseService {
   /**
    * Get current user profile (optimized - uses cached data from middleware)
    */
-  async getCurrentUser(userId: string, cachedUser?: any): Promise<UserResponse> {
+  async getCurrentUser(userId: string): Promise<UserResponse> {
     try {
-      // If we have cached user data from middleware, use it (much faster)
-      if (cachedUser) {
-        return {
-          user: {
-            id: cachedUser.id,
-            email: cachedUser.email,
-            name: cachedUser.name,
-            avatar: cachedUser.avatar || undefined,
-            role: cachedUser.role,
-            createdAt: new Date().toISOString(), // Use current time as fallback
-          },
-        };
+      // First try user profile cache in Redis for freshest view
+      const redis = createRedisAuthService();
+      const cachedProfile = await redis.getUserProfile(userId);
+      if (cachedProfile) {
+        return { user: cachedProfile };
       }
 
       // Fallback to database query (slower but ensures fresh data)
@@ -217,16 +210,17 @@ export class AuthService extends BaseService {
         throw new Error('User not found');
       }
 
-      return {
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          avatar: user.avatar || undefined,
-          role: user.role,
-          createdAt: user.createdAt as any,
-        },
+      const fullUser = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatar: (user.avatar || undefined) as any,
+        role: user.role,
+        createdAt: user.createdAt as any,
       };
+      // Cache the fresh DB result
+      await redis.setUserProfile(userId, fullUser, 3600);
+      return { user: fullUser };
     } catch (error) {
       this.handleError(error, 'Get user');
     }

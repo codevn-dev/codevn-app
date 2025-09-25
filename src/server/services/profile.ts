@@ -1,6 +1,7 @@
 import { userRepository } from '../database/repository';
 import { fileUpload } from '@/lib/server';
 import { BaseService } from './base';
+import { createRedisAuthService } from '../redis';
 import { UpdateProfileRequest, UserResponse } from '@/types/shared/user';
 import { UploadAvatarResponse } from '@/types/shared';
 
@@ -43,22 +44,47 @@ export class ProfileService extends BaseService {
     try {
       const { name, email } = body;
 
-      if (!name || !email) {
-        throw new Error('Name and email are required');
+      // Build update object with only provided fields
+      const updateData: { name?: string; email?: string } = {};
+      
+      if (name !== undefined) {
+        if (!name.trim()) {
+          throw new Error('Name cannot be empty');
+        }
+        updateData.name = name;
       }
 
-      // Check if email is already taken by another user
-      const existingUser = await userRepository.findByEmail(email);
-
-      if (existingUser && existingUser.id !== userId) {
-        throw new Error('Email is already taken');
+      if (email !== undefined) {
+        if (!email.trim()) {
+          throw new Error('Email cannot be empty');
+        }
+        // Check if email is already taken by another user
+        const existingUser = await userRepository.findByEmail(email);
+        if (existingUser && existingUser.id !== userId) {
+          throw new Error('Email is already taken');
+        }
+        updateData.email = email;
       }
 
-      const updatedUser = await userRepository.update(userId, {
-        name,
-        email,
-      });
-      const response: UserResponse = { user: updatedUser[0] as any };
+      // At least one field must be provided
+      if (Object.keys(updateData).length === 0) {
+        throw new Error('At least one field (name or email) must be provided');
+      }
+
+      const updatedUser = await userRepository.update(userId, updateData);
+      // Invalidate and refresh user profile cache
+      const redis = createRedisAuthService();
+      const fresh = {
+        id: updatedUser[0].id,
+        email: updatedUser[0].email,
+        name: updatedUser[0].name,
+        avatar: (updatedUser[0].avatar || undefined) as any,
+        role: updatedUser[0].role,
+        createdAt: (updatedUser[0].createdAt as any) || new Date().toISOString(),
+      };
+      await redis.setUserProfile(userId, fresh, 3600);
+
+      const response: UserResponse = { user: fresh as any };
       return response;
     } catch (error) {
       this.handleError(error, 'Update profile');
@@ -82,10 +108,22 @@ export class ProfileService extends BaseService {
         avatar: uploadResult.publicPath,
       });
 
+      // Invalidate and refresh user profile cache with new avatar
+      const redis = createRedisAuthService();
+      const fresh = {
+        id: updatedUser[0].id,
+        email: updatedUser[0].email,
+        name: updatedUser[0].name,
+        avatar: uploadResult.publicPath,
+        role: updatedUser[0].role,
+        createdAt: (updatedUser[0].createdAt as any) || new Date().toISOString(),
+      };
+      await redis.setUserProfile(userId, fresh, 3600);
+
       const response: UploadAvatarResponse = {
         success: true,
         avatar: uploadResult.publicPath,
-        user: updatedUser[0] as any,
+        user: fresh as any,
       };
       return response;
     } catch (error) {

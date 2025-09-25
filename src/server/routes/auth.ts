@@ -128,8 +128,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        // Pass cached user data to avoid database query
-        const response = await authService.getCurrentUser(authRequest.user!.id, authRequest.user);
+        const response = await authService.getCurrentUser(authRequest.user!.id);
         return reply.send(response);
       } catch {
         return reply.status(500).send({ error: 'Internal server error' });
