@@ -38,11 +38,88 @@ export class AuthService extends BaseService {
   }
 
   /**
+   * Extract session metadata from request
+   */
+  private extractSessionMetadata(request?: any): any {
+    if (!request) return undefined;
+
+    const userAgent = request.headers['user-agent'] || 'unknown';
+    const loginTime = new Date().toISOString();
+
+    // Try to get country code from headers (if using CloudFlare, etc.)
+    const countryCode =
+      request.headers['cf-ipcountry'] || request.headers['x-country-code'] || undefined;
+
+    // Parse device info from User Agent
+    const deviceInfo = this.parseUserAgent(userAgent);
+
+    return {
+      countryCode,
+      deviceInfo,
+      loginTime,
+    };
+  }
+
+  /**
+   * Parse User Agent to extract device info
+   */
+  private parseUserAgent(userAgent: string): any {
+    const deviceInfo: any = {};
+
+    // Browser detection
+    if (userAgent.includes('Chrome')) {
+      deviceInfo.browser = 'Chrome';
+    } else if (userAgent.includes('Firefox')) {
+      deviceInfo.browser = 'Firefox';
+    } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+      deviceInfo.browser = 'Safari';
+    } else if (userAgent.includes('Edge')) {
+      deviceInfo.browser = 'Edge';
+    } else if (userAgent.includes('Opera')) {
+      deviceInfo.browser = 'Opera';
+    }
+
+    // OS detection
+    if (userAgent.includes('Windows')) {
+      deviceInfo.os = 'Windows';
+    } else if (userAgent.includes('Mac OS')) {
+      deviceInfo.os = 'macOS';
+    } else if (userAgent.includes('Linux')) {
+      deviceInfo.os = 'Linux';
+    } else if (userAgent.includes('Android')) {
+      deviceInfo.os = 'Android';
+    } else if (
+      userAgent.includes('iOS') ||
+      userAgent.includes('iPhone') ||
+      userAgent.includes('iPad')
+    ) {
+      deviceInfo.os = 'iOS';
+    }
+
+    // Device type detection
+    if (
+      userAgent.includes('Mobile') ||
+      userAgent.includes('Android') ||
+      userAgent.includes('iPhone')
+    ) {
+      deviceInfo.device = 'Mobile';
+    } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
+      deviceInfo.device = 'Tablet';
+    } else {
+      deviceInfo.device = 'Desktop';
+    }
+
+    return deviceInfo;
+  }
+
+  /**
    * Sign in user with local authentication
    */
-  async signIn(user: any, reply: FastifyReply): Promise<LoginResponse> {
+  async signIn(user: any, reply: FastifyReply, request?: any): Promise<LoginResponse> {
     try {
-      const token = await generateToken(user);
+      // Extract session metadata from request
+      const sessionMetadata = this.extractSessionMetadata(request);
+      const token = await generateToken(user, sessionMetadata);
       this.setAuthCookie(reply, token);
 
       return {
@@ -64,7 +141,7 @@ export class AuthService extends BaseService {
   /**
    * Sign up new user
    */
-  async signUp(body: RegisterBody, reply: FastifyReply): Promise<RegisterResponse> {
+  async signUp(body: RegisterBody, reply: FastifyReply, request?: any): Promise<RegisterResponse> {
     try {
       const { email, name, password } = body;
 
@@ -86,7 +163,8 @@ export class AuthService extends BaseService {
 
       // Auto-login: generate token and set cookie like sign-in
       const createdUser = newUser[0];
-      const token = await generateToken(createdUser);
+      const sessionMetadata = this.extractSessionMetadata(request);
+      const token = await generateToken(createdUser, sessionMetadata);
       this.setAuthCookie(reply, token);
 
       return {
@@ -140,9 +218,16 @@ export class AuthService extends BaseService {
   /**
    * Handle Google OAuth login
    */
-  async handleGoogleOAuth(user: any, reply: FastifyReply, returnUrl?: string): Promise<void> {
+  async handleGoogleOAuth(
+    user: any,
+    reply: FastifyReply,
+    returnUrl?: string,
+    request?: any
+  ): Promise<void> {
     try {
-      const token = await generateToken(user);
+      // Extract session metadata from request
+      const sessionMetadata = this.extractSessionMetadata(request);
+      const token = await generateToken(user, sessionMetadata);
       this.setAuthCookie(reply, token);
 
       // Redirect back to original page if provided and safe
@@ -227,27 +312,32 @@ export class AuthService extends BaseService {
   }
 
   /**
-   * Logout from all devices
+   * Terminate sessions (single or multiple)
    */
-  async logoutAllDevices(
+  async terminateSessions(
     userId: string,
-    reply: FastifyReply
+    tokens: string[]
   ): Promise<SuccessResponse & { message: string }> {
     try {
-      const redisService = createRedisAuthService();
+      const redis = createRedisAuthService();
 
-      // Logout from all devices
-      await redisService.logoutAllDevices(userId);
+      // Terminate all sessions in the array
+      for (const token of tokens) {
+        await redis.terminateSession(userId, token);
+      }
 
-      // Clear current session cookie
-      this.clearAuthCookie(reply);
+      const count = tokens.length;
+      const message =
+        count === 1
+          ? 'Session terminated successfully'
+          : `${count} sessions terminated successfully`;
 
       return {
         success: true,
-        message: 'Logged out from all devices successfully',
+        message,
       };
     } catch (error) {
-      this.handleError(error, 'Logout all devices');
+      this.handleError(error, 'Terminate sessions');
     }
   }
 
@@ -266,6 +356,16 @@ export class AuthService extends BaseService {
       };
     } catch (error) {
       this.handleError(error, 'Refresh token');
+    }
+  }
+
+  async getUserActiveSessions(userId: string, currentToken?: string) {
+    try {
+      const redis = createRedisAuthService();
+      const sessions = await redis.getUserActiveSessions(userId, currentToken);
+      return sessions;
+    } catch (error) {
+      this.handleError(error, 'Get user active sessions');
     }
   }
 }

@@ -159,32 +159,60 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
   };
 
   return (
-    <div className={`w-full rounded-2xl bg-white p-4 shadow-2xl sm:p-6 ${className}`}>
-      {/* Header */}
-      <div className="mb-6">
-        {/* Timeframe Selector */}
-        <div className="flex gap-1 sm:gap-2">
-          {[
-            { key: '7d', label: '7D' },
-            { key: '30d', label: '30D' },
-            { key: '90d', label: '90D' },
-            { key: '1y', label: '1Y' },
-            { key: 'all', label: 'All' },
-          ].map(({ key, label }) => (
-            <Button
-              key={key}
-              size="sm"
-              variant={timeframe === key ? 'default' : 'back'}
-              onClick={() => onTimeframeClick(key as '7d' | '30d' | '90d' | '1y' | 'all')}
-              className={`flex-1 px-2 py-1.5 text-xs transition-all sm:flex-none sm:px-3 ${
-                timeframe === key ? 'bg-brand text-white shadow-md' : 'hover:bg-gray-100'
-              }`}
-            >
-              {label}
-            </Button>
-          ))}
+    <div className={`w-full ${className}`}>
+      {/* Sticky Timeframe Controls */}
+      {isPageVariant && (
+        <div className="sticky top-16 z-40 mb-6 rounded-xl bg-white/80 p-4 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
+          <div className="flex gap-1 sm:gap-2">
+            {[
+              { key: '7d', label: '7D' },
+              { key: '30d', label: '30D' },
+              { key: '90d', label: '90D' },
+              { key: '1y', label: '1Y' },
+              { key: 'all', label: 'All' },
+            ].map(({ key, label }) => (
+              <Button
+                key={key}
+                size="sm"
+                variant={timeframe === key ? 'default' : 'back'}
+                onClick={() => onTimeframeClick(key as '7d' | '30d' | '90d' | '1y' | 'all')}
+                className={`flex-1 px-2 py-1.5 text-xs transition-all sm:flex-none sm:px-3 ${
+                  timeframe === key ? 'bg-brand text-white shadow-md' : 'hover:bg-gray-100'
+                }`}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Compact variant header */}
+      {!isPageVariant && (
+        <div className="mb-6">
+          <div className="flex gap-1 sm:gap-2">
+            {[
+              { key: '7d', label: '7D' },
+              { key: '30d', label: '30D' },
+              { key: '90d', label: '90D' },
+              { key: '1y', label: '1Y' },
+              { key: 'all', label: 'All' },
+            ].map(({ key, label }) => (
+              <Button
+                key={key}
+                size="sm"
+                variant={timeframe === key ? 'default' : 'back'}
+                onClick={() => onTimeframeClick(key as '7d' | '30d' | '90d' | '1y' | 'all')}
+                className={`flex-1 px-2 py-1.5 text-xs transition-all sm:flex-none sm:px-3 ${
+                  timeframe === key ? 'bg-brand text-white shadow-md' : 'hover:bg-gray-100'
+                }`}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Leaderboard List */}
       <div className="space-y-3">

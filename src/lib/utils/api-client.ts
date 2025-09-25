@@ -101,6 +101,37 @@ export async function apiFetch<T = unknown>(
     });
 
     if (!response.ok) {
+      // Handle 401 Unauthorized - auto logout and redirect
+      if (response.status === 401) {
+        // Only handle 401 on client-side
+        if (typeof window !== 'undefined') {
+          // Prevent multiple redirects
+          const isRedirecting = sessionStorage.getItem('auth-redirecting');
+          if (isRedirecting) {
+            // Already redirecting, don't redirect again
+            // Still throw error to prevent further processing
+            throw new Error('Unauthorized - redirecting to login');
+          }
+
+          // Set redirect flag
+          sessionStorage.setItem('auth-redirecting', 'true');
+
+          // Clear auth state
+          const authStorage = localStorage.getItem('auth-storage');
+          if (authStorage) {
+            localStorage.removeItem('auth-storage');
+          }
+
+          // Only redirect if not already on home page
+          if (window.location.pathname !== '/') {
+            window.location.href = '/';
+          } else {
+            // Clear redirect flag if already on home page
+            sessionStorage.removeItem('auth-redirecting');
+          }
+        }
+      }
+
       let errorData: unknown = {};
       try {
         errorData = await response.clone().json();

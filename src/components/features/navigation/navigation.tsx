@@ -20,6 +20,7 @@ import {
   Menu as MenuIcon,
   X as CloseIcon,
   Trophy,
+  Shield,
 } from 'lucide-react';
 import { useFastifyAuthStore, useUIStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -163,6 +164,13 @@ export function Navigation() {
                           {t('nav.editProfile')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
+                          onClick={() => router.push('/sessions')}
+                          className="cursor-pointer bg-white hover:bg-gray-50 focus:bg-gray-50"
+                        >
+                          <Shield className="mr-2 h-4 w-4" />
+                          {t('sessions.title')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                           onClick={handleSignOut}
                           className="cursor-pointer bg-white text-red-600 hover:bg-gray-50 focus:bg-gray-50 focus:text-red-600"
                         >
@@ -288,6 +296,15 @@ export function Navigation() {
                 }}
               >
                 <User className="mr-2 h-4 w-4" /> {t('nav.editProfile')}
+              </button>
+              <button
+                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                onClick={() => {
+                  setIsMobileOpen(false);
+                  router.push('/sessions');
+                }}
+              >
+                <Shield className="mr-2 h-4 w-4" /> {t('sessions.title')}
               </button>
               <button
                 className="flex w-full items-center rounded-md px-3 py-2 text-left text-red-600 hover:bg-gray-100"

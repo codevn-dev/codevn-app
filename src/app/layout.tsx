@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
-import { PageTransition, AppFooter } from '@/components/layout';
+import { PageTransition, AppFooter, AuthRedirectHandler } from '@/components/layout';
 import { CustomCursor } from '@/components/layout/custom-cursor';
 
 const geistSans = Geist({
@@ -32,6 +32,7 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <Providers>
+          <AuthRedirectHandler />
           <CustomCursor />
           <PageTransition>
             <div className="flex min-h-screen flex-col pt-16">

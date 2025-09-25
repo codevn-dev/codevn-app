@@ -2,12 +2,24 @@ import jwt from 'jsonwebtoken';
 import { config } from '@/config';
 import { RedisAuthService } from '../redis';
 
+export interface SessionMetadata {
+  countryCode?: string;
+  deviceInfo?: {
+    browser?: string;
+    os?: string;
+    device?: string;
+  };
+  loginTime: string;
+  lastActive?: string;
+}
+
 export interface JWTPayload {
   id: string;
   email: string;
   name: string;
   avatar?: string | null;
   role: 'user' | 'admin';
+  sessionMetadata?: SessionMetadata;
   iat?: number;
   exp?: number;
 }
@@ -19,7 +31,10 @@ export function setRedisService(service: RedisAuthService): void {
   redisService = service;
 }
 
-export async function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): Promise<string> {
+export async function generateToken(
+  payload: Omit<JWTPayload, 'iat' | 'exp'>,
+  sessionMetadata?: SessionMetadata
+): Promise<string> {
   const token = jwt.sign(payload, config.auth.secret, {
     expiresIn: config.auth.maxAge,
   });
@@ -33,8 +48,11 @@ export async function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): P
         name: payload.name,
         avatar: payload.avatar,
         role: payload.role,
+        sessionMetadata: sessionMetadata,
       };
       await redisService.storeToken(token, redisPayload);
+      // Track this token for the user (for role updates)
+      await redisService.addTokenToUser(payload.id, token);
     } catch (error) {
       console.error('[JWT] Error storing token in Redis:', error);
     }
@@ -64,6 +82,11 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
 
 export async function revokeToken(token: string): Promise<void> {
   if (redisService) {
+    // Get user ID from token before deleting
+    const payload = await redisService.getToken(token);
+    if (payload) {
+      await redisService.removeTokenFromUser(payload.id, token);
+    }
     await redisService.deleteToken(token);
   }
 }
@@ -92,6 +115,15 @@ export async function getUserFromToken(token: string): Promise<JWTPayload | null
       if (!cachedUser) {
         return null; // Token was revoked
       }
+
+      // Extend TTL for user's tokens set when user is active
+
+      // Update lastActive time for this session
+      if (cachedUser.sessionMetadata) {
+        cachedUser.sessionMetadata.lastActive = new Date().toISOString();
+        await redisService.storeToken(token, cachedUser);
+      }
+
       // Return cached user data (more up-to-date than JWT payload)
       return {
         id: cachedUser.id,
@@ -99,6 +131,7 @@ export async function getUserFromToken(token: string): Promise<JWTPayload | null
         name: cachedUser.name,
         avatar: cachedUser.avatar,
         role: cachedUser.role,
+        sessionMetadata: cachedUser.sessionMetadata,
         iat: payload.iat,
         exp: payload.exp,
       };

@@ -275,6 +275,59 @@ const store: Dictionary = {
   },
   'share.failedTitle': { en: 'Failed', vi: 'Thất bại' },
   'share.failedMessage': { en: 'Could not copy link', vi: 'Không thể sao chép liên kết' },
+
+  // Session Management
+  'sessions.title': { en: 'Session Management', vi: 'Quản lý phiên đăng nhập' },
+  'sessions.subtitle': {
+    en: "Manage your active sessions across all devices. You can see where you're signed in and sign out of specific devices.",
+    vi: 'Quản lý các phiên đăng nhập đang hoạt động trên tất cả thiết bị. Bạn có thể xem nơi đang đăng nhập và đăng xuất khỏi các thiết bị cụ thể.',
+  },
+  'sessions.activeSessions': { en: 'Active Sessions', vi: 'Phiên đăng nhập đang hoạt động' },
+  'sessions.allSessions': { en: 'All Sessions', vi: 'Tất cả phiên' },
+  'sessions.current': { en: 'Current', vi: 'Hiện tại' },
+  'sessions.otherDevices': { en: 'Other Devices', vi: 'Thiết bị khác' },
+  'sessions.terminateOtherSessions': { en: 'Terminate Other Sessions', vi: 'Kết thúc phiên khác' },
+  'sessions.noSessionsFound': {
+    en: 'No sessions found for the selected filter.',
+    vi: 'Không tìm thấy phiên nào cho bộ lọc đã chọn.',
+  },
+  'sessions.unknownDevice': { en: 'Unknown Device', vi: 'Thiết bị không xác định' },
+  'sessions.currentBadge': { en: 'Current', vi: 'Hiện tại' },
+  'sessions.info': { en: 'Info', vi: 'Thông tin' },
+  'sessions.terminate': { en: 'Terminate', vi: 'Kết thúc' },
+  'sessions.sessionDetails': { en: 'Session Details', vi: 'Chi tiết phiên đăng nhập' },
+  'sessions.sessionDetailsDescription': {
+    en: 'Detailed information about this session.',
+    vi: 'Thông tin chi tiết về phiên đăng nhập này.',
+  },
+  'sessions.deviceInformation': { en: 'Device Information', vi: 'Thông tin thiết bị' },
+  'sessions.locationTime': { en: 'Location & Time', vi: 'Vị trí & Thời gian' },
+  'sessions.country': { en: 'Country', vi: 'Quốc gia' },
+  'sessions.loginTime': { en: 'Login Time', vi: 'Thời gian đăng nhập' },
+  'sessions.lastActive': { en: 'Last Active', vi: 'Hoạt động cuối' },
+  'sessions.unknown': { en: 'Unknown', vi: 'Không xác định' },
+  'sessions.terminateSession': { en: 'Terminate Session', vi: 'Kết thúc phiên đăng nhập' },
+  'sessions.terminateSessionDescription': {
+    en: 'This will sign out the selected session from that device. The user will need to sign in again on that device.',
+    vi: 'Điều này sẽ đăng xuất phiên đăng nhập đã chọn khỏi thiết bị đó. Người dùng sẽ cần đăng nhập lại trên thiết bị đó.',
+  },
+  'sessions.terminateOtherSessionsTitle': {
+    en: 'Terminate Other Sessions',
+    vi: 'Kết thúc các phiên khác',
+  },
+  'sessions.terminateOtherSessionsDescription': {
+    en: "This will terminate all other sessions except your current one. You'll remain signed in on this device.",
+    vi: 'Điều này sẽ kết thúc tất cả các phiên khác ngoại trừ phiên hiện tại của bạn. Bạn sẽ vẫn đăng nhập trên thiết bị này.',
+  },
+  'sessions.terminateSessionButton': { en: 'Terminate Session', vi: 'Kết thúc phiên đăng nhập' },
+  'sessions.terminateOtherSessionsButton': {
+    en: 'Terminate Other Sessions',
+    vi: 'Kết thúc các phiên khác',
+  },
+  'sessions.loadingSessions': {
+    en: 'Loading session management...',
+    vi: 'Đang tải quản lý phiên đăng nhập...',
+  },
 };
 
 export const useI18nStore = create<I18nState>()(

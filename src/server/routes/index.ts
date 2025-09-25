@@ -5,6 +5,7 @@ import { categoryRoutes } from './categories';
 import { commentRoutes } from './comments';
 import { chatRoutes } from './chat';
 import { profileRoutes } from './profile';
+import { sessionRoutes } from './sessions';
 import { uploadRoutes } from './upload';
 import { userRoutes } from './users';
 import { adminRoutes } from './admin';
@@ -22,6 +23,7 @@ export async function setupRoutes(fastify: FastifyInstance) {
   await fastify.register(commentRoutes, { prefix: '/api/comments' });
   await fastify.register(chatRoutes, { prefix: '/api/chat' });
   await fastify.register(profileRoutes, { prefix: '/api/profile' });
+  await fastify.register(sessionRoutes, { prefix: '/api/session' });
   await fastify.register(uploadRoutes, { prefix: '/api/upload' });
   await fastify.register(userRoutes, { prefix: '/api/users' });
   await fastify.register(adminRoutes, { prefix: '/api/admin' });

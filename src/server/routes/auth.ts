@@ -18,7 +18,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const user = (request as any).user;
-        const response = await authService.signIn(user, reply);
+        const response = await authService.signIn(user, reply, request);
         return reply.send(response);
       } catch {
         return reply.status(500).send({ error: 'Internal server error' });
@@ -32,7 +32,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest<{ Body: RegisterBody }>, reply: FastifyReply) => {
       try {
         const body = request.body as RegisterBody;
-        const response = await authService.signUp(body, reply);
+        const response = await authService.signUp(body, reply, request);
         return reply.status(201).send(response);
       } catch {
         return reply.status(500).send({ error: 'Internal server error' });
@@ -95,7 +95,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           reply.clearCookie('oauth_return_url');
         }
 
-        await authService.handleGoogleOAuth(user, reply, storedReturnUrl);
+        await authService.handleGoogleOAuth(user, reply, storedReturnUrl, request);
       } catch {
         return reply.status(500).send({ error: 'Authentication failed' });
       }
@@ -129,23 +129,6 @@ export async function authRoutes(fastify: FastifyInstance) {
       try {
         const authRequest = request as AuthenticatedRequest;
         const response = await authService.getCurrentUser(authRequest.user!.id);
-        return reply.send(response);
-      } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
-      }
-    }
-  );
-
-  // Logout from all devices (Redis-powered)
-  fastify.post(
-    '/logout-all-devices',
-    {
-      preHandler: authMiddleware,
-    },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const authRequest = request as AuthenticatedRequest;
-        const response = await authService.logoutAllDevices(authRequest.user!.id, reply);
         return reply.send(response);
       } catch {
         return reply.status(500).send({ error: 'Internal server error' });

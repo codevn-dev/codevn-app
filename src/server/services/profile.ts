@@ -20,6 +20,9 @@ export class ProfileService extends BaseService {
       // Get user statistics
       const statistics = await userRepository.getUserStatistics(userId);
 
+      // Get active sessions
+      const redis = createRedisAuthService();
+
       const response: UserResponse = {
         user: {
           id: user.id,
@@ -46,7 +49,7 @@ export class ProfileService extends BaseService {
 
       // Build update object with only provided fields
       const updateData: { name?: string; email?: string } = {};
-      
+
       if (name !== undefined) {
         if (!name.trim()) {
           throw new Error('Name cannot be empty');
@@ -72,19 +75,21 @@ export class ProfileService extends BaseService {
       }
 
       const updatedUser = await userRepository.update(userId, updateData);
-      // Invalidate and refresh user profile cache
+      // Invalidate user profile cache
       const redis = createRedisAuthService();
-      const fresh = {
+      await redis.deleteUserProfile(userId);
+
+      // Update JWT payload in all active tokens
+      const updatedUserData = {
         id: updatedUser[0].id,
         email: updatedUser[0].email,
         name: updatedUser[0].name,
-        avatar: (updatedUser[0].avatar || undefined) as any,
+        avatar: updatedUser[0].avatar || null,
         role: updatedUser[0].role,
-        createdAt: (updatedUser[0].createdAt as any) || new Date().toISOString(),
       };
-      await redis.setUserProfile(userId, fresh, 3600);
+      await redis.updateUserInAllTokens(userId, updatedUserData);
 
-      const response: UserResponse = { user: fresh as any };
+      const response: UserResponse = { user: updatedUserData as any };
       return response;
     } catch (error) {
       this.handleError(error, 'Update profile');
@@ -108,22 +113,24 @@ export class ProfileService extends BaseService {
         avatar: uploadResult.publicPath,
       });
 
-      // Invalidate and refresh user profile cache with new avatar
+      // Invalidate user profile cache
       const redis = createRedisAuthService();
-      const fresh = {
+      await redis.deleteUserProfile(userId);
+
+      // Update JWT payload in all active tokens
+      const updatedUserData = {
         id: updatedUser[0].id,
         email: updatedUser[0].email,
         name: updatedUser[0].name,
         avatar: uploadResult.publicPath,
         role: updatedUser[0].role,
-        createdAt: (updatedUser[0].createdAt as any) || new Date().toISOString(),
       };
-      await redis.setUserProfile(userId, fresh, 3600);
+      await redis.updateUserInAllTokens(userId, updatedUserData);
 
       const response: UploadAvatarResponse = {
         success: true,
         avatar: uploadResult.publicPath,
-        user: fresh as any,
+        user: updatedUserData as any,
       };
       return response;
     } catch (error) {
