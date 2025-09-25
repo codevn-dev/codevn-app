@@ -81,6 +81,18 @@ const store: Dictionary = {
     en: 'Password must be at least 8 characters long',
     vi: 'Mật khẩu phải có ít nhất 8 ký tự',
   },
+  'auth.passwordValid': {
+    en: 'Valid',
+    vi: 'Hợp lệ',
+  },
+  'auth.invalidEmail': {
+    en: 'Invalid email',
+    vi: 'Email không hợp lệ',
+  },
+  'auth.validEmail': {
+    en: 'Valid email',
+    vi: 'Email hợp lệ',
+  },
   'auth.emailTaken': { en: 'Email is already taken', vi: 'Email đã được sử dụng' },
   'auth.loginSuccessful': { en: 'Login successful!', vi: 'Đăng nhập thành công!' },
   'auth.loginFailed': { en: 'Login failed', vi: 'Đăng nhập thất bại' },

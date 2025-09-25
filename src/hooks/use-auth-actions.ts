@@ -29,6 +29,7 @@ export function useAuthActions() {
         isLoading: false,
         isAuthenticated: true,
       });
+      setLoading(false);
 
       return data;
     } catch (error) {
@@ -55,6 +56,7 @@ export function useAuthActions() {
         isLoading: false,
         isAuthenticated: true,
       });
+      setLoading(false);
 
       return data;
     } catch (error) {

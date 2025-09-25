@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { Separator } from '@/components/ui/separator';
 import { useUIStore } from '@/stores';
@@ -28,8 +27,10 @@ export function AuthModal() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [passwordMatch, setPasswordMatch] = useState<boolean | null>(null);
+  const [passwordLengthValid, setPasswordLengthValid] = useState<boolean | null>(null);
+  const [emailFormatValid, setEmailFormatValid] = useState<boolean | null>(null);
   const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [_, setEmailError] = useState<string | null>(null);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const emailCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -41,6 +42,30 @@ export function AuthModal() {
       }
     };
   }, []);
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (authModalOpen) {
+      // Clear any pending email check timeout
+      if (emailCheckTimeoutRef.current) {
+        clearTimeout(emailCheckTimeoutRef.current);
+        emailCheckTimeoutRef.current = null;
+      }
+
+      // Reset all form state
+      setFormData({ email: '', name: '', password: '', confirmPassword: '' });
+      setError('');
+      setSuccess('');
+      setPasswordMatch(null);
+      setPasswordLengthValid(null);
+      setEmailFormatValid(null);
+      setEmailAvailable(null);
+      setEmailError(null);
+      setIsCheckingEmail(false);
+      setIsLoading(false);
+      setIsOauthLoading(false);
+    }
+  }, [authModalOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,24 +159,41 @@ export function AuthModal() {
       clearTimeout(emailCheckTimeoutRef.current);
     }
 
-    // Only check if email is valid format and not empty
+    // Check email format first
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email && emailRegex.test(email)) {
-      setIsCheckingEmail(true);
-      emailCheckTimeoutRef.current = setTimeout(async () => {
-        try {
-          const result = await checkEmail(email);
-          setEmailAvailable(result.available);
-          if (!result.available) {
-            setEmailError(t('auth.emailTaken'));
-          }
-        } catch {
-          setEmailError(t('auth.emailCheckFailed'));
-        } finally {
-          setIsCheckingEmail(false);
-        }
-      }, 500);
+    if (email) {
+      if (emailRegex.test(email)) {
+        setEmailFormatValid(true);
+      } else {
+        setEmailFormatValid(false);
+      }
     } else {
+      setEmailFormatValid(null);
+    }
+
+    // Only check email availability for signup mode, not for login
+    if (authMode === 'signup') {
+      // Only check if email is valid format and not empty
+      if (email && emailRegex.test(email)) {
+        setIsCheckingEmail(true);
+        emailCheckTimeoutRef.current = setTimeout(async () => {
+          try {
+            const result = await checkEmail(email);
+            setEmailAvailable(result.available);
+            if (!result.available) {
+              setEmailError(t('auth.emailTaken'));
+            }
+          } catch {
+            setEmailError(t('auth.emailCheckFailed'));
+          } finally {
+            setIsCheckingEmail(false);
+          }
+        }, 500);
+      } else {
+        setIsCheckingEmail(false);
+      }
+    } else {
+      // For login mode, just clear any existing email checking state
       setIsCheckingEmail(false);
     }
   };
@@ -160,35 +202,73 @@ export function AuthModal() {
     const password = e.target.value;
     setFormData((prev) => ({ ...prev, password }));
 
-    if (authMode === 'signup' && formData.confirmPassword) {
-      setPasswordMatch(password === formData.confirmPassword);
+    // Check password length for signup mode
+    if (authMode === 'signup') {
+      if (password.length >= 8) {
+        setPasswordLengthValid(true);
+      } else if (password.length > 0) {
+        setPasswordLengthValid(false);
+      } else {
+        setPasswordLengthValid(null);
+      }
+
+      // Check password match
+      if (formData.confirmPassword && password) {
+        setPasswordMatch(password === formData.confirmPassword);
+      } else if (!password) {
+        setPasswordMatch(null);
+      }
     }
   };
 
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const confirmPassword = e.target.value;
     setFormData((prev) => ({ ...prev, confirmPassword }));
-    setPasswordMatch(formData.password === confirmPassword);
+
+    // Only check password match for signup mode
+    if (authMode === 'signup' && formData.password && confirmPassword) {
+      setPasswordMatch(formData.password === confirmPassword);
+    } else if (authMode === 'signup' && !confirmPassword) {
+      setPasswordMatch(null);
+    }
   };
 
   const switchMode = () => {
+    // Clear any pending email check timeout
+    if (emailCheckTimeoutRef.current) {
+      clearTimeout(emailCheckTimeoutRef.current);
+      emailCheckTimeoutRef.current = null;
+    }
+
     setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
     setError('');
     setSuccess('');
     setFormData({ email: '', name: '', password: '', confirmPassword: '' });
     setPasswordMatch(null);
+    setPasswordLengthValid(null);
     setEmailAvailable(null);
     setEmailError(null);
+    setIsCheckingEmail(false);
   };
 
   const closeModal = () => {
+    // Clear any pending email check timeout
+    if (emailCheckTimeoutRef.current) {
+      clearTimeout(emailCheckTimeoutRef.current);
+      emailCheckTimeoutRef.current = null;
+    }
+
     setAuthModalOpen(false);
     setError('');
     setSuccess('');
     setFormData({ email: '', name: '', password: '', confirmPassword: '' });
     setPasswordMatch(null);
+    setPasswordLengthValid(null);
     setEmailAvailable(null);
     setEmailError(null);
+    setIsCheckingEmail(false);
+    setIsLoading(false);
+    setIsOauthLoading(false);
   };
 
   if (!authModalOpen) return null;
@@ -269,42 +349,70 @@ export function AuthModal() {
                   value={formData.email}
                   onChange={handleEmailChange}
                   required
+                  className=""
                 />
                 {isCheckingEmail && (
                   <div className="absolute top-1/2 right-3 -translate-y-1/2">
                     <Spinner className="h-4 w-4" />
                   </div>
                 )}
-                {emailAvailable === true && !isCheckingEmail && (
+                {formData.email && emailFormatValid === false && (
                   <div className="absolute top-1/2 right-3 -translate-y-1/2">
-                    <Badge variant="secondary" className="text-xs">
-                      {t('auth.available')}
-                    </Badge>
+                    <span className="text-xs font-medium text-red-600">
+                      ✗ {t('auth.invalidEmail')}
+                    </span>
                   </div>
                 )}
-                {emailAvailable === false && !isCheckingEmail && (
+                {formData.email && emailFormatValid === true && !isCheckingEmail && (
                   <div className="absolute top-1/2 right-3 -translate-y-1/2">
-                    <Badge variant="destructive" className="text-xs">
-                      {t('auth.taken')}
-                    </Badge>
+                    {authMode === 'signup' && emailAvailable !== null ? (
+                      emailAvailable ? (
+                        <span className="text-xs font-medium text-green-600">
+                          ✓ {t('auth.available')}
+                        </span>
+                      ) : (
+                        <span className="text-xs font-medium text-red-600">
+                          ✗ {t('auth.taken')}
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-xs font-medium text-green-600">
+                        ✓ {t('auth.validEmail')}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
-              {emailError && <p className="text-destructive text-sm">{emailError}</p>}
             </div>
 
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">
                 {t('common.password')}
               </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder={t('auth.passwordPlaceholder')}
-                value={formData.password}
-                onChange={handlePasswordChange}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder={t('auth.passwordPlaceholder')}
+                  value={formData.password}
+                  onChange={handlePasswordChange}
+                  required
+                  className=""
+                />
+                {authMode === 'signup' && formData.password && passwordLengthValid !== null && (
+                  <div className="absolute top-1/2 right-3 -translate-y-1/2 transform">
+                    {passwordLengthValid ? (
+                      <span className="text-xs font-medium text-green-600">
+                        ✓ {t('auth.passwordValid')}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-medium text-red-600">
+                        ✗ {t('auth.passwordTooShort')}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {authMode === 'signup' && (
@@ -312,19 +420,33 @@ export function AuthModal() {
                 <label htmlFor="confirmPassword" className="text-sm font-medium">
                   {t('auth.confirmPassword')}
                 </label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder={t('auth.confirmPasswordPlaceholder')}
-                  value={formData.confirmPassword}
-                  onChange={handleConfirmPasswordChange}
-                  required
-                />
-                {formData.confirmPassword && passwordMatch !== null && (
-                  <p className={`text-sm ${passwordMatch ? 'text-green-600' : 'text-destructive'}`}>
-                    {passwordMatch ? t('auth.passwordsMatch') : t('auth.passwordsDoNotMatch')}
-                  </p>
-                )}
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder={t('auth.confirmPasswordPlaceholder')}
+                    value={formData.confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                    required
+                    className=""
+                  />
+                  {authMode === 'signup' &&
+                    formData.confirmPassword &&
+                    formData.password &&
+                    passwordMatch !== null && (
+                      <div className="absolute top-1/2 right-3 -translate-y-1/2 transform">
+                        {passwordMatch ? (
+                          <span className="text-xs font-medium text-green-600">
+                            ✓ {t('auth.passwordsMatch')}
+                          </span>
+                        ) : (
+                          <span className="text-xs font-medium text-red-600">
+                            ✗ {t('auth.passwordsDoNotMatch')}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                </div>
               </div>
             )}
 

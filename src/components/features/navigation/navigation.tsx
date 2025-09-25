@@ -167,6 +167,8 @@ export function Navigation() {
                 <>
                   <Button
                     variant="outline"
+                    size="sm"
+                    className="border-brand text-brand hover:bg-brand/10 shadow-brand/20 hover:shadow-brand/30 cursor-pointer shadow-md transition-shadow hover:shadow-lg"
                     onClick={() => {
                       setAuthMode('signin');
                       setAuthModalOpen(true);
@@ -175,6 +177,8 @@ export function Navigation() {
                     {t('common.signIn')}
                   </Button>
                   <Button
+                    size="sm"
+                    className="bg-brand hover:bg-brand-600 shadow-brand/20 hover:shadow-brand/30 cursor-pointer text-white shadow-md transition-shadow hover:shadow-lg"
                     onClick={() => {
                       setAuthMode('signup');
                       setAuthModalOpen(true);
@@ -260,7 +264,7 @@ export function Navigation() {
           ) : (
             <>
               <button
-                className="w-full rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                className="border-brand text-brand hover:bg-brand/10 shadow-brand/20 hover:shadow-brand/30 w-full cursor-pointer rounded-md border px-3 py-2 text-left shadow-md transition-shadow hover:shadow-lg"
                 onClick={() => {
                   setAuthMode('signin');
                   setAuthModalOpen(true);
@@ -270,7 +274,7 @@ export function Navigation() {
                 {t('common.signIn')}
               </button>
               <button
-                className="w-full rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                className="bg-brand hover:bg-brand-600 shadow-brand/20 hover:shadow-brand/30 w-full cursor-pointer rounded-md px-3 py-2 text-left text-white shadow-md transition-shadow hover:shadow-lg"
                 onClick={() => {
                   setAuthMode('signup');
                   setAuthModalOpen(true);
