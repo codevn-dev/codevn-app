@@ -162,7 +162,7 @@ function ProfilePageContent() {
     <div className="py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <MotionContainer>
-          <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+          <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
             <CardHeader className="pb-4">
               <div className="flex items-center">
                 <AvatarUpload

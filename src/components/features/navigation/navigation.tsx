@@ -114,21 +114,13 @@ export function Navigation() {
             <div className="hidden items-center space-x-4 md:flex">
               {isAuthLoading ? null : isAuthenticated && user ? (
                 <>
-                  <Button
-                    variant="back"
-                    size="sm"
-                    onClick={() => router.push('/articles')}
-                  >
+                  <Button variant="back" size="sm" onClick={() => router.push('/articles')}>
                     <FileText className="mr-2 h-4 w-4" />
                     {t('nav.articles')}
                   </Button>
 
                   {isAdmin(user.role) && (
-                    <Button
-                      variant="back"
-                      size="sm"
-                      onClick={() => router.push('/admin')}
-                    >
+                    <Button variant="back" size="sm" onClick={() => router.push('/admin')}>
                       <Settings className="mr-2 h-4 w-4" />
                       {t('nav.admin')}
                     </Button>

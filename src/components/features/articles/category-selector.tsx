@@ -138,9 +138,9 @@ export function CategorySelector({
                   <span>{category.name}</span>
                   {category._count && (
                     <span
-                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      isSelected(category.id)
-                        ? 'bg-brand/40 text-brand'
+                      className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        isSelected(category.id)
+                          ? 'bg-brand/40 text-brand'
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >

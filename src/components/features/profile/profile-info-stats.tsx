@@ -35,7 +35,7 @@ export function ProfileInfoStats({
     <div className={cn('space-y-6', className)}>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <MotionContainer>
-          <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+          <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
             <CardBody className="flex flex-row items-center p-4">
               <Shield className="text-brand mr-3 h-5 w-5" />
               <div>
@@ -47,7 +47,7 @@ export function ProfileInfoStats({
         </MotionContainer>
 
         <MotionContainer>
-          <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+          <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
             <CardBody className="flex flex-row items-center p-4">
               <Calendar className="text-brand mr-3 h-5 w-5" />
               <div>
@@ -62,7 +62,7 @@ export function ProfileInfoStats({
       {statistics && (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           <MotionContainer>
-            <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+            <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
               <CardBody className="flex flex-row items-center p-4">
                 <FileText className="text-brand mr-3 h-5 w-5" />
                 <div>
@@ -76,7 +76,7 @@ export function ProfileInfoStats({
           </MotionContainer>
 
           <MotionContainer>
-            <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+            <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
               <CardBody className="flex flex-row items-center p-4">
                 <MessageSquare className="text-brand mr-3 h-5 w-5" />
                 <div>
@@ -92,7 +92,7 @@ export function ProfileInfoStats({
           </MotionContainer>
 
           <MotionContainer>
-            <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+            <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
               <CardBody className="flex flex-row items-center p-4">
                 <ThumbsUp className="text-brand mr-3 h-5 w-5" />
                 <div>
@@ -106,7 +106,7 @@ export function ProfileInfoStats({
           </MotionContainer>
 
           <MotionContainer>
-            <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+            <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
               <CardBody className="flex flex-row items-center p-4">
                 <ThumbsDown className="text-brand mr-3 h-5 w-5" />
                 <div>

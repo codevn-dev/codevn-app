@@ -366,7 +366,7 @@ export function HomepageContent() {
                     size="sm"
                     variant="back"
                     onClick={() => setOnlyMine((v) => !v)}
-                  className={`px-3 transition-colors ${
+                    className={`px-3 transition-colors ${
                       onlyMine ? 'bg-brand/10 text-brand-600' : ''
                     }`}
                   >

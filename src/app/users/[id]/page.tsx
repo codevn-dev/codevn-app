@@ -91,7 +91,7 @@ function UserProfileContent() {
   if (error) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+        <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
           <CardBody className="py-12 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <User className="h-6 w-6 text-red-600" />
@@ -127,7 +127,7 @@ function UserProfileContent() {
         </Button>
       </div>
 
-      <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+      <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
         <CardHeader className="pb-4">
           <div className="flex items-center">
             <Avatar className="h-20 w-20">
@@ -167,7 +167,7 @@ function UserProfileContent() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+              <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
                 <CardBody className="flex flex-row items-center p-4">
                   <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
@@ -179,7 +179,7 @@ function UserProfileContent() {
                 </CardBody>
               </Card>
 
-              <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+              <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
                 <CardBody className="flex flex-row items-center p-4">
                   <Calendar className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
@@ -193,7 +193,7 @@ function UserProfileContent() {
             {/* User Statistics */}
             {profile.statistics && (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+                <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
                   <CardBody className="flex flex-row items-center p-4">
                     <FileText className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
@@ -205,7 +205,7 @@ function UserProfileContent() {
                   </CardBody>
                 </Card>
 
-                <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+                <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
                   <CardBody className="flex flex-row items-center p-4">
                     <MessageSquare className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
@@ -219,7 +219,7 @@ function UserProfileContent() {
                   </CardBody>
                 </Card>
 
-                <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+                <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
                   <CardBody className="flex flex-row items-center p-4">
                     <ThumbsUp className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
@@ -233,7 +233,7 @@ function UserProfileContent() {
                   </CardBody>
                 </Card>
 
-                <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
+                <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
                   <CardBody className="flex flex-row items-center p-4">
                     <ThumbsDown className="mr-3 h-5 w-5 text-[#B8956A]" />
                     <div>
