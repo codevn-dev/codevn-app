@@ -650,7 +650,9 @@ export function HomepageContent() {
         {/* Leaderboard Section - Hidden on mobile, only show on xl+ screens */}
         <div className="hidden xl:absolute xl:top-0 xl:right-[-320px] xl:block xl:w-[320px] xl:max-w-[400px] xl:min-w-[320px] xl:flex-1">
           <div className="sticky top-6">
-            <Leaderboard />
+            <div className="rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
+              <Leaderboard />
+            </div>
           </div>
         </div>
       </div>

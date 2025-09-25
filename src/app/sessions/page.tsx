@@ -27,7 +27,6 @@ import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { MotionContainer, ClientOnly } from '@/components/layout';
 import { useAuthState } from '@/hooks/use-auth-state';
-import { useFastifyAuthStore } from '@/stores';
 import { apiGet, apiPost } from '@/lib/utils/api-client';
 import { useI18n } from '@/components/providers';
 interface Session {
@@ -45,8 +44,7 @@ interface Session {
 
 function SessionsPageContent() {
   const { t } = useI18n();
-  const { user, isAuthenticated, isLoading } = useAuthState();
-  const { signOut } = useFastifyAuthStore();
+  const { isAuthenticated, isLoading } = useAuthState();
   const router = useRouter();
 
   const [sessions, setSessions] = useState<Session[]>([]);

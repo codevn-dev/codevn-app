@@ -20,9 +20,6 @@ export class ProfileService extends BaseService {
       // Get user statistics
       const statistics = await userRepository.getUserStatistics(userId);
 
-      // Get active sessions
-      const redis = createRedisAuthService();
-
       const response: UserResponse = {
         user: {
           id: user.id,
