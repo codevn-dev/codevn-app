@@ -3,16 +3,6 @@
  * Centralized environment variables management for Next.js
  */
 
-// Database configuration
-export const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  name: process.env.DB_NAME || 'codevn',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'password',
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-} as const;
-
 // Auth configuration (includes JWT settings)
 export const authConfig = {
   secret: process.env.JWT_SECRET || 'your-super-secret-key-that-is-at-least-32-characters-long',
@@ -106,6 +96,16 @@ export const emailConfig = {
     pass: process.env.EMAIL_PASS || '',
   },
   from: process.env.EMAIL_FROM || 'noreply@codevn.com',
+} as const;
+
+// Database configuration
+export const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  name: process.env.DB_NAME || 'codevn',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'password',
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 } as const;
 
 // Redis configuration (if needed)
