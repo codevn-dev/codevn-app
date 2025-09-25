@@ -222,6 +222,8 @@ export class ArticlesService extends BaseService {
         reactionsRepository.getReactionsByArticle(article.id, 'unlike'),
       ]);
 
+      const views = await articleRepository.getViewCount(article.id);
+
       const response: Article = {
         id: article.id,
         title: article.title,
@@ -232,6 +234,7 @@ export class ArticlesService extends BaseService {
         published: article.published,
         createdAt: article.createdAt as any,
         updatedAt: article.updatedAt as any,
+        views,
         author: {
           id: article.authorId,
           name: article.author?.name || 'Unknown',
@@ -258,27 +261,31 @@ export class ArticlesService extends BaseService {
     }
   }
 
+  // Legacy increment removed; views are now recorded via trackArticleView
+
   /**
-   * Increment article view count
+   * Track a validated view with optional session/user uniqueness and metadata
    */
-  async incrementArticleViews(articleId: string): Promise<SuccessResponse> {
+  async trackArticleView(
+    articleId: string,
+    opts: {
+      userId?: string | null;
+      sessionId?: string | null;
+      countryCode?: string | null;
+      device?: string | null;
+    }
+  ): Promise<SuccessResponse> {
     try {
-      if (!articleId) {
-        throw new Error('Article ID is required');
-      }
+      if (!articleId) throw new Error('Article ID is required');
 
-      // Check if article exists
+      // Ensure article exists
       const article = await articleRepository.findById(articleId);
-      if (!article) {
-        throw new Error('Article not found');
-      }
+      if (!article) throw new Error('Article not found');
 
-      // Increment view count
-      await articleRepository.incrementViewsById(articleId);
-
+      await articleRepository.recordArticleView({ articleId, ...opts });
       return { success: true };
     } catch (error) {
-      this.handleError(error, 'Increment article views');
+      this.handleError(error, 'Track article view');
     }
   }
 

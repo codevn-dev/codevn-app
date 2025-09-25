@@ -10,6 +10,7 @@ import { logger } from '@/lib/utils/logger';
 
 async function buildServer() {
   const fastify = Fastify({
+    disableRequestLogging: true,
     logger: {
       level: config.logging.level,
       ...(process.env.NODE_ENV !== 'production'
@@ -19,7 +20,7 @@ async function buildServer() {
               options: {
                 colorize: true,
                 translateTime: 'HH:MM:ss.l',
-                ignore: 'pid,hostname',
+                ignore: 'pid,hostname,reqId',
               },
             },
           }
@@ -39,6 +40,21 @@ async function buildServer() {
 
   // Setup routes
   await setupRoutes(fastify);
+
+  // Unified request logging (method, url, ip, status). No reqId.
+  fastify.addHook('onResponse', (request, reply, done) => {
+    try {
+      fastify.log.info({
+        method: request.method,
+        url: request.url,
+        ip: request.ip,
+        statusCode: reply.statusCode,
+      });
+    } catch {
+      // no-op
+    }
+    done();
+  });
 
   return fastify;
 }

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { ArticleContent } from '@/features/articles';
 import { PreviewGuard } from '@/components/layout';
 import { config } from '@/config';
-import { apiGet, apiPost } from '@/lib/utils/api-client';
+import { apiGet } from '@/lib/utils/api-client';
 import type { Article } from '@/types/shared/article';
 
 interface ArticlePageProps {
@@ -29,8 +29,7 @@ export default async function ArticlePage({
     notFound();
   }
 
-  // Increment view count via API (fire and forget)
-  apiPost(`/api/articles/${article.id}/views`).catch(() => {}); // Ignore errors for view counting
+  // Old immediate increment removed in favor of validated tracking
 
   // Data is already complete from API response, no need for additional queries
 

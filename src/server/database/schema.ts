@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, boolean, pgEnum, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, boolean, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm/relations';
 
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin']);
@@ -43,7 +43,6 @@ export const articles = pgTable('articles', {
     .notNull()
     .references(() => users.id),
   published: boolean('published').notNull().default(false),
-  views: integer('views').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at'),
   deletedAt: timestamp('deleted_at'),
@@ -169,6 +168,30 @@ export const messagesRelations = relations(messages, ({ one }) => ({
   }),
   toUser: one(users, {
     fields: [messages.toUserId],
+    references: [users.id],
+  }),
+}));
+
+// Article views table for analytics and unique view tracking
+export const articleViews = pgTable('articles_views', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  articleId: uuid('article_id')
+    .notNull()
+    .references(() => articles.id),
+  userId: uuid('user_id').references(() => users.id),
+  sessionId: text('session_id'),
+  countryCode: text('country_code'),
+  device: text('device'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const articleViewsRelations = relations(articleViews, ({ one }) => ({
+  article: one(articles, {
+    fields: [articleViews.articleId],
+    references: [articles.id],
+  }),
+  user: one(users, {
+    fields: [articleViews.userId],
     references: [users.id],
   }),
 }));

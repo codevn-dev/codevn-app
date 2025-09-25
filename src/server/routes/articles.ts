@@ -143,14 +143,49 @@ export async function articleRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /api/articles/:id/views - Increment article view count
+  // Legacy /:id/views removed; use /:id/track-view
+
+  // POST /api/articles/:id/track-view - Track a validated unique view with metadata
   fastify.post<{ Params: { id: string } }>(
-    '/:id/views',
+    '/:id/track-view',
+    {
+      preHandler: optionalAuthMiddleware,
+    },
     async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
       try {
+        const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
-        const response = await articlesService.incrementArticleViews(id);
-        return reply.send(response);
+        const ua = (request.headers['user-agent'] as string) || '';
+        const isBot = /bot|crawler|spider|crawling|preview|pingdom|ahrefs|semrush/i.test(ua);
+
+        // Skip tracking for bots
+        if (isBot) {
+          return reply.send({ success: true });
+        }
+
+        // Get country code from Cloudflare header
+        const countryCode = (request.headers['cf-ipcountry'] as string) || null;
+
+        // Detect device type from user agent
+        const detectDevice = (userAgent: string): string => {
+          if (/tablet|ipad/i.test(userAgent)) return 'tablet';
+          if (/mobile|android|iphone|ipod|blackberry|windows phone/i.test(userAgent))
+            return 'mobile';
+          return 'desktop';
+        };
+        const device = detectDevice(ua);
+
+        // Accept optional metadata from client
+        const body = (request as any).body || {};
+        const sessionId = typeof body.sessionId === 'string' ? body.sessionId : undefined;
+
+        await articlesService.trackArticleView(id, {
+          userId: authRequest.user?.id || null,
+          sessionId: sessionId || null,
+          countryCode,
+          device,
+        });
+        return reply.send({ success: true });
       } catch {
         return reply.status(500).send({ error: 'Internal server error' });
       }

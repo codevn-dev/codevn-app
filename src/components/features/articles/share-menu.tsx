@@ -133,7 +133,8 @@ export function ShareMenu({ url, title, size = 'sm' }: ShareMenuProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="back" size={size} className="hover:border-blue-600 hover:text-blue-600">
-          <Share className="mr-1 h-4 w-4" /> {t('share.share')}
+          <Share className="mr-1 h-4 w-4" />
+          <span suppressHydrationWarning>{t('share.share')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="rounded-2xl">

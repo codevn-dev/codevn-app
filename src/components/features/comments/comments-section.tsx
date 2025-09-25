@@ -326,6 +326,24 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                 </div>
               </div>
             )}
+            {!isAuthLoading && !isAuthenticated && (
+              <div className="border-brand/20 mb-3 rounded-lg border bg-white p-6 text-center">
+                <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+                <p className="text-gray-600">
+                  {t('comments.signInToPost.prefix')}{' '}
+                  <button
+                    onClick={() => {
+                      setAuthMode('signin');
+                      setAuthModalOpen(true);
+                    }}
+                    className="cursor-pointer font-medium text-blue-600 underline hover:text-blue-800"
+                  >
+                    {t('common.signIn')}
+                  </button>{' '}
+                  {t('comments.signInToPost.suffix')}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -401,25 +419,6 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
               </div>
             )}
           </motion.div>
-        )}
-
-        {!isAuthLoading && !isAuthenticated && (
-          <div className="border-brand/20 mt-4 rounded-lg border bg-gray-50 p-6 text-center">
-            <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-            <p className="text-gray-600">
-              {t('comments.signInToPost.prefix')}{' '}
-              <button
-                onClick={() => {
-                  setAuthMode('signin');
-                  setAuthModalOpen(true);
-                }}
-                className="cursor-pointer font-medium text-blue-600 underline hover:text-blue-800"
-              >
-                {t('common.signIn')}
-              </button>{' '}
-              {t('comments.signInToPost.suffix')}
-            </p>
-          </div>
         )}
       </div>
     );

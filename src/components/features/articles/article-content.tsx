@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { modalOverlay, modalContent } from '@/components/layout/motion-presets';
 import { MotionContainer } from '@/components/layout';
@@ -53,6 +53,7 @@ import { SuccessResponse } from '@/types/shared/common';
 import { useI18n } from '@/components/providers';
 import { ReactionRequest } from '@/types/shared/article';
 import { formatDateTime } from '@/lib/utils/time-format';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ArticleContentProps {
   article: Article;
@@ -88,6 +89,134 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
       window.scrollTo(0, 0);
     }
   }, []);
+
+  // Precompute dynamic dwell threshold (2 → 10s) based on article length
+  const dwellThreshold = useMemo(() => {
+    try {
+      const text = (article.content || '')
+        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&[a-zA-Z#0-9]+;/g, ' ');
+      const words = text
+        .split(/\s+/)
+        .map((w) => w.trim())
+        .filter(Boolean).length;
+      if (words <= 200) return 2;
+      if (words <= 400) return 4;
+      if (words <= 800) return 7;
+      return 10;
+    } catch {
+      return 7;
+    }
+  }, [article.content]);
+
+  // Track validated view: unique per session/article, dwell >= dwellThreshold OR scroll >= 30%
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    // Do not track in preview mode
+    if (isPreview) return;
+
+    // Session id in localStorage
+    const KEY = 'cvn_session_id_v1';
+    let sessionId = '';
+    try {
+      sessionId = localStorage.getItem(KEY) || '';
+      if (!sessionId) {
+        sessionId = uuidv4();
+        localStorage.setItem(KEY, sessionId);
+      }
+    } catch {}
+
+    // Per-article guard to avoid multiple sends this visit
+    const sentKey = `cvn_view_sent_${article.id}`;
+    if (sessionStorage.getItem(sentKey) === '1') return;
+
+    let maxScroll = 0;
+    let dwellSeconds = 0;
+    let sent = false;
+    const scrollThreshold = 30; // percent
+
+    // Check if content fits in one page (from title to before comments)
+    const checkIfContentFitsInOnePage = () => {
+      const articleRoot = document.querySelector('[data-article-root]');
+      if (!articleRoot) return false;
+
+      const titleElement = articleRoot.querySelector('h1');
+      const commentsSection =
+        articleRoot.querySelector('[data-comments-section]') ||
+        articleRoot.querySelector('h2, h3')?.textContent?.includes('comment')
+          ? articleRoot.querySelector('h2, h3')
+          : null;
+
+      if (!titleElement) return false;
+
+      const titleTop = titleElement.getBoundingClientRect().top + window.scrollY;
+      const contentBottom = commentsSection
+        ? commentsSection.getBoundingClientRect().top + window.scrollY
+        : articleRoot.getBoundingClientRect().bottom + window.scrollY;
+
+      const contentHeight = contentBottom - titleTop;
+      const viewportHeight = window.innerHeight;
+
+      // If content height is less than viewport height, it fits in one page
+      return contentHeight <= viewportHeight;
+    };
+
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const scrollTop = window.scrollY || doc.scrollTop || 0;
+      const scrollHeight = doc.scrollHeight - doc.clientHeight || 1;
+      const percent = Math.max(0, Math.min(100, Math.round((scrollTop / scrollHeight) * 100)));
+      if (percent > maxScroll) maxScroll = percent;
+    };
+
+    const interval = window.setInterval(() => {
+      dwellSeconds += 1;
+      trySend();
+    }, 1000);
+
+    const trySend = () => {
+      if (sent) return;
+
+      // Check if content fits in one page
+      const fitsInOnePage = checkIfContentFitsInOnePage();
+
+      // If content fits in one page, only check dwell time
+      // Otherwise, check both dwell time and scroll depth
+      const shouldSend = fitsInOnePage
+        ? dwellSeconds >= dwellThreshold
+        : dwellSeconds >= dwellThreshold || maxScroll >= scrollThreshold;
+
+      if (shouldSend) {
+        sent = true;
+        sessionStorage.setItem(sentKey, '1');
+        apiPost(`/api/articles/${article.id}/track-view`, {
+          sessionId,
+        }).catch(() => {});
+        cleanup();
+      }
+    };
+
+    const cleanup = () => {
+      window.removeEventListener('scroll', onScroll, { capture: false } as any);
+      window.clearInterval(interval);
+    };
+
+    // Only add scroll listener if content might not fit in one page
+    const fitsInOnePage = checkIfContentFitsInOnePage();
+    if (!fitsInOnePage) {
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
+
+    // Fallback: if user is authenticated, send immediately once
+    if (isAuthenticated) {
+      trySend();
+    }
+
+    return cleanup;
+  }, [article.id, isAuthenticated, isPreview, dwellThreshold]);
 
   // Derive effective UI states that never show as active when logged out
   const likedEffective = isAuthenticated ? isLiked : false;
@@ -309,7 +438,10 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                       <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-900">{article.author.name}</span>
                       </div>
-                      <div className="flex items-center text-xs text-gray-500">
+                      <div
+                        className="flex items-center text-xs text-gray-500"
+                        suppressHydrationWarning
+                      >
                         <Calendar className="mr-1 h-3 w-3" />
                         {formatDateTime(article.createdAt)}
                       </div>
@@ -318,25 +450,23 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                  {typeof article.views === 'number' && (
-                    <span className="flex items-center text-sm text-gray-600">
-                      <Eye className="mr-1 h-4 w-4" />
-                      {article.views}
-                    </span>
-                  )}
+                  <span className="text-brand flex items-center text-sm">
+                    <Eye className="mr-1 h-4 w-4" />
+                    {typeof article.views === 'number' ? article.views : 0}
+                  </span>
                   <Button
                     variant="back"
                     size="sm"
                     onClick={handleLike}
                     className={`transition-colors duration-200 ${
                       likedEffective
-                        ? 'border-green-600 text-green-600 hover:border-green-700 hover:bg-green-50'
-                        : 'hover:border-green-600 hover:text-green-600'
+                        ? 'border-emerald-500 bg-emerald-50/50 text-emerald-600 hover:border-emerald-600 hover:bg-emerald-50'
+                        : 'hover:border-emerald-500 hover:bg-emerald-50/30 hover:text-emerald-600'
                     }`}
                   >
                     <ThumbsUp
                       className={`mr-1 h-4 w-4 transition-colors duration-200 ${
-                        likedEffective ? 'fill-current text-green-600' : 'text-gray-500'
+                        likedEffective ? 'fill-current text-emerald-600' : 'text-brand'
                       }`}
                     />
                     {likeCount}
@@ -347,13 +477,13 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                     onClick={handleUnlike}
                     className={`transition-colors duration-200 ${
                       unlikedEffective
-                        ? 'border-red-600 text-red-600 hover:border-red-700 hover:bg-red-50'
-                        : 'hover:border-red-600 hover:text-red-600'
+                        ? 'border-rose-500 bg-rose-50/50 text-rose-600 hover:border-rose-600 hover:bg-rose-50'
+                        : 'hover:border-rose-500 hover:bg-rose-50/30 hover:text-rose-600'
                     }`}
                   >
                     <ThumbsDown
                       className={`mr-1 h-4 w-4 transition-colors duration-200 ${
-                        unlikedEffective ? 'fill-current text-red-600' : 'text-gray-500'
+                        unlikedEffective ? 'fill-current text-rose-600' : 'text-brand'
                       }`}
                     />
                     {unlikeCount}
@@ -380,7 +510,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 />
               </MotionContainer>
 
-              <div className="mt-6 pt-0 sm:mt-8 sm:pt-0">
+              <div className="mt-6 pt-0 sm:mt-8 sm:pt-0" data-comments-section>
                 <CommentsSection
                   ref={commentsSectionRef}
                   articleId={article.id}

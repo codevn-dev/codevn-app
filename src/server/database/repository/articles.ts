@@ -1,5 +1,5 @@
 import { getDb } from '..';
-import { articles, comments, reactions, categories, users } from '../schema';
+import { articles, comments, reactions, categories, users, articleViews } from '../schema';
 import { and, eq, or, ilike, isNull, sql, count, inArray, exists } from 'drizzle-orm';
 import { Article as SharedArticle } from '@/types/shared/article';
 
@@ -89,11 +89,55 @@ export class ArticleRepository {
     });
   }
 
-  async incrementViewsById(id: string) {
-    await getDb()
-      .update(articles)
-      .set({ views: sql`${articles.views} + 1` })
-      .where(eq(articles.id, id));
+  // Removed direct counter increment; views are derived from articleViews table
+
+  async recordArticleView(params: {
+    articleId: string;
+    userId?: string | null;
+    sessionId?: string | null;
+    countryCode?: string | null;
+    device?: string | null;
+  }) {
+    const {
+      articleId,
+      userId = null,
+      sessionId = null,
+      countryCode = null,
+      device = null,
+    } = params;
+
+    // Unique per (articleId + sessionId) OR (articleId + userId) in recent window (e.g., 12h)
+    // For simplicity now, check any existing by exact pair and skip if exists
+    const db = getDb();
+    if (userId) {
+      const existing = await db.query.articleViews.findFirst({
+        where: and(eq(articleViews.articleId, articleId), eq(articleViews.userId, userId)),
+      });
+      if (existing) return { created: false } as const;
+    }
+    if (sessionId) {
+      const existing = await db.query.articleViews.findFirst({
+        where: and(eq(articleViews.articleId, articleId), eq(articleViews.sessionId, sessionId)),
+      });
+      if (existing) return { created: false } as const;
+    }
+
+    await db.insert(articleViews).values({
+      articleId,
+      userId: userId || null,
+      sessionId: sessionId || null,
+      countryCode: countryCode || null,
+      device: device || null,
+    });
+    return { created: true } as const;
+  }
+
+  async getViewCount(articleId: string) {
+    const res = await getDb()
+      .select({ count: count() })
+      .from(articleViews)
+      .where(eq(articleViews.articleId, articleId));
+    return res[0]?.count || 0;
   }
 
   async findManyWithPagination(filters: ArticleFilters): Promise<PaginatedArticles> {
@@ -216,10 +260,10 @@ export class ArticleRepository {
       offset,
     });
 
-    // Get comment, like, and unlike counts for each article
+    // Get comment, like, unlike counts and views for each article
     const articlesWithCounts: SharedArticle[] = await Promise.all(
       articlesData.map(async (article) => {
-        const [commentCount, likeCount, unlikeCount, userHasLiked, userHasUnliked] =
+        const [commentCount, likeCount, unlikeCount, viewCount, userHasLiked, userHasUnliked] =
           await Promise.all([
             getDb()
               .select({ count: count() })
@@ -233,6 +277,10 @@ export class ArticleRepository {
               .select({ count: count() })
               .from(reactions)
               .where(and(eq(reactions.articleId, article.id), eq(reactions.type, 'unlike'))),
+            getDb()
+              .select({ count: count() })
+              .from(articleViews)
+              .where(eq(articleViews.articleId, article.id)),
             userId
               ? getDb().query.reactions.findFirst({
                   where: and(
@@ -255,6 +303,7 @@ export class ArticleRepository {
 
         return {
           ...article,
+          views: viewCount[0]?.count || 0,
           _count: {
             comments: commentCount[0]?.count || 0,
             likes: likeCount[0]?.count || 0,
