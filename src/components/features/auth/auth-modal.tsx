@@ -465,8 +465,8 @@ export function AuthModal() {
             {/* Submit button (Sign In / Create Account) - match header Sign In */}
             <Button
               type="submit"
-              variant="back"
-              className="border-brand w-full border py-3 text-lg font-bold"
+              variant="primary"
+              className="w-full py-3 text-lg font-bold"
               disabled={isLoading}
             >
               {isLoading ? (

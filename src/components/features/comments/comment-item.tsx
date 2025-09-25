@@ -319,7 +319,7 @@ export function CommentItem({
                               setIsEditing(true);
                               setShowDropdown(false);
                             }}
-                            className="flex w-full items-center px-3 py-2 text-left text-sm hover:bg-gray-50"
+                            className="flex w-full items-center px-3 py-2 text-left text-sm text-brand hover:bg-brand/10"
                           >
                             <Edit className="mr-2 h-3 w-3" />
                             Edit

@@ -251,7 +251,7 @@ function UserProfileContent() {
 
             {!isOwnProfile && (
               <div className="flex justify-end pt-6">
-                <Button onClick={handleMessage} size="lg">
+                <Button onClick={handleMessage} variant="primary" size="lg">
                   <MessageCircle className="mr-2 h-4 w-4" />
                   {t('chat.sendMessage') || 'Send Message'}
                 </Button>

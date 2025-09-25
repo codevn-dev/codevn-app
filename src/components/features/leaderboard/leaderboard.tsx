@@ -127,7 +127,7 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
         return <Award className="h-5 w-5 text-amber-600" />;
       default:
         return (
-          <span className={`${isPageVariant ? 'text-lg' : 'text-sm'} font-bold text-gray-500`}>
+          <span className={`${isPageVariant ? 'text-sm' : 'text-xs'} font-bold text-gray-500`}>
             {index + 1}
           </span>
         );
@@ -295,7 +295,7 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
                         className={`flex min-h-[72px] cursor-pointer items-center gap-3 rounded-xl p-3 ${
                           index < 3
                             ? 'border border-gray-200 bg-gradient-to-r from-gray-50 to-white'
-                            : 'hover:bg-gray-50'
+                            : 'hover:bg-brand/10'
                         }`}
                         onClick={() => setOpenDropdownId(isDropdownOpen ? null : entry.user.id)}
                       >
@@ -397,7 +397,7 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
                             <div className="py-1">
                               <button
                                 onClick={() => handleViewProfile(entry.user)}
-                                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-brand transition-colors hover:bg-brand/10"
                               >
                                 <UserIcon className="text-brand h-4 w-4" />
                                 <span>View Profile</span>
@@ -408,7 +408,7 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
                               <div className="py-1">
                                 <button
                                   onClick={() => handleChat(entry.user)}
-                                  className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                                  className="flex w-full items-center gap-3 px-4 py-2 text-sm text-brand transition-colors hover:bg-brand/10"
                                 >
                                   <MessageCircle className="text-brand-600 h-4 w-4" />
                                   <span>Chat</span>

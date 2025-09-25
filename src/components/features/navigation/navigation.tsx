@@ -145,7 +145,7 @@ export function Navigation() {
                         <Button variant="ghost" className="relative h-[38px] w-[38px] rounded-full">
                           <Avatar className="h-[38px] w-[38px]">
                             <AvatarImage src={user.avatar || undefined} />
-                            <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
+                            <AvatarFallback className="bg-gray-900 text-white">
                               {user.name?.charAt(0).toUpperCase() || 'U'}
                             </AvatarFallback>
                           </Avatar>
@@ -158,14 +158,14 @@ export function Navigation() {
                       >
                         <DropdownMenuItem
                           onClick={() => router.push('/profile')}
-                          className="cursor-pointer bg-white hover:bg-gray-50 focus:bg-gray-50"
+                          className="cursor-pointer bg-white text-gray-900 hover:bg-brand/10 focus:bg-brand/10"
                         >
                           <User className="mr-2 h-4 w-4" />
                           {t('nav.editProfile')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => router.push('/sessions')}
-                          className="cursor-pointer bg-white hover:bg-gray-50 focus:bg-gray-50"
+                          className="cursor-pointer bg-white text-gray-900 hover:bg-brand/10 focus:bg-brand/10"
                         >
                           <Shield className="mr-2 h-4 w-4" />
                           {t('sessions.title')}

@@ -296,7 +296,7 @@ function SessionsPageContent() {
                       className={`flex min-h-[72px] items-center gap-3 rounded-xl p-3 ${
                         session.isCurrent
                           ? 'border border-blue-200 bg-gradient-to-r from-blue-50 to-white'
-                          : 'hover:bg-gray-50'
+                          : 'hover:bg-brand/10'
                       }`}
                     >
                       {/* Device Icon */}

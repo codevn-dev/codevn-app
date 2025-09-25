@@ -720,21 +720,25 @@ function AdminPageContent() {
                   </Button>
                 </div>
 
-                <Dialog
-                  open={showCategoryForm}
-                  onOpenChange={(open) => {
-                    setShowCategoryForm(open);
-                    if (!open) resetForm();
-                  }}
-                >
-                  <DialogContent className="p-6">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editingCategory
-                          ? t('common.update') + ' ' + t('admin.categories')
-                          : t('admin.category.new')}
-                      </DialogTitle>
-                    </DialogHeader>
+                {/* Category Form Modal */}
+                {showCategoryForm && (
+                  <div 
+                    className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 backdrop-blur-sm pt-8"
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) {
+                        setShowCategoryForm(false);
+                        resetForm();
+                      }
+                    }}
+                  >
+                    <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6">
+                      <div className="mb-4">
+                        <h2 className="text-lg font-semibold">
+                          {editingCategory
+                            ? t('common.update') + ' ' + t('admin.categories')
+                            : t('admin.category.new')}
+                        </h2>
+                      </div>
 
                     <form
                       id="category-form"
@@ -792,37 +796,44 @@ function AdminPageContent() {
                             <SelectItem value="none">{t('admin.category.noParentRoot')}</SelectItem>
                             {categories.map((category) => (
                               <SelectItem key={category.id} value={category.id}>
-                                {category.name}
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="h-3 w-3 rounded-full"
+                                    style={{ backgroundColor: category.color }}
+                                  />
+                                  {category.name}
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
 
-                      {categoryError && <p className="text-sm text-red-600">{categoryError}</p>}
-                    </form>
+                        {categoryError && <p className="text-sm text-red-600">{categoryError}</p>}
 
-                    <DialogFooter>
-                      <Button variant="back" onClick={resetForm}>
-                        {t('common.cancel')}
-                      </Button>
-                      <Button type="submit" form="category-form" disabled={isSubmitting}>
-                        {isSubmitting ? (
-                          <>
-                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            {editingCategory
-                              ? t('common.update') + '...'
-                              : t('common.create') + '...'}
-                          </>
-                        ) : editingCategory ? (
-                          t('common.update')
-                        ) : (
-                          t('common.create')
-                        )}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                        <div className="mt-6 flex justify-end gap-2">
+                          <Button variant="back" onClick={resetForm}>
+                            {t('common.cancel')}
+                          </Button>
+                          <Button type="submit" variant="primary" disabled={isSubmitting}>
+                            {isSubmitting ? (
+                              <>
+                                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                {editingCategory
+                                  ? t('common.update') + '...'
+                                  : t('common.create') + '...'}
+                              </>
+                            ) : editingCategory ? (
+                              t('common.update')
+                            ) : (
+                              t('common.create')
+                            )}
+                          </Button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid gap-4 sm:gap-6">
                   {categories.length === 0 ? (

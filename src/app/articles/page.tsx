@@ -462,7 +462,13 @@ function ArticlesContent() {
                     <SelectItem value="all">{t('articles.allCategories')}</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-                        {category.name}
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: category.color }}
+                          />
+                          {category.name}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -647,7 +653,7 @@ function ArticlesContent() {
                                           handleTogglePublish(article);
                                           setOpenDropdown(null);
                                         }}
-                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
+                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-brand hover:bg-brand/10"
                                       >
                                         {article.published ? (
                                           <>
@@ -674,7 +680,7 @@ function ArticlesContent() {
                                             }
                                             setOpenDropdown(null);
                                           }}
-                                          className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
+                                          className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-brand hover:bg-brand/10"
                                         >
                                           <ExternalLink className="mr-2 h-4 w-4" />
                                           {article.published
@@ -688,7 +694,7 @@ function ArticlesContent() {
                                           handleEditArticle(article);
                                           setOpenDropdown(null);
                                         }}
-                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
+                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-brand hover:bg-brand/10"
                                       >
                                         <Edit className="mr-2 h-4 w-4" />
                                         {t('common.edit')}
@@ -944,6 +950,7 @@ function ArticlesContent() {
                     </Button>
                     <Button
                       type="submit"
+                      variant="primary"
                       onClick={editingArticle ? handleUpdateArticle : handleCreateArticle}
                       disabled={!editingArticle && isCreateDisabled}
                     >

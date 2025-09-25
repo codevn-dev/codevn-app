@@ -103,7 +103,7 @@ export function AvatarWithDropdown({
           <div className="flex items-center gap-2">
             <Avatar className={sizeClasses[size]}>
               <AvatarImage src={user.avatar || undefined} />
-              <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
+              <AvatarFallback className="bg-gray-900 text-white">
                 {user.name?.charAt(0).toUpperCase() || '?'}
               </AvatarFallback>
             </Avatar>
@@ -122,9 +122,9 @@ export function AvatarWithDropdown({
               <div className="py-1">
                 <button
                   onClick={handleViewProfile}
-                  className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                  className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-brand/10"
                 >
-                  <UserIcon className="text-brand h-4 w-4" />
+                  <UserIcon className="text-gray-900 h-4 w-4" />
                   <span>View Profile</span>
                 </button>
               </div>
@@ -162,9 +162,9 @@ export function AvatarWithDropdown({
             <div className="py-1">
               <button
                 onClick={handleViewProfile}
-                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-brand/10"
               >
-                <UserIcon className="text-brand h-4 w-4" />
+                <UserIcon className="text-gray-900 h-4 w-4" />
                 <span>View Profile</span>
               </button>
             </div>
@@ -172,9 +172,9 @@ export function AvatarWithDropdown({
             <div className="py-1">
               <button
                 onClick={handleChat}
-                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-brand/10"
               >
-                <MessageCircle className="text-brand-600 h-4 w-4" />
+                <MessageCircle className="text-gray-900 h-4 w-4" />
                 <span>Chat</span>
               </button>
             </div>

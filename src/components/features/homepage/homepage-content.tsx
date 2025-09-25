@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageSquare, BookOpen, Calendar, Eye, X, ThumbsUp, ArrowUp } from 'lucide-react';
+import { MessageSquare, BookOpen, Calendar, Eye, X, ThumbsUp, ArrowUp, Trophy } from 'lucide-react';
 import { useForumStore } from '@/stores';
 import { CategorySelector } from '@/features/articles';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -651,6 +651,17 @@ export function HomepageContent() {
         <div className="hidden xl:absolute xl:top-0 xl:right-[-320px] xl:block xl:w-[320px] xl:max-w-[400px] xl:min-w-[320px] xl:flex-1">
           <div className="sticky top-6">
             <div className="rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
+              <div className="mb-4 sm:mb-6">
+                <div className="flex items-center justify-center gap-2">
+                  <Trophy className="h-6 w-6 text-yellow-500" />
+                  <h2
+                    className="text-lg font-bold text-gray-900 sm:text-xl"
+                    suppressHydrationWarning
+                  >
+                    {mounted ? t('leaderboard.title') : ''}
+                  </h2>
+                </div>
+              </div>
               <Leaderboard />
             </div>
           </div>

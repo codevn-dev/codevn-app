@@ -88,17 +88,15 @@ export function CategorySelector({
                         key={child.id}
                         onClick={() => onCategoryToggle(child.id)}
                         className={`group flex items-center rounded-lg px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:text-sm ${
-                          isSelected(child.id) ? 'bg-brand/40 font-semibold' : 'hover:bg-gray-50'
+                          isSelected(child.id) ? 'bg-brand/40 font-semibold' : 'hover:bg-brand/10'
                         }`}
                       >
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-2">
                           <div
-                            className="mr-2 h-2 w-2 rounded-full"
-                            style={{
-                              backgroundColor: isSelected(child.id) ? 'white' : child.color,
-                            }}
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: child.color }}
                           />
-                          <span className="ml-2">{child.name}</span>
+                          <span className="text-brand">{child.name}</span>
                           {child._count && (
                             <span
                               className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -128,12 +126,12 @@ export function CategorySelector({
                 }`}
                 onClick={() => onCategoryToggle(category.id)}
               >
-                <div className="flex items-center">
+                <div className="flex items-center gap-2">
                   <div
-                    className="mr-2 h-2 w-2 rounded-full"
-                    style={{ backgroundColor: isSelected(category.id) ? 'white' : category.color }}
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: category.color }}
                   ></div>
-                  <span>{category.name}</span>
+                  <span className="text-brand">{category.name}</span>
                   {category._count && (
                     <span
                       className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
