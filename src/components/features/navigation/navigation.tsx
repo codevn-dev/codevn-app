@@ -175,7 +175,7 @@ export function Navigation() {
                     {t('common.signIn')}
                   </Button>
                   <Button
-                    variant="back"
+                    variant="primary"
                     size="sm"
                     onClick={() => {
                       setAuthMode('signup');

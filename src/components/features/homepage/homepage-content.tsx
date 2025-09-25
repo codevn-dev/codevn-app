@@ -377,12 +377,13 @@ export function HomepageContent() {
                   size="sm"
                   variant="back"
                   onClick={() => {
+                    const canClear =
+                      onlyMine || selectedCategoryNames.length > 0 || !!debouncedSearch;
+                    if (!canClear) return;
                     setOnlyMine(false);
                     setSelectedCategoryNames([]);
                     setSearchTerm('');
                   }}
-                  disabled={!(onlyMine || selectedCategoryNames.length > 0 || debouncedSearch)}
-                  className="font-medium"
                 >
                   <span suppressHydrationWarning>{mounted ? t('home.clearFilters') : ''}</span>
                 </Button>
@@ -612,12 +613,12 @@ export function HomepageContent() {
               </p>
               <Button
                 size="sm"
+                variant="back"
                 onClick={() => {
                   setOnlyMine(false);
                   setSelectedCategoryNames([]);
                   setSearchTerm('');
                 }}
-                className="from-brand to-brand-700 hover:from-brand-600 hover:to-brand-700 bg-gradient-to-r font-semibold text-white"
               >
                 {selectedCategoryNames.length > 0 ? 'Clear Filters' : 'Explore Topics'}
               </Button>

@@ -54,7 +54,7 @@ export function CategorySelector({
                       <span
                         className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
                           isSelected(category.id)
-                            ? 'bg-brand/40 text-brand'
+                            ? 'bg-brand/40 text-white'
                             : 'bg-gray-100 text-gray-600'
                         }`}
                       >
@@ -87,10 +87,8 @@ export function CategorySelector({
                       <DropdownMenuItem
                         key={child.id}
                         onClick={() => onCategoryToggle(child.id)}
-                        className={`group flex transform items-center rounded-lg px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:text-sm ${
-                          isSelected(child.id)
-                            ? 'from-brand to-brand-700 bg-gradient-to-r text-white'
-                            : 'text-gray-700 hover:bg-gray-50'
+                        className={`group flex items-center rounded-lg px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:scale-[1.02] sm:text-sm ${
+                          isSelected(child.id) ? 'bg-brand/40 font-semibold' : 'hover:bg-gray-50'
                         }`}
                       >
                         <div className="flex items-center">
@@ -105,7 +103,7 @@ export function CategorySelector({
                             <span
                               className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
                                 isSelected(child.id)
-                                  ? 'bg-white/20 text-white'
+                                  ? 'bg-brand/40 text-white'
                                   : 'bg-gray-200 text-gray-600'
                               }`}
                             >
@@ -140,7 +138,7 @@ export function CategorySelector({
                     <span
                       className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
                         isSelected(category.id)
-                          ? 'bg-brand/40 text-brand'
+                          ? 'bg-brand/40 text-white'
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >

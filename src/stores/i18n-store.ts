@@ -66,7 +66,7 @@ const store: Dictionary = {
     en: 'Confirm your password',
     vi: 'Xác nhận mật khẩu của bạn',
   },
-  'auth.available': { en: 'Available', vi: 'Có sẵn' },
+  'auth.available': { en: 'Available', vi: 'Hợp lệ' },
   'auth.taken': { en: 'Taken', vi: 'Đã được sử dụng' },
   'auth.passwordsMatch': { en: 'Passwords match', vi: 'Mật khẩu khớp' },
   'auth.passwordsDoNotMatch': { en: 'Passwords do not match', vi: 'Mật khẩu không khớp' },

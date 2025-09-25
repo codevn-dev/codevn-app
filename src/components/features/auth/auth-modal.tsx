@@ -292,11 +292,11 @@ export function AuthModal() {
         </div>
 
         <div className="space-y-4">
-          {/* Google OAuth Button */}
+          {/* Google OAuth Button (match header Sign In style) */}
           <Button
             type="button"
-            variant="outline"
-            className="border-brand bg-brand hover:border-brand-600 hover:bg-brand-600 w-full font-semibold text-white shadow-lg"
+            variant="back"
+            className="border-brand w-full border"
             onClick={handleGoogleLogin}
             disabled={isOauthLoading}
           >
@@ -313,7 +313,7 @@ export function AuthModal() {
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background text-muted-foreground px-2">
+              <span className="text-muted-foreground z-10 bg-white px-2 py-0.5">
                 {t('auth.orContinueWith')}
               </span>
             </div>
@@ -462,9 +462,11 @@ export function AuthModal() {
               </div>
             )}
 
+            {/* Submit button (Sign In / Create Account) - match header Sign In */}
             <Button
               type="submit"
-              className="bg-brand hover:bg-brand-600 w-full py-3 text-lg font-bold text-white shadow-xl shadow-gray-400/50"
+              variant="back"
+              className="border-brand w-full border py-3 text-lg font-bold"
               disabled={isLoading}
             >
               {isLoading ? (
