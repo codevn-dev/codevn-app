@@ -429,7 +429,7 @@ export function HomepageContent() {
           </div>
           <div>
             <h2
-              className="mb-1 text-2xl font-bold text-gray-900 sm:mb-2 sm:text-3xl"
+              className="mb-1 text-xl font-bold text-gray-900 sm:mb-2 sm:text-3xl"
               suppressHydrationWarning
             >
               {mounted ? t('home.latestArticles') : ''}
@@ -637,14 +637,9 @@ export function HomepageContent() {
             </MotionContainer>
           )}
           {!isLoadingMore && !isLoading && !hasMoreArticles && filteredArticles.length > 0 && (
-            <MotionContainer delay={0.04}>
-              <div
-                className="mt-3 rounded-lg bg-white/40 py-2 text-center text-sm text-gray-500 shadow-md shadow-gray-200/50 backdrop-blur-sm"
-                suppressHydrationWarning
-              >
-                {mounted ? t('home.noMore') : ''}
-              </div>
-            </MotionContainer>
+            <div className="mt-3 text-center text-sm text-gray-500" suppressHydrationWarning>
+              {mounted ? t('home.noMore') : ''}
+            </div>
           )}
         </MotionContainer>
       </div>
