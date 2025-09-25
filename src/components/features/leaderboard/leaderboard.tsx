@@ -52,20 +52,23 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
     setTimeframe(tf);
   };
 
-  const fetchLeaderboard = useCallback(async (selectedTimeframe: '7d' | '30d' | '90d' | '1y' | 'all') => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await apiGet<LeaderboardResponse>(
-        `/api/users/leaderboard?timeframe=${selectedTimeframe}&limit=${fetchLimit}`
-      );
-      setLeaderboard(response.leaderboard);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchLimit]);
+  const fetchLeaderboard = useCallback(
+    async (selectedTimeframe: '7d' | '30d' | '90d' | '1y' | 'all') => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await apiGet<LeaderboardResponse>(
+          `/api/users/leaderboard?timeframe=${selectedTimeframe}&limit=${fetchLimit}`
+        );
+        setLeaderboard(response.leaderboard);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [fetchLimit]
+  );
 
   useEffect(() => {
     fetchLeaderboard(timeframe);
