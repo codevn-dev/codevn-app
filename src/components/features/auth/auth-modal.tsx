@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-// Removed Dialog imports - using custom overlay
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -364,7 +363,7 @@ export function AuthModal() {
               <>
                 {t('auth.dontHaveAccount')}{' '}
                 <button type="button" onClick={switchMode} className="text-primary hover:underline">
-                  {t('auth.signUp')}
+                  {t('common.signUp')}
                 </button>
               </>
             ) : (

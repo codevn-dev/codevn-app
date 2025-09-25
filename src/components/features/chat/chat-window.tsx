@@ -130,8 +130,13 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
     });
 
     const removeOnTyping = addOnTypingCallback((fromUserId: string, isTyping: boolean) => {
-      if (fromUserId === peer.id) {
+      // Only show typing indicator if it's from the peer (not from current user)
+      if (fromUserId === peer.id && fromUserId !== user?.id) {
         setIsTyping(isTyping);
+        // Auto-scroll to bottom when someone starts typing
+        if (isTyping) {
+          setTimeout(() => scrollToBottom(), 100);
+        }
       }
     });
 
@@ -222,19 +227,16 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
 
   // Handle typing indicators
   const handleTyping = () => {
-    if (!isTyping) {
-      setIsTyping(true);
-      // Send typing indicator via WebSocket
-      sendTyping(peer.id, true);
-    }
-
+    // Only send typing indicator to peer, don't show it locally for sender
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
+    // Send typing indicator via WebSocket to peer
+    sendTyping(peer.id, true);
+
     typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      // Send stop typing indicator via WebSocket
+      // Send stop typing indicator via WebSocket to peer
       sendTyping(peer.id, false);
     }, chatConfig.typingTimeout);
   };
@@ -319,6 +321,14 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
     if (!msg || !canChat) return;
 
     try {
+      // Clear typing indicator immediately when sending message
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      // Send stop typing indicator to peer
+      sendTyping(peer.id, false);
+
       // Send via WebSocket
       sendWebSocketMessage(peer.id, msg);
       setText('');
