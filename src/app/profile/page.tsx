@@ -162,7 +162,7 @@ function ProfilePageContent() {
     <div className="py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <MotionContainer>
-          <Card className="rounded-2xl bg-white shadow-2xl shadow-gray-400/80">
+          <Card className="rounded-2xl border border-brand/30 bg-white shadow-md shadow-brand/20">
             <CardHeader className="pb-4">
               <div className="flex items-center">
                 <AvatarUpload
@@ -229,7 +229,7 @@ function ProfilePageContent() {
 
                 {message && (
                   <Card
-                    className={`${
+                    className={`border ${
                       message.includes('successfully')
                         ? 'border-green-200 bg-green-50'
                         : 'border-red-200 bg-red-50'

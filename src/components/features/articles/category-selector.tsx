@@ -36,13 +36,11 @@ export function CategorySelector({
               <div className="relative">
                 <Button
                   size="sm"
+                  variant="back"
                   className={`pr-10 pl-4 transition-colors ${
-                    isSelected(category.id)
-                      ? 'bg-brand border-brand font-semibold text-white'
-                      : 'bg-white text-gray-800'
+                    isSelected(category.id) ? 'bg-brand/40 font-semibold shadow-sm' : ''
                   }`}
                   onClick={() => onCategoryToggle(category.id)}
-                  variant="outline"
                 >
                   <div className="flex items-center">
                     <div
@@ -56,7 +54,7 @@ export function CategorySelector({
                       <span
                         className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
                           isSelected(category.id)
-                            ? 'bg-white/20 text-white'
+                            ? 'bg-brand/40 text-brand'
                             : 'bg-gray-100 text-gray-600'
                         }`}
                       >
@@ -126,13 +124,11 @@ export function CategorySelector({
             ) : (
               <Button
                 size="sm"
+                variant="back"
                 className={`px-4 transition-colors ${
-                  isSelected(category.id)
-                    ? 'bg-brand border-brand font-semibold text-white'
-                    : 'bg-white text-gray-800'
+                  isSelected(category.id) ? 'bg-brand/40 font-semibold shadow-sm' : ''
                 }`}
                 onClick={() => onCategoryToggle(category.id)}
-                variant="outline"
               >
                 <div className="flex items-center">
                   <div
@@ -142,9 +138,9 @@ export function CategorySelector({
                   <span>{category.name}</span>
                   {category._count && (
                     <span
-                      className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        isSelected(category.id)
-                          ? 'bg-white/20 text-white'
+                    className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      isSelected(category.id)
+                        ? 'bg-brand/40 text-brand'
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >

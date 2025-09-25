@@ -364,10 +364,10 @@ export function HomepageContent() {
                 {isAuthenticated && (
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="back"
                     onClick={() => setOnlyMine((v) => !v)}
-                    className={`px-3 transition-colors ${
-                      onlyMine ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'
+                  className={`px-3 transition-colors ${
+                      onlyMine ? 'bg-brand/10 text-brand-600' : ''
                     }`}
                   >
                     <span suppressHydrationWarning>{mounted ? t('home.myArticles') : ''}</span>
@@ -375,14 +375,14 @@ export function HomepageContent() {
                 )}
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="back"
                   onClick={() => {
                     setOnlyMine(false);
                     setSelectedCategoryNames([]);
                     setSearchTerm('');
                   }}
                   disabled={!(onlyMine || selectedCategoryNames.length > 0 || debouncedSearch)}
-                  className="font-medium text-gray-700"
+                  className="font-medium"
                 >
                   <span suppressHydrationWarning>{mounted ? t('home.clearFilters') : ''}</span>
                 </Button>
@@ -499,12 +499,9 @@ export function HomepageContent() {
                         {/* Article Header */}
                         <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
                           <div className="mb-3 flex items-center justify-between sm:mb-4">
-                            <button
-                              className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold transition-all duration-300 ease-out hover:scale-110 hover:shadow-lg sm:px-3 sm:text-xs"
-                              style={{
-                                backgroundColor: `${article.category.color}15`,
-                                color: article.category.color,
-                              }}
+                            <Button
+                              variant="back"
+                              size="sm"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -515,13 +512,14 @@ export function HomepageContent() {
                                     : [...prev, categoryName]
                                 );
                               }}
+                              className="px-3 py-1.5 text-xs"
                             >
-                              <div
-                                className="mr-2 h-2 w-2 rounded-full"
+                              <span
+                                className="mr-2 inline-block h-2 w-2 rounded-full"
                                 style={{ backgroundColor: article.category.color }}
-                              ></div>
+                              />
                               {article.category.name}
-                            </button>
+                            </Button>
                             <div className="flex items-center text-xs text-gray-600">
                               <Calendar className="mr-1 h-3 w-3" />
                               {formatDateTime(article.createdAt)}

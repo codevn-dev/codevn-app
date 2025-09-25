@@ -325,7 +325,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                     </span>
                   )}
                   <Button
-                    variant="outline"
+                    variant="back"
                     size="sm"
                     onClick={handleLike}
                     className={`transition-colors duration-200 ${
@@ -342,7 +342,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                     {likeCount}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="back"
                     size="sm"
                     onClick={handleUnlike}
                     className={`transition-colors duration-200 ${
@@ -359,7 +359,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                     {unlikeCount}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="back"
                     size="sm"
                     onClick={handleCommentClick}
                     className="cursor-pointer hover:border-blue-300 hover:bg-blue-50"
@@ -407,7 +407,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
             >
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Edit Article</h2>
-                <Button variant="outline" size="sm" onClick={() => setIsEditOpen(false)}>
+                <Button variant="back" size="sm" onClick={() => setIsEditOpen(false)}>
                   Close
                 </Button>
               </div>
@@ -444,7 +444,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                         />
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="back"
                           size="sm"
                           onClick={() => setEditForm({ ...editForm, thumbnail: '' })}
                           className="absolute top-2 right-2 bg-white/80 hover:bg-white"
@@ -454,7 +454,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                       </div>
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="back"
                         onClick={() => setShowImageUpload(true)}
                         className="w-full max-w-sm"
                       >
@@ -528,7 +528,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 </div>
 
                 <div className="mt-4 flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+                  <Button variant="back" onClick={() => setIsEditOpen(false)}>
                     Cancel
                   </Button>
                   <Button onClick={handleSaveEdit}>Save changes</Button>

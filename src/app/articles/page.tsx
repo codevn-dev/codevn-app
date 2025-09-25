@@ -472,7 +472,7 @@ function ArticlesContent() {
               {/* Sort Controls */}
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button
-                  variant="outline"
+                  variant="back"
                   size="sm"
                   onClick={() => {
                     if (sortBy === 'title') {
@@ -483,7 +483,7 @@ function ArticlesContent() {
                     }
                   }}
                   className={`px-3 transition-colors ${
-                    sortBy === 'title' ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'
+                    sortBy === 'title' ? 'bg-brand/10 text-brand-600' : ''
                   }`}
                 >
                   <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -494,7 +494,7 @@ function ArticlesContent() {
                 </Button>
 
                 <Button
-                  variant="outline"
+                  variant="back"
                   size="sm"
                   onClick={() => {
                     if (sortBy === 'createdAt') {
@@ -505,7 +505,7 @@ function ArticlesContent() {
                     }
                   }}
                   className={`px-3 transition-colors ${
-                    sortBy === 'createdAt' ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'
+                    sortBy === 'createdAt' ? 'bg-brand/10 text-brand-600' : ''
                   }`}
                 >
                   <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -516,7 +516,7 @@ function ArticlesContent() {
                 </Button>
 
                 <Button
-                  variant="outline"
+                  variant="back"
                   size="sm"
                   onClick={() => {
                     if (sortBy === 'updatedAt') {
@@ -527,7 +527,7 @@ function ArticlesContent() {
                     }
                   }}
                   className={`px-3 transition-colors ${
-                    sortBy === 'updatedAt' ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'
+                    sortBy === 'updatedAt' ? 'bg-brand/10 text-brand-600' : ''
                   }`}
                 >
                   <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -836,7 +836,7 @@ function ArticlesContent() {
                             />
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="back"
                               size="sm"
                               onClick={() => setArticleForm({ ...articleForm, thumbnail: '' })}
                               className="absolute top-2 right-2 bg-white/80 hover:bg-white"
@@ -846,7 +846,7 @@ function ArticlesContent() {
                           </div>
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="back"
                             onClick={() => setShowImageUpload(true)}
                             className="w-full max-w-sm"
                           >
@@ -939,7 +939,7 @@ function ArticlesContent() {
                   </form>
 
                   <div className="mt-6 flex justify-end gap-2">
-                    <Button variant="outline" onClick={resetForm}>
+                    <Button variant="back" onClick={resetForm}>
                       {t('common.cancel')}
                     </Button>
                     <Button
@@ -964,11 +964,11 @@ function ArticlesContent() {
                     action cannot be undone and will also delete all comments and likes.
                   </p>
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setShowDeleteConfirm(null)}>
+                    <Button variant="back" onClick={() => setShowDeleteConfirm(null)}>
                       Cancel
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="back"
                       onClick={() => showDeleteConfirm && handleDeleteArticle(showDeleteConfirm)}
                       className="border-red-600 text-red-600 hover:bg-red-50"
                     >

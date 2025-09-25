@@ -414,7 +414,7 @@ function AdminPageContent() {
                     {/* Sort Controls */}
                     <div className="flex flex-wrap gap-2">
                       <Button
-                        variant="outline"
+                        variant="back"
                         size="sm"
                         onClick={() => {
                           if (sortBy === 'name') {
@@ -427,9 +427,7 @@ function AdminPageContent() {
                           }
                         }}
                         className={`px-3 transition-colors ${
-                          sortBy === 'name'
-                            ? 'bg-brand/10 text-brand-600'
-                            : 'bg-white text-gray-700'
+                          sortBy === 'name' ? 'bg-brand/10 text-brand-600' : ''
                         }`}
                       >
                         <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -446,7 +444,7 @@ function AdminPageContent() {
                       </Button>
 
                       <Button
-                        variant="outline"
+                        variant="back"
                         size="sm"
                         onClick={() => {
                           if (sortBy === 'joined') {
@@ -459,9 +457,7 @@ function AdminPageContent() {
                           }
                         }}
                         className={`px-3 transition-colors ${
-                          sortBy === 'joined'
-                            ? 'bg-brand/10 text-brand-600'
-                            : 'bg-white text-gray-700'
+                          sortBy === 'joined' ? 'bg-brand/10 text-brand-600' : ''
                         }`}
                       >
                         <ArrowUpDown className="mr-1 h-4 w-4" />
@@ -804,7 +800,7 @@ function AdminPageContent() {
                     </form>
 
                     <DialogFooter>
-                      <Button variant="outline" onClick={resetForm}>
+                      <Button variant="back" onClick={resetForm}>
                         {t('common.cancel')}
                       </Button>
                       <Button type="submit" form="category-form" disabled={isSubmitting}>
@@ -909,7 +905,7 @@ function AdminPageContent() {
                                     </div>
                                     <div className="ml-0 flex space-x-2 sm:ml-4">
                                       <Button
-                                        variant="outline"
+                                        variant="back"
                                         size="sm"
                                         onClick={() => handleEditCategory(category)}
                                       >
@@ -917,7 +913,7 @@ function AdminPageContent() {
                                         {t('common.edit')}
                                       </Button>
                                       <Button
-                                        variant="outline"
+                                        variant="back"
                                         size="sm"
                                         onClick={() => setShowDeleteConfirm(category)}
                                         className="border-red-600 text-red-600 hover:bg-red-50"
@@ -973,7 +969,7 @@ function AdminPageContent() {
                                                 </div>
                                                 <div className="flex space-x-2">
                                                   <Button
-                                                    variant="outline"
+                                                    variant="back"
                                                     size="sm"
                                                     onClick={() => handleEditCategory(child)}
                                                   >
@@ -981,7 +977,7 @@ function AdminPageContent() {
                                                     {t('common.edit')}
                                                   </Button>
                                                   <Button
-                                                    variant="outline"
+                                                    variant="back"
                                                     size="sm"
                                                     onClick={() => setShowDeleteConfirm(child)}
                                                     className="border-red-600 text-red-600 hover:bg-red-50"

@@ -115,9 +115,8 @@ export function Navigation() {
               {isAuthLoading ? null : isAuthenticated && user ? (
                 <>
                   <Button
-                    variant="outline"
+                    variant="back"
                     size="sm"
-                    className="border-brand text-brand hover:bg-brand/10 shadow-brand/20 hover:shadow-brand/30 cursor-pointer shadow-md transition-shadow hover:shadow-lg"
                     onClick={() => router.push('/articles')}
                   >
                     <FileText className="mr-2 h-4 w-4" />
@@ -126,9 +125,8 @@ export function Navigation() {
 
                   {isAdmin(user.role) && (
                     <Button
-                      variant="outline"
+                      variant="back"
                       size="sm"
-                      className="border-brand text-brand hover:bg-brand/10 shadow-brand/20 hover:shadow-brand/30 cursor-pointer shadow-md transition-shadow hover:shadow-lg"
                       onClick={() => router.push('/admin')}
                     >
                       <Settings className="mr-2 h-4 w-4" />
@@ -175,9 +173,8 @@ export function Navigation() {
               ) : (
                 <>
                   <Button
-                    variant="outline"
+                    variant="back"
                     size="sm"
-                    className="border-brand text-brand hover:bg-brand/10 shadow-brand/20 hover:shadow-brand/30 cursor-pointer shadow-md transition-shadow hover:shadow-lg"
                     onClick={() => {
                       setAuthMode('signin');
                       setAuthModalOpen(true);
@@ -186,8 +183,8 @@ export function Navigation() {
                     {t('common.signIn')}
                   </Button>
                   <Button
+                    variant="back"
                     size="sm"
-                    className="bg-brand hover:bg-brand-600 shadow-brand/20 hover:shadow-brand/30 cursor-pointer text-white shadow-md transition-shadow hover:shadow-lg"
                     onClick={() => {
                       setAuthMode('signup');
                       setAuthModalOpen(true);
