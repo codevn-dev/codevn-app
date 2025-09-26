@@ -588,7 +588,11 @@ function ArticlesContent() {
                     className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3"
                   >
                     {articles.map((article, index) => (
-                      <motion.div key={`article-${index}-${String(article.id).slice(0, 8)}`} variants={itemVariants} className="block h-full">
+                      <motion.div
+                        key={`article-${index}-${String(article.id).slice(0, 8)}`}
+                        variants={itemVariants}
+                        className="block h-full"
+                      >
                         <div className="shadow-brand/30 block flex h-full flex-col rounded-2xl bg-white shadow-2xl drop-shadow-2xl">
                           {/* Thumbnail (consistent height whether exists or not) */}
                           <div className="relative aspect-[16/9] w-full overflow-hidden">

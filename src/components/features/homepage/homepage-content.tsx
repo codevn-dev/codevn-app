@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageSquare, BookOpen, Calendar, Eye, X, ThumbsUp, ArrowUp, Trophy } from 'lucide-react';
+import { MessageSquare, BookOpen, Calendar, Eye, X, ThumbsUp, Trophy } from 'lucide-react';
 import { useForumStore } from '@/stores';
 import { CategorySelector } from '@/features/articles';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -45,7 +45,7 @@ export function HomepageContent() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [onlyMine, setOnlyMine] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [setShowBackToTop] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const isFiltersInitializedRef = useRef(false);
   const lastFetchKeyRef = useRef<string | null>(null);
