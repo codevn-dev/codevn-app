@@ -20,8 +20,6 @@ import {
   ThumbsUp,
   Trophy,
   ExternalLink,
-  Github,
-  Facebook,
 } from 'lucide-react';
 import { useForumStore } from '@/stores';
 import { CategorySelector } from '@/features/articles';
