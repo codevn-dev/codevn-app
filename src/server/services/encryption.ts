@@ -1,6 +1,7 @@
 import * as crypto from 'crypto';
 import { encryptionConfig } from '@/config/config';
 import { EncryptedData } from '@/types/shared/encryption';
+import { EncryptionError } from '@/types/shared/errors';
 
 export class EncryptionService {
   private readonly key: Buffer;
@@ -43,7 +44,7 @@ export class EncryptionService {
       };
     } catch (error) {
       throw new Error(
-        `Encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `${EncryptionError.ENCRYPTION_FAILED}: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -70,7 +71,7 @@ export class EncryptionService {
       return decrypted;
     } catch (error) {
       throw new Error(
-        `Decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `${EncryptionError.DECRYPTION_FAILED}: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -94,7 +95,7 @@ export class EncryptionService {
   decryptFromString(encryptedString: string): string {
     const parts = encryptedString.split(':');
     if (parts.length !== 3) {
-      throw new Error('Invalid encrypted string format');
+      throw new Error(EncryptionError.INVALID_ENCRYPTED_FORMAT);
     }
 
     const encryptedData: EncryptedData = {
