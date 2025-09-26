@@ -11,6 +11,7 @@ import { useUIStore } from '@/stores';
 import GoogleIcon from '@/icons/google.svg';
 import { useAuthActions } from '@/hooks/use-auth-actions';
 import { useI18n } from '@/components/providers';
+import { AuthError } from '@/types/shared';
 
 export function AuthModal() {
   const { authModalOpen, authMode, setAuthModalOpen, setAuthMode } = useUIStore();
@@ -127,9 +128,9 @@ export function AuthModal() {
       // Auto-login occurs on server; close modal and stay on page
       setAuthModalOpen(false);
       // router.refresh();
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : '';
-      if (msg && msg.toLowerCase().includes('email already exists')) {
+    } catch (error: any) {
+      const api = error?.response?.data as { error?: string } | undefined;
+      if (api?.error === AuthError.EMAIL_EXISTS) {
         setError(t('auth.emailTaken'));
       } else {
         setError(t('auth.registrationFailed'));

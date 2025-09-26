@@ -1,6 +1,7 @@
 import { fileUpload } from '@/lib/server';
 import { BaseService } from './base';
 import { UploadImageResponse } from '@/types/shared';
+import { CommonError } from '@/types/shared';
 
 export class UploadService extends BaseService {
   /**
@@ -9,7 +10,7 @@ export class UploadService extends BaseService {
   async uploadImage(fileData: any): Promise<UploadImageResponse> {
     try {
       if (!fileData) {
-        throw new Error('File is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Upload image using utils

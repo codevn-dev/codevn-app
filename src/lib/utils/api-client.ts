@@ -4,6 +4,7 @@
  */
 
 import { apiConfig } from '@/config';
+import { CommonError } from '@/types/shared';
 
 /**
  * Get the appropriate API URL based on the environment
@@ -124,7 +125,7 @@ export async function apiFetch<T = unknown>(
           // Refresh failed or already retried: redirect to home
           const isRedirecting = sessionStorage.getItem('auth-redirecting');
           if (isRedirecting) {
-            throw new Error('Unauthorized - redirecting to login');
+            throw new Error(CommonError.ACCESS_DENIED);
           }
           sessionStorage.setItem('auth-redirecting', 'true');
           const authStorage = localStorage.getItem('auth-storage');
@@ -152,7 +153,7 @@ export async function apiFetch<T = unknown>(
     return (await response.json()) as T;
   } catch (error) {
     if (error instanceof Error) throw error;
-    throw new Error('Network error occurred');
+    throw new Error(CommonError.INTERNAL_ERROR);
   }
 }
 
@@ -289,12 +290,13 @@ export async function apiUpload<T = unknown>(
       try {
         errorData = await response.clone().json();
       } catch {}
-      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      const message = extractMessage(errorData, `HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(message);
     }
 
     return (await response.json()) as T;
   } catch (error) {
     if (error instanceof Error) throw error;
-    throw new Error('Network error occurred');
+    throw new Error(CommonError.INTERNAL_ERROR);
   }
 }

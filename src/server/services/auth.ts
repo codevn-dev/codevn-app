@@ -2,6 +2,7 @@ import { FastifyReply } from 'fastify';
 import { userRepository } from '../database/repository';
 import { generateTokenPair, revokeTokenPair, verifyRefreshToken } from '../middleware/jwt';
 import { createRedisAuthService } from '../redis';
+import { AuthError, CommonError } from '@/types/shared';
 import { config } from '@/config';
 import { BaseService } from './base';
 import {
@@ -193,9 +194,8 @@ export class AuthService extends BaseService {
       // Check if user already exists
       const existingUser = await userRepository.findByEmail(email);
       if (existingUser) {
-        // Throw a typed error to map to 400 in route
         const err: any = new Error('Email already exists');
-        err.code = 'EMAIL_EXISTS';
+        err.code = AuthError.EMAIL_EXISTS;
         throw err;
       }
 
@@ -337,7 +337,7 @@ export class AuthService extends BaseService {
       // Fallback to database query (slower but ensures fresh data)
       const user = await userRepository.findById(userId);
       if (!user) {
-        throw new Error('User not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       const fullUser = {
@@ -366,7 +366,7 @@ export class AuthService extends BaseService {
       // Verify refresh token
       const payload = await verifyRefreshToken(refreshToken);
       if (!payload) {
-        throw new Error('Invalid refresh token');
+        throw new Error(CommonError.ACCESS_DENIED);
       }
 
       // Prefer user profile from Redis cache, fallback to database
@@ -374,7 +374,7 @@ export class AuthService extends BaseService {
       const cachedProfile = await redis.getUserProfile(payload.id);
       const user = cachedProfile || (await userRepository.findById(payload.id));
       if (!user) {
-        throw new Error('User not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Generate new token pair

@@ -3,6 +3,7 @@ import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { chatService } from '../services';
 import { ChatQueryRequest, ChatPostRequest, ChatSeenRequest } from '@/types/shared/chat';
 import { chatWebSocketService } from '../websocket/chat';
+import { CommonError } from '@/types/shared/errors';
 
 export async function chatRoutes(fastify: FastifyInstance) {
   // WebSocket endpoint for real-time chat
@@ -26,7 +27,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
         const response = await chatService.getConversations(authRequest.user!.id);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -44,7 +45,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
         const response = await chatService.getChatMessages(authRequest.user!.id, query);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -62,7 +63,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
         const response = await chatService.markMessagesAsSeen(authRequest.user!.id, body);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -80,7 +81,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
         const response = await chatService.sendMessage(authRequest.user!.id, body);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );

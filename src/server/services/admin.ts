@@ -5,6 +5,7 @@ import { UpdateUserRoleRequest, UserListResponse } from '@/types/shared/user';
 import { SuccessResponse } from '@/types/shared/common';
 import { getRedis } from '@/lib/server';
 import { createRedisAuthService } from '../redis';
+import { CommonError, AdminError } from '@/types/shared';
 
 export class AdminService extends BaseService {
   /**
@@ -25,7 +26,7 @@ export class AdminService extends BaseService {
     const sortOrder = (query.sortOrder || 'desc') as 'asc' | 'desc';
 
     if (!allowedFields.includes(sortBy)) {
-      throw new Error(`Invalid sort field. Allowed: ${allowedFields.join(', ')}`);
+      throw new Error(CommonError.BAD_REQUEST);
     }
 
     return { sortBy, sortOrder };
@@ -43,7 +44,7 @@ export class AdminService extends BaseService {
    */
   requireAdmin(user: any): asserts user is { id: string; role: 'admin' } {
     if (user.role !== 'admin') {
-      throw new Error('Admin privileges required');
+      throw new Error(CommonError.ACCESS_DENIED);
     }
   }
 
@@ -104,23 +105,26 @@ export class AdminService extends BaseService {
       const { userId, role } = body;
 
       if (!userId || !role) {
-        throw new Error('User ID and role are required');
+        const err: any = new Error(AdminError.MISSING_FIELDS);
+        throw err;
       }
 
       if (!['user', 'admin'].includes(role)) {
-        throw new Error('Invalid role. Must be "user" or "admin"');
+        const err: any = new Error(AdminError.INVALID_ROLE);
+        throw err;
       }
 
       // Get the target user to check their current role
       const targetUser = await userRepository.findById(userId);
 
       if (!targetUser) {
-        throw new Error('User not found');
+        const err: any = new Error(AdminError.USER_NOT_FOUND);
+        throw err;
       }
 
       // Prevent admin from updating another admin's role
       if (targetUser.role === 'admin' && targetUser.id !== currentUser.id) {
-        throw new Error('You cannot change the role of another admin');
+        throw new Error(CommonError.ACCESS_DENIED);
       }
 
       const updatedUser = await userRepository.updateRole(userId, role as 'user' | 'admin');
@@ -167,7 +171,7 @@ export class AdminService extends BaseService {
       const { name, description, color, parentId } = body;
 
       if (!name) {
-        throw new Error('Category name is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // If parentId is provided, validate it exists
@@ -175,14 +179,14 @@ export class AdminService extends BaseService {
         const parentCategory = await categoryRepository.findById(parentId);
 
         if (!parentCategory) {
-          throw new Error('Parent category not found');
+          throw new Error(CommonError.NOT_FOUND);
         }
       }
 
       // Check duplicate name (case-insensitive)
       const nameExists = await categoryRepository.checkNameExists(name);
       if (nameExists) {
-        throw new Error('Category name already exists. Please choose a different name.');
+        throw new Error(CommonError.CONFLICT);
       }
 
       const newCategory = await categoryRepository.create({
@@ -206,12 +210,12 @@ export class AdminService extends BaseService {
         error?.cause?.code === '23505' &&
         error?.cause?.constraint_name === 'categories_slug_unique'
       ) {
-        throw new Error('Category with this name already exists. Please choose a different name.');
+        throw new Error(CommonError.CONFLICT);
       }
 
       // Handle other database constraint errors
       if (error?.cause?.code === '23505') {
-        throw new Error('A category with this information already exists.');
+        throw new Error(CommonError.CONFLICT);
       }
 
       this.handleError(error, 'Create category');
@@ -228,33 +232,33 @@ export class AdminService extends BaseService {
       const { id, name, description, color, parentId } = body;
 
       if (!id || !name) {
-        throw new Error('Category ID and name are required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Check if category exists
       const existingCategory = await categoryRepository.findById(id);
 
       if (!existingCategory) {
-        throw new Error('Category not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // If parentId is provided, validate it exists and is not the same as current category
       if (parentId) {
         if (parentId === id) {
-          throw new Error('Category cannot be its own parent');
+          throw new Error(CommonError.BAD_REQUEST);
         }
 
         const parentCategory = await categoryRepository.findById(parentId);
 
         if (!parentCategory) {
-          throw new Error('Parent category not found');
+          throw new Error(CommonError.NOT_FOUND);
         }
       }
 
       // Check duplicate name (case-insensitive), excluding current category
       const nameExists = await categoryRepository.checkNameExists(name, id);
       if (nameExists) {
-        throw new Error('Category name already exists. Please choose a different name.');
+        throw new Error(CommonError.CONFLICT);
       }
 
       // Update category
@@ -278,12 +282,12 @@ export class AdminService extends BaseService {
         error?.cause?.code === '23505' &&
         error?.cause?.constraint_name === 'categories_slug_unique'
       ) {
-        throw new Error('Category with this name already exists. Please choose a different name.');
+        throw new Error(CommonError.CONFLICT);
       }
 
       // Handle other database constraint errors
       if (error?.cause?.code === '23505') {
-        throw new Error('A category with this information already exists.');
+        throw new Error(CommonError.CONFLICT);
       }
 
       this.handleError(error, 'Update category');
@@ -298,32 +302,28 @@ export class AdminService extends BaseService {
       this.requireAdmin(currentUser);
 
       if (!categoryId) {
-        throw new Error('Category ID is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Check if category exists
       const existingCategory = await categoryRepository.findById(categoryId);
 
       if (!existingCategory) {
-        throw new Error('Category not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Check if category has children
       const childrenCount = await categoryRepository.getChildrenCount(categoryId);
 
       if (childrenCount > 0) {
-        throw new Error(
-          'Cannot delete category with child categories. Please delete child categories first.'
-        );
+        throw new Error(CommonError.CONFLICT);
       }
 
       // Check if category has articles
       const articlesCount = await categoryRepository.getArticlesCount(categoryId);
 
       if (articlesCount > 0) {
-        throw new Error(
-          'Cannot delete category with articles. Please move or delete articles first.'
-        );
+        throw new Error(CommonError.CONFLICT);
       }
 
       // Delete category
@@ -343,23 +343,17 @@ export class AdminService extends BaseService {
         const constraintName = error?.cause?.constraint_name;
 
         if (constraintName?.includes('articles')) {
-          throw new Error(
-            'Cannot delete category because it has associated articles. Please move or delete the articles first.'
-          );
+          throw new Error(CommonError.CONFLICT);
         } else if (constraintName?.includes('categories')) {
-          throw new Error(
-            'Cannot delete category because it has child categories. Please delete child categories first.'
-          );
+          throw new Error(CommonError.CONFLICT);
         } else {
-          throw new Error(
-            'Cannot delete category due to database relationships. Please check for associated data.'
-          );
+          throw new Error(CommonError.CONFLICT);
         }
       }
 
       // Handle other database errors
       if (error?.cause?.code === '23505') {
-        throw new Error('Category deletion failed due to database constraints.');
+        throw new Error(CommonError.CONFLICT);
       }
 
       // Re-throw custom error messages

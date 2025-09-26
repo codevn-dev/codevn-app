@@ -1,4 +1,5 @@
 import imageCompression from 'browser-image-compression';
+import { CommonError } from '@/types/shared';
 
 export interface CompressionOptions {
   maxSizeMB?: number;
@@ -65,9 +66,8 @@ export class ImageCompressionUtils {
         compressionRatio,
         quality: compressionOptions.quality || 0.8,
       };
-    } catch (error) {
-      console.error('Error compressing image:', error);
-      throw new Error('Failed to compress image');
+    } catch {
+      throw new Error(CommonError.INTERNAL_ERROR);
     }
   }
 

@@ -9,6 +9,7 @@ import {
   SendMessageResponse,
 } from '@/types/shared/chat';
 import { SuccessResponse } from '@/types/shared/common';
+import { CommonError } from '@/types/shared';
 
 export class ChatService extends BaseService {
   /**
@@ -68,7 +69,7 @@ export class ChatService extends BaseService {
       const { peerId, action = 'get', since = '0', limit = '20', before = '' } = query;
 
       if (!peerId) {
-        throw new Error('Missing peerId');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       const chatId = this.getChatId(userId, peerId);
@@ -138,7 +139,7 @@ export class ChatService extends BaseService {
         return response;
       }
 
-      throw new Error('Invalid action');
+      throw new Error(CommonError.BAD_REQUEST);
     } catch (error) {
       this.handleError(error, 'Get chat messages');
     }
@@ -152,7 +153,7 @@ export class ChatService extends BaseService {
       const { chatId } = body;
 
       if (!chatId) {
-        throw new Error('Missing chatId');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Mark messages as seen
@@ -172,7 +173,7 @@ export class ChatService extends BaseService {
       const { peerId, text } = body;
 
       if (!peerId || !text) {
-        throw new Error('Missing peerId or text');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       const chatId = this.getChatId(userId, peerId);

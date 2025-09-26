@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { categoriesService, adminService } from '../services';
+import { CommonError, CategoryError } from '@/types/shared';
 import { CreateCategoryRequest, UpdateCategoryRequest } from '@/types/shared/category';
 
 export async function categoryRoutes(fastify: FastifyInstance) {
@@ -10,7 +11,7 @@ export async function categoryRoutes(fastify: FastifyInstance) {
       const response = await categoriesService.getCategories();
       return reply.send(response);
     } catch {
-      return reply.status(500).send({ error: 'Internal server error' });
+      return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
     }
   });
 
@@ -26,9 +27,8 @@ export async function categoryRoutes(fastify: FastifyInstance) {
         const body = request.body as CreateCategoryRequest;
         const response = await adminService.createCategory(authRequest.user!, body);
         return reply.status(201).send(response);
-      } catch (err: any) {
-        const message = err?.message || 'Unable to create category. Please try again.';
-        return reply.status(400).send({ error: message });
+      } catch {
+        return reply.status(400).send({ error: CommonError.BAD_REQUEST });
       }
     }
   );
@@ -66,8 +66,13 @@ export async function categoryRoutes(fastify: FastifyInstance) {
         const response = await adminService.deleteCategory(authRequest.user!, categoryId);
         return reply.send(response);
       } catch (err: any) {
-        const message = err?.message || 'Unable to delete category. Please try again.';
-        return reply.status(400).send({ error: message });
+        const message = err?.message || '';
+        const isFk =
+          message.includes('violates foreign key') || message === 'CATEGORY_DELETE_CONFLICT';
+        const status = isFk ? 409 : 400;
+        return reply
+          .status(status)
+          .send({ error: isFk ? CategoryError.DELETE_CONFLICT : CommonError.BAD_REQUEST });
       }
     }
   );

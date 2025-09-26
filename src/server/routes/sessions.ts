@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { authService } from '../services/auth';
+import { AuthError, CommonError } from '@/types/shared/errors';
 
 export async function sessionRoutes(fastify: FastifyInstance) {
   // GET /api/session - Get user's active sessions
@@ -25,7 +26,7 @@ export async function sessionRoutes(fastify: FastifyInstance) {
           sessions,
         });
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -42,7 +43,7 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         const { tokens } = request.body as { tokens: string[] };
 
         if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
-          return reply.status(400).send({ error: 'Tokens array is required' });
+          return reply.status(400).send({ error: AuthError.TOKENS_REQUIRED });
         }
 
         const result = await authService.terminateSessions(authRequest.user!.id, tokens);
@@ -52,7 +53,7 @@ export async function sessionRoutes(fastify: FastifyInstance) {
           message: result.message,
         });
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );

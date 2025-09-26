@@ -2,6 +2,7 @@ import { commentRepository, reactionsRepository, userRepository } from '../datab
 import { BaseService } from './base';
 import { UpdateCommentRequest, Comment } from '@/types/shared/comment';
 import { SuccessResponse } from '@/types/shared/common';
+import { CommonError } from '@/types/shared';
 
 export class CommentsService extends BaseService {
   /**
@@ -26,7 +27,7 @@ export class CommentsService extends BaseService {
     try {
       const comment = await commentRepository.findById(commentId);
       if (!comment) {
-        throw new Error('Comment not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       return this.transformCommentData(comment) as Comment;
@@ -47,17 +48,17 @@ export class CommentsService extends BaseService {
       const { content } = body;
 
       if (!content || content.trim().length === 0) {
-        throw new Error('Comment content is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       if (content.length > 1000) {
-        throw new Error('Comment is too long (max 1000 characters)');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Check if comment exists and user is the author
       const existingComment = await commentRepository.findById(commentId);
       if (!existingComment) {
-        throw new Error('Comment not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       this.validateOwnership({ id: userId, role: 'user' }, existingComment.authorId);
@@ -67,7 +68,7 @@ export class CommentsService extends BaseService {
       // Fetch the updated comment with relations
       const comment = await commentRepository.findById(commentId);
       if (!comment) {
-        throw new Error('Failed to retrieve updated comment');
+        throw new Error(CommonError.INTERNAL_ERROR);
       }
 
       return this.transformCommentData(comment) as Comment;
@@ -84,7 +85,7 @@ export class CommentsService extends BaseService {
       // Check if comment exists and user is the author or admin
       const existingComment = await commentRepository.findById(commentId);
       if (!existingComment) {
-        throw new Error('Comment not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       const isAuthor = existingComment.authorId === userId;
@@ -92,7 +93,7 @@ export class CommentsService extends BaseService {
         const user = await userRepository.findById(userId);
         const isAdmin = user?.role === 'admin';
         if (!isAdmin) {
-          throw new Error('You can only delete your own comments');
+          throw new Error(CommonError.ACCESS_DENIED);
         }
       }
 
@@ -109,7 +110,7 @@ export class CommentsService extends BaseService {
   async handleCommentReaction(commentId: string, userId: string, action: string): Promise<any> {
     try {
       if (!action || !['like', 'unlike', 'dislike'].includes(action)) {
-        throw new Error('Invalid reaction action. Must be "like", "unlike", or "dislike"');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Normalize 'dislike' to 'unlike' for database compatibility
@@ -118,7 +119,7 @@ export class CommentsService extends BaseService {
       // Check if comment exists
       const comment = await commentRepository.findById(commentId);
       if (!comment) {
-        throw new Error('Comment not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Check if user already reacted to this comment with the same type
@@ -172,7 +173,7 @@ export class CommentsService extends BaseService {
       // Check if comment exists
       const comment = await commentRepository.findById(commentId);
       if (!comment) {
-        throw new Error('Comment not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Get user's reaction (check both like and unlike)
@@ -205,7 +206,7 @@ export class CommentsService extends BaseService {
       // Check if comment exists
       const comment = await commentRepository.findById(commentId);
       if (!comment) {
-        throw new Error('Comment not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Check if user has any reaction (like or unlike)
@@ -223,7 +224,7 @@ export class CommentsService extends BaseService {
       const existingReaction = likeReaction || unlikeReaction;
 
       if (!existingReaction) {
-        throw new Error('No reaction found to remove');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Remove the reaction

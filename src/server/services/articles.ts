@@ -18,6 +18,7 @@ import {
   CommentQueryParams as CommentQuery,
   CreateCommentRequest as CreateCommentBody,
 } from '@/types/shared/comment';
+import { CommonError } from '@/types/shared';
 
 export class ArticlesService extends BaseService {
   /**
@@ -43,7 +44,7 @@ export class ArticlesService extends BaseService {
     const sortOrder = (query.sortOrder || 'desc') as 'asc' | 'desc';
 
     if (!allowedFields.includes(sortBy)) {
-      throw new Error(`Invalid sort field. Allowed: ${allowedFields.join(', ')}`);
+      throw new Error(CommonError.BAD_REQUEST);
     }
 
     return { sortBy, sortOrder };
@@ -185,18 +186,18 @@ export class ArticlesService extends BaseService {
   async getArticleBySlug(slug: string, userId?: string): Promise<Article> {
     try {
       if (!slug) {
-        throw new Error('Article slug is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       const article = await articleRepository.findBySlug(slug);
       if (!article) {
-        throw new Error('Article not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Check if article is published or if user is the author
       if (!article.published) {
         if (!userId || article.authorId !== userId) {
-          throw new Error('Article not found');
+          throw new Error(CommonError.NOT_FOUND);
         }
       }
 
@@ -276,11 +277,11 @@ export class ArticlesService extends BaseService {
     }
   ): Promise<SuccessResponse> {
     try {
-      if (!articleId) throw new Error('Article ID is required');
+      if (!articleId) throw new Error(CommonError.BAD_REQUEST);
 
       // Ensure article exists
       const article = await articleRepository.findById(articleId);
-      if (!article) throw new Error('Article not found');
+      if (!article) throw new Error(CommonError.NOT_FOUND);
 
       await articleRepository.recordArticleView({ articleId, ...opts });
       return { success: true };
@@ -301,13 +302,13 @@ export class ArticlesService extends BaseService {
       // Check if slug already exists
       const existingArticle = await articleRepository.checkSlugExists(slug);
       if (existingArticle) {
-        throw new Error('Article with this slug already exists');
+        throw new Error(CommonError.CONFLICT);
       }
 
       // Verify category exists
       const category = await categoryRepository.findById(categoryId);
       if (!category) {
-        throw new Error('Category not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Create article
@@ -324,7 +325,7 @@ export class ArticlesService extends BaseService {
       // Fetch the created article with relations
       const createdArticle = await articleRepository.findById(newArticle[0].id);
       if (!createdArticle) {
-        throw new Error('Failed to retrieve created article');
+        throw new Error(CommonError.INTERNAL_ERROR);
       }
 
       return this.transformArticleData(createdArticle) as Article;
@@ -341,13 +342,13 @@ export class ArticlesService extends BaseService {
       const { id, title, content, slug, thumbnail, categoryId, published } = body;
 
       if (!id) {
-        throw new Error('Article ID is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Check if article exists
       const existingArticle = await articleRepository.findById(id);
       if (!existingArticle) {
-        throw new Error('Article not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Check ownership
@@ -357,7 +358,7 @@ export class ArticlesService extends BaseService {
       if (slug && slug !== existingArticle.slug) {
         const slugExists = await articleRepository.checkSlugExists(slug, id);
         if (slugExists) {
-          throw new Error('Article with this slug already exists');
+          throw new Error(CommonError.CONFLICT);
         }
       }
 
@@ -365,7 +366,7 @@ export class ArticlesService extends BaseService {
       if (categoryId) {
         const category = await categoryRepository.findById(categoryId);
         if (!category) {
-          throw new Error('Category not found');
+          throw new Error(CommonError.NOT_FOUND);
         }
       }
 
@@ -392,13 +393,13 @@ export class ArticlesService extends BaseService {
   async deleteArticle(articleId: string, userId: string): Promise<SuccessResponse> {
     try {
       if (!articleId) {
-        throw new Error('Article ID is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Check if article exists
       const existingArticle = await articleRepository.findById(articleId);
       if (!existingArticle) {
-        throw new Error('Article not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Check ownership
@@ -419,7 +420,7 @@ export class ArticlesService extends BaseService {
   async handleArticleReaction(articleId: string, userId: string, action: string): Promise<any> {
     try {
       if (!action || !['like', 'unlike', 'dislike'].includes(action)) {
-        throw new Error('Invalid reaction action. Must be "like", "unlike", or "dislike"');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Normalize 'dislike' to 'unlike' for database compatibility
@@ -429,7 +430,7 @@ export class ArticlesService extends BaseService {
       // Check if article exists
       const article = await articleRepository.findById(articleId);
       if (!article) {
-        throw new Error('Article not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Check if user already reacted to this article with the same type
@@ -483,7 +484,7 @@ export class ArticlesService extends BaseService {
       // Check if article exists
       const article = await articleRepository.findById(articleId);
       if (!article) {
-        throw new Error('Article not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Get user's reaction (check both like and unlike)
@@ -516,7 +517,7 @@ export class ArticlesService extends BaseService {
       // Check if article exists
       const article = await articleRepository.findById(articleId);
       if (!article) {
-        throw new Error('Article not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Check if user has any reaction (like or unlike)
@@ -534,7 +535,7 @@ export class ArticlesService extends BaseService {
       const existingReaction = likeReaction || unlikeReaction;
 
       if (!existingReaction) {
-        throw new Error('No reaction found to remove');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Remove the reaction
@@ -564,7 +565,7 @@ export class ArticlesService extends BaseService {
       // Check if article exists
       const article = await articleRepository.findById(articleId);
       if (!article) {
-        throw new Error('Article not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Get pagination parameters
@@ -601,27 +602,27 @@ export class ArticlesService extends BaseService {
       const { content, parentId } = body;
 
       if (!content || content.trim().length === 0) {
-        throw new Error('Comment content is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       if (content.length > 1000) {
-        throw new Error('Comment is too long (max 1000 characters)');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Check if article exists
       const article = await articleRepository.findById(articleId);
       if (!article) {
-        throw new Error('Article not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // If parentId is provided, validate it exists
       if (parentId) {
         const parentComment = await commentRepository.findById(parentId);
         if (!parentComment) {
-          throw new Error('Parent comment not found');
+          throw new Error(CommonError.NOT_FOUND);
         }
         if (parentComment.articleId !== articleId) {
-          throw new Error('Parent comment does not belong to this article');
+          throw new Error(CommonError.BAD_REQUEST);
         }
       }
 
@@ -636,7 +637,7 @@ export class ArticlesService extends BaseService {
       // Fetch the created comment with relations
       const createdComment = await commentRepository.findById(newComment[0].id);
       if (!createdComment) {
-        throw new Error('Failed to retrieve created comment');
+        throw new Error(CommonError.INTERNAL_ERROR);
       }
 
       return this.transformCommentData(createdComment) as Comment;

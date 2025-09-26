@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, optionalAuthMiddleware, AuthenticatedRequest } from '../middleware';
 import { articlesService } from '../services';
+import { CommonError } from '@/types/shared';
 import {
   CreateArticleRequest,
   UpdateArticleRequest,
@@ -24,7 +25,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const response = await articlesService.getArticles(request, authRequest.user?.id);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -42,7 +43,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const response = await articlesService.createArticle(body, authRequest.user!.id);
         return reply.status(201).send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -60,7 +61,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const response = await articlesService.updateArticle(body, authRequest.user!.id);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -79,7 +80,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const response = await articlesService.deleteArticle(id, authRequest.user!.id);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -112,7 +113,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         );
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -138,7 +139,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const response = await articlesService.getArticleBySlug(slug, userId);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -187,7 +188,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         });
         return reply.send({ success: true });
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -205,7 +206,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const response = await articlesService.getUserArticleReaction(id, authRequest.user!.id);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -223,7 +224,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const response = await articlesService.removeUserArticleReaction(id, authRequest.user!.id);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -251,7 +252,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const response = await articlesService.getArticleComments(id, query, authRequest.user?.id);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -279,7 +280,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const response = await articlesService.createArticleComment(id, body, authRequest.user!.id);
         return reply.status(201).send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );

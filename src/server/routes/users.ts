@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { usersService } from '../services';
+import { CommonError } from '@/types/shared/errors';
 
 export async function userRoutes(fastify: FastifyInstance) {
   // GET /api/users/leaderboard - Get leaderboard data
@@ -17,11 +18,11 @@ export async function userRoutes(fastify: FastifyInstance) {
         const limitNum = parseInt(limit, 10);
 
         if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
-          return reply.status(400).send({ error: 'Invalid limit parameter' });
+          return reply.status(400).send({ error: CommonError.INVALID_PARAM });
         }
 
         if (!['7d', '30d', '90d', '1y', 'all'].includes(timeframe)) {
-          return reply.status(400).send({ error: 'Invalid timeframe parameter' });
+          return reply.status(400).send({ error: CommonError.INVALID_PARAM });
         }
 
         const response = await usersService.getLeaderboard(
@@ -30,7 +31,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         );
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -48,7 +49,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         const response = await usersService.getUserProfile(userId, authRequest.user!.id);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );

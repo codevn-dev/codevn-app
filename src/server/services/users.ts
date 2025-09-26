@@ -3,6 +3,7 @@ import { maskUserEmail, isAdmin } from '@/lib/utils';
 import { BaseService } from './base';
 import { UserResponse } from '@/types/shared/user';
 import { getRedis } from '@/lib/server';
+import { CommonError } from '@/types/shared';
 
 export class UsersService extends BaseService {
   /**
@@ -11,12 +12,12 @@ export class UsersService extends BaseService {
   async getUserProfile(userId: string, currentUserId: string): Promise<UserResponse> {
     try {
       if (!userId) {
-        throw new Error('User ID is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       const user = await userRepository.findById(userId);
       if (!user) {
-        throw new Error('User not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Get user statistics

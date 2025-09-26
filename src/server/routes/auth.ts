@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import fastifyPassport from '@fastify/passport';
 import { config } from '@/config';
+import { AuthError, CommonError } from '@/types/shared';
 import { authService } from '../services';
 import {
   RegisterRequest as RegisterBody,
@@ -21,7 +22,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         const response = await authService.signIn(user, reply, request);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -35,10 +36,10 @@ export async function authRoutes(fastify: FastifyInstance) {
         const response = await authService.signUp(body, reply, request);
         return reply.status(201).send(response);
       } catch (e: any) {
-        if (e?.code === 'EMAIL_EXISTS') {
-          return reply.status(400).send({ error: 'Email already exists' });
+        if (e?.code === AuthError.EMAIL_EXISTS) {
+          return reply.status(400).send({ error: AuthError.EMAIL_EXISTS });
         }
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -52,7 +53,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         const response = await authService.checkEmail(body);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -100,7 +101,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
         await authService.handleGoogleOAuth(user, reply, storedReturnUrl, request);
       } catch {
-        return reply.status(500).send({ error: 'Authentication failed' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -121,7 +122,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       const response = await authService.signOut(reply, accessToken, refreshToken);
       return reply.send(response);
     } catch {
-      return reply.status(500).send({ error: 'Internal server error' });
+      return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
     }
   });
 
@@ -137,7 +138,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         const response = await authService.getCurrentUser(authRequest.user!.id);
         return reply.send(response);
       } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );
@@ -148,7 +149,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       const refreshToken = request.cookies['refresh-token'];
 
       if (!refreshToken) {
-        return reply.status(400).send({ error: 'Refresh token is required' });
+        return reply.status(400).send({ error: AuthError.INVALID_REFRESH_TOKEN });
       }
 
       const response = await authService.refreshAccessToken(refreshToken);
@@ -163,7 +164,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       return reply.send(response);
     } catch (error) {
       console.error('Refresh token error:', error);
-      return reply.status(401).send({ error: 'Invalid refresh token' });
+      return reply.status(401).send({ error: AuthError.INVALID_REFRESH_TOKEN });
     }
   });
 }

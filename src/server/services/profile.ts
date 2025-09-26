@@ -3,6 +3,7 @@ import { fileUpload } from '@/lib/server';
 import { BaseService } from './base';
 import { createRedisAuthService } from '../redis';
 import { UpdateProfileRequest, UserResponse } from '@/types/shared/user';
+import { CommonError } from '@/types/shared';
 import { UploadAvatarResponse } from '@/types/shared';
 
 export class ProfileService extends BaseService {
@@ -14,7 +15,7 @@ export class ProfileService extends BaseService {
       // Get fresh user data from database
       const user = await userRepository.findById(userId);
       if (!user) {
-        throw new Error('User not found');
+        throw new Error(CommonError.NOT_FOUND);
       }
 
       // Get user statistics
@@ -49,26 +50,26 @@ export class ProfileService extends BaseService {
 
       if (name !== undefined) {
         if (!name.trim()) {
-          throw new Error('Name cannot be empty');
+          throw new Error(CommonError.BAD_REQUEST);
         }
         updateData.name = name;
       }
 
       if (email !== undefined) {
         if (!email.trim()) {
-          throw new Error('Email cannot be empty');
+          throw new Error(CommonError.BAD_REQUEST);
         }
         // Check if email is already taken by another user
         const existingUser = await userRepository.findByEmail(email);
         if (existingUser && existingUser.id !== userId) {
-          throw new Error('Email is already taken');
+          throw new Error(CommonError.BAD_REQUEST);
         }
         updateData.email = email;
       }
 
       // At least one field must be provided
       if (Object.keys(updateData).length === 0) {
-        throw new Error('At least one field (name or email) must be provided');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       const updatedUser = await userRepository.update(userId, updateData);
@@ -99,7 +100,7 @@ export class ProfileService extends BaseService {
   async uploadAvatar(userId: string, fileData: any): Promise<UploadAvatarResponse> {
     try {
       if (!fileData) {
-        throw new Error('File is required');
+        throw new Error(CommonError.BAD_REQUEST);
       }
 
       // Upload avatar using utils

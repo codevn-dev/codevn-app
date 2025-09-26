@@ -1,4 +1,5 @@
 import { logger } from '@/lib/utils/logger';
+import { CommonError } from '@/types/shared';
 
 /**
  * Base service class that provides common functionality for all services
@@ -20,7 +21,7 @@ export abstract class BaseService {
   protected validateRequiredFields(data: Record<string, any>, requiredFields: string[]): void {
     const missingFields = requiredFields.filter((field) => !data[field]);
     if (missingFields.length > 0) {
-      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      throw new Error(CommonError.BAD_REQUEST);
     }
   }
 
@@ -29,7 +30,7 @@ export abstract class BaseService {
    */
   protected validateOwnership(user: any, resourceUserId: string): void {
     if (user.id !== resourceUserId && user.role !== 'admin') {
-      throw new Error('You can only access your own resources');
+      throw new Error(CommonError.ACCESS_DENIED);
     }
   }
 
