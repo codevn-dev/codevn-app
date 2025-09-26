@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuthState } from './use-auth-state';
 import { useUIStore } from '@/stores/ui-store';
 import { useChat as useChatContext } from '@/components/features/chat/chat-context';
-import { UiMessage } from '@/types/shared';
+import { UiMessage, UserResponse } from '@/types/shared';
 import { chatConfig } from '@/config/config';
 import { apiGet } from '@/lib/utils/api-client';
 import { ChatConversationsResponse, ChatQueryResponse } from '@/types/shared/chat';
@@ -133,7 +133,7 @@ export function useChatMessages({
   }, []);
 
   const handleWebSocketMessage = useCallback(
-    (message: WebSocketMessage) => {
+    async (message: WebSocketMessage) => {
       switch (message.type) {
         case 'connected':
           // Fetch initial conversations
@@ -173,12 +173,22 @@ export function useChatMessages({
               const conversation = conversationsRef.current.find(
                 (conv) => conv.peer?.id === uiMessage.from
               );
-              const senderName = conversation?.peer?.name || 'Someone';
+
+              // If conversation not found, fetch user info from API
+              let senderName = conversation?.peer?.name;
+              if (!senderName) {
+                try {
+                  const userData = await apiGet<UserResponse>(`/api/users/${uiMessage.from}`);
+                  senderName = userData?.user?.name;
+                } catch (error) {
+                  console.error('Error fetching user info for notification:', error);
+                }
+              }
 
               // Show notification popup
               const notificationId = addNotification({
                 type: 'info',
-                title: senderName,
+                title: senderName || 'Someone',
                 message:
                   uiMessage.text.length > 50
                     ? `${uiMessage.text.substring(0, 50)}...`
