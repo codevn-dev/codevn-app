@@ -59,7 +59,7 @@ function SessionsPageContent() {
       // Map sessions to match our interface
       const mappedSessions: SessionInterface[] = sessions.map((session: SessionInterface) => ({
         token: session.token,
-        countryCode: session.countryCode,
+        countryCode: session.country?.code,
         country: session.country,
         deviceInfo: session.deviceInfo
           ? {
@@ -290,7 +290,7 @@ function SessionsPageContent() {
                       {/* Device Icon */}
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
                         {session.deviceInfo ? (
-                          getDeviceIcon(session.deviceInfo?.device || 'Desktop')
+                          getDeviceIcon(session.deviceInfo?.device || t('sessions.unknownDevice'))
                         ) : (
                           <Monitor className="h-5 w-5" />
                         )}
@@ -314,7 +314,9 @@ function SessionsPageContent() {
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
                             <Globe className="h-3 w-3" />
-                            {session.country?.name || session.countryCode || 'Unknown'}
+                            {session.country?.name ||
+                              session.country?.code ||
+                              t('sessions.unknown')}
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -401,7 +403,7 @@ function SessionsPageContent() {
                         <div>
                           {t('sessions.country')}:{' '}
                           {selectedSession.country?.name ||
-                            selectedSession.countryCode ||
+                            selectedSession.country?.code ||
                             t('sessions.unknown')}
                         </div>
                         <div>
