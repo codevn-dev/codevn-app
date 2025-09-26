@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useWebSocket } from '@/components/features/chat/websocket-context';
+import { apiPost } from '@/lib/utils/api-client';
 
 export function useHideConversation() {
   const [isHiding, setIsHiding] = useState(false);
@@ -8,22 +9,12 @@ export function useHideConversation() {
   const hideConversation = async (conversationId: string) => {
     try {
       setIsHiding(true);
-      
-      const response = await fetch('/api/chat/hide', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ conversationId }),
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to hide conversation');
-      }
+      await apiPost('/api/chat/hide', { conversationId });
 
       // Refresh conversations list to remove the hidden conversation
       await fetchConversations();
-      
+
       return { success: true };
     } catch (error) {
       console.error('Error hiding conversation:', error);

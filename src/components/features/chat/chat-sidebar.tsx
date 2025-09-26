@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, Search, X, MoreVertical } from 'lucide-react';
+import { MessageCircle, Search, X } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useI18n } from '@/components/providers';
 import { useWebSocket } from './websocket-context';
@@ -93,9 +93,9 @@ export function ChatSidebar({
 
   const handleHideConversation = async (conversationId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent triggering the conversation click
-    
+
     if (isHiding) return;
-    
+
     await hideConversation(conversationId);
   };
 
@@ -169,7 +169,7 @@ export function ChatSidebar({
               {filteredConversations.map((conversation) => (
                 <div
                   key={conversation.peer.id}
-                  className="hover:bg-brand/10 flex cursor-pointer items-center gap-3 p-3 transition-colors group"
+                  className="hover:bg-brand/10 group flex cursor-pointer items-center gap-3 p-3 transition-colors"
                   onMouseEnter={() => setHoveredConversation(conversation.id)}
                   onMouseLeave={() => setHoveredConversation(null)}
                   onClick={() => {
@@ -218,7 +218,7 @@ export function ChatSidebar({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                            className="h-7 w-7 p-0 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-50"
                             onClick={(e) => handleHideConversation(conversation.id, e)}
                             disabled={isHiding}
                             title="Hide conversation"

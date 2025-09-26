@@ -27,10 +27,6 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
     });
   }
 
-  private getChatId(userA: string, userB: string): string {
-    return [userA, userB].sort().join('|');
-  }
-
   protected async setupRedisSubscriptions(): Promise<void> {
     await this.subscriber.subscribe('chat:new_message');
     await this.subscriber.subscribe('chat:typing');
@@ -120,11 +116,22 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
     const connection = this.connections.get(connectionId);
     if (!connection || !message.text || !message.toUserId) return;
 
-    const chatId = this.getChatId(connection.userId, message.toUserId);
+    const conversationId = await messageRepository.getConversationId(
+      connection.userId,
+      message.toUserId
+    );
 
-    // Save message to database
-    const savedMessage = await messageRepository.create({
-      chatId,
+    // Ensure conversation exists first (only if needed)
+    await messageRepository.ensureConversationExists(
+      conversationId,
+      connection.userId,
+      message.toUserId,
+      'message'
+    );
+
+    // Save message to database (optimized - no redundant conversation check)
+    const savedMessage = await messageRepository.createMessageOnly({
+      conversationId,
       fromUserId: connection.userId,
       toUserId: message.toUserId,
       text: String(message.text).slice(0, 4000),
@@ -135,9 +142,9 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
     const messageData = {
       id: savedMessage.id,
       type: savedMessage.type,
-      chat: { id: savedMessage.chatId },
+      chat: { id: savedMessage.conversationId },
       fromUser: { id: savedMessage.fromUserId },
-      toUser: { id: savedMessage.toUserId },
+      toUser: { id: message.toUserId },
       text: savedMessage.text,
       seen: savedMessage.seen,
       seenAt: savedMessage.seenAt,
@@ -210,8 +217,6 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
       });
     }
   }
-
-  // send helpers inherited
 
   public async addConnection(socket: WebSocket, request: FastifyRequest) {
     try {

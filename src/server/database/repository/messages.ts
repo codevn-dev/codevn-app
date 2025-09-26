@@ -1,12 +1,61 @@
 import { getDb } from '../index';
 import { conversations, conversationsMessages, hiddenConversations, users } from '../schema';
-import { eq, and, desc, or, inArray } from 'drizzle-orm';
+import { eq, and, desc, or } from 'drizzle-orm';
 import { MessageRow, ConversationSummary } from '@/types/shared/chat';
 import { encryptionService } from '../../services/encryption';
 import { logger } from '@/lib/utils/logger';
 
 export const messageRepository = {
-  async create(data: {
+  async getConversationId(userA: string, userB: string): Promise<string> {
+    const db = getDb();
+
+    // Try to find existing conversation
+    const existingConversation = await db
+      .select({ id: conversations.id })
+      .from(conversations)
+      .where(
+        or(
+          and(eq(conversations.fromUserId, userA), eq(conversations.toUserId, userB)),
+          and(eq(conversations.fromUserId, userB), eq(conversations.toUserId, userA))
+        )
+      )
+      .limit(1);
+
+    if (existingConversation.length > 0) {
+      const conversationId = existingConversation[0].id;
+
+      // Auto-unhide conversation if it was hidden by the sender
+      await this.unhideConversation(conversationId, userA);
+
+      return conversationId;
+    }
+
+    // If no existing conversation, create a new ID (fallback to old method)
+    return [userA, userB].sort().join('|');
+  },
+
+  // Ensure conversation exists - only create if not exists
+  async ensureConversationExists(
+    conversationId: string,
+    fromUserId: string,
+    toUserId: string,
+    type: 'message' | 'system' = 'message'
+  ): Promise<void> {
+    const db = getDb();
+
+    await db
+      .insert(conversations)
+      .values({
+        id: conversationId,
+        fromUserId,
+        toUserId,
+        type,
+      })
+      .onConflictDoNothing(); // Only insert if not exists
+  },
+
+  // Optimized method to create message without redundant conversation check
+  async createMessageOnly(data: {
     conversationId: string;
     fromUserId: string;
     toUserId: string;
@@ -18,18 +67,7 @@ export const messageRepository = {
     // Encrypt the message text
     const encrypted = encryptionService.encrypt(data.text);
 
-    // First, ensure conversation exists
-    await db
-      .insert(conversations)
-      .values({
-        id: data.conversationId,
-        fromUserId: data.fromUserId,
-        toUserId: data.toUserId,
-        type: data.type || 'message',
-      })
-      .onConflictDoNothing();
-
-    // Then create the message
+    // Directly create the message (conversation should already exist)
     const [message] = await db
       .insert(conversationsMessages)
       .values({
@@ -44,6 +82,51 @@ export const messageRepository = {
 
     // Return decrypted message for immediate use
     return this.decryptMessage(message as unknown as MessageRow);
+  },
+
+  async create(data: {
+    conversationId: string;
+    fromUserId: string;
+    toUserId: string;
+    text: string;
+    type?: 'message' | 'system';
+  }): Promise<MessageRow> {
+    const db = getDb();
+
+    // Encrypt the message text
+    const encrypted = encryptionService.encrypt(data.text);
+
+    // Use a single transaction to ensure conversation exists and create message
+    const result = await db.transaction(async (tx) => {
+      // First, ensure conversation exists (only insert if not exists)
+      await tx
+        .insert(conversations)
+        .values({
+          id: data.conversationId,
+          fromUserId: data.fromUserId,
+          toUserId: data.toUserId,
+          type: data.type || 'message',
+        })
+        .onConflictDoNothing();
+
+      // Then create the message
+      const [message] = await tx
+        .insert(conversationsMessages)
+        .values({
+          conversationId: data.conversationId,
+          fromUserId: data.fromUserId,
+          toUserId: data.toUserId,
+          text: encrypted.encryptedText,
+          iv: encrypted.iv,
+          tag: encrypted.tag,
+        })
+        .returning();
+
+      return message;
+    });
+
+    // Return decrypted message for immediate use
+    return this.decryptMessage(result as unknown as MessageRow);
   },
 
   /**
@@ -114,8 +197,9 @@ export const messageRepository = {
 
   async getConversations(userId: string, maxConversations = 20): Promise<ConversationSummary[]> {
     const db = getDb();
+    const conversationList: ConversationSummary[] = [];
 
-    // Use window function to get max 10 messages per conversation, up to maxConversations conversations
+    // Use raw SQL query that works
     const userMessages = await db.execute(`
       WITH ranked_messages AS (
         SELECT 
@@ -169,6 +253,15 @@ export const messageRepository = {
       const seen = Boolean(message.seen);
 
       if (!conversationMap.has(conversationId)) {
+        // Get the other user from the conversation
+        const conversationRecord = await db
+          .select()
+          .from(conversations)
+          .where(eq(conversations.id, conversationId))
+          .limit(1);
+
+        if (conversationRecord.length === 0) continue;
+
         const otherUserId = fromUserId === userId ? toUserId : fromUserId;
 
         // Only decrypt the latest message for display
@@ -198,6 +291,7 @@ export const messageRepository = {
         });
       }
 
+      // Count unread messages (messages not from current user and not seen)
       if (toUserId === userId && !seen) {
         const currentCount = unreadCountMap.get(conversationId) || 0;
         unreadCountMap.set(conversationId, currentCount + 1);
@@ -205,7 +299,6 @@ export const messageRepository = {
     }
 
     // Get user details for all other users
-    const conversations: ConversationSummary[] = [];
     for (const [, conversation] of conversationMap as any) {
       const userDetails = await db
         .select({
@@ -219,7 +312,7 @@ export const messageRepository = {
         .limit(1);
 
       if (userDetails.length > 0) {
-        conversations.push({
+        conversationList.push({
           conversationId: conversation.conversationId,
           otherUserId: conversation.otherUserId,
           lastMessage: conversation.lastMessage,
@@ -234,10 +327,8 @@ export const messageRepository = {
       }
     }
 
-    return conversations;
+    return conversationList;
   },
-
- 
 
   // Mark messages as seen
   async markAsSeen(conversationId: string, userId: string): Promise<MessageRow[]> {
@@ -250,7 +341,11 @@ export const messageRepository = {
         updatedAt: new Date(),
       })
       .where(
-        and(eq(conversationsMessages.conversationId, conversationId), eq(conversationsMessages.toUserId, userId), eq(conversationsMessages.seen, false))
+        and(
+          eq(conversationsMessages.conversationId, conversationId),
+          eq(conversationsMessages.toUserId, userId),
+          eq(conversationsMessages.seen, false)
+        )
       )
       .returning();
 
@@ -264,7 +359,9 @@ export const messageRepository = {
     const result = await db
       .select({ count: conversationsMessages.id })
       .from(conversationsMessages)
-      .where(and(eq(conversationsMessages.toUserId, userId), eq(conversationsMessages.seen, false)));
+      .where(
+        and(eq(conversationsMessages.toUserId, userId), eq(conversationsMessages.seen, false))
+      );
     return result.length;
   },
 
@@ -275,7 +372,11 @@ export const messageRepository = {
       .select({ count: conversationsMessages.id })
       .from(conversationsMessages)
       .where(
-        and(eq(conversationsMessages.conversationId, conversationId), eq(conversationsMessages.toUserId, userId), eq(conversationsMessages.seen, false))
+        and(
+          eq(conversationsMessages.conversationId, conversationId),
+          eq(conversationsMessages.toUserId, userId),
+          eq(conversationsMessages.seen, false)
+        )
       );
     return result.length;
   },
@@ -287,7 +388,11 @@ export const messageRepository = {
       .select()
       .from(conversationsMessages)
       .where(
-        and(eq(conversationsMessages.conversationId, conversationId), eq(conversationsMessages.toUserId, userId), eq(conversationsMessages.seen, true))
+        and(
+          eq(conversationsMessages.conversationId, conversationId),
+          eq(conversationsMessages.toUserId, userId),
+          eq(conversationsMessages.seen, true)
+        )
       )
       .orderBy(desc(conversationsMessages.seenAt))
       .limit(1);
@@ -298,25 +403,38 @@ export const messageRepository = {
     return null;
   },
 
-  // Hide conversation by inserting into hidden_conversations table
-  async hideConversation(conversationId: string, userId: string): Promise<void> {
+  // Set conversation visibility (hide/unhide)
+  async setConversationVisibility(
+    conversationId: string,
+    userId: string,
+    hidden: boolean
+  ): Promise<void> {
     const db = getDb();
-    
+
     // Insert or update hidden conversation record
     await db
       .insert(hiddenConversations)
       .values({
         userId,
         conversationId,
-        hidden: true,
+        hidden,
       })
       .onConflictDoUpdate({
         target: [hiddenConversations.userId, hiddenConversations.conversationId],
         set: {
-          hidden: true,
+          hidden,
           hiddenAt: new Date(),
         },
       });
   },
 
+  // Hide conversation (convenience method)
+  async hideConversation(conversationId: string, userId: string): Promise<void> {
+    return this.setConversationVisibility(conversationId, userId, true);
+  },
+
+  // Unhide conversation (convenience method)
+  async unhideConversation(conversationId: string, userId: string): Promise<void> {
+    return this.setConversationVisibility(conversationId, userId, false);
+  },
 };

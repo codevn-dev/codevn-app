@@ -1,1 +1,0 @@
-ALTER TABLE "messages" ADD COLUMN "hide_conversation" boolean DEFAULT false NOT NULL;

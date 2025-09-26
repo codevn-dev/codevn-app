@@ -45,22 +45,6 @@ export interface UiMessage {
   seenAt?: string | null;
 }
 
-// Request types
-export interface SendMessageRequest {
-  receiverId: string;
-  content: string;
-}
-
-export interface GetMessagesRequest {
-  conversationId: string;
-  page?: string;
-  limit?: string;
-}
-
-export interface MarkAsReadRequest {
-  messageId: string;
-}
-
 export interface ChatQueryRequest {
   peerId: string;
   action?: string;
@@ -69,20 +53,7 @@ export interface ChatQueryRequest {
   before?: string;
 }
 
-export interface ChatPostRequest {
-  peerId: string;
-  text: string;
-}
-
-export interface ChatSeenRequest {
-  chatId: string;
-}
-
 // Response types
-export interface MessageResponse {
-  message: Message;
-}
-
 export interface MessageListResponse {
   messages: Message[];
   pagination: {

@@ -1,12 +1,16 @@
 import { getDb } from '../src/server/database';
-import { conversations, conversationsMessages, hiddenConversations } from '../src/server/database/schema';
+import {
+  conversations,
+  conversationsMessages,
+  hiddenConversations,
+} from '../src/server/database/schema';
 
 async function migrateChatData() {
   const db = getDb();
-  
+
   try {
     console.log('Starting chat data migration...');
-    
+
     // Check if old messages table exists
     const oldMessagesExist = await db.execute(`
       SELECT EXISTS (
@@ -15,12 +19,12 @@ async function migrateChatData() {
         AND table_name = 'messages'
       );
     `);
-    
+
     if (!oldMessagesExist[0]?.exists) {
       console.log('Old messages table does not exist, skipping migration');
       return;
     }
-    
+
     // Get all messages from old table
     const oldMessages = await db.execute(`
       SELECT 
@@ -38,15 +42,15 @@ async function migrateChatData() {
       FROM messages
       ORDER BY created_at ASC
     `);
-    
+
     console.log(`Found ${oldMessages.length} messages to migrate`);
-    
+
     // Group messages by chat_id to create conversations
     const conversationMap = new Map();
-    
+
     for (const message of oldMessages) {
       const chatId = String(message.chat_id);
-      
+
       if (!conversationMap.has(chatId)) {
         conversationMap.set(chatId, {
           id: chatId,
@@ -58,7 +62,7 @@ async function migrateChatData() {
         });
       }
     }
-    
+
     // Insert conversations
     console.log(`Creating ${conversationMap.size} conversations...`);
     for (const [chatId, conversation] of conversationMap) {
@@ -68,7 +72,7 @@ async function migrateChatData() {
         console.error(`Error creating conversation ${chatId}:`, error);
       }
     }
-    
+
     // Insert messages
     console.log(`Migrating ${oldMessages.length} messages...`);
     for (const message of oldMessages) {
@@ -90,19 +94,20 @@ async function migrateChatData() {
         console.error(`Error migrating message:`, error);
       }
     }
-    
+
     console.log('Chat data migration completed successfully!');
-    
   } catch (error) {
     console.error('Migration failed:', error);
   }
 }
 
 // Run migration
-migrateChatData().then(() => {
-  console.log('Migration script finished');
-  process.exit(0);
-}).catch((error) => {
-  console.error('Migration script failed:', error);
-  process.exit(1);
-});
+migrateChatData()
+  .then(() => {
+    console.log('Migration script finished');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('Migration script failed:', error);
+    process.exit(1);
+  });

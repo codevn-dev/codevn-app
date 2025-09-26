@@ -77,28 +77,42 @@ export const reactions = pgTable('reactions', {
 });
 
 // Conversations table
-export const conversations = pgTable('conversations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  fromUserId: text('from_user_id').notNull(),
-  toUserId: text('to_user_id').notNull(),
-  type: text('type', { enum: ['message', 'system'] })
-    .notNull()
-    .default('message'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => ({
-  // Unique constraint to prevent duplicate conversations between same users
-  uniqueConversation: unique('unique_conversation').on(table.fromUserId, table.toUserId),
-}));
+export const conversations = pgTable(
+  'conversations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    fromUserId: text('from_user_id').notNull(),
+    toUserId: text('to_user_id').notNull(),
+    type: text('type', { enum: ['message', 'system'] })
+      .notNull()
+      .default('message'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Unique constraint to prevent duplicate conversations between same users
+    uniqueConversation: unique('unique_conversation').on(table.fromUserId, table.toUserId),
+  })
+);
 
 // Hidden conversations table
-export const hiddenConversations = pgTable('hidden_conversations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: text('user_id').notNull(),
-  conversationId: text('conversation_id').notNull(),
-  hidden: boolean('hidden').notNull().default(true),
-  hiddenAt: timestamp('hidden_at').notNull().defaultNow(),
-});
+export const hiddenConversations = pgTable(
+  'hidden_conversations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id').notNull(),
+    conversationId: text('conversation_id').notNull(),
+    hidden: boolean('hidden').notNull().default(true),
+    hiddenAt: timestamp('hidden_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Unique constraint to prevent duplicate hidden conversation records
+    uniqueHiddenConversation: unique('unique_hidden_conversation').on(
+      table.userId,
+      table.conversationId
+    ),
+  })
+);
 
 // Conversation messages table (renamed from messages)
 export const conversationsMessages = pgTable('conversations_messages', {

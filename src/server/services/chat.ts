@@ -2,23 +2,13 @@ import { messageRepository } from '../database/repository';
 import { BaseService } from './base';
 import {
   ChatQueryRequest,
-  ChatPostRequest,
-  ChatSeenRequest,
   ConversationListResponse,
   MessageListResponse,
-  SendMessageResponse,
 } from '@/types/shared/chat';
 import { SuccessResponse } from '@/types/shared/common';
 import { CommonError } from '@/types/shared';
 
 export class ChatService extends BaseService {
-  /**
-   * Generate conversation ID from two user IDs
-   */
-  getConversationId(userA: string, userB: string): string {
-    return [userA, userB].sort().join('|');
-  }
-
   /**
    * Get all conversations for a user
    */
@@ -72,7 +62,7 @@ export class ChatService extends BaseService {
         throw new Error(CommonError.BAD_REQUEST);
       }
 
-      const conversationId = this.getConversationId(userId, peerId);
+      const conversationId = await messageRepository.getConversationId(userId, peerId);
 
       if (action === 'get') {
         // Get messages for this conversation from database
@@ -112,15 +102,14 @@ export class ChatService extends BaseService {
 
         const response: MessageListResponse = {
           messages: limitedMessages.map((msg: any) => {
-            const { fromUserId, toUserId } = msg;
             return {
               id: msg.id,
               content: msg.text,
               sender: {
-                id: fromUserId,
+                id: msg.fromUserId,
               },
               receiver: {
-                id: toUserId,
+                id: peerId,
               },
               conversationId: msg.conversationId,
               createdAt: msg.createdAt,
@@ -146,72 +135,6 @@ export class ChatService extends BaseService {
   }
 
   /**
-   * Mark messages as seen
-   */
-  async markMessagesAsSeen(userId: string, body: ChatSeenRequest): Promise<SuccessResponse> {
-    try {
-      const { chatId } = body;
-
-      if (!chatId) {
-        throw new Error(CommonError.BAD_REQUEST);
-      }
-
-      // Mark messages as seen
-      await messageRepository.markAsSeen(chatId, userId);
-
-      return { success: true };
-    } catch (error) {
-      this.handleError(error, 'Mark messages as seen');
-    }
-  }
-
-  /**
-   * Send chat message
-   */
-  async sendMessage(userId: string, body: ChatPostRequest): Promise<SendMessageResponse> {
-    try {
-      const { peerId, text } = body;
-
-      if (!peerId || !text) {
-        throw new Error(CommonError.BAD_REQUEST);
-      }
-
-      const conversationId = this.getConversationId(userId, peerId);
-      // Save message to database
-      const message = await messageRepository.create({
-        conversationId,
-        fromUserId: userId,
-        toUserId: peerId,
-        text: String(text).slice(0, 4000),
-        type: 'message',
-      });
-
-      const { fromUserId, toUserId } = message;
-      const response: SendMessageResponse = {
-        message: 'Message sent',
-        data: {
-          id: message.id,
-          content: message.text,
-          sender: {
-            id: fromUserId,
-          },
-          receiver: {
-            id: toUserId,
-          },
-          conversationId: message.conversationId,
-          createdAt: message.createdAt,
-          updatedAt: message.updatedAt ?? message.createdAt,
-          seen: message.seen,
-          seenAt: message.seenAt as any,
-        },
-      };
-      return response;
-    } catch (error) {
-      this.handleError(error, 'Send message');
-    }
-  }
-
-  /**
    * Hide conversation
    */
   async hideConversation(userId: string, conversationId: string): Promise<SuccessResponse> {
@@ -222,7 +145,6 @@ export class ChatService extends BaseService {
       this.handleError(error, 'Hide conversation');
     }
   }
-
 }
 
 // Export singleton instance
