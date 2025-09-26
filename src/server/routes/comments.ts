@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { commentsService } from '../services';
 import { UpdateCommentRequest } from '@/types/shared/comment';
-import { ReactionRequest } from '@/types/shared/article';
+import { ReactionRequest } from '@/types/shared/reaction';
 import { commentWebSocketService } from '../websocket/comment';
 import { CommonError } from '@/types/shared/errors';
 

@@ -76,3 +76,25 @@ export interface UpdateCommentResponse {
 export interface DeleteCommentResponse {
   message: string;
 }
+
+// Repository types for comments
+export interface CommentFilters {
+  articleId?: string;
+  parentId?: string | null;
+  authorId?: string;
+  sortBy?: 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+  userId?: string; // For checking user like/unlike status
+}
+
+export interface PaginatedComments {
+  comments: Comment[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}

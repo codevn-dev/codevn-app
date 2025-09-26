@@ -2,27 +2,7 @@ import { getDb } from '..';
 import { comments, reactions } from '../schema';
 import { eq, and, desc, asc, count, sql, isNull, inArray } from 'drizzle-orm';
 import { Comment as SharedComment } from '@/types/shared/comment';
-
-export interface CommentFilters {
-  articleId?: string;
-  parentId?: string | null;
-  authorId?: string;
-  sortBy?: 'createdAt';
-  sortOrder?: 'asc' | 'desc';
-  page?: number;
-  limit?: number;
-  userId?: string; // For checking user like/unlike status
-}
-
-export interface PaginatedComments {
-  comments: SharedComment[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+import { CommentFilters, PaginatedComments } from '@/types/shared/comment';
 
 export class CommentRepository {
   async findById(id: string) {

@@ -1,49 +1,7 @@
 import { getDb } from '..';
 import { categories, articles } from '../schema';
 import { eq, count, and, isNull, sql } from 'drizzle-orm';
-
-export interface CategoryWithCounts {
-  id: string;
-  name: string;
-  description: string | null;
-  slug: string;
-  color: string;
-  createdAt: Date;
-  updatedAt: Date | null;
-  createdBy: {
-    name: string;
-  };
-  parent: {
-    id: string;
-    name: string;
-    slug: string;
-  } | null;
-  children: Array<{
-    id: string;
-    name: string;
-    description: string | null;
-    slug: string;
-    color: string;
-    createdAt: Date;
-    updatedAt: Date | null;
-    createdBy: {
-      name: string;
-    };
-    parent: {
-      id: string;
-      name: string;
-      slug: string;
-    } | null;
-    _count: {
-      articles: number;
-      children: number;
-    };
-  }>;
-  _count: {
-    articles: number;
-    children: number;
-  };
-}
+import { CategoryWithCounts } from '@/types/shared/category';
 
 export class CategoryRepository {
   async findById(id: string) {

@@ -2,44 +2,7 @@ import { getDb } from '..';
 import { articles, comments, reactions, categories, users, articleViews } from '../schema';
 import { and, eq, or, ilike, isNull, sql, count, inArray, exists, gte } from 'drizzle-orm';
 import { Article as SharedArticle } from '@/types/shared/article';
-
-export interface ArticleFilters {
-  search?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  page?: number;
-  limit?: number;
-  status?: 'all' | 'published' | 'draft';
-  categoryIds?: string[];
-  categoryNames?: string[]; // kept as internal name, maps from query "categories"
-  authorId?: string;
-  publishedOnly?: boolean;
-  userId?: string; // For checking user like/unlike status
-  createdAfter?: Date; // Filter by createdAt >= this date
-}
-
-export interface PaginatedArticles {
-  articles: SharedArticle[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export interface ArticleInsertReturning {
-  id: string;
-  title: string;
-  content: string;
-  slug: string;
-  thumbnail: string | null;
-  categoryId: string;
-  authorId: string;
-  published: boolean;
-  createdAt: Date;
-  updatedAt: Date | null;
-}
+import { ArticleFilters, PaginatedArticles, ArticleInsertReturning } from '@/types/shared/article';
 
 export class ArticleRepository {
   async findById(id: string) {

@@ -2,11 +2,8 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest, optionalAuthMiddleware } from '../middleware';
 import { articlesService } from '../services';
 import { CommonError } from '@/types/shared';
-import {
-  CreateArticleRequest,
-  UpdateArticleRequest,
-  ReactionRequest,
-} from '@/types/shared/article';
+import { CreateArticleRequest, UpdateArticleRequest } from '@/types/shared/article';
+import { ReactionRequest } from '@/types/shared/reaction';
 import {
   CommentQueryParams as CommentQuery,
   CreateCommentRequest as CreateCommentBody,

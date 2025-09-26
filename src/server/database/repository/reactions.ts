@@ -1,15 +1,7 @@
 import { getDb } from '..';
 import { reactions } from '../schema';
 import { eq, and } from 'drizzle-orm';
-
-export interface ReactionRow {
-  id?: string;
-  articleId?: string | null;
-  commentId?: string | null;
-  userId: string;
-  type: 'like' | 'unlike';
-  createdAt?: Date;
-}
+import { ReactionRow } from '@/types/shared/reaction';
 
 export class ReactionsRepository {
   // Article reactions

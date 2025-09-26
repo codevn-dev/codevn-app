@@ -55,3 +55,47 @@ export interface UpdateCategoryResponse {
   message: string;
   category: Category;
 }
+
+// Repository types for categories
+export interface CategoryWithCounts {
+  id: string;
+  name: string;
+  description: string | null;
+  slug: string;
+  color: string;
+  createdAt: Date;
+  updatedAt: Date | null;
+  createdBy: {
+    name: string;
+  };
+  parent: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  children: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    slug: string;
+    color: string;
+    createdAt: Date;
+    updatedAt: Date | null;
+    createdBy: {
+      name: string;
+    };
+    parent: {
+      id: string;
+      name: string;
+      slug: string;
+    } | null;
+    _count: {
+      articles: number;
+      children: number;
+    };
+  }>;
+  _count: {
+    articles: number;
+    children: number;
+  };
+}

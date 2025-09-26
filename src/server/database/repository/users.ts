@@ -3,32 +3,7 @@ import { users, articles, comments, reactions, articleViews } from '../schema';
 import { eq, and, or, ilike, count, desc, asc, isNull, ne, gte, inArray } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { authConfig } from '@/config';
-
-export interface UserFilters {
-  search?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  page?: number;
-  limit?: number;
-  role?: 'user' | 'admin';
-}
-
-export interface PaginatedUsers {
-  users: Array<{
-    id: string;
-    name: string;
-    email: string;
-    avatar: string | null;
-    role: 'user' | 'admin';
-    createdAt: Date;
-  }>;
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+import { UserFilters, PaginatedUsers } from '@/types/shared/user';
 
 export class UserRepository {
   async findById(id: string) {

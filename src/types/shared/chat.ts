@@ -121,3 +121,30 @@ export interface ChatQueryResponse {
 export interface ChatConversationsResponse {
   conversations: Conversation[];
 }
+
+// Repository types for messages
+export interface MessageRow {
+  id: string;
+  chatId: string;
+  fromUserId: string;
+  toUserId: string;
+  text: string;
+  type: 'message' | 'system';
+  seen: boolean;
+  seenAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+}
+
+export interface ConversationSummary {
+  chatId: string;
+  otherUserId: string;
+  otherUserName: string;
+  otherUserEmail: string;
+  otherUserAvatar: string | null;
+  lastMessage: string;
+  lastMessageTime: Date;
+  lastMessageFromUserId: string;
+  lastMessageSeen: boolean;
+  unreadCount: number;
+}

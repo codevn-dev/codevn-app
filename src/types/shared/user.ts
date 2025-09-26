@@ -73,3 +73,30 @@ export interface LeaderboardEntry {
 export interface LeaderboardResponse {
   leaderboard: LeaderboardEntry[];
 }
+
+// Repository types for users
+export interface UserFilters {
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+  role?: 'user' | 'admin';
+}
+
+export interface PaginatedUsers {
+  users: Array<{
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+    role: 'user' | 'admin';
+    createdAt: Date;
+  }>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}

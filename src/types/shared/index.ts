@@ -8,3 +8,4 @@ export * from './comment';
 export * from './chat';
 export * from './common';
 export * from './upload';
+export * from './reaction';

@@ -15,7 +15,7 @@ import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 import { useClientOnly } from '@/hooks/use-client-only';
 import { Comment, CommentListResponse, SuccessResponse } from '@/types/shared';
 import { apiDelete, apiGet, apiPost } from '@/lib/utils/api-client';
-import { ReactionRequest } from '@/types/shared/article';
+import { ReactionRequest } from '@/types/shared/reaction';
 import { useI18n } from '@/components/providers';
 
 interface CommentItemProps {

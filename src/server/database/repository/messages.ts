@@ -1,32 +1,7 @@
 import { getDb } from '../index';
 import { messages, users } from '../schema';
 import { eq, and, desc, or } from 'drizzle-orm';
-
-export interface MessageRow {
-  id: string;
-  chatId: string;
-  fromUserId: string;
-  toUserId: string;
-  text: string;
-  type: 'message' | 'system';
-  seen: boolean;
-  seenAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date | null;
-}
-
-export interface ConversationSummary {
-  chatId: string;
-  otherUserId: string;
-  otherUserName: string;
-  otherUserEmail: string;
-  otherUserAvatar: string | null;
-  lastMessage: string;
-  lastMessageTime: Date;
-  lastMessageFromUserId: string;
-  lastMessageSeen: boolean;
-  unreadCount: number;
-}
+import { MessageRow, ConversationSummary } from '@/types/shared/chat';
 
 export const messageRepository = {
   async create(data: {

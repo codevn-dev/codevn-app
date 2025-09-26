@@ -50,7 +50,7 @@ import { TiptapRichTextEditor } from '@/features/articles';
 import { ImageUpload } from '@/features/upload';
 import { SuccessResponse } from '@/types/shared/common';
 import { useI18n } from '@/components/providers';
-import { ReactionRequest } from '@/types/shared/article';
+import { ReactionRequest } from '@/types/shared/reaction';
 import { formatDateTime } from '@/lib/utils/time-format';
 import { v4 as uuidv4 } from 'uuid';
 interface ArticleContentProps {

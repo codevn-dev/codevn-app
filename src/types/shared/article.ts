@@ -61,10 +61,6 @@ export interface ArticleQueryParams {
   publishedOnly?: string;
 }
 
-export interface ReactionRequest {
-  action: 'like' | 'unlike' | 'dislike';
-}
-
 // Response types
 export interface ArticleResponse {
   article: Article;
@@ -96,7 +92,41 @@ export interface DeleteArticleResponse {
   message: string;
 }
 
-export interface ReactionResponse {
-  message: string;
-  article: Article;
+// Repository types for articles
+export interface ArticleFilters {
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+  status?: 'all' | 'published' | 'draft';
+  categoryIds?: string[];
+  categoryNames?: string[]; // kept as internal name, maps from query "categories"
+  authorId?: string;
+  publishedOnly?: boolean;
+  userId?: string; // For checking user like/unlike status
+  createdAfter?: Date; // Filter by createdAt >= this date
+}
+
+export interface PaginatedArticles {
+  articles: Article[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface ArticleInsertReturning {
+  id: string;
+  title: string;
+  content: string;
+  slug: string;
+  thumbnail: string | null;
+  categoryId: string;
+  authorId: string;
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date | null;
 }
