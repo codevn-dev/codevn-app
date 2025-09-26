@@ -24,6 +24,10 @@ export const uploadConfig = {
 
 export const siteConfig = {
   name: process.env.NEXT_PUBLIC_SITE_NAME || 'CodeVN',
+  links: {
+    github: process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/codevn-dev',
+    facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL || 'https://www.facebook.com/codevn.dev',
+  },
 } as const;
 
 // API configuration

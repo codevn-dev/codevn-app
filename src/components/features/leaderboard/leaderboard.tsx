@@ -391,15 +391,15 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
 
                       {/* Custom Dropdown */}
                       {isDropdownOpen && (
-                        <div className="shadow-brand/40 absolute top-full left-0 z-[100] mt-2 w-40 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md">
+                        <div className="absolute top-full left-0 z-[100] mt-2 w-40 rounded-2xl bg-white shadow-2xl">
                           <div className="py-1">
                             {/* View Profile button */}
                             <div className="py-1">
                               <button
                                 onClick={() => handleViewProfile(entry.user)}
-                                className="text-brand hover:bg-brand/10 flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors"
+                                className="hover:bg-gray-50 flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-900 transition-colors"
                               >
-                                <UserIcon className="text-brand h-4 w-4" />
+                                <UserIcon className="h-4 w-4 text-gray-700" />
                                 <span>View Profile</span>
                               </button>
                             </div>
@@ -408,9 +408,9 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
                               <div className="py-1">
                                 <button
                                   onClick={() => handleChat(entry.user)}
-                                  className="text-brand hover:bg-brand/10 flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors"
+                                  className="hover:bg-gray-50 flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-900 transition-colors"
                                 >
-                                  <MessageCircle className="text-brand-600 h-4 w-4" />
+                                  <MessageCircle className="h-4 w-4 text-gray-700" />
                                   <span>Chat</span>
                                 </button>
                               </div>

@@ -228,14 +228,13 @@ export function AvatarUpload({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-lg bg-white p-4">
             <div className="mb-4 flex items-center justify-between">
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={handleCropCancel}
-                className="h-8 w-8 p-0"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-gray-100"
+                aria-label="Close"
               >
                 <X className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
 
             <div className="mb-4">
@@ -258,13 +257,22 @@ export function AvatarUpload({
             </div>
 
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={handleCropCancel}>
+              <button
+                onClick={handleCropCancel}
+                className="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-100"
+                type="button"
+              >
                 {t('common.cancel')}
-              </Button>
-              <Button onClick={handleCropComplete} disabled={!completedCrop}>
+              </button>
+              <button
+                onClick={handleCropComplete}
+                disabled={!completedCrop}
+                className="bg-brand hover:bg-brand-600 inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
+                type="button"
+              >
                 <Check className="mr-2 h-4 w-4" />
                 {t('profile.upload')}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
