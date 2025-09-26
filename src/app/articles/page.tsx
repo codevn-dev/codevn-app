@@ -204,7 +204,7 @@ function ArticlesContent() {
           setEditingArticle(target);
           setArticleForm({
             title: target.title,
-            content: target.content,
+            content: (target as any).content || '',
             slug: target.slug,
             thumbnail: target.thumbnail || '',
             categoryId: target.category.id,
@@ -299,7 +299,7 @@ function ArticlesContent() {
     setEditingArticle(article);
     setArticleForm({
       title: article.title,
-      content: article.content,
+      content: (article as any).content || '',
       slug: article.slug,
       thumbnail: article.thumbnail || '',
       categoryId: article.category.id,
@@ -589,7 +589,7 @@ function ArticlesContent() {
                   >
                     {articles.map((article) => (
                       <motion.div key={article.id} variants={itemVariants} className="block h-full">
-                        <div className="shadow-brand/30 block flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl drop-shadow-2xl">
+                        <div className="shadow-brand/30 block flex h-full flex-col rounded-2xl bg-white shadow-2xl drop-shadow-2xl">
                           {/* Thumbnail (consistent height whether exists or not) */}
                           <div className="relative aspect-[16/9] w-full overflow-hidden">
                             {article.thumbnail ? (
@@ -653,7 +653,7 @@ function ArticlesContent() {
                                           handleTogglePublish(article);
                                           setOpenDropdown(null);
                                         }}
-                                        className="text-brand hover:bg-brand/10 flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm"
+                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
                                       >
                                         {article.published ? (
                                           <>
@@ -680,7 +680,7 @@ function ArticlesContent() {
                                             }
                                             setOpenDropdown(null);
                                           }}
-                                          className="text-brand hover:bg-brand/10 flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm"
+                                          className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
                                         >
                                           <ExternalLink className="mr-2 h-4 w-4" />
                                           {article.published
@@ -694,7 +694,7 @@ function ArticlesContent() {
                                           handleEditArticle(article);
                                           setOpenDropdown(null);
                                         }}
-                                        className="text-brand hover:bg-brand/10 flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm"
+                                        className="flex w-full cursor-pointer items-center px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50"
                                       >
                                         <Edit className="mr-2 h-4 w-4" />
                                         {t('common.edit')}
@@ -730,12 +730,7 @@ function ArticlesContent() {
                               </Badge>
                             </div>
 
-                            <div className="mb-3 line-clamp-2 text-sm text-gray-700">
-                              <CodeHighlighter
-                                content={article.content.substring(0, 150) + '...'}
-                                className="text-sm"
-                              />
-                            </div>
+                            {/* Content preview removed to reduce payload and avoid undefined content */}
 
                             <div className="flex items-center text-xs text-gray-700 sm:text-sm">
                               <div className="from-brand to-brand-700 mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-bold text-white sm:mr-3 sm:text-xs">

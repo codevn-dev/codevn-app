@@ -74,6 +74,21 @@ export class ArticlesService extends BaseService {
   }
 
   /**
+   * Transform article data for list views (omit heavy fields like content)
+   */
+  private transformArticleSummary(article: any): any {
+    const { authorId, content: _omit, ...rest } = article;
+    return {
+      ...rest,
+      author: {
+        id: article.author?.id || authorId,
+        name: article.author?.name || 'Unknown',
+        avatar: article.author?.avatar || null,
+      },
+    };
+  }
+
+  /**
    * Transform comment data to include author information
    */
   private transformCommentData(comment: any): any {
@@ -165,7 +180,7 @@ export class ArticlesService extends BaseService {
       const hasPrev = result.pagination.page > 1;
 
       return {
-        articles: result.articles.map((article: any) => this.transformArticleData(article)),
+        articles: result.articles.map((article: any) => this.transformArticleSummary(article)),
         pagination: {
           page: result.pagination.page,
           limit: result.pagination.limit,
