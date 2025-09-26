@@ -105,14 +105,17 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Sign-out endpoint (POST)
   fastify.post('/sign-out', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // Get token from cookie or header
-      const token =
+      // Get access token from cookie or header
+      const accessToken =
         request.cookies['auth-token'] ||
         (request.headers.authorization?.startsWith('Bearer ')
           ? request.headers.authorization.substring(7)
           : null);
 
-      const response = await authService.signOut(token, reply);
+      // Get refresh token from cookie
+      const refreshToken = request.cookies['refresh-token'];
+
+      const response = await authService.signOut(reply, accessToken, refreshToken);
       return reply.send(response);
     } catch {
       return reply.status(500).send({ error: 'Internal server error' });
@@ -136,24 +139,22 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // Refresh token (extend TTL in Redis)
+  // Refresh token
   fastify.post(
-    '/refresh-token',
-    {
-      preHandler: authMiddleware,
-    },
+    '/refresh',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const token =
-          request.cookies['auth-token'] ||
-          (request.headers.authorization?.startsWith('Bearer ')
-            ? request.headers.authorization.substring(7)
-            : null);
+        const { refreshToken } = request.body as { refreshToken: string };
 
-        const response = await authService.refreshUserToken(token || '');
+        if (!refreshToken) {
+          return reply.status(400).send({ error: 'Refresh token is required' });
+        }
+
+        const response = await authService.refreshAccessToken(refreshToken);
         return reply.send(response);
-      } catch {
-        return reply.status(500).send({ error: 'Internal server error' });
+      } catch (error) {
+        console.error('Refresh token error:', error);
+        return reply.status(401).send({ error: 'Invalid refresh token' });
       }
     }
   );

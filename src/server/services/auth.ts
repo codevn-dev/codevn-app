@@ -1,6 +1,6 @@
 import { FastifyReply } from 'fastify';
 import { userRepository } from '../database/repository';
-import { generateToken, revokeToken, refreshToken } from '../middleware/jwt';
+import { generateToken, generateTokenPair, revokeToken, revokeTokenPair, refreshToken, verifyRefreshToken } from '../middleware/jwt';
 import { createRedisAuthService } from '../redis';
 import { config } from '@/config';
 import { BaseService } from './base';
@@ -14,7 +14,32 @@ import { SuccessResponse } from '@/types/shared/common';
 
 export class AuthService extends BaseService {
   /**
-   * Set authentication cookie
+   * Set authentication cookies
+   */
+  private setAuthCookies(reply: FastifyReply, accessToken: string, refreshToken: string): void {
+    // Access token cookie (15 minutes)
+    reply.cookie('auth-token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    // Refresh token cookie (7 days)
+    reply.cookie('refresh-token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+  }
+
+  /**
+   * Set authentication cookie (backward compatibility)
    */
   private setAuthCookie(reply: FastifyReply, token: string): void {
     reply.cookie('auth-token', token, {
@@ -31,7 +56,21 @@ export class AuthService extends BaseService {
   }
 
   /**
-   * Clear authentication cookie
+   * Clear authentication cookies
+   */
+  private clearAuthCookies(reply: FastifyReply): void {
+    reply.clearCookie('auth-token', {
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
+    });
+    reply.clearCookie('refresh-token', {
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
+    });
+  }
+
+  /**
+   * Clear authentication cookie (backward compatibility)
    */
   private clearAuthCookie(reply: FastifyReply): void {
     reply.clearCookie('auth-token');
@@ -119,8 +158,8 @@ export class AuthService extends BaseService {
     try {
       // Extract session metadata from request
       const sessionMetadata = this.extractSessionMetadata(request);
-      const token = await generateToken(user, sessionMetadata);
-      this.setAuthCookie(reply, token);
+      const { accessToken, refreshToken } = await generateTokenPair(user, sessionMetadata);
+      this.setAuthCookies(reply, accessToken, refreshToken);
 
       return {
         message: 'Sign-in successful',
@@ -161,11 +200,11 @@ export class AuthService extends BaseService {
         role: 'user',
       });
 
-      // Auto-login: generate token and set cookie like sign-in
+      // Auto-login: generate token pair and set cookies like sign-in
       const createdUser = newUser[0];
       const sessionMetadata = this.extractSessionMetadata(request);
-      const token = await generateToken(createdUser, sessionMetadata);
-      this.setAuthCookie(reply, token);
+      const { accessToken, refreshToken } = await generateTokenPair(createdUser, sessionMetadata);
+      this.setAuthCookies(reply, accessToken, refreshToken);
 
       return {
         message: 'Sign-up successful',
@@ -253,23 +292,22 @@ export class AuthService extends BaseService {
    * Sign out user
    */
   async signOut(
-    token: string | null,
-    reply: FastifyReply
+    reply: FastifyReply,
+    accessToken: string | null,
+    refreshToken?: string
   ): Promise<SuccessResponse & { message: string }> {
     try {
-      if (token) {
-        // Revoke token from Redis
-        await revokeToken(token);
-      }
+      // Revoke both access token and refresh token
+      await revokeTokenPair(accessToken, refreshToken);
 
-      this.clearAuthCookie(reply);
+      this.clearAuthCookies(reply);
       return {
         success: true,
         message: 'Sign-out successful',
       };
     } catch {
-      // Still clear cookie even if Redis operation fails
-      this.clearAuthCookie(reply);
+      // Still clear cookies even if Redis operation fails
+      this.clearAuthCookies(reply);
       return {
         success: true,
         message: 'Sign-out successful',
@@ -308,6 +346,44 @@ export class AuthService extends BaseService {
       return { user: fullUser };
     } catch (error) {
       this.handleError(error, 'Get user');
+    }
+  }
+
+  /**
+   * Refresh access token using refresh token
+   */
+  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+    try {
+      // Verify refresh token
+      const payload = await verifyRefreshToken(refreshToken);
+      if (!payload) {
+        throw new Error('Invalid refresh token');
+      }
+
+      // Get user data from database
+      const user = await userRepository.findById(payload.id);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Generate new token pair
+      const tokenPayload = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        role: user.role,
+      };
+
+      // Revoke old refresh token first
+      await revokeTokenPair(null, refreshToken);
+
+      // Generate new token pair
+      const { accessToken, refreshToken: newRefreshToken } = await generateTokenPair(tokenPayload);
+
+      return { accessToken, refreshToken: newRefreshToken };
+    } catch (error) {
+      this.handleError(error, 'Refresh access token');
     }
   }
 
