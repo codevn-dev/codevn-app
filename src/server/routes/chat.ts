@@ -16,15 +16,18 @@ export async function chatRoutes(fastify: FastifyInstance) {
   });
 
   // GET /api/chat/conversations - Get all conversations
-  fastify.get(
+  fastify.get<{ Querystring: { limit?: string } }>(
     '/conversations',
     {
       preHandler: authMiddleware,
     },
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Querystring: { limit?: string } }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const response = await chatService.getConversations(authRequest.user!.id);
+        const { limit = '20' } = request.query;
+        const maxConversations = Math.min(100, Math.max(1, parseInt(limit) || 20));
+        
+        const response = await chatService.getConversations(authRequest.user!.id, maxConversations);
         return reply.send(response);
       } catch {
         return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });

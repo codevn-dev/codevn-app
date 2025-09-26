@@ -1,6 +1,6 @@
 import { getDb } from '../index';
 import { messages, users } from '../schema';
-import { eq, and, desc, or } from 'drizzle-orm';
+import { eq, and, desc, or, inArray } from 'drizzle-orm';
 import { MessageRow, ConversationSummary } from '@/types/shared/chat';
 import { encryptionService } from '../../services/encryption';
 import { logger } from '@/lib/utils/logger';
@@ -101,35 +101,91 @@ export const messageRepository = {
     return (rows as unknown as MessageRow[]).map((message) => this.decryptMessage(message));
   },
 
-  async getConversations(userId: string): Promise<ConversationSummary[]> {
+  async getConversations(userId: string, maxConversations = 20): Promise<ConversationSummary[]> {
     const db = getDb();
 
-    // Get all messages for the current user
-    const userMessages = await db
-      .select()
-      .from(messages)
-      .where(or(eq(messages.fromUserId, userId), eq(messages.toUserId, userId)))
-      .orderBy(desc(messages.createdAt));
+    // Use window function to get max 10 messages per chat, up to maxConversations chats
+    const userMessages = await db.execute(`
+      WITH ranked_messages AS (
+        SELECT 
+          chat_id,
+          from_user_id,
+          to_user_id,
+          text,
+          iv,
+          tag,
+          created_at,
+          seen,
+          ROW_NUMBER() OVER (PARTITION BY chat_id ORDER BY created_at DESC) as rn,
+          MAX(created_at) OVER (PARTITION BY chat_id) as max_created_at
+        FROM messages 
+        WHERE from_user_id = '${userId}' OR to_user_id = '${userId}'
+      ),
+      latest_chats AS (
+        SELECT DISTINCT chat_id, max_created_at
+        FROM ranked_messages
+        ORDER BY max_created_at DESC
+        LIMIT ${maxConversations}
+      )
+      SELECT 
+        rm.chat_id,
+        rm.from_user_id,
+        rm.to_user_id,
+        rm.text,
+        rm.iv,
+        rm.tag,
+        rm.created_at,
+        rm.seen
+      FROM ranked_messages rm
+      INNER JOIN latest_chats lc ON rm.chat_id = lc.chat_id
+      WHERE rm.rn <= 10
+      ORDER BY rm.created_at DESC
+    `);
 
     // Group by chatId and get the latest message for each chat
     const chatMap = new Map();
+    const unreadCountMap = new Map<string, number>();
 
     for (const message of userMessages) {
-      if (!chatMap.has(message.chatId)) {
-        const otherUserId = message.fromUserId === userId ? message.toUserId : message.fromUserId;
+      const chatId = String(message.chat_id);
+      const fromUserId = String(message.from_user_id);
+      const toUserId = String(message.to_user_id);
+      const createdAt = new Date(String(message.created_at));
+      const seen = Boolean(message.seen);
 
-        // Decrypt the last message for display
-        const decryptedMessage = this.decryptMessage(message as unknown as MessageRow);
+      if (!chatMap.has(chatId)) {
+        const otherUserId = fromUserId === userId ? toUserId : fromUserId;
 
-        chatMap.set(message.chatId, {
-          chatId: message.chatId,
+        // Only decrypt the latest message for display
+        const decryptedMessage = this.decryptMessage({
+          id: '',
+          chatId,
+          fromUserId,
+          toUserId,
+          text: String(message.text),
+          iv: String(message.iv),
+          tag: String(message.tag),
+          type: 'message',
+          seen,
+          createdAt,
+          updatedAt: createdAt,
+          seenAt: null,
+        } as MessageRow);
+
+        chatMap.set(chatId, {
+          chatId,
           otherUserId,
           lastMessage: decryptedMessage.text,
-          lastMessageTime: message.createdAt,
-          lastMessageFromUserId: message.fromUserId,
-          lastMessageSeen: message.seen,
-          unreadCount: 0, // We'll calculate this separately if needed
+          lastMessageTime: createdAt,
+          lastMessageFromUserId: fromUserId,
+          lastMessageSeen: seen,
+          unreadCount: 0, // Will calculate this from messages
         });
+      }
+
+      if (toUserId === userId && !seen) {
+        const currentCount = unreadCountMap.get(chatId) || 0;
+        unreadCountMap.set(chatId, currentCount + 1);
       }
     }
 
@@ -155,7 +211,7 @@ export const messageRepository = {
           lastMessageTime: chat.lastMessageTime,
           lastMessageFromUserId: chat.lastMessageFromUserId,
           lastMessageSeen: chat.lastMessageSeen,
-          unreadCount: chat.unreadCount,
+          unreadCount: unreadCountMap.get(chat.chatId) || 0,
           otherUserName: userDetails[0].name,
           otherUserEmail: userDetails[0].email,
           otherUserAvatar: userDetails[0].avatar,
@@ -165,6 +221,8 @@ export const messageRepository = {
 
     return conversations;
   },
+
+ 
 
   // Mark messages as seen
   async markAsSeen(chatId: string, userId: string): Promise<MessageRow[]> {

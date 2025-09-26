@@ -22,9 +22,9 @@ export class ChatService extends BaseService {
   /**
    * Get all conversations for a user
    */
-  async getConversations(userId: string): Promise<ConversationListResponse> {
+  async getConversations(userId: string, maxConversations = 20): Promise<ConversationListResponse> {
     try {
-      const conversations = await messageRepository.getConversations(userId);
+      const conversations = await messageRepository.getConversations(userId, maxConversations);
 
       const response: ConversationListResponse = {
         conversations: conversations.map((conv) => {
