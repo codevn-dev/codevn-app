@@ -2,9 +2,9 @@ import { userRepository } from '../database/repository';
 import { maskUserEmail, isAdmin } from '@/lib/utils';
 import { BaseService } from './base';
 import { UserResponse } from '@/types/shared/user';
-import { getRedis } from '@/lib/server';
 import { CommonError } from '@/types/shared';
 import { calculateUserScore } from '@/lib/utils/score';
+import { createRedisLeaderboardService } from '../redis';
 
 export class UsersService extends BaseService {
   /**
@@ -90,12 +90,11 @@ export class UsersService extends BaseService {
   async getLeaderboard(timeframe: '7d' | '30d' | '90d' | '1y' | 'all' = '7d', limit: number = 10) {
     try {
       const startDate = this.getDateFilter(timeframe);
-      const cacheKey = `leaderboard:${timeframe}:${limit}`;
 
       // Try to get from Redis cache first
       try {
-        const redis = getRedis();
-        const cached = await redis.get(cacheKey);
+        const leaderboardRedis = createRedisLeaderboardService();
+        const cached = await leaderboardRedis.get(timeframe, limit);
         if (cached) {
           return JSON.parse(cached);
         }
@@ -143,31 +142,36 @@ export class UsersService extends BaseService {
           if (!stats) return null;
 
           return {
-            user,
+            user: {
+              id: user.id,
+              name: user.name,
+              avatar: user.avatar,
+            } as any,
             stats,
           };
         })
         .filter(Boolean); // Remove null entries
 
       // Apply business logic: filter, sort, and limit
-      const filteredAndSorted = leaderboardData
-        .filter((item): item is NonNullable<typeof item> => item !== null && item.stats.score > 0) // Only include users with positive scores
-        .sort((a, b) => b.stats.score - a.stats.score) // Sort by score descending
-        .slice(0, limit); // Limit results
+      let filteredAndSorted = leaderboardData
+        .filter((item): item is NonNullable<typeof item> => item !== null && item.stats.score > 0)
+        .sort((a, b) => b.stats.score - a.stats.score)
+        .slice(0, limit);
 
-      // Mask emails for privacy
-      const maskedData = filteredAndSorted.map((item) => ({
-        ...item,
-        user: maskUserEmail(item.user),
-      }));
+      // Fallback: if no positive-score users found (edge cases), include top users by score >= 0
+      if (filteredAndSorted.length === 0) {
+        filteredAndSorted = leaderboardData
+          .filter((item): item is NonNullable<typeof item> => item !== null)
+          .sort((a, b) => b.stats.score - a.stats.score)
+          .slice(0, limit);
+      }
 
-      const result = { leaderboard: maskedData };
+      const result = { leaderboard: filteredAndSorted };
 
       // Cache the result in Redis
       try {
-        const redis = getRedis();
-        const cacheTTL = 600; // 10 minutes cache
-        await redis.setex(cacheKey, cacheTTL, JSON.stringify(result));
+        const leaderboardRedis = createRedisLeaderboardService();
+        await leaderboardRedis.set(timeframe, limit, JSON.stringify(result));
       } catch (error) {
         // If Redis fails, continue without caching
         console.warn('Failed to cache leaderboard:', error);

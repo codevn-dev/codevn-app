@@ -1,7 +1,7 @@
 import { userRepository } from '../database/repository';
 import { fileUpload } from '@/lib/server';
 import { BaseService } from './base';
-import { createRedisAuthService } from '../redis';
+import { createRedisAuthService, createRedisLeaderboardService } from '../redis';
 import { UpdateProfileRequest, UserResponse } from '@/types/shared/user';
 import { CommonError } from '@/types/shared';
 import { UploadAvatarResponse } from '@/types/shared';
@@ -76,6 +76,10 @@ export class ProfileService extends BaseService {
       // Invalidate user profile cache
       const redis = createRedisAuthService();
       await redis.deleteUserProfile(userId);
+      // Invalidate leaderboard caches since name/avatar may change
+      try {
+        await createRedisLeaderboardService().invalidateAll();
+      } catch {}
 
       // Update JWT payload in all active tokens
       const updatedUserData = {
@@ -114,6 +118,11 @@ export class ProfileService extends BaseService {
       // Invalidate user profile cache
       const redis = createRedisAuthService();
       await redis.deleteUserProfile(userId);
+      // Invalidate leaderboard caches since avatar changed
+      try {
+        const { createRedisLeaderboardService } = await import('../redis');
+        await createRedisLeaderboardService().invalidateAll();
+      } catch {}
 
       // Update JWT payload in all active tokens
       const updatedUserData = {

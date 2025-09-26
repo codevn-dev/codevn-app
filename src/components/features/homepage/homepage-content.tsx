@@ -343,7 +343,7 @@ export function HomepageContent() {
                 {mounted ? t('about.p1') : ''}
               </p>
 
-              <div className="mt-4 flex w-full items-center justify-end gap-2">
+              <div className="mt-4 flex w-full items-center gap-2">
                 <Link
                   href="/about"
                   aria-label="About"

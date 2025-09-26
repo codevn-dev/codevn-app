@@ -3,6 +3,7 @@ import { TokenService } from './token-service';
 import { UserService } from './user-service';
 import { SessionService } from './session-service';
 import { RedisService } from './redis-auth-service';
+import { createRedisLeaderboardService } from './redis-leaderboard-service';
 
 let redisAuthService: RedisAuthService | null = null;
 
@@ -14,5 +15,5 @@ export function createRedisAuthService(): RedisAuthService {
 }
 
 // Export individual services for specific use cases
-export { TokenService, UserService, SessionService };
+export { TokenService, UserService, SessionService, createRedisLeaderboardService };
 export type { RedisService };
