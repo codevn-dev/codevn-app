@@ -18,18 +18,12 @@ export function I18nProvider({
   children: React.ReactNode;
   initialLocale?: Locale;
 }) {
-  // Sync store with initialLocale only once (on mount) to avoid overriding user changes
-  const hasSyncedRef = useRef(false);
-  useEffect(() => {
-    if (hasSyncedRef.current) return;
-    hasSyncedRef.current = true;
-    if (initialLocale) {
-      const current = useI18nStore.getState().locale;
-      if (current !== initialLocale) {
-        useI18nStore.setState({ locale: initialLocale });
-      }
-    }
-  }, [initialLocale]);
+  // Sync store with initialLocale synchronously ONLY once on first render
+  const hasInitializedRef = useRef(false);
+  if (!hasInitializedRef.current && initialLocale) {
+    useI18nStore.setState({ locale: initialLocale });
+    hasInitializedRef.current = true;
+  }
 
   const locale = useI18nStore((s) => s.locale);
   const setLocale = useI18nStore((s) => s.setLocale);
