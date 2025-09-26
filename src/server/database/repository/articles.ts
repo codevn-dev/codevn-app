@@ -70,22 +70,8 @@ export class ArticleRepository {
       device = null,
     } = params;
 
-    // Unique per (articleId + sessionId) OR (articleId + userId) in recent window (e.g., 12h)
-    // For simplicity now, check any existing by exact pair and skip if exists
+    // Always record the view - no restrictions on duplicates
     const db = getDb();
-    if (userId) {
-      const existing = await db.query.articleViews.findFirst({
-        where: and(eq(articleViews.articleId, articleId), eq(articleViews.userId, userId)),
-      });
-      if (existing) return { created: false } as const;
-    }
-    if (sessionId) {
-      const existing = await db.query.articleViews.findFirst({
-        where: and(eq(articleViews.articleId, articleId), eq(articleViews.sessionId, sessionId)),
-      });
-      if (existing) return { created: false } as const;
-    }
-
     await db.insert(articleViews).values({
       articleId,
       userId: userId || null,

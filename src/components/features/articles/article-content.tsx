@@ -126,9 +126,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
       }
     } catch {}
 
-    // Per-article guard to avoid multiple sends this visit
-    const sentKey = `cvn_view_sent_${article.id}`;
-    if (sessionStorage.getItem(sentKey) === '1') return;
+    // Allow multiple view tracking per session - removed sessionStorage guard
 
     let maxScroll = 0;
     let dwellSeconds = 0;
@@ -188,7 +186,6 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
 
       if (shouldSend) {
         sent = true;
-        sessionStorage.setItem(sentKey, '1');
         apiPost(`/api/articles/${article.id}/track-view`, {
           sessionId,
         }).catch(() => {});
