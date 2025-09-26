@@ -32,7 +32,7 @@ export class SessionService {
     for (const token of tokens) {
       const tokenData = await this.tokenService.getToken(token, 'access');
       if (tokenData) {
-        const countryCode = tokenData.sessionMetadata?.country?.code || 'Unknown';
+        const countryCode = tokenData.sessionMetadata?.countryCode;
 
         // Get country name from country service
         let country = null;

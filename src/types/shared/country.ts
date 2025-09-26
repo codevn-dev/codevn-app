@@ -2,13 +2,18 @@
  * Country-related types and interfaces
  */
 
+export interface CountryName {
+  en: string;
+  vi: string;
+}
+
 export interface Country {
-  name: string;
+  name: CountryName;
   dial_code: string;
   code: string;
 }
 
 export interface CountryInfo {
-  name: string;
+  name: CountryName;
   dial_code: string;
 }

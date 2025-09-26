@@ -24,7 +24,7 @@ import { useI18n } from '@/components/providers';
 import type { SessionInterface } from '@/types/shared';
 
 function SessionsPageContent() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { isAuthenticated, isLoading } = useAuthState();
   const router = useRouter();
 
@@ -314,9 +314,7 @@ function SessionsPageContent() {
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
                             <Globe className="h-3 w-3" />
-                            {session.country?.name ||
-                              session.country?.code ||
-                              t('sessions.unknown')}
+                            {session.country?.name[locale] || t('sessions.unknown')}
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -402,9 +400,7 @@ function SessionsPageContent() {
                       <div className="mt-2 space-y-2 text-sm text-gray-600">
                         <div>
                           {t('sessions.country')}:{' '}
-                          {selectedSession.country?.name ||
-                            selectedSession.country?.code ||
-                            t('sessions.unknown')}
+                          {selectedSession.country?.name[locale] || t('sessions.unknown')}
                         </div>
                         <div>
                           {t('sessions.loginTime')}:{' '}

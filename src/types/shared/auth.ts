@@ -56,7 +56,10 @@ export interface CheckEmailResponse {
 export interface SessionMetadata {
   country?: {
     code: string;
-    name: string;
+    name: {
+      en: string;
+      vi: string;
+    };
   };
   deviceInfo?: {
     browser?: string;
