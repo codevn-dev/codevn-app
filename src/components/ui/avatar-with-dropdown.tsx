@@ -103,7 +103,7 @@ export function AvatarWithDropdown({
           <div className="flex items-center gap-2">
             <Avatar className={sizeClasses[size]}>
               <AvatarImage src={user.avatar || undefined} />
-              <AvatarFallback className="bg-gray-900 text-white">
+              <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
                 {user.name?.charAt(0).toUpperCase() || '?'}
               </AvatarFallback>
             </Avatar>

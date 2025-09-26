@@ -19,6 +19,7 @@ interface CommentsSectionProps {
   articleId: string;
   initialComments?: Comment[];
   commentCount?: number;
+  disableForm?: boolean;
 }
 
 export interface CommentsSectionRef {
@@ -26,7 +27,7 @@ export interface CommentsSectionRef {
 }
 
 export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionProps>(
-  ({ articleId, initialComments = [] }, ref) => {
+  ({ articleId, initialComments = [], disableForm = false }, ref) => {
     const { t } = useI18n();
     const { isAuthenticated, isLoading: isAuthLoading, user } = useAuthState();
     const { setAuthModalOpen, setAuthMode } = useUIStore();
@@ -89,7 +90,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
 
         try {
           const data = await apiGet<CommentListResponse>(
-            `/api/articles/${articleId}/comments?sortOrder=asc&page=${page}&limit=5`
+            `/api/articles/${articleId}/comments?sortOrder=desc&page=${page}&limit=5`
           );
           if (append) {
             setComments((prev) => [...prev, ...(data.comments || [])]);
@@ -129,14 +130,14 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
         // This is a reply - add it to the parent comment's replies
         handleReplyAdded(newComment);
       } else {
-        // This is a new comment - add it to the bottom of the list (latest at bottom)
+        // This is a new comment - add to the top (newest first)
         setComments((prev) => {
           // Check if comment already exists (for websocket updates)
           const exists = prev.some((c) => c.id === newComment.id);
           if (exists) return prev;
 
-          // Always add to the end for latest-first display
-          return [...prev, newComment];
+          // Prepend for newest → oldest display
+          return [newComment, ...prev];
         });
         // Auto-expand visible count to show new comment
         setVisibleTopCount((c) => c + 1);
@@ -226,8 +227,8 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
               return newComments;
             }
 
-            // Add new comment to the end
-            return [...prev, comment];
+            // Prepend new comment to keep newest first
+            return [comment, ...prev];
           });
           // Auto-expand visible count to show new comment
           setVisibleTopCount((c) => c + 1);
@@ -298,7 +299,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
       <div className="space-y-6">
         {!isLoading && !error && (
           <div>
-            {isAuthenticated && !isAuthLoading && (
+            {isAuthenticated && !isAuthLoading && !disableForm && (
               <div ref={commentFormRef} className="mb-3 sm:mb-4">
                 <div className="flex items-start space-x-1 sm:space-x-2">
                   <div className="mt-1">
@@ -326,7 +327,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                 </div>
               </div>
             )}
-            {!isAuthLoading && !isAuthenticated && (
+            {!isAuthLoading && !isAuthenticated && !disableForm && (
               <div className="border-brand/20 mb-3 rounded-lg border bg-white p-6 text-center">
                 <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
                 <p className="text-gray-600">
@@ -394,6 +395,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
                     onCommentUpdated={handleCommentUpdated}
                     onCommentDeleted={handleCommentDeleted}
                     onReplyAdded={handleReplyAdded}
+                    disableInteractions={disableForm}
                     highlightCommentId={highlightCommentId || undefined}
                     onHighlightTarget={setHighlightCommentId}
                   />

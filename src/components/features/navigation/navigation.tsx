@@ -145,7 +145,7 @@ export function Navigation() {
                         <Button variant="ghost" className="relative h-[38px] w-[38px] rounded-full">
                           <Avatar className="h-[38px] w-[38px]">
                             <AvatarImage src={user.avatar || undefined} />
-                            <AvatarFallback className="bg-gray-900 text-white">
+                            <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-white">
                               {user.name?.charAt(0).toUpperCase() || 'U'}
                             </AvatarFallback>
                           </Avatar>

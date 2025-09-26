@@ -298,7 +298,17 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
         id: (article as any).id,
         published: false,
       } as UpdateArticleRequest);
-      window.location.href = '/';
+      window.location.href = `/articles/${article.slug}?preview=true`;
+    } catch {}
+  };
+
+  const handlePublish = async () => {
+    try {
+      await apiPut<UpdateArticleResponse>('/api/articles', {
+        id: (article as any).id,
+        published: true,
+      } as UpdateArticleRequest);
+      window.location.href = `/articles/${article.slug}`;
     } catch {}
   };
 
@@ -388,18 +398,37 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                       className="shadow-brand/40 w-48 rounded-2xl bg-white/95 shadow-2xl drop-shadow-2xl backdrop-blur-md"
                       align="end"
                     >
-                      <DropdownMenuItem onClick={handleUnpublish} className="cursor-pointer">
-                        <EyeOff className="mr-2 h-4 w-4" /> {t('articles.menu.unpublish')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
-                        <EditIcon className="mr-2 h-4 w-4" /> {t('common.edit')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={handleDelete}
-                        className="cursor-pointer text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" /> {t('common.delete')}
-                      </DropdownMenuItem>
+                      {isPreview ? (
+                        <>
+                          <DropdownMenuItem onClick={handlePublish} className="cursor-pointer">
+                            <Eye className="mr-2 h-4 w-4" /> {t('articles.menu.publish')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
+                            <EditIcon className="mr-2 h-4 w-4" /> {t('common.edit')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={handleDelete}
+                            className="cursor-pointer text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> {t('common.delete')}
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        <>
+                          <DropdownMenuItem onClick={handleUnpublish} className="cursor-pointer">
+                            <EyeOff className="mr-2 h-4 w-4" /> {t('articles.menu.unpublish')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
+                            <EditIcon className="mr-2 h-4 w-4" /> {t('common.edit')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={handleDelete}
+                            className="cursor-pointer text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> {t('common.delete')}
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -462,52 +491,71 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                     <Eye className="mr-1 h-4 w-4" />
                     {typeof article.views === 'number' ? article.views : 0}
                   </span>
-                  <Button
-                    variant="back"
-                    size="sm"
-                    onClick={handleLike}
-                    className={`transition-colors duration-200 ${
-                      likedEffective
-                        ? 'border-emerald-500 bg-emerald-50/50 text-emerald-600 hover:border-emerald-600 hover:bg-emerald-50'
-                        : 'hover:border-emerald-500 hover:bg-emerald-50/30 hover:text-emerald-600'
-                    }`}
-                  >
-                    <ThumbsUp
-                      className={`mr-1 h-4 w-4 transition-colors duration-200 ${
-                        likedEffective ? 'fill-current text-emerald-600' : 'text-brand'
-                      }`}
-                    />
-                    {likeCount}
-                  </Button>
-                  <Button
-                    variant="back"
-                    size="sm"
-                    onClick={handleUnlike}
-                    className={`transition-colors duration-200 ${
-                      unlikedEffective
-                        ? 'border-rose-500 bg-rose-50/50 text-rose-600 hover:border-rose-600 hover:bg-rose-50'
-                        : 'hover:border-rose-500 hover:bg-rose-50/30 hover:text-rose-600'
-                    }`}
-                  >
-                    <ThumbsDown
-                      className={`mr-1 h-4 w-4 transition-colors duration-200 ${
-                        unlikedEffective ? 'fill-current text-rose-600' : 'text-brand'
-                      }`}
-                    />
-                    {unlikeCount}
-                  </Button>
-                  <Button
-                    variant="back"
-                    size="sm"
-                    onClick={handleCommentClick}
-                    className="cursor-pointer hover:border-blue-300 hover:bg-blue-50"
-                  >
-                    <MessageSquare className="mr-1 h-4 w-4" />
-                    {article._count.comments}
-                  </Button>
-                  <div className="ml-auto">
-                    <ShareMenu title={article.title} size="sm" />
-                  </div>
+                  {isPreview ? (
+                    <>
+                      <span className="text-brand flex items-center text-sm">
+                        <ThumbsUp className="mr-1 h-4 w-4" />
+                        {likeCount}
+                      </span>
+                      <span className="text-brand flex items-center text-sm">
+                        <ThumbsDown className="mr-1 h-4 w-4" />
+                        {unlikeCount}
+                      </span>
+                      <span className="text-brand flex items-center text-sm">
+                        <MessageSquare className="mr-1 h-4 w-4" />
+                        {article._count.comments}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="back"
+                        size="sm"
+                        onClick={handleLike}
+                        className={`transition-colors duration-200 ${
+                          likedEffective
+                            ? 'border-emerald-500 bg-emerald-50/50 text-emerald-600 hover:border-emerald-600 hover:bg-emerald-50'
+                            : 'hover:border-emerald-500 hover:bg-emerald-50/30 hover:text-emerald-600'
+                        }`}
+                      >
+                        <ThumbsUp
+                          className={`mr-1 h-4 w-4 transition-colors duration-200 ${
+                            likedEffective ? 'fill-current text-emerald-600' : 'text-brand'
+                          }`}
+                        />
+                        {likeCount}
+                      </Button>
+                      <Button
+                        variant="back"
+                        size="sm"
+                        onClick={handleUnlike}
+                        className={`transition-colors duration-200 ${
+                          unlikedEffective
+                            ? 'border-rose-500 bg-rose-50/50 text-rose-600 hover:border-rose-600 hover:bg-rose-50'
+                            : 'hover:border-rose-500 hover:bg-rose-50/30 hover:text-rose-600'
+                        }`}
+                      >
+                        <ThumbsDown
+                          className={`mr-1 h-4 w-4 transition-colors duration-200 ${
+                            unlikedEffective ? 'fill-current text-rose-600' : 'text-brand'
+                          }`}
+                        />
+                        {unlikeCount}
+                      </Button>
+                      <Button
+                        variant="back"
+                        size="sm"
+                        onClick={handleCommentClick}
+                        className="cursor-pointer hover:border-blue-300 hover:bg-blue-50"
+                      >
+                        <MessageSquare className="mr-1 h-4 w-4" />
+                        {article._count.comments}
+                      </Button>
+                      <div className="ml-auto">
+                        <ShareMenu title={article.title} size="sm" />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -518,11 +566,14 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                 />
               </MotionContainer>
 
+              <div className="my-6 border-t border-gray-200 sm:my-8" />
+
               <div className="mt-6 pt-0 sm:mt-8 sm:pt-0" data-comments-section>
                 <CommentsSection
                   ref={commentsSectionRef}
                   articleId={article.id}
                   commentCount={article._count.comments}
+                  disableForm={isPreview}
                 />
               </div>
             </div>

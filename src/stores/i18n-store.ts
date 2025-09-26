@@ -232,6 +232,14 @@ const store: Dictionary = {
   },
   'home.noMore': { en: 'No more articles to show', vi: 'Không còn bài viết để hiển thị' },
 
+  // Not Found
+  'notFound.title': { en: 'Page not found', vi: 'Không tìm thấy trang' },
+  'notFound.description': {
+    en: "The page you’re looking for doesn’t exist or has been moved.",
+    vi: 'Trang bạn đang tìm không tồn tại hoặc đã được di chuyển.',
+  },
+  'notFound.backHome': { en: 'Back to Home', vi: 'Về trang chủ' },
+
   // Leaderboard
   'leaderboard.title': { en: 'Leaderboard', vi: 'Bảng xếp hạng' },
   'leaderboard.subtitle': {

@@ -45,7 +45,6 @@ export function HomepageContent() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [onlyMine, setOnlyMine] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [setShowBackToTop] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const isFiltersInitializedRef = useRef(false);
   const lastFetchKeyRef = useRef<string | null>(null);
@@ -276,16 +275,7 @@ export function HomepageContent() {
     return () => observer.disconnect();
   }, [hasMoreArticles, isLoadingMore, isLoading, setArticlesPage]);
 
-  // Show back-to-top button after scrolling down
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onScroll = () => {
-      setShowBackToTop(window.scrollY > 600);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  // Back-to-top is handled globally; no local scroll listener needed
 
   const filteredArticles = Array.isArray(articles)
     ? articles.filter((a) => (a as any)?.published === true)

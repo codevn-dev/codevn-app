@@ -4,6 +4,7 @@ import { ArticleContent } from '@/features/articles';
 import { PreviewGuard } from '@/components/layout';
 import { config } from '@/config';
 import { apiGet } from '@/lib/utils/api-client';
+import { cookies } from 'next/headers';
 import type { Article } from '@/types/shared/article';
 
 interface ArticlePageProps {
@@ -20,11 +21,12 @@ export default async function ArticlePage({
   const { preview } = await searchParams;
   const isPreview = preview === 'true';
 
-  // Fetch article from API
+  // Fetch article from API (forward cookies so preview works server-side)
   let article: Article;
   try {
     const endpoint = `/api/articles/slug/${slug}${isPreview ? '?preview=true' : ''}`;
-    article = await apiGet<Article>(endpoint);
+    const cookieHeader = cookies().toString();
+    article = await apiGet<Article>(endpoint, { headers: { cookie: cookieHeader } });
   } catch {
     notFound();
   }

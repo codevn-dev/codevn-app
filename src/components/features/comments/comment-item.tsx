@@ -28,6 +28,7 @@ interface CommentItemProps {
   onRequestParentReply?: (comment: Comment) => void;
   highlightCommentId?: string;
   onHighlightTarget?: (id: string | null) => void;
+  disableInteractions?: boolean;
 }
 
 export function CommentItem({
@@ -40,6 +41,7 @@ export function CommentItem({
   onRequestParentReply,
   highlightCommentId,
   onHighlightTarget,
+  disableInteractions = false,
 }: CommentItemProps) {
   const { t } = useI18n();
   const { user, isAuthenticated } = useAuthState();
@@ -370,8 +372,8 @@ export function CommentItem({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleLike}
-                  disabled={isLiking}
+                  onClick={disableInteractions ? undefined : handleLike}
+                  disabled={disableInteractions || isLiking}
                   className={`h-6 px-2 transition-colors duration-200 ${
                     isLiked
                       ? 'bg-green-50 text-green-600 hover:bg-green-50 hover:text-green-700'
@@ -389,8 +391,8 @@ export function CommentItem({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleUnlike}
-                  disabled={isUnliking}
+                  onClick={disableInteractions ? undefined : handleUnlike}
+                  disabled={disableInteractions || isUnliking}
                   className={`h-6 px-2 transition-colors duration-200 ${
                     isUnliked
                       ? 'bg-red-50 text-red-600 hover:bg-red-50 hover:text-red-700'
@@ -409,6 +411,7 @@ export function CommentItem({
                   variant="ghost"
                   size="sm"
                   onClick={() => {
+                    if (disableInteractions) return;
                     if (!isAuthenticated) {
                       setAuthMode('signin');
                       setAuthModalOpen(true);
@@ -436,6 +439,7 @@ export function CommentItem({
                     }, 0);
                   }}
                   className="h-6 rounded-md px-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                  disabled={disableInteractions}
                 >
                   <Reply className="mr-1 h-3 w-3" />
                   <span className="text-xs">{t('comments.reply')}</span>
@@ -449,10 +453,11 @@ export function CommentItem({
                   variant="ghost"
                   size="sm"
                   onClick={() => {
+                    if (disableInteractions) return;
                     setShowReplies(true);
                     loadReplies(1, false);
                   }}
-                  disabled={loadingReplies}
+                  disabled={loadingReplies || disableInteractions}
                   className="h-6 rounded-md px-2 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                 >
                   {loadingReplies ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
@@ -465,7 +470,11 @@ export function CommentItem({
               <div className="relative mt-2 pl-0 sm:pl-2">
                 {/* Vertical connector line from parent avatar downward */}
                 <div className="pointer-events-none absolute top-0 bottom-6 -left-6 w-px bg-gray-200 sm:-left-7" />
-                {replies.slice(0, visibleRepliesCount).map((reply) => (
+                {replies
+                  .slice()
+                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                  .slice(0, visibleRepliesCount)
+                  .map((reply) => (
                   <motion.div
                     key={`${reply.id}-${reply.createdAt}`}
                     variants={listItemFadeSlide}
@@ -541,7 +550,7 @@ export function CommentItem({
                   </div>
                 )}
 
-                {isAuthenticated && (
+                {isAuthenticated && !disableInteractions && (
                   <div ref={bottomReplyRef} className="mt-2">
                     <CommentForm
                       articleId={articleId}
