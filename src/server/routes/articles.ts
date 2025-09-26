@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { authMiddleware, optionalAuthMiddleware, AuthenticatedRequest } from '../middleware';
+import { authMiddleware, AuthenticatedRequest, optionalAuthMiddleware } from '../middleware';
 import { articlesService } from '../services';
 import { CommonError } from '@/types/shared';
 import {
@@ -24,6 +24,23 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const response = await articlesService.getArticles(request, authRequest.user?.id);
         return reply.send(response);
+      } catch {
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+      }
+    }
+  );
+
+  // GET /api/articles/featured - Get featured articles
+  fastify.get(
+    '/featured',
+    {},
+    async (
+      request: FastifyRequest<{ Querystring: { limit?: string; windowDays?: string } }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const items = await articlesService.getFeaturedArticles(request);
+        return reply.send({ articles: items });
       } catch {
         return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }

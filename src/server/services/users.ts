@@ -4,6 +4,7 @@ import { BaseService } from './base';
 import { UserResponse } from '@/types/shared/user';
 import { getRedis } from '@/lib/server';
 import { CommonError } from '@/types/shared';
+import { calculateUserScore } from '@/lib/utils/score';
 
 export class UsersService extends BaseService {
   /**
@@ -80,7 +81,7 @@ export class UsersService extends BaseService {
     views: number;
   }): number {
     const { posts, likes, dislikes, comments, views } = stats;
-    return posts * 10 + likes * 5 + comments * 3 + Math.log(views + 1) * 5 - dislikes * 3;
+    return calculateUserScore({ posts, likes, dislikes, comments, views });
   }
 
   /**

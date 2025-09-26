@@ -218,6 +218,11 @@ const store: Dictionary = {
     en: 'Search articles, author or email...',
     vi: 'Tìm bài viết, tác giả hoặc email...',
   },
+  'home.featured': { en: 'Featured', vi: 'Nổi bật' },
+  'home.featuredSubtitle': {
+    en: 'Trending picks by community engagement',
+    vi: 'Bài viết nổi bật theo tương tác cộng đồng',
+  },
   'home.myArticles': { en: 'My Articles', vi: 'Bài viết của tôi' },
   'home.clearFilters': { en: 'Clear Filters', vi: 'Xoá bộ lọc' },
   'home.latestArticles': { en: 'Latest Articles', vi: 'Bài viết mới nhất' },

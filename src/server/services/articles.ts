@@ -19,6 +19,8 @@ import {
   CreateCommentRequest as CreateCommentBody,
 } from '@/types/shared/comment';
 import { CommonError } from '@/types/shared';
+import { calculateFeaturedArticleScore } from '@/lib/utils/score';
+import { getRedis } from '@/lib/server';
 
 export class ArticlesService extends BaseService {
   /**
@@ -192,6 +194,69 @@ export class ArticlesService extends BaseService {
       };
     } catch (error) {
       this.handleError(error, 'Get articles');
+    }
+  }
+
+  /**
+   * Get featured articles in the last `windowHours` hours, ranked by engagement score
+   */
+  async getFeaturedArticles(request: any): Promise<Article[]> {
+    try {
+      const { limit, windowDays } = request.query || {};
+      const windowHours = windowDays ? parseInt(windowDays) * 24 : 24;
+      const limitNum = Math.max(1, Math.min(20, parseInt(limit || '3')));
+      const cacheKey = `articles:featured:ids:${limitNum}:${windowHours}`;
+      const redis = getRedis();
+
+      // Try cache of IDs → hydrate with counts
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          const ids: string[] = JSON.parse(cached);
+          if (Array.isArray(ids) && ids.length > 0) {
+            const articlesFull = await articleRepository.findManyByIdsWithCounts(ids);
+            const list = articlesFull.map((a: any) => this.transformArticleSummary(a));
+            if (list.length > 0) return list as Article[];
+          }
+        }
+      } catch {}
+      // Fetch most recent published articles (cap to a sane number for scoring)
+      const result = await articleRepository.findManyWithPagination({
+        search: '',
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        page: 1,
+        status: 'published',
+        publishedOnly: true,
+        createdAfter: new Date(Date.now() - windowHours * 60 * 60 * 1000),
+      });
+
+      const recent = result.articles || [];
+
+      const withScore = recent.map((a: any) => {
+        const likes = a._count?.likes ?? 0;
+        const comments = a._count?.comments ?? 0;
+        const dislikes = a._count?.unlikes ?? 0;
+        const views = typeof a.views === 'number' ? a.views : 0;
+        const score = calculateFeaturedArticleScore(
+          { likes, dislikes, comments, views, createdAt: new Date(a.createdAt) },
+          windowHours
+        );
+        return { article: a, score };
+      });
+
+      withScore.sort((x, y) => y.score - x.score);
+      const topArticles = withScore.slice(0, limitNum).map((x) => x.article);
+
+      // Cache IDs for 1 hour
+      try {
+        const ids = topArticles.map((a: any) => a.id);
+        await redis.set(cacheKey, JSON.stringify(ids), 'EX', 3600);
+      } catch {}
+
+      return topArticles.map((a: any) => this.transformArticleSummary(a)) as Article[];
+    } catch (error) {
+      this.handleError(error, 'Get featured articles');
     }
   }
 

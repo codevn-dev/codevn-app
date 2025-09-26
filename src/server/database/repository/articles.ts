@@ -1,6 +1,6 @@
 import { getDb } from '..';
 import { articles, comments, reactions, categories, users, articleViews } from '../schema';
-import { and, eq, or, ilike, isNull, sql, count, inArray, exists } from 'drizzle-orm';
+import { and, eq, or, ilike, isNull, sql, count, inArray, exists, gte } from 'drizzle-orm';
 import { Article as SharedArticle } from '@/types/shared/article';
 
 export interface ArticleFilters {
@@ -15,6 +15,7 @@ export interface ArticleFilters {
   authorId?: string;
   publishedOnly?: boolean;
   userId?: string; // For checking user like/unlike status
+  createdAfter?: Date; // Filter by createdAt >= this date
 }
 
 export interface PaginatedArticles {
@@ -212,6 +213,10 @@ export class ArticleRepository {
 
     if (authorId) {
       whereConditions.push(eq(articles.authorId, authorId));
+    }
+
+    if (filters.createdAfter) {
+      whereConditions.push(gte(articles.createdAt, filters.createdAfter as Date));
     }
 
     // If publishedOnly is true and no authorId specified, only show published articles
@@ -485,6 +490,112 @@ export class ArticleRepository {
     });
 
     return !!result;
+  }
+
+  async findManyByIdsWithCounts(ids: string[], userId?: string): Promise<SharedArticle[]> {
+    if (!ids || ids.length === 0) return [];
+
+    const articlesData = await getDb().query.articles.findMany({
+      with: {
+        author: {
+          columns: { id: true, name: true, email: true, avatar: true },
+        },
+        category: {
+          columns: { id: true, name: true, color: true, slug: true },
+        },
+      },
+      where: and(isNull(articles.deletedAt), inArray(articles.id, ids)),
+    });
+
+    if (articlesData.length === 0) return [];
+
+    const articleIds = articlesData.map((a) => a.id);
+
+    const [
+      commentCountsRows,
+      likeCountsRows,
+      unlikeCountsRows,
+      viewCountsRows,
+      userLikesRows,
+      userUnlikesRows,
+    ] = await Promise.all([
+      getDb()
+        .select({ articleId: comments.articleId, count: count() })
+        .from(comments)
+        .where(inArray(comments.articleId, articleIds))
+        .groupBy(comments.articleId),
+      getDb()
+        .select({ articleId: reactions.articleId, count: count() })
+        .from(reactions)
+        .where(and(inArray(reactions.articleId, articleIds), eq(reactions.type, 'like')))
+        .groupBy(reactions.articleId),
+      getDb()
+        .select({ articleId: reactions.articleId, count: count() })
+        .from(reactions)
+        .where(and(inArray(reactions.articleId, articleIds), eq(reactions.type, 'unlike')))
+        .groupBy(reactions.articleId),
+      getDb()
+        .select({ articleId: articleViews.articleId, count: count() })
+        .from(articleViews)
+        .where(inArray(articleViews.articleId, articleIds))
+        .groupBy(articleViews.articleId),
+      userId
+        ? getDb()
+            .select({ articleId: reactions.articleId })
+            .from(reactions)
+            .where(
+              and(
+                inArray(reactions.articleId, articleIds),
+                eq(reactions.userId, userId),
+                eq(reactions.type, 'like')
+              )
+            )
+        : Promise.resolve([]),
+      userId
+        ? getDb()
+            .select({ articleId: reactions.articleId })
+            .from(reactions)
+            .where(
+              and(
+                inArray(reactions.articleId, articleIds),
+                eq(reactions.userId, userId),
+                eq(reactions.type, 'unlike')
+              )
+            )
+        : Promise.resolve([]),
+    ]);
+
+    const toMap = (rows: { articleId: string; count: number }[]) => {
+      const map = new Map<string, number>();
+      for (const r of rows) map.set(r.articleId, Number(r.count) || 0);
+      return map;
+    };
+    const commentsMap = toMap(commentCountsRows as any);
+    const likesMap = toMap(likeCountsRows as any);
+    const unlikesMap = toMap(unlikeCountsRows as any);
+    const viewsMap = toMap(viewCountsRows as any);
+    const userLikesSet = new Set((userLikesRows as any[]).map((r) => r.articleId));
+    const userUnlikesSet = new Set((userUnlikesRows as any[]).map((r) => r.articleId));
+
+    const enriched: SharedArticle[] = articlesData.map(
+      (article) =>
+        ({
+          ...(article as any),
+          views: viewsMap.get(article.id) || 0,
+          _count: {
+            comments: commentsMap.get(article.id) || 0,
+            likes: likesMap.get(article.id) || 0,
+            unlikes: unlikesMap.get(article.id) || 0,
+          },
+          userHasLiked: userId ? userLikesSet.has(article.id) : false,
+          userHasUnliked: userId ? userUnlikesSet.has(article.id) : false,
+        }) as unknown as SharedArticle
+    );
+
+    // Preserve input order
+    const order = new Map(ids.map((id, idx) => [id, idx] as const));
+    enriched.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+    return enriched;
   }
 }
 
