@@ -235,7 +235,7 @@ const store: Dictionary = {
   // Not Found
   'notFound.title': { en: 'Page not found', vi: 'Không tìm thấy trang' },
   'notFound.description': {
-    en: "The page you’re looking for doesn’t exist or has been moved.",
+    en: 'The page you’re looking for doesn’t exist or has been moved.',
     vi: 'Trang bạn đang tìm không tồn tại hoặc đã được di chuyển.',
   },
   'notFound.backHome': { en: 'Back to Home', vi: 'Về trang chủ' },

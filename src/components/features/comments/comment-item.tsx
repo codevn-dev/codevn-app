@@ -472,53 +472,53 @@ export function CommentItem({
                 <div className="pointer-events-none absolute top-0 bottom-6 -left-6 w-px bg-gray-200 sm:-left-7" />
                 {replies
                   .slice()
-                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                  .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                   .slice(0, visibleRepliesCount)
                   .map((reply) => (
-                  <motion.div
-                    key={`${reply.id}-${reply.createdAt}`}
-                    variants={listItemFadeSlide}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '0px 0px -60px 0px' }}
-                    className="relative"
-                  >
-                    {/* Curved elbow connector into the reply bubble */}
-                    <div className="pointer-events-none absolute top-4 -left-6 h-5 w-6 sm:-left-7 sm:h-6 sm:w-7">
-                      <div className="absolute top-0 left-0 h-full w-full rounded-tl-full border-t border-l border-gray-200" />
-                    </div>
-                    <CommentItem
+                    <motion.div
                       key={`${reply.id}-${reply.createdAt}`}
-                      comment={reply}
-                      articleId={articleId}
-                      onCommentUpdated={onCommentUpdated}
-                      onCommentDeleted={onCommentDeleted}
-                      onReplyAdded={onReplyAdded}
-                      depth={depth + 1}
-                      highlightCommentId={highlightCommentId}
-                      onHighlightTarget={onHighlightTarget}
-                      onRequestParentReply={(c) => {
-                        if (!showReplies) {
-                          setShowReplies(true);
-                          if (!repliesLoadedRef.current) {
-                            void loadReplies(1, false);
+                      variants={listItemFadeSlide}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true, margin: '0px 0px -60px 0px' }}
+                      className="relative"
+                    >
+                      {/* Curved elbow connector into the reply bubble */}
+                      <div className="pointer-events-none absolute top-4 -left-6 h-5 w-6 sm:-left-7 sm:h-6 sm:w-7">
+                        <div className="absolute top-0 left-0 h-full w-full rounded-tl-full border-t border-l border-gray-200" />
+                      </div>
+                      <CommentItem
+                        key={`${reply.id}-${reply.createdAt}`}
+                        comment={reply}
+                        articleId={articleId}
+                        onCommentUpdated={onCommentUpdated}
+                        onCommentDeleted={onCommentDeleted}
+                        onReplyAdded={onReplyAdded}
+                        depth={depth + 1}
+                        highlightCommentId={highlightCommentId}
+                        onHighlightTarget={onHighlightTarget}
+                        onRequestParentReply={(c) => {
+                          if (!showReplies) {
+                            setShowReplies(true);
+                            if (!repliesLoadedRef.current) {
+                              void loadReplies(1, false);
+                            }
                           }
-                        }
-                        onHighlightTarget?.(c.id);
-                        setChildReplyingTo(c);
-                        setChildReplyPrefill(`@${c.author.name} `);
-                        setReplyFocusTick((t) => t + 1);
-                        setShouldFocusReply(true);
-                        setTimeout(() => {
-                          bottomReplyRef.current?.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center',
-                          });
-                        }, 0);
-                      }}
-                    />
-                  </motion.div>
-                ))}
+                          onHighlightTarget?.(c.id);
+                          setChildReplyingTo(c);
+                          setChildReplyPrefill(`@${c.author.name} `);
+                          setReplyFocusTick((t) => t + 1);
+                          setShouldFocusReply(true);
+                          setTimeout(() => {
+                            bottomReplyRef.current?.scrollIntoView({
+                              behavior: 'smooth',
+                              block: 'center',
+                            });
+                          }, 0);
+                        }}
+                      />
+                    </motion.div>
+                  ))}
 
                 {(visibleRepliesCount < replies.length || hasMoreReplies) && (
                   <div className="mt-2">

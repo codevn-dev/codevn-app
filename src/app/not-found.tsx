@@ -7,9 +7,7 @@ export default function NotFound() {
   const { t } = useI18n();
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center px-4 py-16 text-center">
-      <h1 className="mb-3 text-3xl font-bold text-gray-900 sm:text-4xl">
-        {t('notFound.title')}
-      </h1>
+      <h1 className="mb-3 text-3xl font-bold text-gray-900 sm:text-4xl">{t('notFound.title')}</h1>
       <p className="mb-8 max-w-xl text-base text-gray-700 sm:text-lg">
         {t('notFound.description')}
       </p>
@@ -22,4 +20,3 @@ export default function NotFound() {
     </div>
   );
 }
-
