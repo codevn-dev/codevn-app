@@ -803,17 +803,7 @@ export function HomepageContent() {
           </div>
         </div>
       </div>
-      {showBackToTop && (
-        <button
-          type="button"
-          aria-label="Back to top"
-          title="Back to top"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="bg-brand ring-brand/30 hover:bg-brand-600 hover:ring-brand/40 supports-[backdrop-filter]:bg-brand/90 fixed bottom-6 left-4 z-[40] flex h-12 w-12 items-center justify-center rounded-full text-white shadow-xl ring-1 backdrop-blur transition-all duration-200 hover:scale-105 hover:shadow-2xl sm:bottom-6 sm:left-6"
-        >
-          <ArrowUp className="h-5 w-5" />
-        </button>
-      )}
+      {/* BackToTop is now global in layout */}
     </div>
   );
 }
