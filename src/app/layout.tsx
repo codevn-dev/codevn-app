@@ -4,6 +4,8 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import { PageTransition, AppFooter, AuthRedirectHandler, BackToTop } from '@/components/layout';
 import { CustomCursor } from '@/components/layout/custom-cursor';
+import { cookies } from 'next/headers';
+import type { Locale } from '@/stores/i18n-store';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -19,19 +21,23 @@ export const metadata: Metadata = {
   title: 'CodeVN - Where Your Code Finds Its Tribe!',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   // Note: This is a Server Component; avoid calling hooks here.
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get('locale')?.value as Locale | undefined;
+  const initialLocale: Locale =
+    cookieLocale === 'en' || cookieLocale === 'vi' ? cookieLocale : 'vi';
   return (
-    <html lang="en">
+    <html lang={initialLocale}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <Providers>
+        <Providers initialLocale={initialLocale}>
           <AuthRedirectHandler />
           <CustomCursor />
           <PageTransition>

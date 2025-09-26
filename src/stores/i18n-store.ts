@@ -401,7 +401,15 @@ export const useI18nStore = create<I18nState>()(
   persist(
     (set, get) => ({
       locale: 'vi',
-      setLocale: (locale) => set({ locale }),
+      setLocale: (locale) => {
+        set({ locale });
+        // Persist to cookie for SSR consistency
+        if (typeof document !== 'undefined') {
+          const expireDays = 365;
+          const expires = new Date(Date.now() + expireDays * 24 * 60 * 60 * 1000).toUTCString();
+          document.cookie = `locale=${locale}; path=/; expires=${expires}`;
+        }
+      },
       t: (key) => {
         const { locale } = get();
         const entry = store[key];

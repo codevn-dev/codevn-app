@@ -102,42 +102,23 @@ export async function apiFetch<T = unknown>(
     });
 
     if (!response.ok) {
-      // Handle 401 Unauthorized - auto logout and redirect
-      if (response.status === 401) {
-        // Only handle 401 on client-side
-        if (typeof window !== 'undefined') {
-          // Try refresh token once per request, and de-duplicate concurrent refreshes
-          const alreadyRetried = (options.headers as any)?.['X-Auth-Retry'] === '1';
-          if (!alreadyRetried) {
-            const ok = await refreshAccessTokenOnce();
-            if (ok) {
-              const retryHeaders: Record<string, string> = {};
-              if (options.headers) {
-                Object.entries(options.headers).forEach(([k, v]) => {
-                  retryHeaders[k] = String(v);
-                });
-              }
-              retryHeaders['X-Auth-Retry'] = '1';
-              return await apiFetch<T>(endpoint, { ...options, headers: retryHeaders });
+      // Handle 401 Unauthorized - try refresh token once on client, but do not globally redirect
+      if (response.status === 401 && typeof window !== 'undefined') {
+        const alreadyRetried = (options.headers as any)?.['X-Auth-Retry'] === '1';
+        if (!alreadyRetried) {
+          const ok = await refreshAccessTokenOnce();
+          if (ok) {
+            const retryHeaders: Record<string, string> = {};
+            if (options.headers) {
+              Object.entries(options.headers).forEach(([k, v]) => {
+                retryHeaders[k] = String(v);
+              });
             }
-          }
-
-          // Refresh failed or already retried: redirect to home
-          const isRedirecting = sessionStorage.getItem('auth-redirecting');
-          if (isRedirecting) {
-            throw new Error(CommonError.ACCESS_DENIED);
-          }
-          sessionStorage.setItem('auth-redirecting', 'true');
-          const authStorage = localStorage.getItem('auth-storage');
-          if (authStorage) {
-            localStorage.removeItem('auth-storage');
-          }
-          if (window.location.pathname !== '/') {
-            window.location.href = '/';
-          } else {
-            sessionStorage.removeItem('auth-redirecting');
+            retryHeaders['X-Auth-Retry'] = '1';
+            return await apiFetch<T>(endpoint, { ...options, headers: retryHeaders });
           }
         }
+        // Let the caller decide what to do (e.g., show auth modal). No redirect here.
       }
 
       let errorData: unknown = {};

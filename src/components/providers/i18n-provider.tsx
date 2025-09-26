@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useMemo, useRef, useEffect } from 'react';
 import { useI18nStore, type Locale } from '@/stores/i18n-store';
 
 interface I18nContextValue {
@@ -11,7 +11,26 @@ interface I18nContextValue {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
+export function I18nProvider({
+  children,
+  initialLocale,
+}: {
+  children: React.ReactNode;
+  initialLocale?: Locale;
+}) {
+  // Sync store with initialLocale only once (on mount) to avoid overriding user changes
+  const hasSyncedRef = useRef(false);
+  useEffect(() => {
+    if (hasSyncedRef.current) return;
+    hasSyncedRef.current = true;
+    if (initialLocale) {
+      const current = useI18nStore.getState().locale;
+      if (current !== initialLocale) {
+        useI18nStore.setState({ locale: initialLocale });
+      }
+    }
+  }, [initialLocale]);
+
   const locale = useI18nStore((s) => s.locale);
   const setLocale = useI18nStore((s) => s.setLocale);
   const translate = useI18nStore((s) => s.t);
