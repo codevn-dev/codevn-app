@@ -38,7 +38,8 @@ const store: Dictionary = {
   'common.copyrightSuffix': { en: 'All rights reserved.', vi: 'Đã đăng ký bản quyền.' },
   'common.role': { en: 'Role', vi: 'Vai trò' },
   'common.role.admin': { en: 'Admin', vi: 'Quản trị viên' },
-  'common.role.user': { en: 'User', vi: 'Người dùng' },
+  'common.role.member': { en: 'Member', vi: 'Thành viên' },
+  'common.role.system': { en: 'System', vi: 'Hệ thống' },
 
   // Navigation
   'nav.articles': { en: 'Articles', vi: 'Bài viết' },

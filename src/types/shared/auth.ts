@@ -1,8 +1,10 @@
+import { UserRole } from './roles';
+
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'user' | 'admin';
+  role: UserRole;
   avatar?: string;
   createdAt: string;
   statistics?: {
@@ -77,7 +79,7 @@ export type SessionInterface = SessionMetadata & {
 
 export interface JWTPayload {
   id: string;
-  role: 'user' | 'admin';
+  role: UserRole;
   sessionMetadata?: SessionMetadata;
   jti?: string;
   iat?: number;

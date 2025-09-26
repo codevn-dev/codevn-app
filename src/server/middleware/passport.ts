@@ -81,7 +81,7 @@ export async function setupPassport(fastify: FastifyInstance) {
                 email,
                 name: name || email.split('@')[0],
                 password: '', // No password for OAuth users
-                role: 'user',
+                role: 'member',
                 avatar: avatar || null,
               });
               user = await userRepository.findByEmail(email);

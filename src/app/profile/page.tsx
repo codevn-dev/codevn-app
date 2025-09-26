@@ -208,7 +208,7 @@ function ProfilePageContent() {
                 <ProfileInfoStats
                   roleLabel={t('profile.accessLevel')}
                   createdAtLabel={t('profile.memberSince')}
-                  role={profile.role === 'admin' ? t('common.role.admin') : t('common.role.user')}
+                  role={profile.role === 'admin' ? t('common.role.admin') : t('common.role.member')}
                   createdAtFormatted={formatDate(profile.createdAt)}
                   statistics={profile.statistics}
                 />

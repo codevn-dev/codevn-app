@@ -1,7 +1,7 @@
 import { pgTable, text, timestamp, uuid, boolean, pgEnum, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm/relations';
 
-export const userRoleEnum = pgEnum('user_role', ['user', 'admin']);
+export const userRoleEnum = pgEnum('user_role', ['member', 'admin', 'system']);
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -9,7 +9,7 @@ export const users = pgTable('users', {
   name: text('name').notNull(),
   password: text('password').notNull(),
   avatar: text('avatar'),
-  role: userRoleEnum('role').notNull().default('user'),
+  role: userRoleEnum('role').notNull().default('member'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at'),
   deletedAt: timestamp('deleted_at'),

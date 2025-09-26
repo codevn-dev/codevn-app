@@ -204,7 +204,7 @@ export class AuthService extends BaseService {
         email,
         name,
         password,
-        role: 'user',
+        role: 'member',
       });
 
       // Auto-login: generate token pair and set cookies like sign-in
@@ -220,7 +220,7 @@ export class AuthService extends BaseService {
           email: createdUser.email,
           name: createdUser.name,
           avatar: createdUser.avatar || undefined,
-          role: (createdUser.role as any) || 'user',
+          role: (createdUser.role as any) || 'member',
           createdAt: new Date().toISOString(),
         },
       };

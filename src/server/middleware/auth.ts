@@ -1,11 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { extractTokenFromHeader, getUserFromToken } from './jwt';
 import { logger } from '@/lib/utils/logger';
+import { UserRole } from '@/types/shared/roles';
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user?: {
     id: string;
-    role: 'user' | 'admin';
+    role: UserRole;
   };
 }
 

@@ -190,7 +190,7 @@ The application uses the following main entities:
 
 ## User Roles
 
-### User
+### Member
 
 - View articles
 - Comment on articles
@@ -200,21 +200,23 @@ The application uses the following main entities:
 - **Discover and search users**
 - **Send direct messages** via chat system
 
-### Moderator
-
-- All user permissions
-- Create articles
-- Moderate content
-
 ### Admin
 
-- All moderator permissions
+- All member permissions
+- Create articles
+- Moderate content
 - Manage user roles
 - Full system access
 - User management
 - **View full user information** (unmasked emails)
 - **Access all user profiles** with admin privileges
 - **Advanced user management** with search and pagination
+
+### System
+
+- System-level operations
+- Automated processes
+- Internal system tasks
 
 ## Docker Setup
 

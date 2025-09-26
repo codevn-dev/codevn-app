@@ -4,6 +4,7 @@ import { eq, and, or, ilike, count, desc, asc, isNull, ne, gte, inArray } from '
 import bcrypt from 'bcryptjs';
 import { authConfig } from '@/config';
 import { UserFilters, PaginatedUsers } from '@/types/shared/user';
+import { UserRole } from '@/types/shared/roles';
 
 export class UserRepository {
   async findById(id: string) {
@@ -22,7 +23,7 @@ export class UserRepository {
     email: string;
     name: string;
     password: string;
-    role?: 'user' | 'admin';
+    role?: UserRole;
     avatar?: string | null;
   }): Promise<
     Array<{
@@ -30,7 +31,7 @@ export class UserRepository {
       email: string;
       name: string;
       avatar: string | null;
-      role: 'user' | 'admin';
+      role: UserRole;
       createdAt: Date;
     }>
   > {
@@ -42,7 +43,7 @@ export class UserRepository {
         email: userData.email,
         name: userData.name,
         password: hashedPassword,
-        role: userData.role || 'user',
+        role: userData.role || 'member',
         avatar: userData.avatar || null,
       })
       .returning({
@@ -61,7 +62,7 @@ export class UserRepository {
       name?: string;
       email?: string;
       avatar?: string | null;
-      role?: 'user' | 'admin';
+      role?: UserRole;
     }
   ): Promise<
     Array<{
@@ -69,7 +70,7 @@ export class UserRepository {
       name: string;
       email: string;
       avatar: string | null;
-      role: 'user' | 'admin';
+      role: UserRole;
       createdAt: Date;
     }>
   > {
@@ -88,7 +89,7 @@ export class UserRepository {
     });
   }
 
-  async updateRole(id: string, role: 'user' | 'admin') {
+  async updateRole(id: string, role: UserRole) {
     return await getDb()
       .update(users)
       .set({
@@ -131,7 +132,7 @@ export class UserRepository {
 
     // Role filter
     if (role) {
-      whereConditions.push(eq(users.role, role as 'user' | 'admin'));
+      whereConditions.push(eq(users.role, role as UserRole));
     }
 
     // Build order by clause

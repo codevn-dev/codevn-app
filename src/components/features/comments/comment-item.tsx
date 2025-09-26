@@ -281,7 +281,7 @@ export function CommentItem({
               name: comment.author.name,
               email: '',
               avatar: comment.author.avatar || undefined,
-              role: 'user' as const,
+              role: 'member' as const,
               createdAt: new Date().toISOString(),
             }}
             size={'lg'}

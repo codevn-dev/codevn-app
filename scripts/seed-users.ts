@@ -151,7 +151,7 @@ async function main() {
       email,
       name,
       password: hashed,
-      role: 'user' as const,
+      role: 'member' as const,
       avatar: null,
     };
   });

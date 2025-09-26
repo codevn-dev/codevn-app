@@ -1,4 +1,5 @@
 import { User } from './auth';
+import { UserRole } from './roles';
 
 // Request types
 export interface UpdateProfileRequest {
@@ -14,7 +15,7 @@ export interface ChangePasswordRequest {
 
 export interface UpdateUserRoleRequest {
   userId: string;
-  role: 'user' | 'admin';
+  role: UserRole;
 }
 
 // Response types
@@ -81,7 +82,7 @@ export interface UserFilters {
   sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
-  role?: 'user' | 'admin';
+  role?: UserRole;
 }
 
 export interface PaginatedUsers {
@@ -90,7 +91,7 @@ export interface PaginatedUsers {
     name: string;
     email: string;
     avatar: string | null;
-    role: 'user' | 'admin';
+    role: UserRole;
     createdAt: Date;
   }>;
   pagination: {

@@ -1,3 +1,5 @@
+import { UserRole } from '@/types/shared/roles';
+
 /**
  * Utility functions for role-based operations
  */
@@ -7,17 +9,26 @@
  * @param role - User role
  * @returns True if user is admin
  */
-export function isAdmin(role: string | undefined): boolean {
+export function isAdmin(role: UserRole | undefined): boolean {
   return role === 'admin';
 }
 
 /**
- * Check if a user is a regular user
+ * Check if a user is a member
  * @param role - User role
- * @returns True if user is regular user
+ * @returns True if user is member
  */
-export function isUser(role: string | undefined): boolean {
-  return role === 'user';
+export function isMember(role: UserRole | undefined): boolean {
+  return role === 'member';
+}
+
+/**
+ * Check if a user is a system user
+ * @param role - User role
+ * @returns True if user is system
+ */
+export function isSystem(role: UserRole | undefined): boolean {
+  return role === 'system';
 }
 
 /**
@@ -25,6 +36,6 @@ export function isUser(role: string | undefined): boolean {
  * @param user - User object with role property
  * @returns True if user is admin
  */
-export function hasAdminPrivileges(user: { role: string | undefined }): boolean {
+export function hasAdminPrivileges(user: { role: UserRole | undefined }): boolean {
   return isAdmin(user.role);
 }

@@ -6,6 +6,7 @@ import { SuccessResponse } from '@/types/shared/common';
 import { getRedis } from '@/lib/server';
 import { createRedisAuthService } from '../redis';
 import { CommonError, AdminError } from '@/types/shared';
+import { UserRole } from '@/types/shared/roles';
 
 export class AdminService extends BaseService {
   /**
@@ -74,7 +75,7 @@ export class AdminService extends BaseService {
         sortOrder: sortOrder as 'asc' | 'desc',
         page,
         limit,
-        role: role as 'user' | 'admin' | undefined,
+        role: role as UserRole,
       });
 
       const response: UserListResponse = {
@@ -109,7 +110,7 @@ export class AdminService extends BaseService {
         throw err;
       }
 
-      if (!['user', 'admin'].includes(role)) {
+      if (!(['member', 'admin', 'system'] as const).includes(role as UserRole)) {
         const err: any = new Error(AdminError.INVALID_ROLE);
         throw err;
       }
@@ -127,7 +128,7 @@ export class AdminService extends BaseService {
         throw new Error(CommonError.ACCESS_DENIED);
       }
 
-      const updatedUser = await userRepository.updateRole(userId, role as 'user' | 'admin');
+      const updatedUser = await userRepository.updateRole(userId, role as UserRole);
 
       // Invalidate and refresh user profile cache
       const redis = createRedisAuthService();

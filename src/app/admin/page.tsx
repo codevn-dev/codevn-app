@@ -42,6 +42,7 @@ import { formatDateTime } from '@/lib/utils/time-format';
 import { Category } from '@/types/shared/category';
 import { User } from '@/types/shared/auth';
 import { UserListResponse } from '@/types/shared/user';
+import { UserRole } from '@/types/shared/roles';
 import { SuccessResponse } from '@/types/shared/common';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/utils/api-client';
 import { useI18n } from '@/components/providers';
@@ -298,7 +299,7 @@ function AdminPageContent() {
       const _res = await apiPut<User>('/api/admin/users', { userId, role: newRole });
       // Update local state immediately for better UX
       setUsers((prevUsers) =>
-        prevUsers.map((u) => (u.id === userId ? { ...u, role: newRole as 'user' | 'admin' } : u))
+        prevUsers.map((u) => (u.id === userId ? { ...u, role: newRole as UserRole } : u))
       );
       // Also refresh data from server
       fetchData();
@@ -349,7 +350,7 @@ function AdminPageContent() {
                   >
                     <div className="flex items-center">
                       <Users className="mr-2 h-4 w-4" />
-                      {t('common.role.user')} ({pagination.totalItems})
+                      {t('common.role.member')} ({pagination.totalItems})
                     </div>
                   </button>
                   <button
@@ -409,7 +410,7 @@ function AdminPageContent() {
                         <SelectContent>
                           <SelectItem value="all">{t('admin.table.role')}</SelectItem>
                           <SelectItem value="admin">{t('common.role.admin')}</SelectItem>
-                          <SelectItem value="user">{t('common.role.user')}</SelectItem>
+                          <SelectItem value="user">{t('common.role.member')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -496,7 +497,7 @@ function AdminPageContent() {
                             <thead className="bg-gray-50/50">
                               <tr>
                                 <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
-                                  {t('common.role.user')}
+                                  {t('common.role.member')}
                                 </th>
                                 <th className="px-4 py-3 text-left text-[10px] font-medium tracking-wider text-gray-500 uppercase sm:px-6 sm:py-4 sm:text-xs">
                                   {t('admin.table.role')}
@@ -565,7 +566,7 @@ function AdminPageContent() {
                                         <SelectItem value="user">
                                           <div className="flex items-center space-x-2">
                                             <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                                            <span>{t('common.role.user')}</span>
+                                            <span>{t('common.role.member')}</span>
                                           </div>
                                         </SelectItem>
                                         <SelectItem value="admin">

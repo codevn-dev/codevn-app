@@ -469,7 +469,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                         name: article.author.name,
                         email: '', // Email not available in new API
                         avatar: article.author.avatar || undefined,
-                        role: 'user' as const,
+                        role: 'member' as const,
                         createdAt: new Date().toISOString(),
                       }}
                       size="lg"
