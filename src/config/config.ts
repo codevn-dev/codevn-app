@@ -63,11 +63,7 @@ export const paginationConfig = {
   maxPageSize: parseInt(process.env.MAX_PAGE_SIZE || '100'),
 } as const;
 
-// Rate limiting configuration
-export const rateLimitConfig = {
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
-} as const;
+// Rate limiting removed
 
 // CORS configuration
 export const corsConfig = {
@@ -142,7 +138,7 @@ export const config = {
   chat: chatConfig,
   comment: commentConfig,
   pagination: paginationConfig,
-  rateLimit: rateLimitConfig,
+  // rateLimit removed
   cors: corsConfig,
   logging: loggingConfig,
   dev: devConfig,
