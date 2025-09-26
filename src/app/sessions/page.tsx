@@ -60,6 +60,7 @@ function SessionsPageContent() {
       const mappedSessions: SessionInterface[] = sessions.map((session: SessionInterface) => ({
         token: session.token,
         countryCode: session.countryCode,
+        country: session.country,
         deviceInfo: session.deviceInfo
           ? {
               device: session.deviceInfo.device,
@@ -313,7 +314,7 @@ function SessionsPageContent() {
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
                             <Globe className="h-3 w-3" />
-                            {session.countryCode || 'Unknown'}
+                            {session.country?.name || session.countryCode || 'Unknown'}
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -399,7 +400,9 @@ function SessionsPageContent() {
                       <div className="mt-2 space-y-2 text-sm text-gray-600">
                         <div>
                           {t('sessions.country')}:{' '}
-                          {selectedSession.countryCode || t('sessions.unknown')}
+                          {selectedSession.country?.name ||
+                            selectedSession.countryCode ||
+                            t('sessions.unknown')}
                         </div>
                         <div>
                           {t('sessions.loginTime')}:{' '}

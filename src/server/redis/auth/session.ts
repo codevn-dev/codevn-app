@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 import { config } from '@/config';
 import { TokenService } from './token';
 import { UserService } from './user';
+import { CountryService } from '../../services/country';
+import { logger } from '@/lib/utils/logger';
 
 export class SessionService {
   private tokenService: TokenService;
@@ -30,9 +32,29 @@ export class SessionService {
     for (const token of tokens) {
       const tokenData = await this.tokenService.getToken(token, 'access');
       if (tokenData) {
+        const countryCode = tokenData.sessionMetadata?.country?.code || 'Unknown';
+
+        // Get country name from country service
+        let country = null;
+
+        if (countryCode !== 'Unknown') {
+          try {
+            const countryInfo = await CountryService.getByCode(countryCode);
+            if (countryInfo) {
+              country = {
+                code: countryCode,
+                name: countryInfo.name,
+              };
+            }
+          } catch (error) {
+            // If country lookup fails, keep default values
+            logger.error('Failed to get country info:', { error });
+          }
+        }
+
         sessions.push({
           token,
-          countryCode: tokenData.sessionMetadata?.countryCode || 'Unknown',
+          country,
           deviceInfo: tokenData.sessionMetadata?.deviceInfo || 'Unknown Device',
           loginTime: tokenData.sessionMetadata?.loginTime || new Date().toISOString(),
           lastActive: tokenData.sessionMetadata?.lastActive || new Date().toISOString(),

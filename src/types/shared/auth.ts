@@ -54,7 +54,10 @@ export interface CheckEmailResponse {
 
 // Shared auth token/session types
 export interface SessionMetadata {
-  countryCode?: string;
+  country?: {
+    code: string;
+    name: string;
+  };
   deviceInfo?: {
     browser?: string;
     os?: string;

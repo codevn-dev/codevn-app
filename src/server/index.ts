@@ -6,6 +6,7 @@ import { setupRoutes } from './routes';
 import { setupPlugins } from './plugins';
 import { createRedisAuthService } from './redis';
 import { setRedisService } from './middleware/jwt';
+import { CountryService } from './services/country';
 import { logger } from '@/lib/utils/logger';
 
 async function buildServer() {
@@ -34,6 +35,14 @@ async function buildServer() {
   // Initialize Redis service for authentication
   const redisService = createRedisAuthService();
   setRedisService(redisService);
+
+  // Preload country cache
+  try {
+    await CountryService.preloadCache();
+    logger.info('Country cache preloaded successfully');
+  } catch (error) {
+    logger.warn('Failed to preload country cache', { error });
+  }
 
   // Setup passport authentication
   await setupPassport(fastify);
