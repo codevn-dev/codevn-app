@@ -15,7 +15,7 @@ import { chatConfig } from '@/config';
 import { apiGet } from '@/lib/utils/api-client';
 import { ChatQueryResponse } from '@/types/shared/chat';
 
-import { UiMessage } from '@/types/shared';
+import { RoleLevel, UiMessage } from '@/types/shared';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 
@@ -439,7 +439,7 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
 
                     {/* Message */}
                     <div className={`flex ${m.from === userId ? 'justify-end' : 'justify-start'}`}>
-                      {m.type === 'system' ? (
+                      {m.type === RoleLevel.system ? (
                         <div className="w-full text-center text-xs text-gray-500">{m.text}</div>
                       ) : (
                         <div

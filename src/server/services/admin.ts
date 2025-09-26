@@ -6,7 +6,7 @@ import { SuccessResponse } from '@/types/shared/common';
 import { getRedis } from '@/lib/server';
 import { createRedisAuthService } from '../redis';
 import { CommonError, AdminError } from '@/types/shared';
-import { UserRole } from '@/types/shared/roles';
+import { RoleLevel, UserRole } from '@/types/shared';
 
 export class AdminService extends BaseService {
   /**
@@ -43,8 +43,8 @@ export class AdminService extends BaseService {
   /**
    * Require admin role
    */
-  requireAdmin(user: any): asserts user is { id: string; role: 'admin' } {
-    if (user.role !== 'admin') {
+  requireAdmin(user: any): asserts user is { id: string; role: UserRole } {
+    if (user.role !== RoleLevel.admin) {
       throw new Error(CommonError.ACCESS_DENIED);
     }
   }
@@ -110,7 +110,9 @@ export class AdminService extends BaseService {
         throw err;
       }
 
-      if (!(['member', 'admin', 'system'] as const).includes(role as UserRole)) {
+      if (
+        !([RoleLevel.member, RoleLevel.admin, RoleLevel.system] as const).includes(role as UserRole)
+      ) {
         const err: any = new Error(AdminError.INVALID_ROLE);
         throw err;
       }
@@ -124,7 +126,7 @@ export class AdminService extends BaseService {
       }
 
       // Prevent admin from updating another admin's role
-      if (targetUser.role === 'admin' && targetUser.id !== currentUser.id) {
+      if (targetUser.role === RoleLevel.admin && targetUser.id !== currentUser.id) {
         throw new Error(CommonError.ACCESS_DENIED);
       }
 

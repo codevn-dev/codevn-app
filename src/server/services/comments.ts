@@ -2,7 +2,7 @@ import { commentRepository, reactionsRepository, userRepository } from '../datab
 import { BaseService } from './base';
 import { UpdateCommentRequest, Comment } from '@/types/shared/comment';
 import { SuccessResponse } from '@/types/shared/common';
-import { CommonError } from '@/types/shared';
+import { CommonError, RoleLevel } from '@/types/shared';
 
 export class CommentsService extends BaseService {
   /**
@@ -91,7 +91,7 @@ export class CommentsService extends BaseService {
       const isAuthor = existingComment.authorId === userId;
       if (!isAuthor) {
         const user = await userRepository.findById(userId);
-        const isAdmin = user?.role === 'admin';
+        const isAdmin = user?.role === RoleLevel.admin;
         if (!isAdmin) {
           throw new Error(CommonError.ACCESS_DENIED);
         }

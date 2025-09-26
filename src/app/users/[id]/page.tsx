@@ -27,6 +27,7 @@ import { apiGet } from '@/lib/utils/api-client';
 import { User as UserProfile } from '@/types/shared/auth';
 import { UserResponse } from '@/types/shared/user';
 import { useI18n } from '@/components/providers';
+import { RoleLevel } from '@/types/shared';
 
 function UserProfileContent() {
   const { t } = useI18n();
@@ -172,7 +173,9 @@ function UserProfileContent() {
                   <Shield className="mr-3 h-5 w-5 text-[#B8956A]" />
                   <div>
                     <p className="text-brand-600 mb-1 font-semibold">
-                      {profile.role === 'admin' ? t('common.role.admin') : t('common.role.member')}
+                      {profile.role === RoleLevel.admin
+                        ? t('common.role.admin')
+                        : t('common.role.member')}
                     </p>
                     <p className="text-brand-600 text-sm">{t('profile.accessLevel')}</p>
                   </div>

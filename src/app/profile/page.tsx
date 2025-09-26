@@ -17,6 +17,7 @@ import { apiGet, apiPut } from '@/lib/utils/api-client';
 import { useI18n } from '@/components/providers';
 
 import { User as UserProfile } from '@/types/shared/auth';
+import { RoleLevel } from '@/types/shared';
 
 function ProfilePageContent() {
   const { t } = useI18n();
@@ -208,7 +209,11 @@ function ProfilePageContent() {
                 <ProfileInfoStats
                   roleLabel={t('profile.accessLevel')}
                   createdAtLabel={t('profile.memberSince')}
-                  role={profile.role === 'admin' ? t('common.role.admin') : t('common.role.member')}
+                  role={
+                    profile.role === RoleLevel.admin
+                      ? t('common.role.admin')
+                      : t('common.role.member')
+                  }
                   createdAtFormatted={formatDate(profile.createdAt)}
                   statistics={profile.statistics}
                 />

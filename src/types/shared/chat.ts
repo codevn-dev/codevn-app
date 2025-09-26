@@ -37,7 +37,7 @@ export interface Conversation {
 
 export interface UiMessage {
   id: string;
-  type: 'message' | 'system';
+  type: ConversationTypes;
   from: string;
   text: string;
   timestamp: number;
@@ -98,6 +98,19 @@ export interface ChatConversationsResponse {
   conversations: Conversation[];
 }
 
+/**
+ * Conversation types
+ */
+export const ConversationType = {
+  message: 'message',
+  system: 'system',
+} as const;
+
+/**
+ * Conversation types
+ */
+export type ConversationTypes = (typeof ConversationType)[keyof typeof ConversationType];
+
 // Repository types for messages
 export interface MessageRow {
   id: string;
@@ -107,7 +120,7 @@ export interface MessageRow {
   text: string;
   iv: string;
   tag: string;
-  type: 'message' | 'system';
+  type: ConversationTypes;
   seen: boolean;
   seenAt: Date | null;
   createdAt: Date;

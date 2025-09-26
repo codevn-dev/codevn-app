@@ -1,5 +1,5 @@
 import { logger } from '@/lib/utils/logger';
-import { CommonError } from '@/types/shared';
+import { CommonError, RoleLevel } from '@/types/shared';
 
 /**
  * Base service class that provides common functionality for all services
@@ -29,7 +29,7 @@ export abstract class BaseService {
    * Validate ownership - user can only access their own resources unless they're admin
    */
   protected validateOwnership(user: any, resourceUserId: string): void {
-    if (user.id !== resourceUserId && user.role !== 'admin') {
+    if (user.id !== resourceUserId && user.role !== RoleLevel.admin) {
       throw new Error(CommonError.ACCESS_DENIED);
     }
   }
@@ -38,6 +38,6 @@ export abstract class BaseService {
    * Check if user is admin
    */
   protected isAdmin(user: any): boolean {
-    return user?.role === 'admin';
+    return user?.role === RoleLevel.admin;
   }
 }

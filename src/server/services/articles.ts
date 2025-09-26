@@ -18,7 +18,7 @@ import {
   CommentQueryParams as CommentQuery,
   CreateCommentRequest as CreateCommentBody,
 } from '@/types/shared/comment';
-import { CommonError } from '@/types/shared';
+import { CommonError, RoleLevel } from '@/types/shared';
 import { calculateFeaturedArticleScore } from '@/lib/utils/score';
 import { getRedis } from '@/lib/server';
 import { calculateRelatedArticleScore } from '@/lib/utils/score';
@@ -142,7 +142,7 @@ export class ArticlesService extends BaseService {
       // Check if user is authenticated
       const user = userId ? await userRepository.findById(userId) : null;
       // Determine if user is admin
-      const isAdmin = user?.role === 'admin';
+      const isAdmin = user?.role === RoleLevel.admin;
 
       // Respect explicit client intent for publishedOnly even for admin.
       // Default behavior: if not specified, admins see all, others see only published.

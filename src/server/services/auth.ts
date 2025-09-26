@@ -2,7 +2,7 @@ import { FastifyReply } from 'fastify';
 import { userRepository } from '../database/repository';
 import { generateTokenPair, revokeTokenPair, verifyRefreshToken } from '../middleware/jwt';
 import { createRedisAuthService } from '../redis';
-import { AuthError, CommonError } from '@/types/shared';
+import { AuthError, CommonError, RoleLevel } from '@/types/shared';
 import { config } from '@/config';
 import { BaseService } from './base';
 import {
@@ -204,7 +204,7 @@ export class AuthService extends BaseService {
         email,
         name,
         password,
-        role: 'member',
+        role: RoleLevel.member,
       });
 
       // Auto-login: generate token pair and set cookies like sign-in
@@ -220,7 +220,7 @@ export class AuthService extends BaseService {
           email: createdUser.email,
           name: createdUser.name,
           avatar: createdUser.avatar || undefined,
-          role: (createdUser.role as any) || 'member',
+          role: (createdUser.role as any) || RoleLevel.member,
           createdAt: new Date().toISOString(),
         },
       };

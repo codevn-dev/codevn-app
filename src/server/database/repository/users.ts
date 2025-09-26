@@ -4,7 +4,7 @@ import { eq, and, or, ilike, count, desc, asc, isNull, ne, gte, inArray } from '
 import bcrypt from 'bcryptjs';
 import { authConfig } from '@/config';
 import { UserFilters, PaginatedUsers } from '@/types/shared/user';
-import { UserRole } from '@/types/shared/roles';
+import { RoleLevel, UserRole } from '@/types/shared';
 
 export class UserRepository {
   async findById(id: string) {
@@ -43,7 +43,7 @@ export class UserRepository {
         email: userData.email,
         name: userData.name,
         password: hashedPassword,
-        role: userData.role || 'member',
+        role: userData.role || RoleLevel.member,
         avatar: userData.avatar || null,
       })
       .returning({

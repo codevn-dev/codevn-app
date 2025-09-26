@@ -1,7 +1,12 @@
 import { getDb } from '../index';
 import { conversations, conversationsMessages, hiddenConversations, users } from '../schema';
 import { eq, and, desc, or } from 'drizzle-orm';
-import { MessageRow, ConversationSummary } from '@/types/shared/chat';
+import {
+  MessageRow,
+  ConversationSummary,
+  ConversationType,
+  ConversationTypes,
+} from '@/types/shared';
 import { encryptionService } from '../../services/encryption';
 import { logger } from '@/lib/utils/logger';
 
@@ -39,7 +44,7 @@ export const messageRepository = {
     conversationId: string,
     fromUserId: string,
     toUserId: string,
-    type: 'message' | 'system' = 'message'
+    type: ConversationTypes = ConversationType.message
   ): Promise<void> {
     const db = getDb();
 
@@ -60,7 +65,7 @@ export const messageRepository = {
     fromUserId: string;
     toUserId: string;
     text: string;
-    type?: 'message' | 'system';
+    type?: ConversationTypes;
   }): Promise<MessageRow> {
     const db = getDb();
 
@@ -89,7 +94,7 @@ export const messageRepository = {
     fromUserId: string;
     toUserId: string;
     text: string;
-    type?: 'message' | 'system';
+    type?: ConversationTypes;
   }): Promise<MessageRow> {
     const db = getDb();
 

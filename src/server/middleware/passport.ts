@@ -7,6 +7,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import fastifyPassport from '@fastify/passport';
 import { logger } from '@/lib/utils/logger';
 import { User as SharedUser } from '@/types/shared/auth';
+import { RoleLevel } from '@/types/shared';
 
 export async function setupPassport(fastify: FastifyInstance) {
   await fastify.register(fastifyPassport.initialize());
@@ -81,7 +82,7 @@ export async function setupPassport(fastify: FastifyInstance) {
                 email,
                 name: name || email.split('@')[0],
                 password: '', // No password for OAuth users
-                role: 'member',
+                role: RoleLevel.member,
                 avatar: avatar || null,
               });
               user = await userRepository.findByEmail(email);

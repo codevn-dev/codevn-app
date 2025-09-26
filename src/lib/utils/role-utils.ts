@@ -1,4 +1,4 @@
-import { UserRole } from '@/types/shared/roles';
+import { RoleLevel, UserRole } from '@/types/shared';
 
 /**
  * Utility functions for role-based operations
@@ -10,7 +10,7 @@ import { UserRole } from '@/types/shared/roles';
  * @returns True if user is admin
  */
 export function isAdmin(role: UserRole | undefined): boolean {
-  return role === 'admin';
+  return role === RoleLevel.admin;
 }
 
 /**
@@ -19,7 +19,7 @@ export function isAdmin(role: UserRole | undefined): boolean {
  * @returns True if user is member
  */
 export function isMember(role: UserRole | undefined): boolean {
-  return role === 'member';
+  return role === RoleLevel.member;
 }
 
 /**
@@ -28,7 +28,7 @@ export function isMember(role: UserRole | undefined): boolean {
  * @returns True if user is system
  */
 export function isSystem(role: UserRole | undefined): boolean {
-  return role === 'system';
+  return role === RoleLevel.system;
 }
 
 /**

@@ -30,7 +30,7 @@ import type { CommentsSectionRef } from '@/features/comments';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
-import { Article } from '@/types/shared';
+import { Article, RoleLevel } from '@/types/shared';
 import { apiDelete, apiPost, apiPut, apiGet } from '@/lib/utils/api-client';
 import {
   UpdateArticleRequest,
@@ -469,7 +469,7 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                         name: article.author.name,
                         email: '', // Email not available in new API
                         avatar: article.author.avatar || undefined,
-                        role: 'member' as const,
+                        role: RoleLevel.member,
                         createdAt: new Date().toISOString(),
                       }}
                       size="lg"

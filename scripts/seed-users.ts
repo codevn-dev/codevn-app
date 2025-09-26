@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { users } from '../src/server/database/schema';
+import { RoleLevel } from '@/types/shared/roles';
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -151,7 +152,7 @@ async function main() {
       email,
       name,
       password: hashed,
-      role: 'member' as const,
+      role: RoleLevel.member,
       avatar: null,
     };
   });

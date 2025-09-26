@@ -1,7 +1,12 @@
+import { RoleLevel } from '@/types/shared';
 import { pgTable, text, timestamp, uuid, boolean, pgEnum, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm/relations';
 
-export const userRoleEnum = pgEnum('user_role', ['member', 'admin', 'system']);
+export const userRoleEnum = pgEnum('user_role', [
+  RoleLevel.member,
+  RoleLevel.admin,
+  RoleLevel.system,
+]);
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -9,7 +14,7 @@ export const users = pgTable('users', {
   name: text('name').notNull(),
   password: text('password').notNull(),
   avatar: text('avatar'),
-  role: userRoleEnum('role').notNull().default('member'),
+  role: userRoleEnum('role').notNull().default(RoleLevel.member),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at'),
   deletedAt: timestamp('deleted_at'),
@@ -83,7 +88,7 @@ export const conversations = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     fromUserId: text('from_user_id').notNull(),
     toUserId: text('to_user_id').notNull(),
-    type: text('type', { enum: ['message', 'system'] })
+    type: text('type', { enum: ['message', RoleLevel.system] })
       .notNull()
       .default('message'),
     createdAt: timestamp('created_at').notNull().defaultNow(),

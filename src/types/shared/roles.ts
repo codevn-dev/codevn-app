@@ -1,20 +1,13 @@
 /**
- * User role types
+ * Role levels
  */
-export type UserRole = 'member' | 'admin' | 'system';
-
-/**
- * Role hierarchy levels (higher number = more privileges)
- */
-export const ROLE_HIERARCHY = {
-  member: 1,
-  admin: 2,
-  system: 3,
+export const RoleLevel = {
+  member: 'member',
+  admin: 'admin',
+  system: 'system',
 } as const;
 
 /**
- * Check if a role has sufficient privileges
+ * User role types
  */
-export function hasRolePrivilege(userRole: UserRole, requiredRole: UserRole): boolean {
-  return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole];
-}
+export type UserRole = (typeof RoleLevel)[keyof typeof RoleLevel];

@@ -42,7 +42,7 @@ import { formatDateTime } from '@/lib/utils/time-format';
 import { Category } from '@/types/shared/category';
 import { User } from '@/types/shared/auth';
 import { UserListResponse } from '@/types/shared/user';
-import { UserRole } from '@/types/shared/roles';
+import { RoleLevel, UserRole } from '@/types/shared/roles';
 import { SuccessResponse } from '@/types/shared/common';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/utils/api-client';
 import { useI18n } from '@/components/providers';
@@ -62,7 +62,7 @@ function AdminPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'joined'>('joined');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'user'>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -90,7 +90,7 @@ function AdminPageContent() {
   // Fetch data function for manual calls
   const fetchData = useCallback(async () => {
     // Check if user is admin before making API calls
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== RoleLevel.admin) {
       setLoading(false);
       return;
     }
@@ -155,7 +155,7 @@ function AdminPageContent() {
 
     // If authenticated, check role
     if (user) {
-      if (user.role !== 'admin') {
+      if (user.role !== RoleLevel.admin) {
         router.push('/');
       }
     } else {
@@ -171,7 +171,7 @@ function AdminPageContent() {
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== RoleLevel.admin) {
       setCategoryError('Only admin can create categories');
       return;
     }
@@ -210,7 +210,7 @@ function AdminPageContent() {
 
     if (!editingCategory) return;
 
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== RoleLevel.admin) {
       setCategoryError('Only admin can update categories');
       return;
     }
@@ -238,7 +238,7 @@ function AdminPageContent() {
   };
 
   const handleDeleteCategory = async (category: Category) => {
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== RoleLevel.admin) {
       setDeleteError('Only admin can delete categories');
       return;
     }
@@ -277,7 +277,7 @@ function AdminPageContent() {
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== RoleLevel.admin) {
       alert('Only admin can change user roles');
       return;
     }
@@ -313,7 +313,7 @@ function AdminPageContent() {
     return <LoadingScreen />;
   }
 
-  if (!user || user.role !== 'admin') {
+  if (!user || user.role !== RoleLevel.admin) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="text-center">

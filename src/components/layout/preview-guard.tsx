@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { useFastifyAuthStore } from '@/stores';
+import { RoleLevel } from '@/types/shared';
 
 interface PreviewGuardProps {
   children: React.ReactNode;
@@ -44,7 +45,7 @@ export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGu
 
     if (isPreview && isAuthenticated && user?.id) {
       const isAuthor = user.id === articleAuthorId;
-      const isAdmin = user.role === 'admin';
+      const isAdmin = user.role === RoleLevel.admin;
 
       if (!isAuthor && !isAdmin) {
         // Redirect to home if not author or admin
@@ -67,7 +68,7 @@ export function PreviewGuard({ children, isPreview, articleAuthorId }: PreviewGu
   // If preview mode and authenticated with proper access, show content
   if (isPreview && isAuthenticated && user?.id) {
     const isAuthor = user.id === articleAuthorId;
-    const isAdmin = user.role === 'admin';
+    const isAdmin = user.role === RoleLevel.admin;
 
     if (isAuthor || isAdmin) {
       return <>{children}</>;

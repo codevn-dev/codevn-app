@@ -13,7 +13,7 @@ import { CodeHighlighter } from '../articles/code-highlighter';
 import { formatDate } from '@/lib/utils';
 import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
 import { useClientOnly } from '@/hooks/use-client-only';
-import { Comment, CommentListResponse, SuccessResponse } from '@/types/shared';
+import { Comment, CommentListResponse, RoleLevel, SuccessResponse } from '@/types/shared';
 import { apiDelete, apiGet, apiPost } from '@/lib/utils/api-client';
 import { ReactionRequest } from '@/types/shared/reaction';
 import { useI18n } from '@/components/providers';
@@ -73,7 +73,7 @@ export function CommentItem({
 
   const isAuthor = user?.id === comment.author.id;
   const canEdit = isAuthor;
-  const canDelete = isAuthor || user?.role === 'admin';
+  const canDelete = isAuthor || user?.role === RoleLevel.admin;
   const maxDepth = 1; // Only allow one level of replies
 
   // Removed auto-show replies logic - users should manually click to show replies
@@ -281,7 +281,7 @@ export function CommentItem({
               name: comment.author.name,
               email: '',
               avatar: comment.author.avatar || undefined,
-              role: 'member' as const,
+              role: RoleLevel.member,
               createdAt: new Date().toISOString(),
             }}
             size={'lg'}
