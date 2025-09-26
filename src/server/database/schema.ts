@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, boolean, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, boolean, pgEnum, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm/relations';
 
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin']);
@@ -76,18 +76,39 @@ export const reactions = pgTable('reactions', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-// Chat messages table
-export const messages = pgTable('messages', {
+// Conversations table
+export const conversations = pgTable('conversations', {
   id: uuid('id').primaryKey().defaultRandom(),
-  chatId: text('chat_id').notNull(), // userA|userB format
+  fromUserId: text('from_user_id').notNull(),
+  toUserId: text('to_user_id').notNull(),
+  type: text('type', { enum: ['message', 'system'] })
+    .notNull()
+    .default('message'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  // Unique constraint to prevent duplicate conversations between same users
+  uniqueConversation: unique('unique_conversation').on(table.fromUserId, table.toUserId),
+}));
+
+// Hidden conversations table
+export const hiddenConversations = pgTable('hidden_conversations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull(),
+  conversationId: text('conversation_id').notNull(),
+  hidden: boolean('hidden').notNull().default(true),
+  hiddenAt: timestamp('hidden_at').notNull().defaultNow(),
+});
+
+// Conversation messages table (renamed from messages)
+export const conversationsMessages = pgTable('conversations_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  conversationId: text('conversation_id').notNull(),
   fromUserId: text('from_user_id').notNull(),
   toUserId: text('to_user_id').notNull(),
   text: text('text').notNull(), // Encrypted message content
   iv: text('iv').notNull(), // Initialization Vector for AES-GCM
   tag: text('tag').notNull(), // Authentication tag for AES-GCM
-  type: text('type', { enum: ['message', 'system'] })
-    .notNull()
-    .default('message'),
   seen: boolean('seen').notNull().default(false),
   seenAt: timestamp('seen_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -100,6 +121,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   comments: many(comments),
   reactions: many(reactions),
   categories: many(categories),
+  conversations: many(conversations),
+  hiddenConversations: many(hiddenConversations),
+  conversationsMessages: many(conversationsMessages),
 }));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -163,13 +187,41 @@ export const reactionsRelations = relations(reactions, ({ one }) => ({
   }),
 }));
 
-export const messagesRelations = relations(messages, ({ one }) => ({
+export const conversationsRelations = relations(conversations, ({ one, many }) => ({
   fromUser: one(users, {
-    fields: [messages.fromUserId],
+    fields: [conversations.fromUserId],
     references: [users.id],
   }),
   toUser: one(users, {
-    fields: [messages.toUserId],
+    fields: [conversations.toUserId],
+    references: [users.id],
+  }),
+  messages: many(conversationsMessages),
+  hiddenConversations: many(hiddenConversations),
+}));
+
+export const hiddenConversationsRelations = relations(hiddenConversations, ({ one }) => ({
+  user: one(users, {
+    fields: [hiddenConversations.userId],
+    references: [users.id],
+  }),
+  conversation: one(conversations, {
+    fields: [hiddenConversations.conversationId],
+    references: [conversations.id],
+  }),
+}));
+
+export const conversationsMessagesRelations = relations(conversationsMessages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [conversationsMessages.conversationId],
+    references: [conversations.id],
+  }),
+  fromUser: one(users, {
+    fields: [conversationsMessages.fromUserId],
+    references: [users.id],
+  }),
+  toUser: one(users, {
+    fields: [conversationsMessages.toUserId],
     references: [users.id],
   }),
 }));

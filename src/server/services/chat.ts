@@ -13,9 +13,9 @@ import { CommonError } from '@/types/shared';
 
 export class ChatService extends BaseService {
   /**
-   * Generate chat ID from two user IDs
+   * Generate conversation ID from two user IDs
    */
-  getChatId(userA: string, userB: string): string {
+  getConversationId(userA: string, userB: string): string {
     return [userA, userB].sort().join('|');
   }
 
@@ -30,14 +30,14 @@ export class ChatService extends BaseService {
         conversations: conversations.map((conv) => {
           const { otherUserId, otherUserName, otherUserAvatar, lastMessageFromUserId } = conv;
           return {
-            id: conv.chatId,
+            id: conv.conversationId,
             peer: {
               id: otherUserId,
               name: otherUserName,
               avatar: otherUserAvatar || undefined,
             },
             lastMessage: {
-              id: `${conv.chatId}:${new Date(conv.lastMessageTime).getTime()}`,
+              id: `${conv.conversationId}:${new Date(conv.lastMessageTime).getTime()}`,
               content: conv.lastMessage,
               sender: {
                 id: lastMessageFromUserId,
@@ -72,33 +72,33 @@ export class ChatService extends BaseService {
         throw new Error(CommonError.BAD_REQUEST);
       }
 
-      const chatId = this.getChatId(userId, peerId);
+      const conversationId = this.getConversationId(userId, peerId);
 
       if (action === 'get') {
-        // Get messages for this chat from database
-        const chatMessages = await messageRepository.findByChatId(chatId);
+        // Get messages for this conversation from database
+        const conversationMessages = await messageRepository.findByConversationId(conversationId);
 
-        let filteredMessages = chatMessages;
+        let filteredMessages = conversationMessages;
 
         // Filter messages since the given timestamp (for polling)
         const sinceTimestamp = parseInt(since);
         if (sinceTimestamp > 0) {
-          filteredMessages = chatMessages.filter(
-            (msg) => new Date(msg.createdAt).getTime() > sinceTimestamp
+          filteredMessages = conversationMessages.filter(
+            (msg: any) => new Date(msg.createdAt).getTime() > sinceTimestamp
           );
         }
 
         // Filter messages before the given timestamp (for load more)
         const beforeTimestamp = parseInt(before);
         if (beforeTimestamp > 0) {
-          filteredMessages = chatMessages.filter(
-            (msg) => new Date(msg.createdAt).getTime() < beforeTimestamp
+          filteredMessages = conversationMessages.filter(
+            (msg: any) => new Date(msg.createdAt).getTime() < beforeTimestamp
           );
         }
 
         // Sort by timestamp descending (newest first)
         filteredMessages.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
 
         // Apply limit
@@ -107,11 +107,11 @@ export class ChatService extends BaseService {
 
         // Sort by timestamp ascending (oldest first) for display
         limitedMessages.sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
 
         const response: MessageListResponse = {
-          messages: limitedMessages.map((msg) => {
+          messages: limitedMessages.map((msg: any) => {
             const { fromUserId, toUserId } = msg;
             return {
               id: msg.id,
@@ -122,7 +122,7 @@ export class ChatService extends BaseService {
               receiver: {
                 id: toUserId,
               },
-              conversationId: msg.chatId,
+              conversationId: msg.conversationId,
               createdAt: msg.createdAt,
               updatedAt: msg.updatedAt ?? msg.createdAt,
               seen: msg.seen,
@@ -176,10 +176,10 @@ export class ChatService extends BaseService {
         throw new Error(CommonError.BAD_REQUEST);
       }
 
-      const chatId = this.getChatId(userId, peerId);
+      const conversationId = this.getConversationId(userId, peerId);
       // Save message to database
       const message = await messageRepository.create({
-        chatId,
+        conversationId,
         fromUserId: userId,
         toUserId: peerId,
         text: String(text).slice(0, 4000),
@@ -198,7 +198,7 @@ export class ChatService extends BaseService {
           receiver: {
             id: toUserId,
           },
-          conversationId: message.chatId,
+          conversationId: message.conversationId,
           createdAt: message.createdAt,
           updatedAt: message.updatedAt ?? message.createdAt,
           seen: message.seen,
@@ -210,6 +210,19 @@ export class ChatService extends BaseService {
       this.handleError(error, 'Send message');
     }
   }
+
+  /**
+   * Hide conversation
+   */
+  async hideConversation(userId: string, conversationId: string): Promise<SuccessResponse> {
+    try {
+      await messageRepository.hideConversation(conversationId, userId);
+      return { success: true };
+    } catch (error) {
+      this.handleError(error, 'Hide conversation');
+    }
+  }
+
 }
 
 // Export singleton instance

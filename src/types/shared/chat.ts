@@ -125,7 +125,7 @@ export interface ChatConversationsResponse {
 // Repository types for messages
 export interface MessageRow {
   id: string;
-  chatId: string;
+  conversationId: string;
   fromUserId: string;
   toUserId: string;
   text: string;
@@ -139,7 +139,7 @@ export interface MessageRow {
 }
 
 export interface ConversationSummary {
-  chatId: string;
+  conversationId: string;
   otherUserId: string;
   otherUserName: string;
   otherUserEmail: string;

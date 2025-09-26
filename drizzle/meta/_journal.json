@@ -36,6 +36,20 @@
       "when": 1758907008487,
       "tag": "0004_add_message_encryption_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1758919368511,
+      "tag": "0005_deep_namorita",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1758919420859,
+      "tag": "0006_refactor_chat_tables",
+      "breakpoints": true
     }
   ]
 }

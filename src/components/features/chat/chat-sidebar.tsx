@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, Search, X } from 'lucide-react';
+import { MessageCircle, Search, X, MoreVertical } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useI18n } from '@/components/providers';
 import { useWebSocket } from './websocket-context';
+import { useHideConversation } from '@/hooks/use-hide-conversation';
 import { formatRelativeTime, formatDate, formatTime } from '@/lib/utils/time-format';
 
 interface ChatSidebarProps {
@@ -27,6 +28,7 @@ export function ChatSidebar({
 }: ChatSidebarProps) {
   const { user: _user } = useAuthState();
   const [searchTerm, setSearchTerm] = useState('');
+  const [hoveredConversation, setHoveredConversation] = useState<string | null>(null);
   const { t } = useI18n();
 
   // Use WebSocket hook
@@ -36,6 +38,9 @@ export function ChatSidebar({
     onlineUsers,
     fetchConversations,
   } = useWebSocket();
+
+  // Use hide conversation hook
+  const { hideConversation, isHiding } = useHideConversation();
 
   // Transform WebSocket conversations to UI format
   const conversations = wsConversations.map((conv: any) => ({
@@ -84,6 +89,14 @@ export function ChatSidebar({
     } catch {
       return formatRelativeTime(Date.now());
     }
+  };
+
+  const handleHideConversation = async (conversationId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent triggering the conversation click
+    
+    if (isHiding) return;
+    
+    await hideConversation(conversationId);
   };
 
   if (!isOpen) return null;
@@ -156,7 +169,9 @@ export function ChatSidebar({
               {filteredConversations.map((conversation) => (
                 <div
                   key={conversation.peer.id}
-                  className="hover:bg-brand/10 flex cursor-pointer items-center gap-3 p-3 transition-colors"
+                  className="hover:bg-brand/10 flex cursor-pointer items-center gap-3 p-3 transition-colors group"
+                  onMouseEnter={() => setHoveredConversation(conversation.id)}
+                  onMouseLeave={() => setHoveredConversation(null)}
                   onClick={() => {
                     onStartChat(
                       conversation.peer.id,
@@ -192,9 +207,24 @@ export function ChatSidebar({
                       <div className="truncate text-sm font-medium">
                         {conversation.peer?.name || 'Unknown User'}
                       </div>
-                      <div className="ml-2 text-xs text-gray-500">
-                        {formatDisplayTime(
-                          conversation.lastMessage?.createdAt || new Date().toISOString()
+                      <div className="flex items-center gap-2">
+                        <div className="text-xs text-gray-500">
+                          {formatDisplayTime(
+                            conversation.lastMessage?.createdAt || new Date().toISOString()
+                          )}
+                        </div>
+                        {/* Hide conversation button - only show on hover */}
+                        {hoveredConversation === conversation.id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                            onClick={(e) => handleHideConversation(conversation.id, e)}
+                            disabled={isHiding}
+                            title="Hide conversation"
+                          >
+                            <X className="h-4 w-4 text-red-500 hover:text-red-600" />
+                          </Button>
                         )}
                       </div>
                     </div>

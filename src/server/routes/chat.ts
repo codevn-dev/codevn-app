@@ -88,4 +88,28 @@ export async function chatRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  // POST /api/chat/hide - Hide conversation
+  fastify.post<{ Body: { conversationId: string } }>(
+    '/hide',
+    {
+      preHandler: authMiddleware,
+    },
+    async (request: FastifyRequest<{ Body: { conversationId: string } }>, reply: FastifyReply) => {
+      try {
+        const authRequest = request as AuthenticatedRequest;
+        const { conversationId } = request.body;
+        
+        if (!conversationId) {
+          return reply.status(400).send({ error: CommonError.BAD_REQUEST });
+        }
+        
+        const response = await chatService.hideConversation(authRequest.user!.id, conversationId);
+        return reply.send(response);
+      } catch {
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+      }
+    }
+  );
+
 }
