@@ -137,9 +137,17 @@ export class ChatService extends BaseService {
   /**
    * Hide conversation
    */
-  async hideConversation(userId: string, conversationId: string): Promise<SuccessResponse> {
+  async hideConversation(
+    userId: string,
+    conversationId: string,
+    hide: boolean
+  ): Promise<SuccessResponse> {
     try {
-      await messageRepository.hideConversation(conversationId, userId);
+      if (hide) {
+        await messageRepository.hideConversation(conversationId, userId);
+      } else {
+        await messageRepository.unhideConversation(conversationId, userId);
+      }
       return { success: true };
     } catch (error) {
       this.handleError(error, 'Hide conversation');

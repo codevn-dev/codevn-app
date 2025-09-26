@@ -10,7 +10,7 @@ export function useHideConversation() {
     try {
       setIsHiding(true);
 
-      await apiPost('/api/chat/hide', { conversationId });
+      await apiPost('/api/chat/hide', { conversationId, hide: true });
 
       // Refresh conversations list to remove the hidden conversation
       await fetchConversations();

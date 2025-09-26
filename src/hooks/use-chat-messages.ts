@@ -6,8 +6,12 @@ import { useUIStore } from '@/stores/ui-store';
 import { useChat as useChatContext } from '@/components/features/chat/chat-context';
 import { UiMessage, UserResponse } from '@/types/shared';
 import { chatConfig } from '@/config/config';
-import { apiGet } from '@/lib/utils/api-client';
-import { ChatConversationsResponse, ChatQueryResponse } from '@/types/shared/chat';
+import { apiGet, apiPost } from '@/lib/utils/api-client';
+import {
+  ChatConversationsResponse,
+  ChatQueryResponse,
+  HideConversationRequest,
+} from '@/types/shared/chat';
 
 interface Conversation {
   id: string;
@@ -180,6 +184,11 @@ export function useChatMessages({
                 try {
                   const userData = await apiGet<UserResponse>(`/api/users/${uiMessage.from}`);
                   senderName = userData?.user?.name;
+                  console.log(uiMessage.from);
+                  await apiPost<HideConversationRequest>('/api/chat/hide', {
+                    conversationId: uiMessage.from,
+                    hide: false,
+                  });
                 } catch (error) {
                   console.error('Error fetching user info for notification:', error);
                 }
@@ -196,18 +205,18 @@ export function useChatMessages({
                 duration: 6000,
                 action: {
                   onClick: () => {
-                    if (conversation) {
-                      handleStartChat(
-                        conversation.peer?.id || '',
-                        conversation.peer?.name || 'User',
-                        conversation.peer?.avatar
-                      );
-                      // Auto close notification when clicked
-                      setTimeout(() => {
-                        const { removeNotification } = useUIStore.getState();
-                        removeNotification(notificationId);
-                      }, 100);
-                    }
+                    // Use conversation if available, otherwise use message sender info
+                    const peerId = conversation?.peer?.id || uiMessage.from;
+                    const peerName = conversation?.peer?.name || senderName || 'User';
+                    const peerAvatar = conversation?.peer?.avatar;
+
+                    handleStartChat(peerId, peerName, peerAvatar);
+
+                    // Auto close notification when clicked
+                    setTimeout(() => {
+                      const { removeNotification } = useUIStore.getState();
+                      removeNotification(notificationId);
+                    }, 100);
                   },
                 },
               });

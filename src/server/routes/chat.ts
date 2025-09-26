@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { chatService } from '../services';
-import { ChatQueryRequest } from '@/types/shared/chat';
+import { ChatQueryRequest, HideConversationRequest } from '@/types/shared/chat';
 import { chatWebSocketService } from '../websocket/chat';
 import { CommonError } from '@/types/shared/errors';
 
@@ -54,21 +54,25 @@ export async function chatRoutes(fastify: FastifyInstance) {
   );
 
   // POST /api/chat/hide - Hide conversation
-  fastify.post<{ Body: { conversationId: string } }>(
+  fastify.post<{ Body: HideConversationRequest }>(
     '/hide',
     {
       preHandler: authMiddleware,
     },
-    async (request: FastifyRequest<{ Body: { conversationId: string } }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: HideConversationRequest }>, reply: FastifyReply) => {
       try {
         const authRequest = request as AuthenticatedRequest;
-        const { conversationId } = request.body;
+        const { conversationId, hide } = request.body as HideConversationRequest;
 
         if (!conversationId) {
           return reply.status(400).send({ error: CommonError.BAD_REQUEST });
         }
 
-        const response = await chatService.hideConversation(authRequest.user!.id, conversationId);
+        const response = await chatService.hideConversation(
+          authRequest.user!.id,
+          conversationId,
+          hide
+        );
         return reply.send(response);
       } catch {
         return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });

@@ -53,6 +53,11 @@ export interface ChatQueryRequest {
   before?: string;
 }
 
+export interface HideConversationRequest {
+  conversationId: string;
+  hide: boolean | true;
+}
+
 // Response types
 export interface MessageListResponse {
   messages: Message[];

@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { useUIStore } from '@/stores/ui-store';
 
 const colorMap = {
-  success: 'bg-green-50 border-green-200 text-green-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
-  warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-  info: 'bg-white border-gray-200 text-gray-800 shadow-lg',
+  success: 'bg-green-50 border-2 border-green-300 text-green-800 shadow-lg shadow-green-200/50',
+  error: 'bg-red-50 border-2 border-red-300 text-red-800 shadow-lg shadow-red-200/50',
+  warning: 'bg-yellow-50 border-2 border-yellow-300 text-yellow-800 shadow-lg shadow-yellow-200/50',
+  info: 'bg-white border-2 border-brand text-gray-800 shadow-lg shadow-brand/30',
 };
 
 export function Notification() {
@@ -24,7 +24,9 @@ export function Notification() {
           <Card
             key={notification.id}
             className={`animate-slide-in w-60 ${colorMap[notification.type]} ${
-              notification.action ? 'cursor-pointer transition-shadow hover:shadow-md' : ''
+              notification.action
+                ? 'cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl'
+                : ''
             }`}
             onClick={notification.action ? notification.action.onClick : undefined}
           >
