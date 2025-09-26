@@ -262,7 +262,7 @@ function ArticlesContent() {
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="2xl:max-w-8xl mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="text-center">
           <p className="text-gray-700">Please log in to manage your articles.</p>
         </div>
@@ -404,7 +404,7 @@ function ArticlesContent() {
 
   return (
     <div className="py-8">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="2xl:max-w-8xl mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <MotionContainer>
           <div className="rounded-2xl bg-white p-6 shadow-2xl">
             <div className="mb-6 sm:mb-8">

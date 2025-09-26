@@ -12,14 +12,14 @@ help: ## Show this help message
 install: ## Install dependencies
 	pnpm install
 
-dev: ## Start development server
+dev-web: ## Start development server
 	pnpm dev --turbopack
 
 dev-api:
 	pnpm dev:api
 
-dev-full:
-	pnpm dev:full
+dev:
+	pnpm dev
 
 build: ## Build for production
 	pnpm build

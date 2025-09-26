@@ -21,6 +21,7 @@ import {
   X as CloseIcon,
   Trophy,
   Shield,
+  Info,
 } from 'lucide-react';
 import { useFastifyAuthStore, useUIStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -125,7 +126,12 @@ export function Navigation() {
                     {t('nav.articles')}
                   </Button>
 
-                  <Button variant="back" size="sm" onClick={handleLeaderboardClick}>
+                  <Button
+                    variant="back"
+                    size="sm"
+                    onClick={handleLeaderboardClick}
+                    className="hidden lg:flex"
+                  >
                     <Trophy className="mr-2 h-4 w-4" />
                     {t('leaderboard.title')}
                   </Button>
@@ -183,7 +189,12 @@ export function Navigation() {
                 </>
               ) : (
                 <>
-                  <Button variant="back" size="sm" onClick={handleLeaderboardClick}>
+                  <Button
+                    variant="back"
+                    size="sm"
+                    onClick={handleLeaderboardClick}
+                    className="hidden lg:flex"
+                  >
                     <Trophy className="mr-2 h-4 w-4" />
                     {t('leaderboard.title')}
                   </Button>
@@ -256,6 +267,16 @@ export function Navigation() {
                 className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
                 onClick={() => {
                   setIsMobileOpen(false);
+                  router.push('/about');
+                }}
+              >
+                <Info className="mr-2 h-4 w-4" />
+                {t('nav.about')}
+              </button>
+              <button
+                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                onClick={() => {
+                  setIsMobileOpen(false);
                   router.push('/leaderboard');
                 }}
               >
@@ -318,6 +339,16 @@ export function Navigation() {
             </>
           ) : (
             <>
+              <button
+                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                onClick={() => {
+                  setIsMobileOpen(false);
+                  router.push('/about');
+                }}
+              >
+                <Info className="mr-2 h-4 w-4" />
+                {t('nav.about')}
+              </button>
               <button
                 className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
                 onClick={() => {

@@ -324,7 +324,7 @@ export function HomepageContent() {
   return (
     <div className="py-6">
       {/* Main Content with Leaderboard */}
-      <div className="relative mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
+      <div className="2xl:max-w-8xl relative mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
         {/* About (left) and Leaderboard (right) on xl+ */}
         <div className="hidden xl:block">
           {/* About box on the left */}

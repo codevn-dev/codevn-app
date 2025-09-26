@@ -580,6 +580,11 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                   disableForm={isPreview}
                 />
               </div>
+
+              {/* Related Articles for tablet/mobile - shown below comments */}
+              <div className="mt-8 xl:hidden">
+                <RelatedArticlesSidebar articleId={article.id} />
+              </div>
             </div>
           </div>
         </div>

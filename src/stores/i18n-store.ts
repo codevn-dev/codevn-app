@@ -42,6 +42,7 @@ const store: Dictionary = {
 
   // Navigation
   'nav.articles': { en: 'Articles', vi: 'Bài viết' },
+  'nav.about': { en: 'About us', vi: 'Về chúng tôi' },
   'nav.admin': { en: 'Admin', vi: 'Quản trị viên' },
   'nav.editProfile': { en: 'Edit Profile', vi: 'Chỉnh sửa hồ sơ' },
   'nav.language': { en: 'Language', vi: 'Ngôn ngữ' },
