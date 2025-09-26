@@ -129,6 +129,8 @@ export interface MessageRow {
   fromUserId: string;
   toUserId: string;
   text: string;
+  iv: string;
+  tag: string;
   type: 'message' | 'system';
   seen: boolean;
   seenAt: Date | null;

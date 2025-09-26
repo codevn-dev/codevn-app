@@ -2,6 +2,8 @@ import { getDb } from '../index';
 import { messages, users } from '../schema';
 import { eq, and, desc, or } from 'drizzle-orm';
 import { MessageRow, ConversationSummary } from '@/types/shared/chat';
+import { encryptionService } from '../../services/encryption';
+import { logger } from '@/lib/utils/logger';
 
 export const messageRepository = {
   async create(data: {
@@ -12,17 +14,48 @@ export const messageRepository = {
     type?: 'message' | 'system';
   }): Promise<MessageRow> {
     const db = getDb();
+
+    // Encrypt the message text
+    const encrypted = encryptionService.encrypt(data.text);
+
     const [message] = await db
       .insert(messages)
       .values({
         chatId: data.chatId,
         fromUserId: data.fromUserId,
         toUserId: data.toUserId,
-        text: data.text,
+        text: encrypted.encryptedText,
+        iv: encrypted.iv,
+        tag: encrypted.tag,
         type: data.type || 'message',
       })
       .returning();
-    return message as unknown as MessageRow;
+
+    // Return decrypted message for immediate use
+    return this.decryptMessage(message as unknown as MessageRow);
+  },
+
+  /**
+   * Decrypt a message row
+   */
+  decryptMessage(message: MessageRow): MessageRow {
+    try {
+      // Decrypt the message
+      const decryptedText = encryptionService.decrypt({
+        encryptedText: message.text,
+        iv: message.iv,
+        tag: message.tag,
+      });
+
+      return {
+        ...message,
+        text: decryptedText,
+      };
+    } catch (error) {
+      logger.error('Failed to decrypt message:', { error });
+      // Return the message with encrypted text if decryption fails
+      return message;
+    }
   },
 
   async findByChatId(chatId: string, limit = 50): Promise<MessageRow[]> {
@@ -33,7 +66,9 @@ export const messageRepository = {
       .where(eq(messages.chatId, chatId))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
-    return rows as unknown as MessageRow[];
+
+    // Decrypt all messages
+    return (rows as unknown as MessageRow[]).map((message) => this.decryptMessage(message));
   },
 
   async findByUserPair(userId1: string, userId2: string, limit = 50): Promise<MessageRow[]> {
@@ -46,7 +81,9 @@ export const messageRepository = {
       .where(and(eq(messages.chatId, chatId)))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
-    return rows as unknown as MessageRow[];
+
+    // Decrypt all messages
+    return (rows as unknown as MessageRow[]).map((message) => this.decryptMessage(message));
   },
 
   async getRecentChats(userId: string, limit = 20): Promise<MessageRow[]> {
@@ -59,7 +96,9 @@ export const messageRepository = {
       .where(and(eq(messages.fromUserId, userId)))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
-    return rows as unknown as MessageRow[];
+
+    // Decrypt all messages
+    return (rows as unknown as MessageRow[]).map((message) => this.decryptMessage(message));
   },
 
   async getConversations(userId: string): Promise<ConversationSummary[]> {
@@ -79,10 +118,13 @@ export const messageRepository = {
       if (!chatMap.has(message.chatId)) {
         const otherUserId = message.fromUserId === userId ? message.toUserId : message.fromUserId;
 
+        // Decrypt the last message for display
+        const decryptedMessage = this.decryptMessage(message as unknown as MessageRow);
+
         chatMap.set(message.chatId, {
           chatId: message.chatId,
           otherUserId,
-          lastMessage: message.text,
+          lastMessage: decryptedMessage.text,
           lastMessageTime: message.createdAt,
           lastMessageFromUserId: message.fromUserId,
           lastMessageSeen: message.seen,
@@ -138,7 +180,9 @@ export const messageRepository = {
         and(eq(messages.chatId, chatId), eq(messages.toUserId, userId), eq(messages.seen, false))
       )
       .returning();
-    return rows as unknown as MessageRow[];
+
+    // Decrypt all messages
+    return (rows as unknown as MessageRow[]).map((message) => this.decryptMessage(message));
   },
 
   // Get unread message count for a user
@@ -174,6 +218,10 @@ export const messageRepository = {
       )
       .orderBy(desc(messages.seenAt))
       .limit(1);
-    return (result[0] as unknown as MessageRow) || null;
+
+    if (result[0]) {
+      return this.decryptMessage(result[0] as unknown as MessageRow);
+    }
+    return null;
   },
 };

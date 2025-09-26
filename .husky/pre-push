@@ -8,4 +8,4 @@ pnpm lint
 
 # Run TypeScript type checking
 echo "🔧 Running TypeScript type check..."
-pnpm type-check
+pnpm type:check

@@ -82,7 +82,9 @@ export const messages = pgTable('messages', {
   chatId: text('chat_id').notNull(), // userA|userB format
   fromUserId: text('from_user_id').notNull(),
   toUserId: text('to_user_id').notNull(),
-  text: text('text').notNull(),
+  text: text('text').notNull(), // Encrypted message content
+  iv: text('iv').notNull(), // Initialization Vector for AES-GCM
+  tag: text('tag').notNull(), // Authentication tag for AES-GCM
   type: text('type', { enum: ['message', 'system'] })
     .notNull()
     .default('message'),

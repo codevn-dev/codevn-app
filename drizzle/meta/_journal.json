@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1758907008487,
+      "tag": "0000_youthful_iron_fist",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1758907008487,
+      "tag": "0001_add_index_categories_name_lower",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1758907008487,
+      "tag": "0002_add_articles_views",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1758907008487,
+      "tag": "0003_add_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1758907008487,
+      "tag": "0004_add_message_encryption_fields",
+      "breakpoints": true
+    }
+  ]
+}

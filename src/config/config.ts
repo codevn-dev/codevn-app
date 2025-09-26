@@ -51,6 +51,17 @@ export const chatConfig = {
   wsUrl: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/api/chat/ws`,
 } as const;
 
+// Encryption configuration
+export const encryptionConfig = {
+  key:
+    process.env.CHAT_ENCRYPTION_KEY ||
+    'your-chat-encryption-key-that-is-at-least-30-characters-long!',
+  salt: process.env.CHAT_ENCRYPTION_SALT || 'chat-encryption-salt',
+  iterations: parseInt(process.env.CHAT_ENCRYPTION_ITERATIONS || '100000'),
+  keyLength: parseInt(process.env.CHAT_ENCRYPTION_KEY_LENGTH || '32'),
+  algorithm: process.env.CHAT_ENCRYPTION_ALGORITHM || 'sha256',
+} as const;
+
 // Comment configuration
 export const commentConfig = {
   // Align comment WS to backend port in development as well
@@ -136,6 +147,7 @@ export const config = {
   site: siteConfig,
   api: apiConfig,
   chat: chatConfig,
+  encryption: encryptionConfig,
   comment: commentConfig,
   pagination: paginationConfig,
   // rateLimit removed

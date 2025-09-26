@@ -30,8 +30,8 @@ start: ## Start production server
 lint: ## Run ESLint
 	pnpm lint
 
-tsc: ## Run TypeScript compiler
-	pnpm tsc --noEmit
+type-check: ## Run TypeScript compiler
+	pnpm type:check
 
 format: ## Format code
 	pnpm format
