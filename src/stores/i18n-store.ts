@@ -76,6 +76,10 @@ const store: Dictionary = {
   'auth.dontHaveAccount': { en: "Don't have an account?", vi: 'Chưa có tài khoản?' },
   'auth.alreadyHaveAccount': { en: 'Already have an account?', vi: 'Đã có tài khoản?' },
   'auth.signInLink': { en: 'Sign in', vi: 'Đăng nhập' },
+  'auth.agreeNotice': {
+    en: 'By signing up, you agree to our',
+    vi: 'Bằng việc đăng ký, bạn đồng ý với',
+  },
   'auth.fillAllFields': { en: 'Please fill in all fields', vi: 'Vui lòng điền đầy đủ thông tin' },
   'auth.passwordsDoNotMatchError': { en: 'Passwords do not match', vi: 'Mật khẩu không khớp' },
   'auth.passwordTooShort': {
@@ -342,6 +346,7 @@ const store: Dictionary = {
   },
   'share.failedTitle': { en: 'Failed', vi: 'Thất bại' },
   'share.failedMessage': { en: 'Could not copy link', vi: 'Không thể sao chép liên kết' },
+  'common.and': { en: 'and', vi: 'và' },
 
   // Session Management
   'sessions.title': { en: 'Session Management', vi: 'Quản lý phiên đăng nhập' },
@@ -353,43 +358,109 @@ const store: Dictionary = {
   // Terms of Service
   'terms.title': { en: 'Terms of Service', vi: 'Điều khoản Dịch vụ' },
   'terms.welcome': { en: 'Welcome to CodeVN.dev', vi: 'Chào mừng bạn đến với CodeVN.dev' },
-  'terms.agreement': { en: 'By participating in and using this platform, you agree to the following terms.', vi: 'Khi tham gia và sử dụng nền tảng này, bạn đồng ý tuân thủ các điều khoản dưới đây.' },
+  'terms.agreement': {
+    en: 'By participating in and using this platform, you agree to the following terms.',
+    vi: 'Khi tham gia và sử dụng nền tảng này, bạn đồng ý tuân thủ các điều khoản dưới đây.',
+  },
   'terms.purpose.title': { en: '1. Purpose', vi: '1. Mục đích' },
-  'terms.purpose.p1': { en: 'This is a non-profit blog and forum where users can write articles, share knowledge, comment, and chat about information technology.', vi: 'Đây là một blog và diễn đàn phi lợi nhuận, nơi mọi người có thể viết bài, chia sẻ kiến thức, bình luận và trò chuyện về công nghệ thông tin.' },
-  'terms.purpose.p2': { en: 'CodeVN.dev operates without commercial intent and does not charge users any fees.', vi: 'CodeVN.dev không hoạt động vì mục đích thương mại và không thu bất kỳ khoản phí nào từ người dùng.' },
+  'terms.purpose.p1': {
+    en: 'This is a non-profit blog and forum where users can write articles, share knowledge, comment, and chat about information technology.',
+    vi: 'Đây là một blog và diễn đàn phi lợi nhuận, nơi mọi người có thể viết bài, chia sẻ kiến thức, bình luận và trò chuyện về công nghệ thông tin.',
+  },
+  'terms.purpose.p2': {
+    en: 'CodeVN.dev operates without commercial intent and does not charge users any fees.',
+    vi: 'CodeVN.dev không hoạt động vì mục đích thương mại và không thu bất kỳ khoản phí nào từ người dùng.',
+  },
   'terms.content.title': { en: '2. User-Generated Content', vi: '2. Nội dung do người dùng tạo' },
-  'terms.content.p1': { en: 'Users are fully responsible for the content they post (articles, comments, or messages).', vi: 'Người dùng chịu trách nhiệm cho toàn bộ nội dung mà mình đăng tải (bài viết, bình luận hoặc tin nhắn).' },
-  'terms.content.p2': { en: 'It is prohibited to post content that is illegal, misleading, discriminatory, hateful, or infringing intellectual property rights.', vi: 'Không được phép đăng tải nội dung vi phạm pháp luật, thông tin sai lệch, phân biệt đối xử, thù ghét hoặc vi phạm quyền sở hữu trí tuệ.' },
-  'terms.content.p3': { en: 'Content may be edited or removed if it violates these rules.', vi: 'Nội dung có thể bị chỉnh sửa hoặc gỡ bỏ nếu vi phạm các quy định này.' },
+  'terms.content.p1': {
+    en: 'Users are fully responsible for the content they post (articles, comments, or messages).',
+    vi: 'Người dùng chịu trách nhiệm cho toàn bộ nội dung mà mình đăng tải (bài viết, bình luận hoặc tin nhắn).',
+  },
+  'terms.content.p2': {
+    en: 'It is prohibited to post content that is illegal, misleading, discriminatory, hateful, or infringing intellectual property rights.',
+    vi: 'Không được phép đăng tải nội dung vi phạm pháp luật, thông tin sai lệch, phân biệt đối xử, thù ghét hoặc vi phạm quyền sở hữu trí tuệ.',
+  },
+  'terms.content.p3': {
+    en: 'Content may be edited or removed if it violates these rules.',
+    vi: 'Nội dung có thể bị chỉnh sửa hoặc gỡ bỏ nếu vi phạm các quy định này.',
+  },
   'terms.privacy.title': { en: '3. Privacy', vi: '3. Quyền riêng tư' },
-  'terms.privacy.p1': { en: 'Chat messages are not publicly displayed.', vi: 'Tin nhắn trò chuyện (chat messages) không được hiển thị công khai.' },
-  'terms.privacy.p2': { en: 'Your personal information will be kept private and will not be shared with third parties unless required by law.', vi: 'Thông tin cá nhân của bạn sẽ được bảo mật và không chia sẻ cho bên thứ ba, trừ khi pháp luật yêu cầu.' },
+  'terms.privacy.p1': {
+    en: 'Chat messages are not publicly displayed.',
+    vi: 'Tin nhắn trò chuyện (chat messages) không được hiển thị công khai.',
+  },
+  'terms.privacy.p2': {
+    en: 'Your personal information will be kept private and will not be shared with third parties unless required by law.',
+    vi: 'Thông tin cá nhân của bạn sẽ được bảo mật và không chia sẻ cho bên thứ ba, trừ khi pháp luật yêu cầu.',
+  },
   'terms.responsibility.title': { en: '4. Responsibility', vi: '4. Trách nhiệm' },
-  'terms.responsibility.p1': { en: 'CodeVN.dev is not responsible for the accuracy or reliability of user-generated content.', vi: 'CodeVN.dev không chịu trách nhiệm về tính chính xác hoặc độ tin cậy của nội dung do người dùng đăng tải.' },
-  'terms.responsibility.p2': { en: 'Users should carefully evaluate and verify any information before applying it.', vi: 'Người dùng nên tự cân nhắc và kiểm chứng trước khi áp dụng bất kỳ thông tin nào từ diễn đàn.' },
+  'terms.responsibility.p1': {
+    en: 'CodeVN.dev is not responsible for the accuracy or reliability of user-generated content.',
+    vi: 'CodeVN.dev không chịu trách nhiệm về tính chính xác hoặc độ tin cậy của nội dung do người dùng đăng tải.',
+  },
+  'terms.responsibility.p2': {
+    en: 'Users should carefully evaluate and verify any information before applying it.',
+    vi: 'Người dùng nên tự cân nhắc và kiểm chứng trước khi áp dụng bất kỳ thông tin nào từ diễn đàn.',
+  },
   'terms.modifications.title': { en: '5. Modifications', vi: '5. Sửa đổi điều khoản' },
-  'terms.modifications.p1': { en: 'CodeVN.dev may update these terms at any time. Updates will be announced on the website.', vi: 'CodeVN.dev có thể cập nhật điều khoản dịch vụ bất kỳ lúc nào. Các thay đổi sẽ được thông báo trên trang web.' },
-  'terms.modifications.p2': { en: 'Continued use of the platform after changes means you accept the updated terms.', vi: 'Việc tiếp tục sử dụng dịch vụ sau khi điều khoản thay đổi đồng nghĩa với việc bạn chấp nhận các cập nhật đó.' },
+  'terms.modifications.p1': {
+    en: 'CodeVN.dev may update these terms at any time. Updates will be announced on the website.',
+    vi: 'CodeVN.dev có thể cập nhật điều khoản dịch vụ bất kỳ lúc nào. Các thay đổi sẽ được thông báo trên trang web.',
+  },
+  'terms.modifications.p2': {
+    en: 'Continued use of the platform after changes means you accept the updated terms.',
+    vi: 'Việc tiếp tục sử dụng dịch vụ sau khi điều khoản thay đổi đồng nghĩa với việc bạn chấp nhận các cập nhật đó.',
+  },
   'terms.contact.title': { en: '6. Contact', vi: '6. Liên hệ' },
-  'terms.contact.p1': { en: 'For questions or concerns about these Terms of Service, please use the Contact page on CodeVN.dev.', vi: 'Nếu bạn có câu hỏi hoặc thắc mắc về Điều khoản dịch vụ, vui lòng liên hệ qua trang Liên hệ trên CodeVN.dev.' },
+  'terms.contact.p1': {
+    en: 'For questions or concerns about these Terms of Service, please use the Contact page on CodeVN.dev.',
+    vi: 'Nếu bạn có câu hỏi hoặc thắc mắc về Điều khoản dịch vụ, vui lòng liên hệ qua trang Liên hệ trên CodeVN.dev.',
+  },
 
   // Privacy Policy
   'privacy.title': { en: 'Privacy Policy', vi: 'Chính sách Quyền riêng tư' },
   'privacy.collection.title': { en: '1. Data Collection', vi: '1. Thu thập dữ liệu' },
-  'privacy.collection.p1': { en: 'CodeVN.dev does not collect personal data beyond what is necessary for using the blog and forum.', vi: 'CodeVN.dev không thu thập dữ liệu cá nhân ngoài những gì cần thiết để sử dụng blog và diễn đàn.' },
-  'privacy.collection.p2': { en: 'No sensitive information is required to participate.', vi: 'Không yêu cầu thông tin nhạy cảm để tham gia.' },
+  'privacy.collection.p1': {
+    en: 'CodeVN.dev does not collect personal data beyond what is necessary for using the blog and forum.',
+    vi: 'CodeVN.dev không thu thập dữ liệu cá nhân ngoài những gì cần thiết để sử dụng blog và diễn đàn.',
+  },
+  'privacy.collection.p2': {
+    en: 'No sensitive information is required to participate.',
+    vi: 'Không yêu cầu thông tin nhạy cảm để tham gia.',
+  },
   'privacy.use.title': { en: '2. Use of Data', vi: '2. Sử dụng dữ liệu' },
-  'privacy.use.p1': { en: 'Information provided (such as username or posted content) is used solely for community participation.', vi: 'Thông tin cung cấp (như tên người dùng hoặc nội dung đăng tải) chỉ được dùng cho mục đích tham gia cộng đồng.' },
-  'privacy.use.p2': { en: 'We do not sell or share your information with third parties.', vi: 'Chúng tôi không bán hoặc chia sẻ thông tin của bạn cho bên thứ ba.' },
+  'privacy.use.p1': {
+    en: 'Information provided (such as username or posted content) is used solely for community participation.',
+    vi: 'Thông tin cung cấp (như tên người dùng hoặc nội dung đăng tải) chỉ được dùng cho mục đích tham gia cộng đồng.',
+  },
+  'privacy.use.p2': {
+    en: 'We do not sell or share your information with third parties.',
+    vi: 'Chúng tôi không bán hoặc chia sẻ thông tin của bạn cho bên thứ ba.',
+  },
   'privacy.cookies.title': { en: '3. Cookies and Tracking', vi: '3. Cookie và theo dõi' },
-  'privacy.cookies.p1': { en: 'CodeVN.dev may use minimal cookies to improve user experience (such as remembering login sessions).', vi: 'CodeVN.dev có thể sử dụng cookie cơ bản để cải thiện trải nghiệm người dùng (ví dụ: ghi nhớ phiên đăng nhập).' },
-  'privacy.cookies.p2': { en: 'We do not use tracking for advertising purposes.', vi: 'Chúng tôi không sử dụng công cụ theo dõi cho mục đích quảng cáo.' },
+  'privacy.cookies.p1': {
+    en: 'CodeVN.dev may use minimal cookies to improve user experience (such as remembering login sessions).',
+    vi: 'CodeVN.dev có thể sử dụng cookie cơ bản để cải thiện trải nghiệm người dùng (ví dụ: ghi nhớ phiên đăng nhập).',
+  },
+  'privacy.cookies.p2': {
+    en: 'We do not use tracking for advertising purposes.',
+    vi: 'Chúng tôi không sử dụng công cụ theo dõi cho mục đích quảng cáo.',
+  },
   'privacy.security.title': { en: '4. Security', vi: '4. Bảo mật' },
-  'privacy.security.p1': { en: 'We take reasonable measures to protect your information but cannot guarantee absolute security.', vi: 'Chúng tôi áp dụng các biện pháp hợp lý để bảo vệ thông tin của bạn nhưng không thể đảm bảo an toàn tuyệt đối.' },
+  'privacy.security.p1': {
+    en: 'We take reasonable measures to protect your information but cannot guarantee absolute security.',
+    vi: 'Chúng tôi áp dụng các biện pháp hợp lý để bảo vệ thông tin của bạn nhưng không thể đảm bảo an toàn tuyệt đối.',
+  },
   'privacy.changes.title': { en: '5. Changes', vi: '5. Thay đổi' },
-  'privacy.changes.p1': { en: 'This Privacy Policy may be updated periodically. Changes will be posted on the website.', vi: 'Chính sách Quyền riêng tư có thể được cập nhật định kỳ. Các thay đổi sẽ được đăng tải trên trang web.' },
+  'privacy.changes.p1': {
+    en: 'This Privacy Policy may be updated periodically. Changes will be posted on the website.',
+    vi: 'Chính sách Quyền riêng tư có thể được cập nhật định kỳ. Các thay đổi sẽ được đăng tải trên trang web.',
+  },
   'privacy.contact.title': { en: '6. Contact', vi: '6. Liên hệ' },
-  'privacy.contact.p1': { en: 'If you have any privacy concerns, please reach out via the Contact page on CodeVN.dev.', vi: 'Nếu bạn có thắc mắc liên quan đến quyền riêng tư, vui lòng liên hệ qua trang Liên hệ trên CodeVN.dev.' },
+  'privacy.contact.p1': {
+    en: 'If you have any privacy concerns, please reach out via the Contact page on CodeVN.dev.',
+    vi: 'Nếu bạn có thắc mắc liên quan đến quyền riêng tư, vui lòng liên hệ qua trang Liên hệ trên CodeVN.dev.',
+  },
   'sessions.activeSessions': { en: 'Active Sessions', vi: 'Phiên đăng nhập đang hoạt động' },
   'sessions.allSessions': { en: 'All Sessions', vi: 'Tất cả phiên' },
   'sessions.current': { en: 'Current', vi: 'Hiện tại' },

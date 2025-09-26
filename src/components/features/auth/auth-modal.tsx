@@ -541,6 +541,28 @@ export function AuthModal() {
               </>
             )}
           </div>
+
+          {/* Terms and Privacy notice */}
+          <div className="mt-3 text-center text-xs text-gray-600">
+            {t('auth.agreeNotice')}{' '}
+            <a
+              href="/terms"
+              className="text-primary hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('terms.title')}
+            </a>{' '}
+            {t('common.and')}{' '}
+            <a
+              href="/privacy"
+              className="text-primary hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('privacy.title')}
+            </a>
+          </div>
         </div>
       </div>
     </div>

@@ -19,14 +19,16 @@ export function PrivacyContent() {
       <div className="prose prose-gray mx-auto max-w-none text-gray-700">
         {/* Data Collection */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('privacy.collection.title')}</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            {t('privacy.collection.title')}
+          </h2>
           <ul className="space-y-2">
             <li className="flex items-start">
-              <span className="text-gray-500 mr-2">•</span>
+              <span className="mr-2 text-gray-500">•</span>
               <span>{t('privacy.collection.p1')}</span>
             </li>
             <li className="flex items-start">
-              <span className="text-gray-500 mr-2">•</span>
+              <span className="mr-2 text-gray-500">•</span>
               <span>{t('privacy.collection.p2')}</span>
             </li>
           </ul>
@@ -34,14 +36,14 @@ export function PrivacyContent() {
 
         {/* Use of Data */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('privacy.use.title')}</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">{t('privacy.use.title')}</h2>
           <ul className="space-y-2">
             <li className="flex items-start">
-              <span className="text-gray-500 mr-2">•</span>
+              <span className="mr-2 text-gray-500">•</span>
               <span>{t('privacy.use.p1')}</span>
             </li>
             <li className="flex items-start">
-              <span className="text-gray-500 mr-2">•</span>
+              <span className="mr-2 text-gray-500">•</span>
               <span>{t('privacy.use.p2')}</span>
             </li>
           </ul>
@@ -49,14 +51,14 @@ export function PrivacyContent() {
 
         {/* Cookies and Tracking */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('privacy.cookies.title')}</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">{t('privacy.cookies.title')}</h2>
           <ul className="space-y-2">
             <li className="flex items-start">
-              <span className="text-gray-500 mr-2">•</span>
+              <span className="mr-2 text-gray-500">•</span>
               <span>{t('privacy.cookies.p1')}</span>
             </li>
             <li className="flex items-start">
-              <span className="text-gray-500 mr-2">•</span>
+              <span className="mr-2 text-gray-500">•</span>
               <span>{t('privacy.cookies.p2')}</span>
             </li>
           </ul>
@@ -64,19 +66,21 @@ export function PrivacyContent() {
 
         {/* Security */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('privacy.security.title')}</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">
+            {t('privacy.security.title')}
+          </h2>
           <p>{t('privacy.security.p1')}</p>
         </div>
 
         {/* Changes */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('privacy.changes.title')}</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">{t('privacy.changes.title')}</h2>
           <p>{t('privacy.changes.p1')}</p>
         </div>
 
         {/* Contact */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('privacy.contact.title')}</h2>
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">{t('privacy.contact.title')}</h2>
           <p>{t('privacy.contact.p1')}</p>
         </div>
       </div>

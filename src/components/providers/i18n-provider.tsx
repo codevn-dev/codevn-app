@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useMemo, useRef, useEffect } from 'react';
+import { createContext, useContext, useMemo, useRef } from 'react';
 import { useI18nStore, type Locale } from '@/stores/i18n-store';
 
 interface I18nContextValue {
