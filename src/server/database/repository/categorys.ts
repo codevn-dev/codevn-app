@@ -363,6 +363,14 @@ export class CategoryRepository {
 
     return result[0]?.count || 0;
   }
+
+  async findChildrenIds(parentId: string): Promise<string[]> {
+    const rows = await getDb()
+      .select({ id: categories.id })
+      .from(categories)
+      .where(and(eq(categories.parentId, parentId), isNull(categories.deletedAt)));
+    return rows.map((r) => r.id);
+  }
 }
 
 export const categoryRepository = new CategoryRepository();

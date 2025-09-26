@@ -144,6 +144,7 @@ const store: Dictionary = {
   'articles.menu.unpublish': { en: 'Unpublish', vi: 'Gỡ xuất bản' },
   'articles.menu.preview': { en: 'Preview', vi: 'Xem thử' },
   'articles.menu.view': { en: 'View', vi: 'Xem' },
+  'articles.related': { en: 'Related Articles', vi: 'Bài viết liên quan' },
   'articles.form.createNew': { en: 'Create New Article', vi: 'Tạo bài viết mới' },
   'articles.form.title': { en: 'Title', vi: 'Tiêu đề' },
   'articles.form.slug': { en: 'Slug', vi: 'Slug' },

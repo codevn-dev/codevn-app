@@ -21,6 +21,8 @@ import {
 import { CommonError } from '@/types/shared';
 import { calculateFeaturedArticleScore } from '@/lib/utils/score';
 import { getRedis } from '@/lib/server';
+import { calculateRelatedArticleScore } from '@/lib/utils/score';
+import { categoryRepository as categoryRepoDirect } from '../database/repository/categorys';
 
 export class ArticlesService extends BaseService {
   /**
@@ -205,7 +207,7 @@ export class ArticlesService extends BaseService {
       const { limit, windowDays } = request.query || {};
       const windowHours = windowDays ? parseInt(windowDays) * 24 : 24;
       const limitNum = Math.max(1, Math.min(20, parseInt(limit || '3')));
-      const cacheKey = `articles:featured:ids:${limitNum}:${windowHours}`;
+      const cacheKey = `articles:featured:${limitNum}:${windowHours}`;
       const redis = getRedis();
 
       // Try cache of IDs → hydrate with counts
@@ -339,6 +341,119 @@ export class ArticlesService extends BaseService {
       return response;
     } catch (error) {
       this.handleError(error, 'Get article by slug');
+    }
+  }
+
+  /**
+   * Get related articles by score (same category/related category/same author + engagement)
+   */
+  async getRelatedArticles(articleId: string, limit: number = 5): Promise<Article[]> {
+    try {
+      // Base article
+      const base = await articleRepository.findById(articleId);
+      if (!base) throw new Error(CommonError.NOT_FOUND);
+      const baseCategory = await categoryRepoDirect.findById(base.categoryId);
+      const baseParentId = (baseCategory as any)?.parent?.id || null;
+
+      // Cache by base article id and limit
+      const redis = getRedis();
+      const cacheKey = `articles:related:${articleId}:${limit}`;
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          const ids: string[] = JSON.parse(cached);
+          if (Array.isArray(ids) && ids.length > 0) {
+            const articlesFull = await articleRepository.findManyByIdsWithCounts(ids);
+            // Preserve cache order
+            const order = new Map(ids.map((id, i) => [id, i] as const));
+            articlesFull.sort((a: any, b: any) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+            return articlesFull
+              .slice(0, limit)
+              .map((a: any) => this.transformArticleSummary(a)) as Article[];
+          }
+        }
+      } catch {}
+
+      // Query 1: by category family (same or siblings/children)
+      let categoryIds: string[] = [base.categoryId];
+      if (baseParentId) {
+        const siblings = await categoryRepoDirect.findChildrenIds(baseParentId);
+        categoryIds = Array.from(new Set([...categoryIds, ...siblings]));
+      } else if ((baseCategory as any)?.id) {
+        const children = await categoryRepoDirect.findChildrenIds((baseCategory as any).id);
+        categoryIds = Array.from(new Set([...categoryIds, ...children]));
+      }
+
+      const byCategory = await articleRepository.findManyWithPagination({
+        page: 1,
+        limit: 1000,
+        status: 'published',
+        publishedOnly: true,
+        categoryIds,
+      });
+
+      // Query 2: by author
+      const byAuthor = await articleRepository.findManyWithPagination({
+        page: 1,
+        limit: 1000,
+        status: 'published',
+        publishedOnly: true,
+        authorId: (base as any).author?.id || (base as any).authorId,
+      });
+
+      const candidates = [...(byCategory.articles || []), ...(byAuthor.articles || [])].filter(
+        (a: any) => a.id !== base.id
+      );
+
+      // Precompute category parents (small N)
+      const parentCache = new Map<string, string | null>();
+      const getParentId = async (catId: string): Promise<string | null> => {
+        if (parentCache.has(catId)) return parentCache.get(catId)!;
+        const cat = await categoryRepoDirect.findById(catId);
+        const pid = (cat as any)?.parent?.id || null;
+        parentCache.set(catId, pid);
+        return pid;
+      };
+
+      const scored: Array<{ article: any; score: number }> = [];
+      for (const a of candidates) {
+        const aParentId = await getParentId(a.categoryId);
+        const sameCategory = a.categoryId === base.categoryId;
+        const relatedCategory =
+          a.categoryId === baseParentId || // candidate is a child of base's parent
+          base.categoryId === aParentId || // base is a child of candidate's parent
+          (aParentId && baseParentId && aParentId === baseParentId); // share same parent
+        const sameAuthor =
+          (a.author?.id || (a as any).authorId) === (base as any).authorId ||
+          a.author?.id === (base as any).author?.id;
+        const likes = a._count?.likes || 0;
+        const dislikes = a._count?.unlikes || 0;
+        const comments = a._count?.comments || 0;
+        const views = typeof a.views === 'number' ? a.views : 0;
+        const score = calculateRelatedArticleScore({
+          likes,
+          dislikes,
+          comments,
+          views,
+          sameCategory,
+          relatedCategory,
+          sameAuthor,
+        } as any);
+        scored.push({ article: a, score });
+      }
+
+      scored.sort((x, y) => y.score - x.score);
+      const topArticles = scored.slice(0, limit).map((x) => x.article);
+
+      // Cache IDs for 1 hour
+      try {
+        const ids = topArticles.map((a: any) => a.id);
+        await redis.set(cacheKey, JSON.stringify(ids), 'EX', 3600);
+      } catch {}
+
+      return topArticles.map((a: any) => this.transformArticleSummary(a)) as Article[];
+    } catch (error) {
+      this.handleError(error, 'Get related articles');
     }
   }
 

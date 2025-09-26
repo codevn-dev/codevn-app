@@ -30,6 +30,23 @@ export async function articleRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // GET /api/articles/:id/related - Get related articles
+  fastify.get<{ Params: { id: string } }>(
+    '/:id/related',
+    {
+      preHandler: optionalAuthMiddleware,
+    },
+    async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+      try {
+        const { id } = request.params;
+        const list = await articlesService.getRelatedArticles(id, 5);
+        return reply.send({ articles: list });
+      } catch {
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+      }
+    }
+  );
+
   // GET /api/articles/featured - Get featured articles
   fastify.get(
     '/featured',

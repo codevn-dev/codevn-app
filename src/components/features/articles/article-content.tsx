@@ -24,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CodeHighlighter, ShareMenu } from '@/features/articles';
+import { CodeHighlighter, ShareMenu, RelatedArticlesSidebar } from '@/features/articles';
 import { CommentsSection } from '@/features/comments';
 import type { CommentsSectionRef } from '@/features/comments';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -365,7 +365,11 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
   return (
     <div data-article-root>
       <div className="py-8">
-        <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+        <div className="relative mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+          {/* Related sidebar on xl+ */}
+          <div className="hidden xl:absolute xl:top-0 xl:right-[-320px] xl:block xl:w-[320px] xl:max-w-[360px] xl:min-w-[320px]">
+            <RelatedArticlesSidebar articleId={article.id} />
+          </div>
           <div className="rounded-2xl bg-white p-4 shadow-2xl shadow-gray-400/80 sm:p-6">
             {isPreview && (
               <div className="-m-6 mb-6 rounded-t-2xl border-b border-yellow-200 bg-yellow-100 px-6 py-3">
