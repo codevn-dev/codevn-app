@@ -34,7 +34,10 @@ export async function authRoutes(fastify: FastifyInstance) {
         const body = request.body as RegisterBody;
         const response = await authService.signUp(body, reply, request);
         return reply.status(201).send(response);
-      } catch {
+      } catch (e: any) {
+        if (e?.code === 'EMAIL_EXISTS') {
+          return reply.status(400).send({ error: 'Email already exists' });
+        }
         return reply.status(500).send({ error: 'Internal server error' });
       }
     }
@@ -139,23 +142,28 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // Refresh token
-  fastify.post(
-    '/refresh',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const { refreshToken } = request.body as { refreshToken: string };
+  // Refresh token (from cookie)
+  fastify.post('/refresh', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const refreshToken = request.cookies['refresh-token'];
 
-        if (!refreshToken) {
-          return reply.status(400).send({ error: 'Refresh token is required' });
-        }
-
-        const response = await authService.refreshAccessToken(refreshToken);
-        return reply.send(response);
-      } catch (error) {
-        console.error('Refresh token error:', error);
-        return reply.status(401).send({ error: 'Invalid refresh token' });
+      if (!refreshToken) {
+        return reply.status(400).send({ error: 'Refresh token is required' });
       }
+
+      const response = await authService.refreshAccessToken(refreshToken);
+      // Set new cookies if service returns new pair
+      if ((response as any)?.accessToken && (response as any)?.refreshToken) {
+        (authService as any).setAuthCookies?.(
+          reply,
+          (response as any).accessToken,
+          (response as any).refreshToken
+        );
+      }
+      return reply.send(response);
+    } catch (error) {
+      console.error('Refresh token error:', error);
+      return reply.status(401).send({ error: 'Invalid refresh token' });
     }
-  );
+  });
 }

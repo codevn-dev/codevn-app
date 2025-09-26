@@ -105,28 +105,35 @@ export async function apiFetch<T = unknown>(
       if (response.status === 401) {
         // Only handle 401 on client-side
         if (typeof window !== 'undefined') {
-          // Prevent multiple redirects
-          const isRedirecting = sessionStorage.getItem('auth-redirecting');
-          if (isRedirecting) {
-            // Already redirecting, don't redirect again
-            // Still throw error to prevent further processing
-            throw new Error('Unauthorized - redirecting to login');
+          // Try refresh token once per request, and de-duplicate concurrent refreshes
+          const alreadyRetried = (options.headers as any)?.['X-Auth-Retry'] === '1';
+          if (!alreadyRetried) {
+            const ok = await refreshAccessTokenOnce();
+            if (ok) {
+              const retryHeaders: Record<string, string> = {};
+              if (options.headers) {
+                Object.entries(options.headers).forEach(([k, v]) => {
+                  retryHeaders[k] = String(v);
+                });
+              }
+              retryHeaders['X-Auth-Retry'] = '1';
+              return await apiFetch<T>(endpoint, { ...options, headers: retryHeaders });
+            }
           }
 
-          // Set redirect flag
+          // Refresh failed or already retried: redirect to home
+          const isRedirecting = sessionStorage.getItem('auth-redirecting');
+          if (isRedirecting) {
+            throw new Error('Unauthorized - redirecting to login');
+          }
           sessionStorage.setItem('auth-redirecting', 'true');
-
-          // Clear auth state
           const authStorage = localStorage.getItem('auth-storage');
           if (authStorage) {
             localStorage.removeItem('auth-storage');
           }
-
-          // Only redirect if not already on home page
           if (window.location.pathname !== '/') {
             window.location.href = '/';
           } else {
-            // Clear redirect flag if already on home page
             sessionStorage.removeItem('auth-redirecting');
           }
         }
@@ -147,6 +154,30 @@ export async function apiFetch<T = unknown>(
     if (error instanceof Error) throw error;
     throw new Error('Network error occurred');
   }
+}
+
+// Single-flight refresh token to prevent duplicate refresh calls
+let refreshInFlight: Promise<boolean> | null = null;
+async function refreshAccessTokenOnce(): Promise<boolean> {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        const resp = await fetch('/api/auth/refresh', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        return resp.ok;
+      } catch {
+        return false;
+      } finally {
+        // small delay to allow cookies to settle
+        setTimeout(() => {
+          refreshInFlight = null;
+        }, 0);
+      }
+    })();
+  }
+  return await refreshInFlight;
 }
 
 /**

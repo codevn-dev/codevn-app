@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Separator } from '@/components/ui/separator';
@@ -33,6 +34,8 @@ export function AuthModal() {
   const [_, setEmailError] = useState<string | null>(null);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const emailCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -90,10 +93,8 @@ export function AuthModal() {
       await signIn(formData.email, formData.password);
       setSuccess(t('auth.loginSuccessful'));
       setAuthModalOpen(false);
-      // Do not navigate away; keep current page
-      // router.refresh();
-    } catch (error) {
-      setError(error instanceof Error ? error.message : t('auth.loginFailed'));
+    } catch {
+      setError(t('auth.invalidEmailOrPassword'));
     } finally {
       setIsLoading(false);
     }
@@ -127,7 +128,12 @@ export function AuthModal() {
       setAuthModalOpen(false);
       // router.refresh();
     } catch (error) {
-      setError(error instanceof Error ? error.message : t('auth.registrationFailed'));
+      const msg = error instanceof Error ? error.message : '';
+      if (msg && msg.toLowerCase().includes('email already exists')) {
+        setError(t('auth.emailTaken'));
+      } else {
+        setError(t('auth.registrationFailed'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -273,6 +279,21 @@ export function AuthModal() {
 
   if (!authModalOpen) return null;
 
+  // Derived validity states
+  const isSigninDisabled = !formData.email || emailFormatValid === false || !formData.password;
+
+  const isSignupDisabled =
+    !formData.name ||
+    !formData.email ||
+    emailFormatValid === false ||
+    isCheckingEmail ||
+    emailAvailable === false ||
+    !formData.password ||
+    passwordLengthValid === false ||
+    passwordLengthValid === null ||
+    !formData.confirmPassword ||
+    passwordMatch === false;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4 backdrop-blur-sm sm:px-0"
@@ -392,15 +413,23 @@ export function AuthModal() {
               <div className="relative">
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder={t('auth.passwordPlaceholder')}
                   value={formData.password}
                   onChange={handlePasswordChange}
                   required
-                  className=""
+                  className="pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
                 {authMode === 'signup' && formData.password && passwordLengthValid !== null && (
-                  <div className="absolute top-1/2 right-3 -translate-y-1/2 transform">
+                  <div className="absolute top-1/2 right-10 -translate-y-1/2 transform">
                     {passwordLengthValid ? (
                       <span className="text-xs font-medium text-green-600">
                         ✓ {t('auth.passwordValid')}
@@ -423,18 +452,30 @@ export function AuthModal() {
                 <div className="relative">
                   <Input
                     id="confirmPassword"
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     placeholder={t('auth.confirmPasswordPlaceholder')}
                     value={formData.confirmPassword}
                     onChange={handleConfirmPasswordChange}
                     required
-                    className=""
+                    className="pr-10"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                   {authMode === 'signup' &&
                     formData.confirmPassword &&
                     formData.password &&
                     passwordMatch !== null && (
-                      <div className="absolute top-1/2 right-3 -translate-y-1/2 transform">
+                      <div className="absolute top-1/2 right-10 -translate-y-1/2 transform">
                         {passwordMatch ? (
                           <span className="text-xs font-medium text-green-600">
                             ✓ {t('auth.passwordsMatch')}
@@ -451,8 +492,8 @@ export function AuthModal() {
             )}
 
             {error && (
-              <div className="bg-destructive/15 rounded-md p-3">
-                <p className="text-destructive text-sm">{error}</p>
+              <div className="rounded-md bg-red-50 p-3">
+                <p className="text-center text-sm font-medium text-red-600">{error}</p>
               </div>
             )}
 
@@ -467,7 +508,7 @@ export function AuthModal() {
               type="submit"
               variant="primary"
               className="w-full py-3 text-lg font-bold"
-              disabled={isLoading}
+              disabled={isLoading || (authMode === 'signin' ? isSigninDisabled : isSignupDisabled)}
             >
               {isLoading ? (
                 <>

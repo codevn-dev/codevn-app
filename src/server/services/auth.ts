@@ -1,6 +1,6 @@
 import { FastifyReply } from 'fastify';
 import { userRepository } from '../database/repository';
-import { generateToken, generateTokenPair, revokeToken, revokeTokenPair, refreshToken, verifyRefreshToken } from '../middleware/jwt';
+import { generateTokenPair, revokeTokenPair, verifyRefreshToken } from '../middleware/jwt';
 import { createRedisAuthService } from '../redis';
 import { config } from '@/config';
 import { BaseService } from './base';
@@ -23,8 +23,9 @@ export class AuthService extends BaseService {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      domain:
+        process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
+      maxAge: config.auth.accessTokenExpiresIn * 1000, // 15 minutes
     });
 
     // Refresh token cookie (7 days)
@@ -33,7 +34,8 @@ export class AuthService extends BaseService {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
+      domain:
+        process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
   }
@@ -61,11 +63,13 @@ export class AuthService extends BaseService {
   private clearAuthCookies(reply: FastifyReply): void {
     reply.clearCookie('auth-token', {
       path: '/',
-      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
+      domain:
+        process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
     });
     reply.clearCookie('refresh-token', {
       path: '/',
-      domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
+      domain:
+        process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
     });
   }
 
@@ -189,7 +193,10 @@ export class AuthService extends BaseService {
       // Check if user already exists
       const existingUser = await userRepository.findByEmail(email);
       if (existingUser) {
-        throw new Error('User with this email already exists');
+        // Throw a typed error to map to 400 in route
+        const err: any = new Error('Email already exists');
+        err.code = 'EMAIL_EXISTS';
+        throw err;
       }
 
       // Create user
@@ -266,8 +273,8 @@ export class AuthService extends BaseService {
     try {
       // Extract session metadata from request
       const sessionMetadata = this.extractSessionMetadata(request);
-      const token = await generateToken(user, sessionMetadata);
-      this.setAuthCookie(reply, token);
+      const { accessToken, refreshToken } = await generateTokenPair(user, sessionMetadata);
+      this.setAuthCookies(reply, accessToken, refreshToken);
 
       // Redirect back to original page if provided and safe
       if (returnUrl) {
@@ -352,7 +359,9 @@ export class AuthService extends BaseService {
   /**
    * Refresh access token using refresh token
    */
-  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async refreshAccessToken(
+    refreshToken: string
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
       // Verify refresh token
       const payload = await verifyRefreshToken(refreshToken);
@@ -360,8 +369,10 @@ export class AuthService extends BaseService {
         throw new Error('Invalid refresh token');
       }
 
-      // Get user data from database
-      const user = await userRepository.findById(payload.id);
+      // Prefer user profile from Redis cache, fallback to database
+      const redis = createRedisAuthService();
+      const cachedProfile = await redis.getUserProfile(payload.id);
+      const user = cachedProfile || (await userRepository.findById(payload.id));
       if (!user) {
         throw new Error('User not found');
       }
@@ -371,7 +382,7 @@ export class AuthService extends BaseService {
         id: user.id,
         email: user.email,
         name: user.name,
-        avatar: user.avatar,
+        avatar: (user as any).avatar,
         role: user.role,
       };
 
@@ -414,24 +425,6 @@ export class AuthService extends BaseService {
       };
     } catch (error) {
       this.handleError(error, 'Terminate sessions');
-    }
-  }
-
-  /**
-   * Refresh token
-   */
-  async refreshUserToken(token: string): Promise<SuccessResponse & { message: string }> {
-    try {
-      if (token) {
-        await refreshToken(token);
-      }
-
-      return {
-        success: true,
-        message: 'Token refreshed successfully',
-      };
-    } catch (error) {
-      this.handleError(error, 'Refresh token');
     }
   }
 

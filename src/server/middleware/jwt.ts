@@ -1,35 +1,7 @@
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 import { config } from '@/config';
-import { createRedisAuthService } from '../redis';
-
-export interface SessionMetadata {
-  countryCode?: string;
-  deviceInfo?: {
-    browser?: string;
-    os?: string;
-    device?: string;
-  };
-  loginTime: string;
-  lastActive?: string;
-}
-
-export interface JWTPayload {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string | null;
-  role: 'user' | 'admin';
-  sessionMetadata?: SessionMetadata;
-  iat?: number;
-  exp?: number;
-}
-
-export interface RefreshTokenPayload {
-  id: string;
-  email: string;
-  iat?: number;
-  exp?: number;
-}
+import type { JWTPayload, RefreshTokenPayload, SessionMetadata } from '@/types/shared/auth';
 
 // Global Redis service instance - will be set during server initialization
 let redisService: any = null;
@@ -42,45 +14,46 @@ export async function generateTokenPair(
   payload: Omit<JWTPayload, 'iat' | 'exp'>,
   sessionMetadata?: SessionMetadata
 ): Promise<{ accessToken: string; refreshToken: string }> {
-  // Generate access token (15 minutes)
-  const accessToken = jwt.sign(payload, config.auth.secret, {
-    expiresIn: '15m',
-  });
+  // Generate JTIs for access and refresh
+  const accessJti = uuidv4();
+  const refreshJti = uuidv4();
 
-  // Generate refresh token (7 days)
+  // Refresh token
   const refreshTokenPayload: Omit<RefreshTokenPayload, 'iat' | 'exp'> = {
     id: payload.id,
-    email: payload.email,
   };
-  
   const refreshToken = jwt.sign(refreshTokenPayload, config.auth.secret, {
-    expiresIn: '7d',
+    expiresIn: config.auth.refreshTokenExpiresIn,
+    jwtid: refreshJti,
+  });
+
+  // Access token
+  const accessToken = jwt.sign(payload, config.auth.secret, {
+    expiresIn: config.auth.accessTokenExpiresIn,
+    jwtid: accessJti,
   });
 
   // Store user data in Redis for fast access
   if (redisService) {
     try {
       const redisPayload = {
-        id: payload.id,
-        email: payload.email,
-        name: payload.name,
-        avatar: payload.avatar,
-        role: payload.role,
+        userId: payload.id,
         sessionMetadata: sessionMetadata,
+        refreshJti,
       };
 
-      // Store access token data
-      await redisService.storeToken(accessToken, redisPayload, 'access');
-      await redisService.addTokenToUser(payload.id, accessToken);
-      
-      // Store refresh token data
-      await redisService.storeToken(refreshToken, {
-        userId: payload.id,
-        createdAt: new Date().toISOString(),
-      }, 'refresh');
-      
-      // Store mapping: access token -> refresh token
-      await redisService.storeToken(`pair:${accessToken}`, refreshToken, 'access', 7 * 24 * 60 * 60); // 7 days
+      // Store by JTI
+      await redisService.storeToken(accessJti, redisPayload, 'access');
+      await redisService.addTokenToUser(payload.id, accessJti);
+      await redisService.storeToken(
+        refreshJti,
+        {
+          userId: payload.id,
+          accessJti,
+          createdAt: new Date().toISOString(),
+        },
+        'refresh'
+      );
     } catch (error) {
       console.error('[JWT] Error storing token data in Redis:', error);
     }
@@ -89,22 +62,17 @@ export async function generateTokenPair(
   return { accessToken, refreshToken };
 }
 
-export async function generateToken(
-  payload: Omit<JWTPayload, 'iat' | 'exp'>,
-  sessionMetadata?: SessionMetadata
-): Promise<string> {
-  const { accessToken } = await generateTokenPair(payload, sessionMetadata);
-  return accessToken;
-}
-
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
     // First verify JWT signature and expiration
-    const payload = jwt.verify(token, config.auth.secret) as JWTPayload;
+    const payload = jwt.verify(token, config.auth.secret as string) as JWTPayload;
 
     // Then check if token exists in Redis (for logout functionality)
     if (redisService) {
-      const isValid = await redisService.isTokenValid(token, 'access');
+      const decoded = jwt.decode(token, { complete: true }) as any;
+      const jti = decoded?.payload?.jti as string | undefined;
+      if (!jti) return null;
+      const isValid = await redisService.isTokenValid(jti, 'access');
       if (!isValid) {
         return null;
       }
@@ -116,55 +84,38 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
   }
 }
 
-export async function revokeToken(token: string): Promise<void> {
-  if (redisService) {
-    const payload = await redisService.getToken(token, 'access');
-    
-    if (payload) {
-      // Remove token from user's token set
-      await redisService.removeTokenFromUser(payload.id, token);
-      
-      // Delete the access token
-      await redisService.deleteToken(token, 'access');
-    }
-  }
-}
-
 /**
  * Revoke both access token and refresh token
  */
-export async function revokeTokenPair(accessToken?: string | null, refreshToken?: string | null): Promise<void> {
+export async function revokeTokenPair(
+  accessToken?: string | null,
+  refreshToken?: string | null
+): Promise<void> {
   if (redisService) {
     // Revoke access token if provided
     if (accessToken) {
-      const payload = await redisService.getToken(accessToken, 'access');
-      
-      if (payload) {
-        // Remove token from user's token set
-        await redisService.removeTokenFromUser(payload.id, accessToken);
-        
-        // Delete the access token
-        await redisService.deleteToken(accessToken, 'access');
-        
-        // Find and delete corresponding refresh token
-        const correspondingRefreshToken = await redisService.getToken(`pair:${accessToken}`, 'access');
-        if (correspondingRefreshToken) {
-          await redisService.deleteToken(correspondingRefreshToken, 'refresh');
-          await redisService.deleteToken(`pair:${accessToken}`, 'access'); // Delete mapping
+      const decoded = jwt.decode(accessToken, { complete: true }) as any;
+      const accessJti = decoded?.payload?.jti as string | undefined;
+      if (accessJti) {
+        const payload = await redisService.getToken(accessJti, 'access');
+        if (payload) {
+          await redisService.removeTokenFromUser(payload.id, accessJti);
+          await redisService.deleteToken(accessJti, 'access');
+          if (payload.refreshJti) {
+            await redisService.deleteToken(payload.refreshJti, 'refresh');
+          }
         }
       }
     }
-    
+
     // Revoke refresh token if provided
     if (refreshToken) {
-      await redisService.deleteToken(refreshToken, 'refresh');
+      const decoded = jwt.decode(refreshToken, { complete: true }) as any;
+      const refreshJti = decoded?.payload?.jti as string | undefined;
+      if (refreshJti) {
+        await redisService.deleteToken(refreshJti, 'refresh');
+      }
     }
-  }
-}
-
-export async function refreshToken(token: string): Promise<void> {
-  if (redisService) {
-    await redisService.refreshToken(token, 'access');
   }
 }
 
@@ -175,14 +126,19 @@ export function extractTokenFromHeader(authHeader?: string): string | null {
   return authHeader.substring(7);
 }
 
-export async function verifyRefreshToken(refreshToken: string): Promise<RefreshTokenPayload | null> {
+export async function verifyRefreshToken(
+  refreshToken: string
+): Promise<RefreshTokenPayload | null> {
   try {
     // First verify JWT signature and expiration
     const payload = jwt.verify(refreshToken, config.auth.secret) as RefreshTokenPayload;
 
     // Then check if refresh token exists in Redis
     if (redisService) {
-      const isValid = await redisService.isTokenValid(refreshToken, 'refresh');
+      const decoded = jwt.decode(refreshToken, { complete: true }) as any;
+      const refreshJti = decoded?.payload?.jti as string | undefined;
+      if (!refreshJti) return null;
+      const isValid = await redisService.isTokenValid(refreshJti, 'refresh');
       if (!isValid) {
         return null; // Refresh token was revoked
       }
@@ -198,31 +154,40 @@ export async function verifyRefreshToken(refreshToken: string): Promise<RefreshT
 export async function getUserFromToken(token: string): Promise<JWTPayload | null> {
   try {
     // First verify JWT signature and expiration
-    const payload = jwt.verify(token, config.auth.secret) as JWTPayload;
+    const payload = jwt.verify(token, config.auth.secret as string) as JWTPayload;
 
     // Then check if token exists in Redis and get cached user data
     if (redisService) {
-      const cachedUser = await redisService.getToken(token, 'access');
-      if (!cachedUser) {
+      const decoded = jwt.decode(token, { complete: true }) as any;
+      const jti = decoded?.payload?.jti as string | undefined;
+      if (!jti) return null;
+      const accessData = await redisService.getToken(jti, 'access');
+      if (!accessData) {
         return null; // Token was revoked
       }
 
       // Extend TTL for user's tokens set when user is active
 
       // Update lastActive time for this session
-      if (cachedUser.sessionMetadata) {
-        cachedUser.sessionMetadata.lastActive = new Date().toISOString();
-        await redisService.storeToken(token, cachedUser, 'access');
+      if (accessData.sessionMetadata) {
+        accessData.sessionMetadata.lastActive = new Date().toISOString();
+        await redisService.storeToken(jti, accessData, 'access');
       }
 
-      // Return cached user data (more up-to-date than JWT payload)
+      // Fetch latest role from user profile cache if available
+      let latestRole = payload.role;
+      try {
+        const userProfile = await redisService.getUserProfile(payload.id);
+        if (userProfile?.role) {
+          latestRole = userProfile.role;
+        }
+      } catch {}
+
+      // Return user data combining JWT claims with latest cached session/profile info
       return {
-        id: cachedUser.id,
-        email: cachedUser.email,
-        name: cachedUser.name,
-        avatar: cachedUser.avatar,
-        role: cachedUser.role,
-        sessionMetadata: cachedUser.sessionMetadata,
+        id: payload.id,
+        role: latestRole,
+        sessionMetadata: accessData.sessionMetadata,
         iat: payload.iat,
         exp: payload.exp,
       };
@@ -233,4 +198,3 @@ export async function getUserFromToken(token: string): Promise<JWTPayload | null
     return null;
   }
 }
-

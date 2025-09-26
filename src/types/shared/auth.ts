@@ -51,3 +51,35 @@ export interface CheckEmailResponse {
   available: boolean;
   message: string;
 }
+
+// Shared auth token/session types
+export interface SessionMetadata {
+  countryCode?: string;
+  deviceInfo?: {
+    browser?: string;
+    os?: string;
+    device?: string;
+  };
+  loginTime: string;
+  lastActive?: string;
+}
+
+export type SessionInterface = SessionMetadata & {
+  token: string;
+  isCurrent: boolean;
+};
+
+export interface JWTPayload {
+  id: string;
+  role: 'user' | 'admin';
+  sessionMetadata?: SessionMetadata;
+  jti?: string;
+  iat?: number;
+  exp?: number;
+}
+
+export interface RefreshTokenPayload {
+  id: string;
+  iat?: number;
+  exp?: number;
+}

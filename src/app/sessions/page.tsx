@@ -21,29 +21,18 @@ import { MotionContainer, ClientOnly } from '@/components/layout';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { apiGet, apiPost } from '@/lib/utils/api-client';
 import { useI18n } from '@/components/providers';
-interface Session {
-  token: string;
-  countryCode?: string;
-  deviceInfo?: {
-    type: string;
-    browser: string;
-    os: string;
-  };
-  loginTime: string;
-  lastActive: string;
-  isCurrent: boolean;
-}
+import type { SessionInterface } from '@/types/shared';
 
 function SessionsPageContent() {
   const { t } = useI18n();
   const { isAuthenticated, isLoading } = useAuthState();
   const router = useRouter();
 
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessions, setSessions] = useState<SessionInterface[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState<string | null>(null);
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [selectedSession, setSelectedSession] = useState<SessionInterface | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showLogoutAll, setShowLogoutAll] = useState(false);
   const [showLogoutOther, setShowLogoutOther] = useState(false);
@@ -68,14 +57,14 @@ function SessionsPageContent() {
       const sessions = response.sessions || [];
 
       // Map sessions to match our interface
-      const mappedSessions: Session[] = sessions.map((session: any) => ({
+      const mappedSessions: SessionInterface[] = sessions.map((session: SessionInterface) => ({
         token: session.token,
         countryCode: session.countryCode,
         deviceInfo: session.deviceInfo
           ? {
-              type: session.deviceInfo.device || session.deviceInfo.type || 'Desktop',
-              browser: session.deviceInfo.browser || 'Unknown',
-              os: session.deviceInfo.os || 'Unknown',
+              device: session.deviceInfo.device,
+              browser: session.deviceInfo.browser,
+              os: session.deviceInfo.os,
             }
           : undefined,
         loginTime: session.loginTime,
@@ -91,7 +80,10 @@ function SessionsPageContent() {
     }
   };
 
-  const refreshSessions = async () => {
+  const refreshSessions = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     try {
       setRefreshing(true);
       await fetchSessions();
@@ -218,15 +210,14 @@ function SessionsPageContent() {
                 {t('sessions.activeSessions')} ({sessions.length})
               </h2>
               <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={refreshSessions}
+                <button
+                  onClick={(e) => refreshSessions(e)}
                   disabled={refreshing}
-                  className="p-2"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
+                  type="button"
                 >
                   <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                </Button>
+                </button>
                 {sessions.length > 1 && (
                   <Button
                     variant="back"
@@ -298,7 +289,7 @@ function SessionsPageContent() {
                       {/* Device Icon */}
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
                         {session.deviceInfo ? (
-                          getDeviceIcon(session.deviceInfo.type)
+                          getDeviceIcon(session.deviceInfo?.device || 'Desktop')
                         ) : (
                           <Monitor className="h-5 w-5" />
                         )}
@@ -308,7 +299,7 @@ function SessionsPageContent() {
                       <div className="min-w-0 flex-1">
                         <div className="mb-1 flex items-center gap-2">
                           <h3 className="truncate text-sm font-semibold text-gray-900">
-                            {session.deviceInfo?.type || t('sessions.unknownDevice')}
+                            {session.deviceInfo?.device || t('sessions.unknownDevice')}
                           </h3>
                           {session.isCurrent && (
                             <Badge
@@ -326,7 +317,7 @@ function SessionsPageContent() {
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {formatRelativeTime(session.lastActive)}
+                            {formatRelativeTime(session.lastActive || session.loginTime)}
                           </span>
                           {session.deviceInfo?.browser && <span>{session.deviceInfo.browser}</span>}
                         </div>
@@ -386,12 +377,12 @@ function SessionsPageContent() {
                       <div className="mt-2 space-y-2 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
                           {selectedSession.deviceInfo ? (
-                            getDeviceIcon(selectedSession.deviceInfo.type)
+                            getDeviceIcon(selectedSession.deviceInfo?.device || 'Desktop')
                           ) : (
                             <Monitor className="h-4 w-4" />
                           )}
                           <span>
-                            {selectedSession.deviceInfo?.type || t('sessions.unknownDevice')}
+                            {selectedSession.deviceInfo?.device || t('sessions.unknownDevice')}
                           </span>
                         </div>
                         {selectedSession.deviceInfo?.browser && (
@@ -416,7 +407,9 @@ function SessionsPageContent() {
                         </div>
                         <div>
                           {t('sessions.lastActive')}:{' '}
-                          {formatRelativeTime(selectedSession.lastActive)}
+                          {formatRelativeTime(
+                            selectedSession.lastActive || selectedSession.loginTime
+                          )}
                         </div>
                       </div>
                     </div>
@@ -556,12 +549,10 @@ function SessionsPageContent() {
 }
 
 export default function SessionsPage() {
-  const { t } = useI18n();
-
   return (
     <ClientOnly
       fallback={
-        <LoadingScreen message={t('sessions.loadingSessions')} size="lg" variant="default" />
+        <LoadingScreen message="Loading session management..." size="lg" variant="default" />
       }
     >
       <SessionsPageContent />

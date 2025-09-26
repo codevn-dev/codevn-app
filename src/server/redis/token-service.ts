@@ -9,12 +9,24 @@ export class TokenService {
     this.redis = getRedis();
   }
 
+  private getDefaultTtlSeconds(tokenType: 'access' | 'refresh'): number {
+    return tokenType === 'access'
+      ? config.auth.accessTokenExpiresIn
+      : config.auth.refreshTokenExpiresIn;
+  }
+
   /**
    * Store JWT token in Redis with user payload
    */
-  async storeToken(token: string, payload: any, tokenType: 'access' | 'refresh', ttl?: number): Promise<void> {
+  async storeToken(
+    token: string,
+    payload: any,
+    tokenType: 'access' | 'refresh',
+    ttl?: number
+  ): Promise<void> {
     const key = `auth:${tokenType}:${token}`;
-    const ttlSeconds = ttl || (tokenType === 'access' ? 15 * 60 : 7 * 24 * 60 * 60); // 15min access, 7days refresh
+    // Default TTL uses numeric seconds from config.auth.*ExpiresIn
+    const ttlSeconds = ttl || this.getDefaultTtlSeconds(tokenType);
 
     await this.redis.setex(key, ttlSeconds, JSON.stringify(payload));
   }
@@ -53,14 +65,5 @@ export class TokenService {
     const key = `auth:${tokenType}:${token}`;
     const exists = await this.redis.exists(key);
     return exists === 1;
-  }
-
-  /**
-   * Refresh token TTL
-   */
-  async refreshToken(token: string, tokenType: 'access' | 'refresh', ttl?: number): Promise<void> {
-    const key = `auth:${tokenType}:${token}`;
-    const ttlSeconds = ttl || (tokenType === 'access' ? 15 * 60 : 7 * 24 * 60 * 60); // 15min access, 7days refresh
-    await this.redis.expire(key, ttlSeconds);
   }
 }

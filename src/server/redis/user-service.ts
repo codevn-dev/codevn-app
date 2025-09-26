@@ -46,17 +46,17 @@ export class UserService {
   }
 
   /**
-   * Add token to user's token set (called when token is created)
+   * Add access JTI to user's token set (called when token is created)
    */
   async addTokenToUser(userId: string, token: string): Promise<void> {
     const userTokensKey = `auth:user:${userId}:tokens`;
-
-    // Add token to set (no TTL - keep permanently)
     await this.redis.sadd(userTokensKey, token);
+    // Align the lifetime of the user's token set with refresh token lifetime
+    await this.redis.expire(userTokensKey, config.auth.refreshTokenExpiresIn);
   }
 
   /**
-   * Remove token from user's token set (called when token is deleted)
+   * Remove access JTI from user's token set (called when token is deleted)
    */
   async removeTokenFromUser(userId: string, token: string): Promise<void> {
     const userTokensKey = `auth:user:${userId}:tokens`;
@@ -72,7 +72,7 @@ export class UserService {
   }
 
   /**
-   * Get all tokens for a user
+   * Get all access JTIs for a user
    */
   async getUserTokens(userId: string): Promise<string[]> {
     const userTokensKey = `auth:user:${userId}:tokens`;
@@ -80,14 +80,14 @@ export class UserService {
   }
 
   /**
-   * Update user data in all active tokens (for role changes)
+   * Update user data in all active access tokens (for role changes)
    */
   async updateUserInAllTokens(userId: string, updatedUserData: any): Promise<void> {
     const tokens = await this.getUserTokens(userId);
 
     for (const token of tokens) {
-      // Get current token data
-      const tokenData = await this.redis.get(`auth:token:${token}`);
+      // token is access JTI
+      const tokenData = await this.redis.get(`auth:access:${token}`);
       if (tokenData) {
         try {
           const parsed = JSON.parse(tokenData);
@@ -96,7 +96,11 @@ export class UserService {
             ...parsed,
             ...updatedUserData,
           };
-          await this.redis.setex(`auth:token:${token}`, config.auth.maxAge, JSON.stringify(updatedTokenData));
+          await this.redis.setex(
+            `auth:access:${token}`,
+            config.auth.accessTokenExpiresIn,
+            JSON.stringify(updatedTokenData)
+          );
         } catch (error) {
           logger.error('Error updating token data', undefined, error as Error);
         }

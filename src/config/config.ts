@@ -8,7 +8,8 @@ export const authConfig = {
   secret: process.env.JWT_SECRET || 'your-super-secret-key-that-is-at-least-32-characters-long',
   url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   trustHost: true,
-  maxAge: 15 * 60, // 15 minutes (access token)
+  accessTokenExpiresIn: parseInt(process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || '900', 10),
+  refreshTokenExpiresIn: parseInt(process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || '604800', 10),
   bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS || '12'),
 } as const;
 

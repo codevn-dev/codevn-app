@@ -1,7 +1,36 @@
 import { TokenService } from './token-service';
 import { UserService } from './user-service';
 import { SessionService } from './session-service';
-import { RedisService } from './types';
+
+export interface RedisService {
+  // Token management
+  storeToken(
+    token: string,
+    payload: any,
+    tokenType: 'access' | 'refresh',
+    ttl?: number
+  ): Promise<void>;
+  getToken(token: string, tokenType: 'access' | 'refresh'): Promise<any | null>;
+  deleteToken(token: string, tokenType: 'access' | 'refresh'): Promise<void>;
+  isTokenValid(token: string, tokenType: 'access' | 'refresh'): Promise<boolean>;
+
+  // User profile caching
+  setUserProfile(userId: string, data: any, ttlSeconds?: number): Promise<void>;
+  getUserProfile(userId: string): Promise<any | null>;
+  deleteUserProfile(userId: string): Promise<void>;
+
+  // User token tracking
+  addTokenToUser(userId: string, token: string): Promise<void>;
+  removeTokenFromUser(userId: string, token: string): Promise<void>;
+  getUserTokens(userId: string): Promise<string[]>;
+  getUserActiveSessions(userId: string, currentToken?: string): Promise<any[]>;
+
+  // Token updates
+  updateUserInAllTokens(userId: string, updatedUserData: any): Promise<void>;
+
+  // Session termination
+  terminateSession(userId: string, token: string): Promise<void>;
+}
 
 export class RedisAuthService implements RedisService {
   private tokenService: TokenService;
@@ -15,7 +44,12 @@ export class RedisAuthService implements RedisService {
   }
 
   // Token management
-  async storeToken(token: string, payload: any, tokenType: 'access' | 'refresh', ttl?: number): Promise<void> {
+  async storeToken(
+    token: string,
+    payload: any,
+    tokenType: 'access' | 'refresh',
+    ttl?: number
+  ): Promise<void> {
     return this.tokenService.storeToken(token, payload, tokenType, ttl);
   }
 
@@ -31,10 +65,6 @@ export class RedisAuthService implements RedisService {
     return this.tokenService.isTokenValid(token, tokenType);
   }
 
-  async refreshToken(token: string, tokenType: 'access' | 'refresh', ttl?: number): Promise<void> {
-    return this.tokenService.refreshToken(token, tokenType, ttl);
-  }
-
   // User profile caching
   async setUserProfile(userId: string, data: any, ttlSeconds?: number): Promise<void> {
     return this.userService.setUserProfile(userId, data, ttlSeconds);
@@ -47,20 +77,6 @@ export class RedisAuthService implements RedisService {
   async deleteUserProfile(userId: string): Promise<void> {
     return this.userService.deleteUserProfile(userId);
   }
-
-  // Session management
-  async storeSession(sessionId: string, data: any, ttl?: number): Promise<void> {
-    return this.sessionService.storeSession(sessionId, data, ttl);
-  }
-
-  async getSession(sessionId: string): Promise<any | null> {
-    return this.sessionService.getSession(sessionId);
-  }
-
-  async deleteSession(sessionId: string): Promise<void> {
-    return this.sessionService.deleteSession(sessionId);
-  }
-
 
   // User token tracking
   async addTokenToUser(userId: string, token: string): Promise<void> {

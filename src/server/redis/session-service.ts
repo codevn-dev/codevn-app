@@ -1,61 +1,35 @@
-import { logger } from '@/lib/utils/logger';
-import { getRedis } from '@/lib/server';
+import jwt from 'jsonwebtoken';
+import { config } from '@/config';
 import { TokenService } from './token-service';
 import { UserService } from './user-service';
 
 export class SessionService {
-  private redis: any;
   private tokenService: TokenService;
   private userService: UserService;
 
   constructor() {
-    this.redis = getRedis();
     this.tokenService = new TokenService();
     this.userService = new UserService();
-  }
-
-  /**
-   * Store session data in Redis
-   */
-  async storeSession(sessionId: string, data: any, ttl?: number): Promise<void> {
-    const key = `auth:session:${sessionId}`;
-    const ttlSeconds = ttl || 30 * 24 * 60 * 60; // 30 days default
-    await this.redis.setex(key, ttlSeconds, JSON.stringify(data));
-  }
-
-  /**
-   * Get session data from Redis
-   */
-  async getSession(sessionId: string): Promise<any | null> {
-    const key = `auth:session:${sessionId}`;
-    const data = await this.redis.get(key);
-
-    if (!data) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(data);
-    } catch (error) {
-      logger.error('Error parsing session data from Redis', undefined, error as Error);
-      return null;
-    }
-  }
-
-  /**
-   * Delete session from Redis
-   */
-  async deleteSession(sessionId: string): Promise<void> {
-    const key = `auth:session:${sessionId}`;
-    await this.redis.del(key);
   }
 
   /**
    * Get user's active sessions
    */
   async getUserActiveSessions(userId: string, currentToken?: string): Promise<any[]> {
-    const tokens = await this.userService.getUserTokens(userId);
+    const tokens = await this.userService.getUserTokens(userId); // access JTIs
     const sessions = [];
+    let currentJti: string | null = null;
+
+    // Verify current token and extract its JTI
+    if (currentToken) {
+      try {
+        jwt.verify(currentToken, config.auth.secret);
+        const decoded = jwt.decode(currentToken, { complete: true }) as any;
+        currentJti = decoded?.payload?.jti || null;
+      } catch {
+        currentJti = null;
+      }
+    }
 
     for (const token of tokens) {
       const tokenData = await this.tokenService.getToken(token, 'access');
@@ -66,7 +40,7 @@ export class SessionService {
           deviceInfo: tokenData.sessionMetadata?.deviceInfo || 'Unknown Device',
           loginTime: tokenData.sessionMetadata?.loginTime || new Date().toISOString(),
           lastActive: tokenData.sessionMetadata?.lastActive || new Date().toISOString(),
-          isCurrent: currentToken ? token === currentToken : false,
+          isCurrent: currentJti ? token === currentJti : false,
         };
         sessions.push(session);
       }
@@ -78,15 +52,12 @@ export class SessionService {
   /**
    * Terminate a specific session
    */
-  async terminateSession(userId: string, token: string): Promise<void> {
-    await this.userService.removeTokenFromUser(userId, token);
-    await this.tokenService.deleteToken(token, 'access');
-    
-    // Find and delete corresponding refresh token
-    const correspondingRefreshToken = await this.tokenService.getToken(`pair:${token}`, 'access');
-    if (correspondingRefreshToken) {
-      await this.tokenService.deleteToken(correspondingRefreshToken, 'refresh');
-      await this.tokenService.deleteToken(`pair:${token}`, 'access'); // Delete mapping
+  async terminateSession(userId: string, accessJti: string): Promise<void> {
+    const tokenData = await this.tokenService.getToken(accessJti, 'access');
+    await this.userService.removeTokenFromUser(userId, accessJti);
+    await this.tokenService.deleteToken(accessJti, 'access');
+    if (tokenData?.refreshJti) {
+      await this.tokenService.deleteToken(tokenData.refreshJti, 'refresh');
     }
   }
 }

@@ -5,9 +5,6 @@ import { logger } from '@/lib/utils/logger';
 export interface AuthenticatedRequest extends FastifyRequest {
   user?: {
     id: string;
-    email: string;
-    name: string;
-    avatar?: string | null;
     role: 'user' | 'admin';
   };
 }
@@ -29,6 +26,7 @@ export async function authMiddleware(request: FastifyRequest, reply: FastifyRepl
 
     // Use Redis-verified token validation with cached user data
     const user = await getUserFromToken(token);
+
     if (!user) {
       return reply.status(401).send({ error: 'Invalid or expired token' });
     }
@@ -36,9 +34,6 @@ export async function authMiddleware(request: FastifyRequest, reply: FastifyRepl
     // Attach user info to request (from Redis cache)
     (request as AuthenticatedRequest).user = {
       id: user.id,
-      email: user.email,
-      name: user.name,
-      avatar: user.avatar,
       role: user.role,
     };
   } catch (error) {
@@ -68,9 +63,6 @@ export async function optionalAuthMiddleware(
         // Attach user info to request if token is valid
         (request as AuthenticatedRequest).user = {
           id: user.id,
-          email: user.email,
-          name: user.name,
-          avatar: user.avatar,
           role: user.role,
         };
       }

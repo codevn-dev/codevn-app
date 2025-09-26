@@ -125,19 +125,17 @@ export class AdminService extends BaseService {
 
       const updatedUser = await userRepository.updateRole(userId, role as 'user' | 'admin');
 
-      // Invalidate user profile cache
+      // Invalidate and refresh user profile cache
       const redis = createRedisAuthService();
       await redis.deleteUserProfile(userId);
-
-      // Update user data in all active tokens (Cách 2: không logout user)
-      const updatedUserData = {
+      await redis.setUserProfile(userId, {
         id: updatedUser[0].id,
         email: updatedUser[0].email,
         name: updatedUser[0].name,
-        avatar: null, // updateRole doesn't return avatar, will be updated from profile cache
+        avatar: updatedUser[0].avatar,
         role: updatedUser[0].role,
-      };
-      await redis.updateUserInAllTokens(userId, updatedUserData);
+        createdAt: new Date().toISOString(),
+      });
 
       return updatedUser[0];
     } catch (error) {

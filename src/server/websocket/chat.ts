@@ -222,7 +222,6 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
         request.cookies?.['auth-token'];
 
       if (!token) {
-        logger.warn('WebSocket connection rejected: No token');
         socket.close(1008, 'Token required');
         return;
       }
@@ -230,7 +229,6 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
       // Verify token using same method as HTTP routes
       const user = await getUserFromToken(token);
       if (!user) {
-        logger.warn('WebSocket connection rejected: Invalid token');
         socket.close(1008, 'Invalid token');
         return;
       }

@@ -97,6 +97,10 @@ const store: Dictionary = {
   'auth.emailTaken': { en: 'Email is already taken', vi: 'Email đã được sử dụng' },
   'auth.loginSuccessful': { en: 'Login successful!', vi: 'Đăng nhập thành công!' },
   'auth.loginFailed': { en: 'Login failed', vi: 'Đăng nhập thất bại' },
+  'auth.invalidEmailOrPassword': {
+    en: 'Invalid email or password',
+    vi: 'Email hoặc mật khẩu không đúng',
+  },
   'auth.registrationFailed': { en: 'Registration failed', vi: 'Đăng ký thất bại' },
   'auth.googleLoginFailed': { en: 'Google login failed', vi: 'Đăng nhập Google thất bại' },
   'auth.emailCheckFailed': {

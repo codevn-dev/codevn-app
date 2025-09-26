@@ -1,5 +1,5 @@
 export { authMiddleware, optionalAuthMiddleware, type AuthenticatedRequest } from './auth';
-export { verifyToken, generateToken, type JWTPayload } from './jwt';
+export { verifyToken } from './jwt';
 export { setupPassport } from './passport';
 export {
   RedisRateLimit,
