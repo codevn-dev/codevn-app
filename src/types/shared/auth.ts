@@ -88,6 +88,7 @@ export interface JWTPayload {
 
 export interface RefreshTokenPayload {
   id: string;
+  sessionMetadata?: SessionMetadata;
   iat?: number;
   exp?: number;
 }

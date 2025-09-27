@@ -31,13 +31,14 @@ export class SessionService {
 
     for (const token of tokens) {
       const tokenData = await this.tokenService.getToken(token, 'access');
-      if (tokenData) {
-        const countryCode = tokenData.sessionMetadata?.countryCode;
+      if (tokenData && tokenData.sessionMetadata) {
+        const sessionMetadata = tokenData.sessionMetadata;
+        const countryCode = sessionMetadata.country?.code;
 
         // Get country name from country service
         let country = null;
 
-        if (countryCode !== 'Unknown') {
+        if (countryCode && countryCode !== 'Unknown') {
           try {
             const countryInfo = await CountryService.getByCode(countryCode);
             if (countryInfo) {
@@ -55,9 +56,9 @@ export class SessionService {
         sessions.push({
           token,
           country,
-          deviceInfo: tokenData.sessionMetadata?.deviceInfo || 'Unknown Device',
-          loginTime: tokenData.sessionMetadata?.loginTime || new Date().toISOString(),
-          lastActive: tokenData.sessionMetadata?.lastActive || new Date().toISOString(),
+          deviceInfo: sessionMetadata.deviceInfo || 'Unknown Device',
+          loginTime: sessionMetadata.loginTime || new Date().toISOString(),
+          lastActive: sessionMetadata.lastActive || new Date().toISOString(),
           isCurrent: currentJti ? token === currentJti : false,
         });
       }

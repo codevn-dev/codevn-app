@@ -21,14 +21,20 @@ export async function generateTokenPair(
   // Refresh token
   const refreshTokenPayload: Omit<RefreshTokenPayload, 'iat' | 'exp'> = {
     id: payload.id,
+    sessionMetadata: sessionMetadata,
   };
   const refreshToken = jwt.sign(refreshTokenPayload, config.auth.secret, {
     expiresIn: config.auth.refreshTokenExpiresIn,
     jwtid: refreshJti,
   });
 
-  // Access token
-  const accessToken = jwt.sign(payload, config.auth.secret, {
+  // Access token (include sessionMetadata for consistency)
+  const accessTokenPayload = {
+    id: payload.id,
+    role: payload.role,
+    sessionMetadata: sessionMetadata,
+  };
+  const accessToken = jwt.sign(accessTokenPayload, config.auth.secret, {
     expiresIn: config.auth.accessTokenExpiresIn,
     jwtid: accessJti,
   });
@@ -36,24 +42,21 @@ export async function generateTokenPair(
   // Store user data in Redis for fast access
   if (redisService) {
     try {
-      const redisPayload = {
+      const accessRedisPayload = {
+        userId: payload.id,
+        refreshJti,
+        sessionMetadata: sessionMetadata,
+      };
+
+      const refreshRedisPayload = {
         userId: payload.id,
         sessionMetadata: sessionMetadata,
-        refreshJti,
       };
 
       // Store by JTI
-      await redisService.storeToken(accessJti, redisPayload, 'access');
+      await redisService.storeToken(accessJti, accessRedisPayload, 'access');
       await redisService.addTokenToUser(payload.id, accessJti);
-      await redisService.storeToken(
-        refreshJti,
-        {
-          userId: payload.id,
-          accessJti,
-          createdAt: new Date().toISOString(),
-        },
-        'refresh'
-      );
+      await redisService.storeToken(refreshJti, refreshRedisPayload, 'refresh');
     } catch (error) {
       console.error('[JWT] Error storing token data in Redis:', error);
     }
@@ -133,7 +136,7 @@ export async function verifyRefreshToken(
     // First verify JWT signature and expiration
     const payload = jwt.verify(refreshToken, config.auth.secret) as RefreshTokenPayload;
 
-    // Then check if refresh token exists in Redis
+    // Then check if refresh token exists in Redis and get sessionMetadata
     if (redisService) {
       const decoded = jwt.decode(refreshToken, { complete: true }) as any;
       const refreshJti = decoded?.payload?.jti as string | undefined;
@@ -141,6 +144,12 @@ export async function verifyRefreshToken(
       const isValid = await redisService.isTokenValid(refreshJti, 'refresh');
       if (!isValid) {
         return null; // Refresh token was revoked
+      }
+
+      // Get sessionMetadata from Redis (for consistency, though it's also in JWT payload)
+      const refreshData = await redisService.getToken(refreshJti, 'refresh');
+      if (refreshData?.sessionMetadata) {
+        payload.sessionMetadata = refreshData.sessionMetadata;
       }
     }
 
@@ -168,9 +177,11 @@ export async function getUserFromToken(token: string): Promise<JWTPayload | null
 
       // Extend TTL for user's tokens set when user is active
 
-      // Update lastActive time for this session
-      if (accessData.sessionMetadata) {
-        accessData.sessionMetadata.lastActive = new Date().toISOString();
+      // Get sessionMetadata from access token (now stored in both tokens)
+      let sessionMetadata = accessData.sessionMetadata;
+      if (sessionMetadata) {
+        // Update lastActive time for this session (only in access token)
+        sessionMetadata.lastActive = new Date().toISOString();
         await redisService.storeToken(jti, accessData, 'access');
       }
 
@@ -187,7 +198,7 @@ export async function getUserFromToken(token: string): Promise<JWTPayload | null
       return {
         id: payload.id,
         role: latestRole,
-        sessionMetadata: accessData.sessionMetadata,
+        sessionMetadata: sessionMetadata,
         iat: payload.iat,
         exp: payload.exp,
       };

@@ -389,8 +389,11 @@ export class AuthService extends BaseService {
       // Revoke old refresh token first
       await revokeTokenPair(null, refreshToken);
 
-      // Generate new token pair
-      const { accessToken, refreshToken: newRefreshToken } = await generateTokenPair(tokenPayload);
+      // Generate new token pair with sessionMetadata from the old refresh token
+      const { accessToken, refreshToken: newRefreshToken } = await generateTokenPair(
+        tokenPayload,
+        payload.sessionMetadata
+      );
 
       return { accessToken, refreshToken: newRefreshToken };
     } catch (error) {

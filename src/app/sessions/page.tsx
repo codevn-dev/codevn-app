@@ -13,6 +13,9 @@ import {
   Globe,
   Clock,
   RefreshCw,
+  LogIn,
+  Earth,
+  Terminal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -168,6 +171,24 @@ function SessionsPageContent() {
     }
   };
 
+  const getOSIcon = (os: string) => {
+    switch (os.toLowerCase()) {
+      case 'windows':
+        return <Monitor className="h-4 w-4" />;
+      case 'macos':
+      case 'mac':
+        return <Monitor className="h-4 w-4" />;
+      case 'linux':
+        return <Terminal className="h-4 w-4" />;
+      case 'android':
+        return <Smartphone className="h-4 w-4" />;
+      case 'ios':
+        return <Smartphone className="h-4 w-4" />;
+      default:
+        return <Terminal className="h-4 w-4" />;
+    }
+  };
+
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -313,14 +334,19 @@ function SessionsPageContent() {
                         </div>
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
-                            <Globe className="h-3 w-3" />
+                            <Earth className="h-3 w-3" />
                             {session.country?.name[locale] || t('sessions.unknown')}
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {formatRelativeTime(session.lastActive || session.loginTime)}
                           </span>
-                          {session.deviceInfo?.browser && <span>{session.deviceInfo.browser}</span>}
+                          {session.deviceInfo?.browser && (
+                            <span className="flex items-center gap-1">
+                              <Globe className="h-3 w-3" />
+                              {session.deviceInfo.browser}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -387,10 +413,16 @@ function SessionsPageContent() {
                           </span>
                         </div>
                         {selectedSession.deviceInfo?.browser && (
-                          <div>Browser: {selectedSession.deviceInfo.browser}</div>
+                          <div className="flex items-center gap-2">
+                            <Globe className="h-4 w-4" />
+                            <span>Browser: {selectedSession.deviceInfo.browser}</span>
+                          </div>
                         )}
                         {selectedSession.deviceInfo?.os && (
-                          <div>OS: {selectedSession.deviceInfo.os}</div>
+                          <div className="flex items-center gap-2">
+                            {getOSIcon(selectedSession.deviceInfo.os)}
+                            <span>OS: {selectedSession.deviceInfo.os}</span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -398,19 +430,28 @@ function SessionsPageContent() {
                     <div>
                       <h4 className="font-medium text-gray-900">{t('sessions.locationTime')}</h4>
                       <div className="mt-2 space-y-2 text-sm text-gray-600">
-                        <div>
-                          {t('sessions.country')}:{' '}
-                          {selectedSession.country?.name[locale] || t('sessions.unknown')}
+                        <div className="flex items-center gap-2">
+                          <Earth className="h-4 w-4" />
+                          <span>
+                            {t('sessions.country')}:{' '}
+                            {selectedSession.country?.name[locale] || t('sessions.unknown')}
+                          </span>
                         </div>
-                        <div>
-                          {t('sessions.loginTime')}:{' '}
-                          {new Date(selectedSession.loginTime).toLocaleString()}
+                        <div className="flex items-center gap-2">
+                          <LogIn className="h-4 w-4" />
+                          <span>
+                            {t('sessions.loginTime')}:{' '}
+                            {formatRelativeTime(selectedSession.loginTime)}
+                          </span>
                         </div>
-                        <div>
-                          {t('sessions.lastActive')}:{' '}
-                          {formatRelativeTime(
-                            selectedSession.lastActive || selectedSession.loginTime
-                          )}
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          <span>
+                            {t('sessions.lastActive')}:{' '}
+                            {formatRelativeTime(
+                              selectedSession.lastActive || selectedSession.loginTime
+                            )}
+                          </span>
                         </div>
                       </div>
                     </div>
