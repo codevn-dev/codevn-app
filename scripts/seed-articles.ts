@@ -98,17 +98,39 @@ async function getDb(): Promise<Db> {
 }
 
 async function ensureCategories(db: Db, authorIds: string[]) {
-  const base = [
-    { name: 'JavaScript', color: '#f59e0b' },
-    { name: 'TypeScript', color: '#2563eb' },
-    { name: 'React', color: '#22c55e' },
-    { name: 'Backend', color: '#9333ea' },
-    { name: 'DevOps', color: '#ef4444' },
+  const baseCategories = [
+    {
+      name: 'JavaScript',
+      color: '#f59e0b',
+      subCategories: ['ES6+', 'Node.js', 'DOM Manipulation', 'Async Programming', 'Frameworks'],
+    },
+    {
+      name: 'TypeScript',
+      color: '#2563eb',
+      subCategories: ['Advanced Types', 'Generics', 'Decorators', 'Modules', 'Tooling'],
+    },
+    {
+      name: 'React',
+      color: '#22c55e',
+      subCategories: ['Hooks', 'State Management', 'Performance', 'Testing', 'Next.js'],
+    },
+    {
+      name: 'Backend',
+      color: '#9333ea',
+      subCategories: ['API Design', 'Database', 'Authentication', 'Microservices', 'Caching'],
+    },
+    {
+      name: 'DevOps',
+      color: '#ef4444',
+      subCategories: ['Docker', 'Kubernetes', 'CI/CD', 'Monitoring', 'Infrastructure'],
+    },
   ];
-  const rows = base.map((c) => ({
+
+  // Create parent categories
+  const parentRows = baseCategories.map((c) => ({
     id: randomUUID(),
     name: c.name,
-    description: `${c.name} articles`,
+    description: `${c.name} articles and tutorials`,
     slug: slugify(c.name),
     color: c.color,
     parentId: null,
@@ -117,8 +139,42 @@ async function ensureCategories(db: Db, authorIds: string[]) {
 
   await (db as any)
     .insert(categories)
-    .values(rows)
+    .values(parentRows)
     .onConflictDoNothing({ target: categories.slug });
+
+  // Get parent category IDs
+  const allCategories = await (db as any)
+    .select({ id: categories.id, name: categories.name, parentId: categories.parentId })
+    .from(categories);
+
+  const parentResults = allCategories.filter((c: any) => !c.parentId);
+
+  // Create sub categories
+  const subCategoryRows: any[] = [];
+
+  for (const parent of parentResults) {
+    const parentData = baseCategories.find((c) => c.name === parent.name);
+    if (parentData && parentData.subCategories) {
+      for (const subName of parentData.subCategories) {
+        subCategoryRows.push({
+          id: randomUUID(),
+          name: subName,
+          description: `${subName} in ${parent.name}`,
+          slug: slugify(`${parent.name}-${subName}`),
+          color: parentData.color,
+          parentId: parent.id,
+          createdById: pick(authorIds),
+        });
+      }
+    }
+  }
+
+  if (subCategoryRows.length > 0) {
+    await (db as any)
+      .insert(categories)
+      .values(subCategoryRows)
+      .onConflictDoNothing({ target: categories.slug });
+  }
 }
 
 async function main() {
@@ -132,14 +188,25 @@ async function main() {
   }
 
   // Ensure base categories exist
+  console.log('Creating categories and sub categories...');
   await ensureCategories(db, authorIds);
+  console.log('Categories created successfully!');
 
   const totalArg = process.argv.find((arg) => /^--total=/.test(arg));
   const total = totalArg ? parseInt(totalArg.split('=')[1], 10) : 2000;
 
-  // Fetch category ids
-  const categoryResults = await (db as any).select({ id: categories.id }).from(categories);
+  // Fetch category ids (both parent and sub categories)
+  const categoryResults = await (db as any)
+    .select({ id: categories.id, parentId: categories.parentId })
+    .from(categories);
   const categoryIds: string[] = categoryResults.map((c: any) => c.id);
+
+  // Log category structure
+  const parentCategories = categoryResults.filter((c: any) => !c.parentId);
+  const subCategories = categoryResults.filter((c: any) => c.parentId);
+  console.log(
+    `Created ${parentCategories.length} parent categories and ${subCategories.length} sub categories`
+  );
 
   const shuffledAuthors = shuffle([...authorIds]);
 
@@ -149,7 +216,17 @@ async function main() {
     const slug = `${slugify(title)}-${randomUUID().slice(0, 8)}`;
     const content = generateContent();
     const authorId = shuffledAuthors[i % shuffledAuthors.length];
-    const categoryId = pick(categoryIds);
+
+    // Randomly choose between sub categories and parent categories
+    let categoryId: string;
+    if (Math.random() < 0.5 && subCategories.length > 0) {
+      // 50% chance: choose from sub categories
+      categoryId = (pick(subCategories) as any).id;
+    } else {
+      // 50% chance: choose from all categories (including parent categories)
+      categoryId = pick(categoryIds);
+    }
+
     const published = Math.random() < 0.8;
     const createdAt = randomDateWithin(365);
     return {

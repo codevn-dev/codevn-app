@@ -5,4 +5,4 @@ export * from './time-format';
 export * from './email-mask';
 export * from './role-utils';
 export * from './api-client';
-export * from './format-number';
+export * from './number-format';

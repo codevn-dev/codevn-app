@@ -154,7 +154,8 @@ async function main() {
   const records = Array.from({ length: total }).map((_, i) => {
     const idx = i + 1;
     const name = generateName(idx);
-    const email = `mock_${idx}@codevn.dev`;
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const email = `mock_${idx}_${randomSuffix}@codevn.dev`;
 
     return {
       email,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { Users, Tag } from 'lucide-react';
