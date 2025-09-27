@@ -16,6 +16,14 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+function generateRandomDate(): Date {
+  // Generate random date between 1 year ago and now
+  const now = new Date();
+  const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+  const randomTime = oneYearAgo.getTime() + Math.random() * (now.getTime() - oneYearAgo.getTime());
+  return new Date(randomTime);
+}
+
 function generateName(index: number): string {
   const firstNames = [
     'Alex',
@@ -154,6 +162,7 @@ async function main() {
       password: hashed,
       role: RoleLevel.member,
       avatar: null,
+      createdAt: generateRandomDate(),
     };
   });
 

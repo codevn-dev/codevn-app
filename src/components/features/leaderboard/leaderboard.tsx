@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LeaderboardEntry } from '@/types/shared/user';
 import { useI18n } from '@/components/providers';
+import { formatNumberShort } from '@/lib/utils';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useChat } from '@/components/features/chat/chat-context';
 import { useUIStore, useLeaderboardStore } from '@/stores';
@@ -145,17 +146,6 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
       default:
         return 'bg-gray-100 text-gray-700';
     }
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000000) {
-      return `${(num / 1000000000).toFixed(1)}b`;
-    } else if (num >= 1000000) {
-      return `${(num / 1000000).toFixed(1)}m`;
-    } else if (num >= 1000) {
-      return `${(num / 1000).toFixed(1)}k`;
-    }
-    return num.toString();
   };
 
   return (
@@ -336,25 +326,25 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
                               <div className="flex items-center gap-1.5">
                                 <FileText className="text-brand h-4 w-4" />
                                 <span className="text-brand font-medium tabular-nums">
-                                  {formatNumber(entry.stats.posts)}
+                                  {formatNumberShort(entry.stats.posts)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <Eye className="text-brand h-4 w-4" />
                                 <span className="text-brand font-medium tabular-nums">
-                                  {formatNumber(entry.stats.views)}
+                                  {formatNumberShort(entry.stats.views)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <ThumbsUp className="text-brand h-4 w-4" />
                                 <span className="text-brand font-medium tabular-nums">
-                                  {formatNumber(entry.stats.likes)}
+                                  {formatNumberShort(entry.stats.likes)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <MessageSquare className="text-brand h-4 w-4" />
                                 <span className="text-brand font-medium tabular-nums">
-                                  {formatNumber(entry.stats.comments)}
+                                  {formatNumberShort(entry.stats.comments)}
                                 </span>
                               </div>
                             </div>
@@ -363,25 +353,25 @@ export function Leaderboard({ className = '', variant = 'compact', limit }: Lead
                               <div className="flex items-center gap-1.5">
                                 <FileText className="text-brand h-4 w-4" />
                                 <span className="text-brand font-medium tabular-nums">
-                                  {formatNumber(entry.stats.posts)}
+                                  {formatNumberShort(entry.stats.posts)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <Eye className="text-brand h-4 w-4" />
                                 <span className="text-brand font-medium tabular-nums">
-                                  {formatNumber(entry.stats.views)}
+                                  {formatNumberShort(entry.stats.views)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <ThumbsUp className="text-brand h-4 w-4" />
                                 <span className="text-brand font-medium tabular-nums">
-                                  {formatNumber(entry.stats.likes)}
+                                  {formatNumberShort(entry.stats.likes)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <MessageSquare className="text-brand h-4 w-4" />
                                 <span className="text-brand font-medium tabular-nums">
-                                  {formatNumber(entry.stats.comments)}
+                                  {formatNumberShort(entry.stats.comments)}
                                 </span>
                               </div>
                             </div>
