@@ -19,9 +19,6 @@ function AdminPageContent() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [totalUsers, setTotalUsers] = useState(0);
 
-  // Create stable reference for user to prevent unnecessary re-renders
-  const stableUser = useMemo(() => user, [user]);
-
   // Handle initial load to prevent scroll jump
   useEffect(() => {
     if (isInitialLoad) {
