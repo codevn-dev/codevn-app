@@ -6,6 +6,33 @@ on:
       - main
     paths-ignore:
       - .github/workflows/**
+      - README.md
+      - .gitignore
+      - .gitattributes
+      - .editorconfig
+      - .vscode/**
+      - .idea/**
+      - '*.md'
+      - docs/**
+      - scripts/**
+      - tsconfig.tsbuildinfo
+      - .eslintcache
+      - node_modules/**
+      - .next/**
+      - .turbo/**
+      - public/uploads/**
+      - .env*
+      - .DS_Store
+      - Thumbs.db
+      - '*.log'
+      - coverage/**
+      - .nyc_output/**
+      - dist/**
+      - build/**
+      - Makefile
+      - .prettier*
+      - .husky/**
+      - .dockerignore
   workflow_dispatch:
 
 jobs:
