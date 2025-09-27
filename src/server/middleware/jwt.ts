@@ -55,8 +55,8 @@ export async function generateTokenPair(
 
       // Store by JTI
       await redisService.storeToken(accessJti, accessRedisPayload, 'access');
-      await redisService.addTokenToUser(payload.id, accessJti);
       await redisService.storeToken(refreshJti, refreshRedisPayload, 'refresh');
+      await redisService.addTokenToUser(payload.id, refreshJti);
     } catch (error) {
       console.error('[JWT] Error storing token data in Redis:', error);
     }
@@ -102,9 +102,9 @@ export async function revokeTokenPair(
       if (accessJti) {
         const payload = await redisService.getToken(accessJti, 'access');
         if (payload) {
-          await redisService.removeTokenFromUser(payload.id, accessJti);
           await redisService.deleteToken(accessJti, 'access');
           if (payload.refreshJti) {
+            await redisService.removeTokenFromUser(payload.id, payload.refreshJti);
             await redisService.deleteToken(payload.refreshJti, 'refresh');
           }
         }
@@ -116,7 +116,14 @@ export async function revokeTokenPair(
       const decoded = jwt.decode(refreshToken, { complete: true }) as any;
       const refreshJti = decoded?.payload?.jti as string | undefined;
       if (refreshJti) {
-        await redisService.deleteToken(refreshJti, 'refresh');
+        const refreshData = await redisService.getToken(refreshJti, 'refresh');
+        if (refreshData) {
+          await redisService.removeTokenFromUser(refreshData.userId, refreshJti);
+          await redisService.deleteToken(refreshJti, 'refresh');
+          if (refreshData.accessJti) {
+            await redisService.deleteToken(refreshData.accessJti, 'access');
+          }
+        }
       }
     }
   }
@@ -178,7 +185,7 @@ export async function getUserFromToken(token: string): Promise<JWTPayload | null
       // Extend TTL for user's tokens set when user is active
 
       // Get sessionMetadata from access token (now stored in both tokens)
-      let sessionMetadata = accessData.sessionMetadata;
+      const sessionMetadata = accessData.sessionMetadata;
       if (sessionMetadata) {
         // Update lastActive time for this session (only in access token)
         sessionMetadata.lastActive = new Date().toISOString();
