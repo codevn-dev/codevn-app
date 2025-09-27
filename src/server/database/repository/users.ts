@@ -19,6 +19,13 @@ export class UserRepository {
     });
   }
 
+  async findByRole(role: UserRole) {
+    return await getDb().query.users.findMany({
+      where: and(eq(users.role, role), isNull(users.deletedAt)),
+      orderBy: [desc(users.createdAt)],
+    });
+  }
+
   async create(userData: {
     email: string;
     name: string;
@@ -122,8 +129,9 @@ export class UserRepository {
     // Build where conditions
     const whereConditions = [];
 
-    // Always filter out deleted users
+    // Always filter out deleted users and system users
     whereConditions.push(isNull(users.deletedAt));
+    whereConditions.push(ne(users.role, 'system'));
 
     // Search condition
     if (search) {

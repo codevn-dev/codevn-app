@@ -133,6 +133,7 @@ export interface ConversationSummary {
   otherUserName: string;
   otherUserEmail: string;
   otherUserAvatar: string | null;
+  otherUserRole: string; // Added to filter system users
   lastMessage: string;
   lastMessageTime: Date;
   lastMessageFromUserId: string;

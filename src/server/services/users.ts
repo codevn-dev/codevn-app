@@ -2,7 +2,7 @@ import { userRepository } from '../database/repository';
 import { maskUserEmail, isAdmin } from '@/lib/utils';
 import { BaseService } from './base';
 import { UserResponse } from '@/types/shared/user';
-import { CommonError } from '@/types/shared';
+import { CommonError, RoleLevel } from '@/types/shared';
 import { calculateUserScore } from '@/lib/utils/score';
 import { createRedisLeaderboardService } from '../redis';
 
@@ -19,6 +19,14 @@ export class UsersService extends BaseService {
       const user = await userRepository.findById(userId);
       if (!user) {
         throw new Error(CommonError.NOT_FOUND);
+      }
+
+      // Prevent viewing system user profiles (except for admins)
+      if (user.role === RoleLevel.system) {
+        const currentUser = await userRepository.findById(currentUserId);
+        if (!currentUser || currentUser.role !== RoleLevel.admin) {
+          throw new Error(CommonError.NOT_FOUND);
+        }
       }
 
       // Get user statistics

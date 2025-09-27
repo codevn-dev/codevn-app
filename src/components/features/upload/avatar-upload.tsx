@@ -24,6 +24,13 @@ interface AvatarUploadProps {
   showUploadButton?: boolean;
   showCompressionSettings?: boolean;
   customCompressionSettings?: CompressionSettings;
+  // System user support
+  isSystemUser?: boolean;
+  systemUserId?: string;
+  currentAvatar?: string;
+  // Upload state callbacks
+  onUploadStart?: () => void;
+  onUploadEnd?: () => void;
 }
 
 export function AvatarUpload({
@@ -32,6 +39,11 @@ export function AvatarUpload({
   showUploadButton = true,
   showCompressionSettings = false,
   customCompressionSettings,
+  isSystemUser = false,
+  systemUserId,
+  currentAvatar,
+  onUploadStart,
+  onUploadEnd,
 }: AvatarUploadProps) {
   const { t } = useI18n();
   const { user, updateUser } = useAuthStore();
@@ -133,6 +145,7 @@ export function AvatarUpload({
   };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.stopPropagation();
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -201,31 +214,50 @@ export function AvatarUpload({
 
   const uploadAvatar = async (file: File) => {
     setIsUploading(true);
+    onUploadStart?.();
 
     try {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const result = await apiUpload<UploadAvatarResponse>('/api/profile/avatar', formData);
+      if (isSystemUser) {
+        // For system users
+        if (systemUserId === 'new') {
+          // For new system users, upload to general upload endpoint
+          const result = await apiUpload<{ imageUrl: string }>('/api/upload/image', formData);
+          onAvatarChange?.(result.imageUrl);
+        } else if (systemUserId) {
+          // For existing system users, upload to system user avatar endpoint
+          const result = await apiUpload<UploadAvatarResponse>(
+            `/api/system-users/${systemUserId}/avatar`,
+            formData
+          );
+          onAvatarChange?.(result.avatar);
+        }
+      } else {
+        // For regular users
+        const result = await apiUpload<UploadAvatarResponse>('/api/profile/avatar', formData);
+        updateUser({ avatar: result.avatar });
+        onAvatarChange?.(result.avatar);
+      }
 
-      updateUser({ avatar: result.avatar });
-      onAvatarChange?.(result.avatar);
       setPreview(null);
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Upload failed');
       setPreview(null);
     } finally {
       setIsUploading(false);
+      onUploadEnd?.();
     }
   };
 
-  const currentAvatar = preview || user?.avatar || null;
+  const displayAvatar = preview || (isSystemUser ? currentAvatar : user?.avatar) || null;
 
   return (
     <div className="flex flex-col items-center space-y-4">
       {/* Crop Interface */}
       {showCrop && preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="w-full max-w-md rounded-lg bg-white p-4">
             <div className="mb-4 flex items-center justify-between">
               <button
@@ -401,11 +433,15 @@ export function AvatarUpload({
         </div>
       )}
 
-      <div className="group relative">
+      <div
+        className="group relative"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <Avatar className={`${sizeClasses[size]} cursor-pointer`}>
-          <AvatarImage src={currentAvatar || undefined} />
+          <AvatarImage src={displayAvatar || undefined} />
           <AvatarFallback className="from-brand to-brand-600 bg-gradient-to-br text-lg font-bold text-white">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
+            {isSystemUser ? 'SU' : user?.name?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
 
@@ -423,7 +459,15 @@ export function AvatarUpload({
 
         {showUploadButton && (
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              fileInputRef.current?.click();
+            }}
             disabled={isUploading || isCompressing || showCrop}
             className={`absolute -right-1 -bottom-1 ${buttonSizeClasses[size]} bg-brand hover:bg-brand-600 flex items-center justify-center rounded-full text-white shadow-lg transition-colors disabled:opacity-50`}
           >
@@ -437,6 +481,7 @@ export function AvatarUpload({
         type="file"
         accept="image/*"
         onChange={handleFileSelect}
+        onClick={(e) => e.stopPropagation()}
         className="hidden"
       />
     </div>

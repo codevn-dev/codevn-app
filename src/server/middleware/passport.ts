@@ -31,6 +31,11 @@ export async function setupPassport(fastify: FastifyInstance) {
             return done(null, false, { message: 'Invalid credentials' });
           }
 
+          // Prevent system users from logging in
+          if (user.role === RoleLevel.system) {
+            return done(null, false, { message: 'System users cannot login' });
+          }
+
           const isPasswordValid = await bcrypt.compare(password, user.password);
           if (!isPasswordValid) {
             return done(null, false, { message: 'Invalid credentials' });
@@ -86,6 +91,11 @@ export async function setupPassport(fastify: FastifyInstance) {
                 avatar: avatar || null,
               });
               user = await userRepository.findByEmail(email);
+            }
+
+            // Prevent system users from logging in via OAuth
+            if (user && user.role === RoleLevel.system) {
+              return done(null, false, { message: 'System users cannot login' });
             }
 
             const authUser: SharedUser = {

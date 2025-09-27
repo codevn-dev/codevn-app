@@ -336,6 +336,53 @@ const store: Dictionary = {
   'admin.parentCategory': { en: 'Parent Category', vi: 'Danh mục cha' },
   'admin.category.noParentRoot': { en: 'No parent (Root Category)', vi: 'Không có (Danh mục gốc)' },
 
+  // System Users
+  'admin.systemUsers': { en: 'System Users', vi: 'Người dùng hệ thống' },
+  'admin.systemUsersManagement': {
+    en: 'System Users Management',
+    vi: 'Quản lý người dùng hệ thống',
+  },
+  'admin.newSystemUser': { en: 'New System User', vi: 'Người dùng hệ thống mới' },
+  'admin.updateSystemUser': { en: 'Update System User', vi: 'Cập nhật người dùng hệ thống' },
+  'admin.systemUser.namePlaceholder': {
+    en: 'Enter system user name',
+    vi: 'Nhập tên người dùng hệ thống',
+  },
+  'admin.systemUser.emailPlaceholder': {
+    en: 'Enter system user email',
+    vi: 'Nhập email người dùng hệ thống',
+  },
+  'admin.systemUser.avatar': { en: 'Avatar', vi: 'Ảnh đại diện' },
+  'admin.systemUser.noUsersYet': {
+    en: 'No system users yet',
+    vi: 'Chưa có người dùng hệ thống nào',
+  },
+  'admin.systemUser.getStarted': {
+    en: 'Get started by creating your first system user',
+    vi: 'Bắt đầu bằng cách tạo người dùng hệ thống đầu tiên',
+  },
+  'admin.systemUser.deleteConfirm': {
+    en: 'Are you sure you want to delete',
+    vi: 'Bạn có chắc chắn muốn xóa',
+  },
+  'admin.systemUser.deleteConfirmSuffix': {
+    en: '? This action cannot be undone.',
+    vi: '? Hành động này không thể hoàn tác.',
+  },
+  'admin.systemUser.deleteError': {
+    en: 'Error deleting system user. Please try again.',
+    vi: 'Lỗi khi xóa người dùng hệ thống. Vui lòng thử lại.',
+  },
+  'admin.systemUser.createError': {
+    en: 'Error creating system user. Please try again.',
+    vi: 'Lỗi khi tạo người dùng hệ thống. Vui lòng thử lại.',
+  },
+  'admin.systemUser.updateError': {
+    en: 'Error updating system user. Please try again.',
+    vi: 'Lỗi khi cập nhật người dùng hệ thống. Vui lòng thử lại.',
+  },
+  'admin.systemUser.deleteTitle': { en: 'Delete System User', vi: 'Xóa người dùng hệ thống' },
+
   // Share
   'share.share': { en: 'Share', vi: 'Chia sẻ' },
   'share.copyLink': { en: 'Copy link', vi: 'Sao chép liên kết' },
@@ -516,12 +563,14 @@ export const useI18nStore = create<I18nState>()(
     (set, get) => ({
       locale: 'vi',
       setLocale: (locale) => {
+        console.log('i18n store setLocale called with:', locale);
         set({ locale });
         // Persist to cookie for SSR consistency
         if (typeof document !== 'undefined') {
           const expireDays = 365;
           const expires = new Date(Date.now() + expireDays * 24 * 60 * 60 * 1000).toUTCString();
           document.cookie = `locale=${locale}; path=/; expires=${expires}`;
+          console.log('Cookie set to:', locale);
         }
       },
       t: (key) => {

@@ -311,6 +311,7 @@ export const messageRepository = {
           name: users.name,
           email: users.email,
           avatar: users.avatar,
+          role: users.role,
         })
         .from(users)
         .where(eq(users.id, conversation.otherUserId))
@@ -328,6 +329,7 @@ export const messageRepository = {
           otherUserName: userDetails[0].name,
           otherUserEmail: userDetails[0].email,
           otherUserAvatar: userDetails[0].avatar,
+          otherUserRole: userDetails[0].role,
         });
       }
     }

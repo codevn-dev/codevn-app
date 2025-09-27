@@ -9,6 +9,7 @@ import { sessionRoutes } from './sessions';
 import { uploadRoutes } from './upload';
 import { userRoutes } from './users';
 import { adminRoutes } from './admin';
+import { systemUserRoutes } from './system-users';
 
 export async function setupRoutes(fastify: FastifyInstance) {
   // Health check
@@ -27,4 +28,5 @@ export async function setupRoutes(fastify: FastifyInstance) {
   await fastify.register(uploadRoutes, { prefix: '/api/upload' });
   await fastify.register(userRoutes, { prefix: '/api/users' });
   await fastify.register(adminRoutes, { prefix: '/api/admin' });
+  await fastify.register(systemUserRoutes, { prefix: '/api/system-users' });
 }

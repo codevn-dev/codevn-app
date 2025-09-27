@@ -9,3 +9,4 @@ export { CategoriesService, categoriesService } from './categories';
 export { ChatService, chatService } from './chat';
 export { ProfileService, profileService } from './profile';
 export { UploadService, uploadService } from './upload';
+export { SystemUsersService, systemUsersService } from './system-users';

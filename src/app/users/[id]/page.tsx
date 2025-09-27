@@ -59,9 +59,15 @@ function UserProfileContent() {
 
         // Use the same API - it will handle role-based masking
         const data = await apiGet<UserResponse>(`/api/users/${userId}`);
+
+        if (data.user.role === 'system') {
+          setError('PROFILE_NOT_FOUND');
+          return;
+        }
+
         setProfile(data.user);
       } catch {
-        setError('Failed to load user profile');
+        setError('PROFILE_NOT_FOUND'); // Use a key instead of direct translation
       } finally {
         setLoading(false);
       }
@@ -75,7 +81,7 @@ function UserProfileContent() {
   };
 
   const handleMessage = () => {
-    if (profile) {
+    if (profile && profile.role !== 'system') {
       handleStartChat(profile.id, profile.name, profile.avatar || undefined);
     }
   };
@@ -97,8 +103,9 @@ function UserProfileContent() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <User className="h-6 w-6 text-red-600" />
             </div>
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">{t('profile.notFound')}</h2>
-            <p className="mb-6 text-gray-600">{error}</p>
+            <h2 className="mb-2 text-xl font-semibold text-gray-900">
+              {error === 'PROFILE_NOT_FOUND' ? t('profile.notFound') : error}
+            </h2>
             <Button onClick={handleBack} variant="back">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('common.back') || 'Back'}
@@ -252,7 +259,7 @@ function UserProfileContent() {
               </div>
             )}
 
-            {!isOwnProfile && (
+            {!isOwnProfile && profile.role !== 'system' && (
               <div className="flex justify-end pt-6">
                 <Button onClick={handleMessage} variant="primary" size="lg">
                   <MessageCircle className="mr-2 h-4 w-4" />

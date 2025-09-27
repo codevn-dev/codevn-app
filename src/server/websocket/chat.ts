@@ -1,9 +1,10 @@
 import { WebSocket } from 'ws';
 import { FastifyRequest } from 'fastify';
-import { messageRepository } from '../database/repository';
+import { messageRepository, userRepository } from '../database/repository';
 import { logger } from '@/lib/utils/logger';
 import { getUserFromToken } from '../middleware/jwt';
 import { BaseWebSocketService, BaseConnection } from './base';
+import { RoleLevel } from '@/types/shared';
 
 interface ChatConnection extends BaseConnection {
   userId: string;
@@ -115,6 +116,16 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
   private async handleChatMessage(connectionId: string, message: ChatMessage) {
     const connection = this.connections.get(connectionId);
     if (!connection || !message.text || !message.toUserId) return;
+
+    // Check if the recipient is a system user
+    const recipientUser = await userRepository.findById(message.toUserId);
+    if (recipientUser && recipientUser.role === RoleLevel.system) {
+      this.sendToConnection(connectionId, {
+        type: 'error',
+        data: { message: 'Cannot send messages to system users' },
+      });
+      return;
+    }
 
     const conversationId = await messageRepository.getConversationId(
       connection.userId,

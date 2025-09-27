@@ -6,7 +6,7 @@ import {
   MessageListResponse,
 } from '@/types/shared/chat';
 import { SuccessResponse } from '@/types/shared/common';
-import { CommonError } from '@/types/shared';
+import { CommonError, RoleLevel } from '@/types/shared';
 
 export class ChatService extends BaseService {
   /**
@@ -17,27 +17,29 @@ export class ChatService extends BaseService {
       const conversations = await messageRepository.getConversations(userId, maxConversations);
 
       const response: ConversationListResponse = {
-        conversations: conversations.map((conv) => {
-          const { otherUserId, otherUserName, otherUserAvatar, lastMessageFromUserId } = conv;
-          return {
-            id: conv.conversationId,
-            peer: {
-              id: otherUserId,
-              name: otherUserName,
-              avatar: otherUserAvatar || undefined,
-            },
-            lastMessage: {
-              id: `${conv.conversationId}:${new Date(conv.lastMessageTime).getTime()}`,
-              content: conv.lastMessage,
-              sender: {
-                id: lastMessageFromUserId,
+        conversations: conversations
+          .filter((conv) => conv.otherUserRole !== RoleLevel.system) // Filter out system users
+          .map((conv) => {
+            const { otherUserId, otherUserName, otherUserAvatar, lastMessageFromUserId } = conv;
+            return {
+              id: conv.conversationId,
+              peer: {
+                id: otherUserId,
+                name: otherUserName,
+                avatar: otherUserAvatar || undefined,
               },
-              createdAt: conv.lastMessageTime,
-              seen: conv.lastMessageSeen,
-            },
-            unreadCount: conv.unreadCount,
-          };
-        }),
+              lastMessage: {
+                id: `${conv.conversationId}:${new Date(conv.lastMessageTime).getTime()}`,
+                content: conv.lastMessage,
+                sender: {
+                  id: lastMessageFromUserId,
+                },
+                createdAt: conv.lastMessageTime,
+                seen: conv.lastMessageSeen,
+              },
+              unreadCount: conv.unreadCount,
+            };
+          }),
         pagination: {
           page: 1,
           limit: conversations.length,

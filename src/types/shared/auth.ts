@@ -92,3 +92,25 @@ export interface RefreshTokenPayload {
   iat?: number;
   exp?: number;
 }
+
+// System user management types
+export interface CreateSystemUserRequest {
+  name: string;
+  email: string; // Email required for system users (for future email features)
+  avatar?: string;
+}
+
+export interface UpdateSystemUserRequest {
+  name?: string;
+  email?: string; // Allow updating email
+  avatar?: string;
+}
+
+export interface SystemUserResponse {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  role: UserRole;
+  createdAt: string;
+}
