@@ -44,6 +44,19 @@ A modern, full-featured forum application built with Next.js 15, TypeScript, and
 - **Direct messaging** between users with typing indicators
 - **Chat window** with message history and emoji support
 - **Online presence** indicators
+- **Unread message indicators** with persistent state management
+- **System user messaging** for notifications and announcements
+
+### 🤖 System User & Worker Jobs
+
+- **System User Management** - Create and manage system users for automated messaging
+- **Redis-backed Worker Queue** - Scalable background job processing system
+- **Bulk Message Broadcasting** - Send messages to multiple users or all users at once
+- **Batch Processing** - Efficient handling of large-scale message distribution
+- **Admin Message Interface** - User-friendly UI for system administrators
+- **Real-time Job Processing** - WebSocket integration for immediate message delivery
+- **Message Persistence** - All system messages stored in database with encryption
+- **Unread State Management** - Server-side tracking of message read status
 
 ### 🏆 Leaderboard System
 
@@ -76,6 +89,10 @@ A modern, full-featured forum application built with Next.js 15, TypeScript, and
 - **Advanced user management** with pagination and search
 - **Role-based email visibility** (admins see full emails)
 - **User profile access** with admin privileges
+- **System User Management** - Create, edit, and delete system users
+- **Bulk Messaging Interface** - Send messages to selected users or all users
+- **Message Broadcasting** - Real-time message delivery with worker queue
+- **User Search & Selection** - Advanced user selection with search and pagination
 
 ### 🔐 Session Management
 
@@ -110,6 +127,7 @@ A modern, full-featured forum application built with Next.js 15, TypeScript, and
 - **Authentication**: Custom JWT with Passport.js (Local + Google OAuth)
 - **Real-time**: WebSocket with Redis pub/sub
 - **Caching**: Redis for sessions, caching, and real-time features
+- **Worker System**: Redis-backed job queue with background processing
 - **File Processing**: Sharp for image optimization, browser-image-compression
 - **Package Manager**: pnpm
 - **Containerization**: Docker Compose with multi-service architecture
@@ -470,6 +488,10 @@ For support, email support@codevn.dev or create an issue in the repository.
 - **Leaderboard System**: Advanced ranking system with multi-timeframe scoring
 - **Content Discovery**: Featured and related articles with intelligent algorithms
 - **Admin Panel**: Comprehensive admin interface with user and content management
+- **System User Management**: Create and manage system users for automated messaging
+- **Worker Job System**: Redis-backed background job processing for scalable messaging
+- **Bulk Message Broadcasting**: Send messages to multiple users or all users at once
+- **Unread Message Management**: Persistent unread state with server-side tracking
 - **Session Management**: Multi-device session tracking with security controls
 - **Docker Setup**: Complete containerization with Nginx reverse proxy
 - **Redis Integration**: Caching, sessions, and real-time features
