@@ -32,6 +32,7 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
     await this.subscriber.subscribe('chat:new_message');
     await this.subscriber.subscribe('chat:typing');
     await this.subscriber.subscribe('chat:messages_seen');
+    await this.subscriber.subscribe('chat:conversations_updated');
     await this.subscriber.subscribe('presence:user_online');
     await this.subscriber.subscribe('presence:user_offline');
 
@@ -61,6 +62,14 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
             this.sendToUser(data.otherUserId, {
               type: 'messages_seen',
               data: { chatId: data.chatId, seenBy: data.seenBy },
+            });
+            break;
+          }
+          case 'chat:conversations_updated': {
+            const data = message.data;
+            this.sendToUser(data.userId, {
+              type: 'conversations_updated',
+              data: { chatId: data.chatId, action: data.action },
             });
             break;
           }
@@ -238,6 +247,22 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
         otherUserId,
       });
     }
+
+    // Notify current user to refresh conversations (to update unread count)
+    this.sendToUser(connection.userId, {
+      type: 'conversations_updated',
+      data: {
+        chatId: message.chatId,
+        action: 'seen',
+      },
+    });
+
+    // Publish to other instances for current user
+    await this.publish('chat:conversations_updated', {
+      userId: connection.userId,
+      chatId: message.chatId,
+      action: 'seen',
+    });
   }
 
   public async addConnection(socket: WebSocket, request: FastifyRequest) {

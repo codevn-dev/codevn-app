@@ -62,7 +62,6 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
     isUserOnline,
     sendMessage: sendWebSocketMessage,
     sendTyping,
-    markAsSeen: markAsSeenWebSocket,
     loadMessages,
     loadMoreMessages: _loadMoreMessages,
     addOnNewMessageCallback,
@@ -107,8 +106,7 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
           const transformedMessages = transformMessages(result.messages);
           setMessages(transformedMessages);
           setHasMoreMessages(result.hasMore || false);
-          // Mark conversation as read when opening chat
-          markConversationAsRead(peer.id);
+          // Messages will be marked as seen by the useEffect when chat window opens
         }
       } catch (error) {
         console.error('Error loading messages:', error);
@@ -124,18 +122,16 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
   useEffect(() => {
     if (!isOpen || !canChat || !peer.id) return;
 
-    const chatId = [user?.id, peer.id].sort().join('|');
-
     // Mark as seen immediately when chat opens
-    markAsSeenWebSocket(chatId);
+    markConversationAsRead(peer.id);
 
     // Mark as seen every 5 seconds while chat is open
     const interval = setInterval(() => {
-      markAsSeenWebSocket(chatId);
+      markConversationAsRead(peer.id);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isOpen, canChat, peer.id, user?.id, markAsSeenWebSocket]);
+  }, [isOpen, canChat, peer.id, markConversationAsRead]);
 
   // Register WebSocket callbacks
   useEffect(() => {

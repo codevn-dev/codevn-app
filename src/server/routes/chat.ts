@@ -53,6 +53,34 @@ export async function chatRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // GET /api/chat/conversation-id - Get conversation ID for a peer
+  fastify.get<{ Querystring: { peerId: string } }>(
+    '/conversation-id',
+    {
+      preHandler: authMiddleware,
+    },
+    async (request: FastifyRequest<{ Querystring: { peerId: string } }>, reply: FastifyReply) => {
+      try {
+        const authRequest = request as AuthenticatedRequest;
+        const { peerId } = request.query;
+
+        if (!peerId) {
+          return reply.status(400).send({ error: CommonError.BAD_REQUEST });
+        }
+
+        const { messageRepository } = await import('../database/repository');
+        const conversationId = await messageRepository.getConversationId(
+          authRequest.user!.id,
+          peerId
+        );
+
+        return reply.send({ conversationId });
+      } catch {
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+      }
+    }
+  );
+
   // POST /api/chat/hide - Hide conversation
   fastify.post<{ Body: HideConversationRequest }>(
     '/hide',

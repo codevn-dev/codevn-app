@@ -22,7 +22,7 @@ export class RedisJobQueue implements JobQueue {
     return 'default';
   }
 
-  async add(jobName: string, data: JobData, options: JobOptions = {}): Promise<Job> {
+  async enqueue(jobName: string, data: JobData, options: JobOptions = {}): Promise<Job> {
     const job: Job = {
       id: uuidv4(),
       name: jobName,
@@ -43,37 +43,29 @@ export class RedisJobQueue implements JobQueue {
       maxAttempts: options.attempts || 3,
     };
 
-    // Store job data
-    await this.redis.hset(`job:${job.id}`, {
-      id: job.id,
-      name: job.name,
-      data: JSON.stringify(job.data),
-      options: JSON.stringify(job.options),
-      status: job.status,
-      progress: job.progress.toString(),
-      createdAt: job.createdAt.toISOString(),
-      attempts: job.attempts.toString(),
-      maxAttempts: job.maxAttempts.toString(),
-    });
-
-    // Add to appropriate queue based on delay
-    if (options.delay && options.delay > 0) {
-      // Delayed job
-      await this.redis.zadd('delayed_jobs', Date.now() + options.delay, job.id);
-      logger.info(`Added delayed job ${job.id} (${jobName})`, { delay: options.delay });
-    } else {
-      // Immediate job - add to priority queue
-      const priority = options.priority || JobPriority.NORMAL;
-      await this.redis.zadd('job_queue', priority, job.id);
-      logger.info(`Added job ${job.id} (${jobName})`, { priority });
-    }
+    // Store job data and add to queue
+    await Promise.all([
+      this.redis.hset(`job:${job.id}`, {
+        id: job.id,
+        name: job.name,
+        data: JSON.stringify(job.data),
+        options: JSON.stringify(job.options),
+        status: job.status,
+        progress: job.progress.toString(),
+        createdAt: job.createdAt.toISOString(),
+        attempts: job.attempts.toString(),
+        maxAttempts: job.maxAttempts.toString(),
+      }),
+      options.delay && options.delay > 0
+        ? this.redis.zadd('delayed_jobs', Date.now() + options.delay, job.id)
+        : this.redis.zadd('job_queue', options.priority || JobPriority.NORMAL, job.id),
+    ]);
 
     return job;
   }
 
   process(processor: JobProcessor): void {
     this.processors.set(processor.name, processor);
-    logger.info(`Registered processor: ${processor.name}`);
   }
 
   private async processNextJob(): Promise<void> {
@@ -97,7 +89,6 @@ export class RedisJobQueue implements JobQueue {
       }
 
       const jobId = jobIds[0];
-      logger.info(`Processing job ${jobId} from queue`);
 
       await this.redis.zrem('job_queue', jobId); // Remove from queue
 
@@ -437,6 +428,6 @@ export class RedisJobQueue implements JobQueue {
 
 export function createJobQueue(redis: Redis): JobQueue {
   const queue = new RedisJobQueue(redis);
-  queue.resume(); // Start processing immediately
+  // Don't start processing automatically - let worker service handle it
   return queue;
 }

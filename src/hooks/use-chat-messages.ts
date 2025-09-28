@@ -39,6 +39,7 @@ interface WebSocketMessage {
     | 'message_sent'
     | 'typing'
     | 'messages_seen'
+    | 'conversations_updated'
     | 'error'
     | 'online_users'
     | 'user_online'
@@ -87,7 +88,6 @@ export function useChatMessages({
   chatWindowOpenRef.current = chatWindowOpen;
   conversationsRef.current = conversations;
 
-  // Function to fetch user details by ID
   const fetchUserDetails = useCallback(async (userId: string) => {
     try {
       const response = await apiGet<{ user: { id: string; name: string; avatar?: string } }>(
@@ -100,13 +100,41 @@ export function useChatMessages({
     }
   }, []);
 
+  const markConversationAsRead = useCallback(
+    async (peerId: string, chatId?: string) => {
+      // Update UI state immediately for better UX
+      setConversations((prev) =>
+        prev.map((conv) => (conv.peer?.id === peerId ? { ...conv, unreadCount: 0 } : conv))
+      );
+
+      // Get conversationId from database if chatId not provided
+      let conversationId = chatId;
+      if (!conversationId && user?.id) {
+        try {
+          const response = await apiGet<{ conversationId: string }>(
+            `/api/chat/conversation-id?peerId=${peerId}`
+          );
+          conversationId = response.conversationId;
+        } catch (error) {
+          console.error('Error getting conversation ID:', error);
+          return;
+        }
+      }
+
+      // Send seen message to server if conversationId available
+      if (conversationId && wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'seen', chatId: conversationId }));
+      }
+    },
+    [user?.id]
+  );
+
   const fetchConversations = useCallback(async () => {
     if (isFetchingConversationsRef.current) return;
     isFetchingConversationsRef.current = true;
     try {
       const data = await apiGet<ChatConversationsResponse>('/api/chat/conversations');
       const normalized = (data.conversations || []).map((conv: any) => {
-        // Normalize server response to the shape used by UI
         const last = conv.lastMessage || {};
         return {
           id: conv.id,
@@ -127,6 +155,7 @@ export function useChatMessages({
           unreadCount: conv.unreadCount || 0,
         } as Conversation;
       });
+
       setConversations(normalized);
       conversationsLoadedRef.current = true;
     } catch (error) {
@@ -168,7 +197,8 @@ export function useChatMessages({
 
             // Show notification if not from current user AND not currently chatting with sender
             const isFromCurrentUser = uiMessage.from === currentUser?.id;
-            const isCurrentlyChattingWithSender = currentPeerId === uiMessage.from;
+            const isCurrentlyChattingWithSender =
+              currentPeerId === uiMessage.from && chatWindowOpenRef.current;
 
             const shouldShowNotification = !isFromCurrentUser && !isCurrentlyChattingWithSender;
 
@@ -180,11 +210,12 @@ export function useChatMessages({
 
               // If conversation not found, fetch user info from API
               let senderName = conversation?.peer?.name;
+              let senderAvatar = conversation?.peer?.avatar;
               if (!senderName) {
                 try {
                   const userData = await apiGet<UserResponse>(`/api/users/${uiMessage.from}`);
                   senderName = userData?.user?.name;
-                  console.log(uiMessage.from);
+                  senderAvatar = userData?.user?.avatar;
                   await apiPost<HideConversationRequest>('/api/chat/hide', {
                     conversationId: uiMessage.from,
                     hide: false,
@@ -202,17 +233,19 @@ export function useChatMessages({
                   uiMessage.text.length > 50
                     ? `${uiMessage.text.substring(0, 50)}...`
                     : uiMessage.text,
+                avatar: senderAvatar,
                 duration: 6000,
                 action: {
                   onClick: () => {
-                    // Use conversation if available, otherwise use message sender info
                     const peerId = conversation?.peer?.id || uiMessage.from;
                     const peerName = conversation?.peer?.name || senderName || 'User';
                     const peerAvatar = conversation?.peer?.avatar;
 
+                    // Mark as seen and open chat
+                    setTimeout(() => markConversationAsRead(peerId), 100);
                     handleStartChat(peerId, peerName, peerAvatar);
 
-                    // Auto close notification when clicked
+                    // Close notification
                     setTimeout(() => {
                       const { removeNotification } = useUIStore.getState();
                       removeNotification(notificationId);
@@ -234,7 +267,8 @@ export function useChatMessages({
               if (conversationIndex >= 0) {
                 // Update existing conversation
                 const isFromCurrentUser = uiMessage.from === currentUser?.id;
-                const isCurrentlyChattingWithSender = currentPeerId === uiMessage.from;
+                const isCurrentlyChattingWithSender =
+                  currentPeerId === uiMessage.from && chatWindowOpenRef.current;
                 const currentUnreadCount = updatedConversations[conversationIndex].unreadCount || 0;
 
                 updatedConversations[conversationIndex] = {
@@ -252,7 +286,8 @@ export function useChatMessages({
               } else {
                 // Create new conversation if not exists - will fetch user details separately
                 const isFromCurrentUser = uiMessage.from === currentUser?.id;
-                const isCurrentlyChattingWithSender = currentPeerId === uiMessage.from;
+                const isCurrentlyChattingWithSender =
+                  currentPeerId === uiMessage.from && chatWindowOpenRef.current;
 
                 const newConversation = {
                   id: `conv_${uiMessage.from}`,
@@ -401,6 +436,13 @@ export function useChatMessages({
           }
           break;
 
+        case 'conversations_updated':
+          if (message.data?.action === 'seen') {
+            // Refresh conversations to update unread count
+            fetchConversations();
+          }
+          break;
+
         // Presence updates (if server emits)
         case 'online_users': {
           const ids = (message.data?.onlineUsers || []) as string[];
@@ -425,7 +467,9 @@ export function useChatMessages({
         }
 
         case 'error':
-          console.error('WebSocket error:', message.data);
+          if (message.data) {
+            console.error('WebSocket error:', message.data);
+          }
           break;
       }
     },
@@ -433,6 +477,7 @@ export function useChatMessages({
       addNotification,
       fetchConversations,
       handleStartChat,
+      markConversationAsRead,
       onMessagesSeen,
       onNewMessage,
       onTyping,
@@ -593,17 +638,6 @@ export function useChatMessages({
     }
   }, []);
 
-  const markAsSeen = useCallback((chatId: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          type: 'seen',
-          chatId,
-        })
-      );
-    }
-  }, []);
-
   // Removed HTTP polling for online users; rely on WebSocket presence events
 
   const isUserOnline = useCallback(
@@ -660,21 +694,12 @@ export function useChatMessages({
 
   // No polling; presence updates come via WebSocket events only
 
-  const markConversationAsRead = useCallback((peerId: string) => {
-    setConversations((prevConversations) =>
-      prevConversations.map((conv) =>
-        conv.peer?.id === peerId ? { ...conv, unreadCount: 0 } : conv
-      )
-    );
-  }, []);
-
   return {
     isConnected,
     conversations,
     onlineUsers,
     sendMessage,
     sendTyping,
-    markAsSeen,
     isUserOnline,
     fetchConversations,
     loadMessages,

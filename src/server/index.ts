@@ -45,16 +45,6 @@ async function buildServer() {
     logger.warn('Failed to preload country cache', { error });
   }
 
-  // Start worker service
-  try {
-    logger.info('🔄 Starting worker service...');
-    await startWorkerService();
-    logger.info('✅ Worker service started successfully');
-  } catch (error) {
-    logger.error('❌ Failed to start worker service', undefined, error as Error);
-    throw error; // Re-throw to see the error
-  }
-
   // Setup passport authentication
   await setupPassport(fastify);
 
@@ -81,19 +71,27 @@ async function buildServer() {
 
 async function start() {
   try {
-    const fastify = await buildServer();
+    const isWorkerMode = process.env.WORKER === 'true';
 
-    const port = parseInt(process.env.PORT || '3001', 10);
-    const host = process.env.HOST || '0.0.0.0';
+    if (isWorkerMode) {
+      // Worker-only mode
+      await startWorkerService();
+      logger.info('🚀 Worker service started successfully');
+    } else {
+      // API server mode
+      const fastify = await buildServer();
 
-    await fastify.listen({ port, host });
-    logger.info(`🚀 Fastify server running on http://${host}:${port}`);
+      const port = parseInt(process.env.PORT || '3001', 10);
+      const host = process.env.HOST || '0.0.0.0';
+
+      await fastify.listen({ port, host });
+      logger.info(`🚀 Fastify server running on http://${host}:${port}`);
+    }
 
     // Graceful shutdown
     const shutdown = async () => {
-      logger.info('Shutting down server...');
+      logger.info('Shutting down...');
 
-      // Stop worker service
       try {
         await stopWorkerService();
         logger.info('Worker service stopped');
@@ -101,14 +99,13 @@ async function start() {
         logger.error('Error stopping worker service', undefined, error as Error);
       }
 
-      await fastify.close();
       process.exit(0);
     };
 
     process.on('SIGINT', shutdown);
     process.on('SIGTERM', shutdown);
   } catch (err) {
-    logger.error('Server startup error', undefined, err as Error);
+    logger.error('Startup error', undefined, err as Error);
     process.exit(1);
   }
 }

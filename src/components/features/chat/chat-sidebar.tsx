@@ -43,6 +43,7 @@ export function ChatSidebar({
     onlineUsers,
     fetchConversations,
     addOnNewMessageCallback,
+    markConversationAsRead,
   } = useWebSocket();
 
   // Use hide conversation hook
@@ -345,6 +346,8 @@ export function ChatSidebar({
                       conversation.peer.name,
                       conversation.peer.avatar
                     );
+                    // Mark conversation as read when clicking on it
+                    markConversationAsRead(conversation.peer.id);
                     // Don't close sidebar when starting a chat - let the floating chat button handle it
                   }}
                 >

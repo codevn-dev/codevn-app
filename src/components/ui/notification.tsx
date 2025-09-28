@@ -3,6 +3,7 @@
 import { X } from 'lucide-react';
 import { Card, CardBody } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUIStore } from '@/stores/ui-store';
 
 const colorMap = {
@@ -32,6 +33,20 @@ export function Notification() {
           >
             <CardBody className="p-3">
               <div className="flex items-center">
+                {notification.avatar ? (
+                  <Avatar className="mr-3 h-8 w-8 flex-shrink-0">
+                    <AvatarImage src={notification.avatar} alt={notification.title} />
+                    <AvatarFallback className="text-xs font-bold">
+                      {notification.title?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="mr-3 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-200">
+                    <span className="text-xs font-bold text-gray-600">
+                      {notification.title?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <h4 className="truncate text-sm font-medium">{notification.title}</h4>
                   <p className="truncate text-xs text-gray-600">{notification.message}</p>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useChat } from './chat-context';
+import { useWebSocket } from './websocket-context';
 import { ChatSidebar, ChatWindow } from './index';
 
 export function FloatingChatButton() {
@@ -18,8 +19,12 @@ export function FloatingChatButton() {
     setChatSidebarOpen,
     peer,
   } = useChat();
+  const { conversations } = useWebSocket();
   const [wasChatWindowOpen, setWasChatWindowOpen] = useState(false);
   const [closingViaFloatingButton, setClosingViaFloatingButton] = useState(false);
+
+  // Check if there are any unread messages
+  const hasUnreadMessages = conversations.some((conv) => (conv.unreadCount || 0) > 0);
 
   // Simple handleStartChat - just start chat, don't touch sidebar
   const handleStartChatSimple = (userId: string, userName: string, userAvatar?: string) => {
@@ -55,26 +60,33 @@ export function FloatingChatButton() {
     <>
       {/* Floating Chat Button */}
       <div className="fixed right-6 bottom-6 z-50">
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (chatWindowOpen) {
-              // If chat window is open, close it but keep sidebar open
-              setClosingViaFloatingButton(true);
-              setChatWindowOpen(false);
-            } else if (chatSidebarOpen) {
-              // If sidebar is open, close it
-              setChatSidebarOpen(false);
-            } else {
-              // If both are closed, open sidebar
-              setChatSidebarOpen(true);
-            }
-          }}
-          className="bg-brand hover:bg-brand-600 h-14 w-14 rounded-full p-0 shadow-lg transition-all duration-200 hover:shadow-xl"
-          size="lg"
-        >
-          <MessageCircle className="h-6 w-6 text-white" />
-        </Button>
+        <div className="relative">
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (chatWindowOpen) {
+                // If chat window is open, close it but keep sidebar open
+                setClosingViaFloatingButton(true);
+                setChatWindowOpen(false);
+              } else if (chatSidebarOpen) {
+                // If sidebar is open, close it
+                setChatSidebarOpen(false);
+              } else {
+                // If both are closed, open sidebar
+                setChatSidebarOpen(true);
+              }
+            }}
+            className="bg-brand hover:bg-brand-600 h-14 w-14 rounded-full p-0 shadow-lg transition-all duration-200 hover:shadow-xl"
+            size="lg"
+          >
+            <MessageCircle className="h-6 w-6 text-white" />
+          </Button>
+
+          {/* Unread indicator */}
+          {hasUnreadMessages && (
+            <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full border-2 border-white bg-[#B8956A]" />
+          )}
+        </div>
       </div>
 
       {/* Chat Sidebar */}

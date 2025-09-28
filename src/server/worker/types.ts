@@ -84,7 +84,7 @@ export interface JobProcessor<T = JobData> {
 
 export interface JobQueue {
   name: string;
-  add: (jobName: string, data: JobData, options?: JobOptions) => Promise<Job>;
+  enqueue: (jobName: string, data: JobData, options?: JobOptions) => Promise<Job>;
   process: (processor: JobProcessor<any>) => void;
   close: () => Promise<void>;
   getJob: (jobId: string) => Promise<Job | null>;

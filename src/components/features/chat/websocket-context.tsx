@@ -10,7 +10,6 @@ interface WebSocketContextType {
   onlineUsers: string[];
   sendMessage: (toUserId: string, text: string) => void;
   sendTyping: (toUserId: string, isTyping: boolean) => void;
-  markAsSeen: (chatId: string) => void;
   isUserOnline: (userId: string) => boolean;
   fetchConversations: () => Promise<void>;
   loadMessages: (
@@ -23,7 +22,7 @@ interface WebSocketContextType {
     before: number,
     limit?: number
   ) => Promise<{ messages: any[]; hasMore: boolean }>;
-  markConversationAsRead: (peerId: string) => void;
+  markConversationAsRead: (peerId: string, chatId?: string) => void;
   // Callback management
   onNewMessageCallbacks: Set<(message: UiMessage) => void>;
   onTypingCallbacks: Set<(fromUserId: string, isTyping: boolean) => void>;

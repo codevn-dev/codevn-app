@@ -109,7 +109,7 @@ export class DefaultJobScheduler implements JobScheduler {
       if (now >= job.nextRun) {
         try {
           // Add job to queue
-          await this.jobQueue.add(job.name, job.data, job.options);
+          await this.jobQueue.enqueue(job.name, job.data, job.options);
 
           // Update last run and calculate next run
           job.lastRun = now;

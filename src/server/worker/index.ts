@@ -49,20 +49,19 @@ export class WorkerService {
     }
 
     try {
-      logger.info('🔄 Starting worker manager...');
       // Start worker manager
       await this.workerManager.start();
 
-      logger.info('🔄 Starting job scheduler...');
       // Start job scheduler
       await this.jobScheduler.start();
 
-      logger.info('🔄 Registering processors...');
       // Register default processors
       this.registerDefaultProcessors();
 
+      // Start processing jobs
+      await this.jobQueue.resume();
+
       this.isRunning = true;
-      logger.info('🚀 Worker service started successfully');
     } catch (error) {
       logger.error('Failed to start worker service', undefined, error as Error);
       throw error;
@@ -95,9 +94,9 @@ export class WorkerService {
     }
   }
 
-  // Public methods for adding jobs
-  async addJob(name: string, data: any, options?: any): Promise<any> {
-    return this.jobQueue.add(name, data, options);
+  // Public methods for enqueueing jobs
+  async enqueue(name: string, data: any, options?: any): Promise<any> {
+    return this.jobQueue.enqueue(name, data, options);
   }
 
   async getJobStats(): Promise<any> {

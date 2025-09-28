@@ -16,6 +16,7 @@ interface UIState {
     type: 'success' | 'error' | 'info' | 'warning';
     title: string;
     message: string;
+    avatar?: string;
     duration?: number;
     action?: {
       label?: string;

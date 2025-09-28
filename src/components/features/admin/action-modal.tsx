@@ -158,6 +158,8 @@ export function ActionModal({ systemUser, onClose }: ActionModalProps) {
       setSendError('Please enter a message.');
       return;
     }
+
+    // Clear previous messages and start sending
     setSending(true);
     setSendError(null);
     setSendSuccess(null);
@@ -188,7 +190,7 @@ export function ActionModal({ systemUser, onClose }: ActionModalProps) {
         t('admin.systemUser.messageSentSuccess').replace('{count}', String(recipientCount))
       );
 
-      // Reset form for next send
+      // Reset form for next send (but keep success message)
       setSendText('');
       setSelectedUserIds([]);
       setSelectedUsers([]);
@@ -219,11 +221,7 @@ export function ActionModal({ systemUser, onClose }: ActionModalProps) {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="text-lg font-semibold">{t('common.action')}</h2>
-              <p className="text-sm text-gray-500">
-                {t('common.as')}{' '}
-                <span className="font-medium text-gray-900">{systemUser.name}</span>
-              </p>
+              <h2 className="text-lg font-semibold">{systemUser.name}</h2>
             </div>
           </div>
         </div>
@@ -337,9 +335,7 @@ export function ActionModal({ systemUser, onClose }: ActionModalProps) {
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={
-                    sending || !!sendSuccess || (!selectAllUsers && selectedUserIds.length === 0)
-                  }
+                  disabled={sending || (!selectAllUsers && selectedUserIds.length === 0)}
                 >
                   {sending ? (
                     <>

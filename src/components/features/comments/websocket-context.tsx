@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode, useState, useCallback } from 'react';
-import { useCommentWebSocket } from '../../../hooks/use-comment-websocket';
+import { useCommentWebSocket } from '../../../hooks/use-comment';
 import { Comment } from '@/types/shared';
 
 interface CommentWebSocketContextType {

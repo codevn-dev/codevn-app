@@ -47,6 +47,29 @@ services:
       retries: 3
       start_period: 5s
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    container_name: codevn-worker
+    command: ['pnpm', 'worker']
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://worker:3001/api/health']
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 5s
+
   migrate:
     build:
       context: .

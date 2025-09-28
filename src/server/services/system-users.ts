@@ -235,7 +235,7 @@ export class SystemUsersService extends BaseService {
     try {
       // Get worker service and enqueue single bulk job
       const worker = getWorkerService();
-      const job = await worker.addJob(JOB_NAMES.SYSTEM_SEND_MESSAGE, {
+      const job = await worker.enqueue(JOB_NAMES.SYSTEM_SEND_MESSAGE, {
         systemUserId,
         toUserIds: isSendAll ? [] : toUserIds,
         text,

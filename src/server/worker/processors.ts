@@ -29,6 +29,8 @@ export const systemSendMessageProcessor = {
     let enqueued = 0;
     const batchSize = 100; // each small job handles ~100 users
 
+    const worker = getWorkerService();
+
     if (isSendAll) {
       // Fan-out by paging through users and enqueue batch jobs
       let page = 1;
@@ -43,18 +45,15 @@ export const systemSendMessageProcessor = {
           limit: batchSize,
         });
 
-        if (!users || users.length === 0) {
+        if (!users?.length) {
           hasMore = false;
           break;
         }
 
-        // Filter out system users
+        // Filter out system users and enqueue batch job
         const nonSystemUsers = users.filter((u) => (u as any).role !== 'system');
-
         if (nonSystemUsers.length > 0) {
-          // Enqueue one batch job for this group of users
-          const worker = getWorkerService();
-          await worker.addJob(JOB_NAMES.SYSTEM_SEND_BATCH_MESSAGE, {
+          await worker.enqueue(JOB_NAMES.SYSTEM_SEND_BATCH_MESSAGE, {
             systemUserId,
             toUserIds: nonSystemUsers.map((u) => u.id),
             text,
@@ -66,11 +65,10 @@ export const systemSendMessageProcessor = {
         page++;
       }
     } else {
-      // Specific recipients: split into batches of 100
+      // Specific recipients: split into batches
       for (let i = 0; i < (toUserIds?.length || 0); i += batchSize) {
         const batch = toUserIds?.slice(i, i + batchSize) || [];
-        const worker = getWorkerService();
-        await worker.addJob(JOB_NAMES.SYSTEM_SEND_BATCH_MESSAGE, {
+        await worker.enqueue(JOB_NAMES.SYSTEM_SEND_BATCH_MESSAGE, {
           systemUserId,
           toUserIds: batch,
           text,
@@ -79,7 +77,6 @@ export const systemSendMessageProcessor = {
       }
     }
 
-    logger.info(`Enqueued ${enqueued} batch jobs for system user ${systemUserId}`);
     return { enqueued };
   },
 };
