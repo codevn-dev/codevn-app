@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Category } from '@/stores';
+import { useI18n } from '@/components/providers';
 
 interface CategorySelectorProps {
   categories: Category[];
@@ -22,6 +23,7 @@ export function CategorySelector({
   selectedCategoryIds,
   onCategoryToggle,
 }: CategorySelectorProps) {
+  const { t } = useI18n();
   const [_expandedCategoryId, _setExpandedCategoryId] = useState<string | null>(null);
 
   const isSelected = (id: string) => selectedCategoryIds.includes(id);
@@ -156,8 +158,8 @@ export function CategorySelector({
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 p-4">
               <Hash className="h-8 w-8 text-gray-400" />
             </div>
-            <p className="mb-2 text-lg font-semibold">No topics available</p>
-            <p className="text-sm text-gray-400">Topics will appear here once they are created.</p>
+            <p className="mb-2 text-lg font-semibold">{t('home.noTopicsAvailable')}</p>
+            <p className="text-sm text-gray-400">{t('home.topicsWillAppearHere')}</p>
           </div>
         </div>
       )}

@@ -635,6 +635,42 @@ const store: Dictionary = {
     en: 'Get started by creating your first system user.',
     vi: 'Bắt đầu bằng cách tạo người dùng hệ thống đầu tiên.',
   },
+
+  // Homepage empty states
+  'home.noTopicsAvailable': {
+    en: 'No topics available',
+    vi: 'Chưa có chủ đề nào',
+  },
+  'home.topicsWillAppearHere': {
+    en: 'Topics will appear here once they are created.',
+    vi: 'Các chủ đề sẽ xuất hiện ở đây sau khi được tạo.',
+  },
+  'home.noArticlesFound': {
+    en: 'No articles found',
+    vi: 'Không tìm thấy bài viết nào',
+  },
+  'home.beFirstToShare': {
+    en: 'Be the first to share your knowledge with the community!',
+    vi: 'Hãy là người đầu tiên chia sẻ kiến thức với cộng đồng!',
+  },
+  'home.exploreTopics': {
+    en: 'Explore Topics',
+    vi: 'Khám phá chủ đề',
+  },
+
+  // My Articles page
+  'myArticles.noArticlesFound': {
+    en: 'No articles found',
+    vi: 'Không tìm thấy bài viết nào',
+  },
+  'myArticles.startSharingKnowledge': {
+    en: 'Start sharing your knowledge by creating your first article',
+    vi: 'Bắt đầu chia sẻ kiến thức bằng cách tạo bài viết đầu tiên của bạn',
+  },
+  'myArticles.newArticle': {
+    en: 'New Article',
+    vi: 'Bài viết mới',
+  },
 };
 
 export const useI18nStore = create<I18nState>()(

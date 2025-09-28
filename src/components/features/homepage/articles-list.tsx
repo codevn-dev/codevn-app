@@ -211,15 +211,15 @@ export function ArticlesList({
             <BookOpen className="text-brand h-8 w-8 sm:h-10 sm:w-10" />
           </div>
           <h3 className="mb-2 text-xl font-bold text-gray-900 sm:mb-3 sm:text-2xl">
-            No articles found
+            {t('home.noArticlesFound')}
           </h3>
           <p className="mx-auto mb-6 max-w-md text-base text-gray-700 sm:mb-8 sm:text-lg">
             {selectedCategoryNames.length > 0
               ? "Try adjusting your filter criteria to find what you're looking for."
-              : 'Be the first to share your knowledge with the community!'}
+              : t('home.beFirstToShare')}
           </p>
           <Button size="sm" variant="back" onClick={onClearFilters}>
-            {selectedCategoryNames.length > 0 ? 'Clear Filters' : 'Explore Topics'}
+            {selectedCategoryNames.length > 0 ? 'Clear Filters' : t('home.exploreTopics')}
           </Button>
         </div>
       )}

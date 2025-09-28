@@ -93,15 +93,11 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Users className="text-primary h-6 w-6" />
-          <h1 className="text-2xl font-bold text-gray-900">{t('admin.systemUsers.title')}</h1>
-        </div>
-        <Button onClick={handleCreateSystemUser} variant="primary">
-          <Plus className="mr-2 h-4 w-4" />
+    <div className="mt-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-lg font-semibold sm:text-xl">{t('admin.systemUsers.title')}</h2>
+        <Button className="w-full sm:w-auto" onClick={handleCreateSystemUser}>
+          <Plus className="mr-1 h-4 w-4" />
           {t('admin.systemUsers.create')}
         </Button>
       </div>
@@ -115,24 +111,23 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
         />
       )}
 
-      {/* System Users List */}
-      {systemUsers.length === 0 ? (
-        <div className="py-12 text-center">
-          <Users className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
-            {t('admin.systemUsers.noUsers')}
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">{t('admin.systemUsers.noUsersDescription')}</p>
-          <div className="mt-6">
-            <Button onClick={handleCreateSystemUser} variant="primary">
-              <Plus className="mr-2 h-4 w-4" />
+      <div className="grid gap-4 sm:gap-6">
+        {systemUsers.length === 0 ? (
+          <div className="py-12 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+              <Users className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="mb-2 text-lg font-medium text-gray-900">
+              {t('admin.systemUsers.noUsers')}
+            </h3>
+            <p className="mb-4 text-gray-500">{t('admin.systemUsers.noUsersDescription')}</p>
+            <Button onClick={handleCreateSystemUser}>
+              <Plus className="mr-1 h-4 w-4" />
               {t('admin.systemUsers.create')}
             </Button>
           </div>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {systemUsers.map((systemUser) => (
+        ) : (
+          systemUsers.map((systemUser) => (
             <SystemUserCard
               key={systemUser.id}
               systemUser={systemUser}
@@ -140,9 +135,9 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
               onDelete={setShowDeleteSystemUserConfirm}
               onAction={setShowActionModal}
             />
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
       {/* Action Modal */}
       {showActionModal && (

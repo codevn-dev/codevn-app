@@ -551,13 +551,13 @@ function ArticlesContent() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
                   <FileText className="h-8 w-8 text-gray-600" />
                 </div>
-                <h3 className="mb-2 text-lg font-medium text-gray-900">No articles found</h3>
-                <p className="mb-4 text-gray-700">
-                  Start sharing your knowledge by creating your first article
-                </p>
+                <h3 className="mb-2 text-lg font-medium text-gray-900">
+                  {t('myArticles.noArticlesFound')}
+                </h3>
+                <p className="mb-4 text-gray-700">{t('myArticles.startSharingKnowledge')}</p>
                 <Button onClick={() => setShowArticleForm(true)}>
                   <Plus className="mr-1 h-4 w-4" />
-                  New Article
+                  {t('myArticles.newArticle')}
                 </Button>
               </div>
             ) : (
