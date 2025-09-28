@@ -76,6 +76,51 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Generate .env file
+        run: |
+          cat > .env << EOF
+
+          # Application Configuration
+          NODE_ENV=production
+
+          # Site Url
+          NEXT_PUBLIC_SITE_NAME={{ vars.NEXT_PUBLIC_SITE_NAME }}
+
+          # API Url
+          API_URL=${{ vars.API_URL }}
+          APP_URL=${{ vars.APP_URL }}
+          NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+
+          # Auth
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_ACCESS_TOKEN_EXPIRES_IN=${{ secrets.JWT_ACCESS_TOKEN_EXPIRES_IN }}
+          JWT_REFRESH_TOKEN_EXPIRES_IN=${{ secrets.JWT_REFRESH_TOKEN_EXPIRES_IN }}
+
+          # Chat
+          CHAT_ENCRYPTION_KEY=${{ secrets.CHAT_ENCRYPTION_KEY }}
+          CHAT_ENCRYPTION_SALT=${{ secrets.CHAT_ENCRYPTION_SALT }}
+
+          # Postgres
+          POSTGRES_HOST=${{ vars.POSTGRES_HOST }}
+          POSTGRES_DB=${{ vars.POSTGRES_DB }}
+          POSTGRES_USER=${{ vars.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PORT=${{ vars.POSTGRES_PORT }}
+          POSTGRES_SSL=${{ vars.POSTGRES_SSL }}
+          PGADMIN_DEFAULT_EMAIL=${{ vars.PGADMIN_DEFAULT_EMAIL }}
+          PGADMIN_DEFAULT_PASSWORD=${{ secrets.PGADMIN_DEFAULT_PASSWORD }}
+
+          # Redis
+          REDIS_HOST=${{ vars.REDIS_HOST }}
+          REDIS_PORT=${{ vars.REDIS_PORT }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          REDIS_DB=${{ vars.REDIS_DB }}
+
+          # Google Credentials
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          EOF
+
       - name: Build and push web image
         uses: docker/build-push-action@v5
         with:
@@ -97,6 +142,15 @@ jobs:
           tags: codevn/codevn:api
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: '.env,docker-compose.yml,nginx.conf'
+          target: '/data/codevn/'
 
       - name: Release over SSH
         uses: appleboy/ssh-action@v1.2.2
