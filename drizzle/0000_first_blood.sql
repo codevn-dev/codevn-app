@@ -4,7 +4,7 @@
 
 -- Create enums
 CREATE TYPE "public"."reaction_type" AS ENUM('like', 'unlike');
-CREATE TYPE "public"."user_role" AS ENUM('user', 'admin');
+CREATE TYPE "public"."user_role" AS ENUM('member', 'admin', 'system');
 
 -- =============================================
 -- CORE TABLES
@@ -17,7 +17,7 @@ CREATE TABLE "users" (
 	"name" text NOT NULL,
 	"password" text NOT NULL,
 	"avatar" text,
-	"role" "user_role" DEFAULT 'user' NOT NULL,
+	"role" "user_role" DEFAULT 'member' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp,
 	"deleted_at" timestamp,

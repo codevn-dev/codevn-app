@@ -614,6 +614,10 @@ const store: Dictionary = {
     en: 'No users found',
     vi: 'Không tìm thấy người dùng',
   },
+  'common.usersWillAppearHere': {
+    en: 'Users will appear here once they register',
+    vi: 'Người dùng sẽ xuất hiện ở đây sau khi đăng ký',
+  },
   'admin.systemUsers.title': {
     en: 'System Users',
     vi: 'Người dùng hệ thống',

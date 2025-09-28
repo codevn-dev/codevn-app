@@ -1,9 +1,7 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: web
+    image: codevn/codevn:web
+    pull_policy: always
     container_name: codevn-web
     env_file: .env
     ports:
@@ -24,10 +22,8 @@ services:
       start_period: 5s
 
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: api
+    image: codevn/codevn:api
+    pull_policy: always
     container_name: codevn-api
     ports:
       - '3001:3001'
@@ -48,10 +44,8 @@ services:
       start_period: 5s
 
   worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: api
+    image: codevn/codevn:api
+    pull_policy: always
     container_name: codevn-worker
     command: ['pnpm', 'worker']
     volumes:
@@ -71,11 +65,10 @@ services:
       start_period: 5s
 
   migrate:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: migrator
+    image: codevn/codevn:api
+    pull_policy: always
     container_name: codevn-migrate
+    command: ['pnpm', 'db:push']
     env_file: .env
     depends_on:
       postgres:

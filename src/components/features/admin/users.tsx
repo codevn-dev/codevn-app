@@ -260,8 +260,8 @@ export function UsersManagement({ onDataChange }: UsersProps) {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
             <Users className="h-8 w-8 text-gray-400" />
           </div>
-          <h3 className="mb-2 text-lg font-medium text-gray-900">No users found</h3>
-          <p className="text-gray-500">Users will appear here once they register</p>
+          <h3 className="mb-2 text-lg font-medium text-gray-900">{t('common.noUsersFound')}</h3>
+          <p className="text-gray-500">{t('common.usersWillAppearHere')}</p>
         </div>
       ) : (
         <div className="shadow-brand/30 overflow-hidden rounded-lg bg-white/90 shadow-2xl drop-shadow-2xl backdrop-blur-sm">
