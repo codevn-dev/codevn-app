@@ -1,7 +1,7 @@
 import { FastifyReply } from 'fastify';
 import { userRepository } from '../database/repository';
 import { generateTokenPair, revokeTokenPair, verifyRefreshToken } from '../middleware/jwt';
-import { createRedisAuthService } from '../redis';
+import { createRedisAuthService, createRedisFirstUserService } from '../redis';
 import { AuthError, CommonError, RoleLevel } from '@/types/shared';
 import { config } from '@/config';
 import { BaseService } from './base';
@@ -14,6 +14,9 @@ import { UserResponse } from '@/types/shared/user';
 import { SuccessResponse } from '@/types/shared/common';
 
 export class AuthService extends BaseService {
+  private redisFirstUserService = createRedisFirstUserService();
+  private static hasFirstUser: boolean | null = null;
+
   /**
    * Set authentication cookies
    */
@@ -183,6 +186,70 @@ export class AuthService extends BaseService {
   }
 
   /**
+   * Check if this is the first user in the system
+   * Uses Redis cache with fallback to database and in-memory cache
+   */
+  private async isFirstUser(): Promise<boolean> {
+    // 1. Check in-memory cache first (fastest)
+    if (AuthService.hasFirstUser !== null) {
+      return !AuthService.hasFirstUser;
+    }
+
+    // 2. Check Redis cache
+    const redisResult = await this.redisFirstUserService.get();
+    if (redisResult !== null) {
+      // Update in-memory cache
+      AuthService.hasFirstUser = redisResult;
+      return !redisResult;
+    }
+
+    // 3. Fallback to database query
+    const hasAnyUsers = await userRepository.hasAnyUsers();
+    const isFirst = !hasAnyUsers;
+
+    // Update both caches
+    AuthService.hasFirstUser = hasAnyUsers;
+    await this.redisFirstUserService.set(hasAnyUsers);
+
+    return isFirst;
+  }
+
+  /**
+   * Mark that the first user has been created
+   * Call this after successfully creating the first user
+   */
+  private async markFirstUserCreated(): Promise<void> {
+    // Update in-memory cache
+    AuthService.hasFirstUser = true;
+
+    // Update Redis cache
+    await this.redisFirstUserService.set(true);
+  }
+
+  /**
+   * Get the appropriate role for a new user
+   * Returns admin for first user, member for subsequent users
+   */
+  private async getRoleForNewUser(): Promise<'admin' | 'member'> {
+    const isFirst = await this.isFirstUser();
+    return isFirst ? 'admin' : 'member';
+  }
+
+  /**
+   * Public method for getting role for new user (used by OAuth)
+   */
+  async getRoleForNewUserPublic(): Promise<'admin' | 'member'> {
+    return this.getRoleForNewUser();
+  }
+
+  /**
+   * Public method for marking first user created (used by OAuth)
+   */
+  async markFirstUserCreatedPublic(): Promise<void> {
+    return this.markFirstUserCreated();
+  }
+
+  /**
    * Sign up new user
    */
   async signUp(body: RegisterBody, reply: FastifyReply, request?: any): Promise<RegisterResponse> {
@@ -199,13 +266,21 @@ export class AuthService extends BaseService {
         throw err;
       }
 
+      // Get appropriate role for new user (admin for first user, member for others)
+      const userRole = await this.getRoleForNewUser();
+
       // Create user
       const newUser = await userRepository.create({
         email,
         name,
         password,
-        role: RoleLevel.member,
+        role: userRole as any,
       });
+
+      // Mark first user as created to update cache
+      if (userRole === 'admin') {
+        await this.markFirstUserCreated();
+      }
 
       // Auto-login: generate token pair and set cookies like sign-in
       const createdUser = newUser[0];

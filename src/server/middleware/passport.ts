@@ -8,9 +8,12 @@ import fastifyPassport from '@fastify/passport';
 import { logger } from '@/lib/utils/logger';
 import { User as SharedUser } from '@/types/shared/auth';
 import { RoleLevel } from '@/types/shared';
+import { AuthService } from '../services/auth';
 
 export async function setupPassport(fastify: FastifyInstance) {
   await fastify.register(fastifyPassport.initialize());
+
+  const authService = new AuthService();
 
   // Local strategy
   fastifyPassport.use(
@@ -82,14 +85,23 @@ export async function setupPassport(fastify: FastifyInstance) {
             let user = await userRepository.findByEmail(email);
 
             if (!user) {
+              // Get appropriate role for new user (admin for first user, member for others)
+              const userRole = await authService.getRoleForNewUserPublic();
+
               // Create new user
               await userRepository.create({
                 email,
                 name: name || email.split('@')[0],
                 password: '', // No password for OAuth users
-                role: RoleLevel.member,
+                role: userRole as any,
                 avatar: avatar || null,
               });
+
+              // Mark first user as created to update cache
+              if (userRole === 'admin') {
+                await authService.markFirstUserCreatedPublic();
+              }
+
               user = await userRepository.findByEmail(email);
             }
 

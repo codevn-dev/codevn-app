@@ -4,6 +4,7 @@ import { createRedisLeaderboardService } from './leaderboard';
 import { createRedisCategoriesService } from './categories';
 import { createRedisArticlesService } from './articles';
 import { createCountryRedisService } from './country';
+import { createRedisFirstUserService } from './first-user';
 
 let redisAuthService: RedisAuthService | null = null;
 
@@ -20,5 +21,6 @@ export {
   createRedisCategoriesService,
   createRedisArticlesService,
   createCountryRedisService,
+  createRedisFirstUserService,
 };
 export type { RedisService };

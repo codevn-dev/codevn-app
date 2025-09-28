@@ -521,6 +521,16 @@ export class UserRepository {
 
     return result[0]?.count || 0;
   }
+
+  /**
+   * Check if there are any users in the system (database only)
+   */
+  async hasAnyUsers(): Promise<boolean> {
+    const db = getDb();
+    const result = await db.select({ count: count() }).from(users).where(isNull(users.deletedAt));
+
+    return (result[0]?.count || 0) > 0;
+  }
 }
 
 export const userRepository = new UserRepository();
