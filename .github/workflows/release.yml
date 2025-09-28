@@ -6,11 +6,19 @@ on:
       - main
     paths:
       - CHANGELOG.md
+  workflow_dispatch:
 
 jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@v2
+        id: github-app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -54,31 +62,15 @@ jobs:
           version: ${{ steps.extract_version.outputs.version }}
           changelog_path: './CHANGELOG.md'
 
-      - name: Create Git tag
-        if: steps.check_version.outputs.exists == 'false'
-        run: |
-          VERSION="${{ steps.extract_version.outputs.version }}"
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git tag -a "$VERSION" -m "Release $VERSION"
-          git push origin "$VERSION"
-
       - name: Create GitHub Release
         if: steps.check_version.outputs.exists == 'false'
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_APP_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
         with:
           tag_name: ${{ steps.extract_version.outputs.version }}
           release_name: Release ${{ steps.extract_version.outputs.version }}
-          body: |
-            ## Changes in ${{ steps.extract_version.outputs.version }}
-
-            ${{ steps.changelog.outputs.changelog }}
-
-            ---
-
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.extract_version.outputs.version }}...HEAD
+          body: ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: false
 
