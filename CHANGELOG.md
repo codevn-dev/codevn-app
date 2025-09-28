@@ -2,7 +2,17 @@
 
 This file contains a curated list of all notable changes made to the project.
 
-## [v0.1.1]() (2025-01-28)
+## [v0.1.2]() (2025-09-29)
+
+### Refactored
+
+- Improved homepage structure and code organization
+
+### Fixed
+
+- Fixed sign in issue with cookie domain
+
+## [v0.1.1]() (2025-09-28)
 
 ### Added
 
@@ -13,7 +23,7 @@ This file contains a curated list of all notable changes made to the project.
 
 - Improved homepage structure and code organization
 
-## [v0.1.0]() (2025-01-28)
+## [v0.1.0]() (2025-09-28)
 
 ### Added
 
