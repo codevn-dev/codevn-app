@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useI18n } from '@/components/providers';
 import { AvatarUpload } from '@/components/features/upload';
 import { SystemUserResponse, CreateSystemUserRequest } from '@/types/shared/auth';
@@ -88,6 +88,8 @@ export function SystemUserForm({ editingSystemUser, onClose, onSuccess }: System
           <AvatarUpload
             currentAvatar={formData.avatar}
             onAvatarChange={(avatar) => setFormData({ ...formData, avatar: avatar || '' })}
+            isSystemUser={true}
+            systemUserId={editingSystemUser?.id || 'new'}
           />
         </div>
 
@@ -103,11 +105,10 @@ export function SystemUserForm({ editingSystemUser, onClose, onSuccess }: System
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 {t('common.saving')}
               </>
+            ) : editingSystemUser ? (
+              t('common.update')
             ) : (
-              <>
-                <Plus className="mr-1 h-4 w-4" />
-                {editingSystemUser ? t('common.update') : t('common.create')}
-              </>
+              t('common.create')
             )}
           </Button>
         </div>
