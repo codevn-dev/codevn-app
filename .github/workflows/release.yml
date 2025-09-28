@@ -1,42 +1,14 @@
-name: Release to codevn.dev
+name: Create Release Github
 
 on:
   push:
     branches:
       - main
-    paths-ignore:
-      - .github/workflows/**
-      - README.md
-      - .gitignore
-      - .gitattributes
-      - .editorconfig
-      - .vscode/**
-      - .idea/**
-      - '*.md'
-      - docs/**
-      - scripts/**
-      - tsconfig.tsbuildinfo
-      - .eslintcache
-      - node_modules/**
-      - .next/**
-      - .turbo/**
-      - public/uploads/**
-      - .env*
-      - .DS_Store
-      - Thumbs.db
-      - '*.log'
-      - coverage/**
-      - .nyc_output/**
-      - dist/**
-      - build/**
-      - Makefile
-      - .prettier*
-      - .husky/**
-      - .dockerignore
-  workflow_dispatch:
+    paths:
+      - CHANGELOG.md
 
 jobs:
-  release:
+  create-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -44,166 +16,88 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get commit info
-        id: commit_info
+      - name: Extract version from CHANGELOG.md
+        id: extract_version
         run: |
-          echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "commit_message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
-          echo "author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
-          echo "branch=$(git branch --show-current)" >> $GITHUB_OUTPUT
-          echo "commit_url=https://github.com/${{ github.repository }}/commit/$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          # Extract version from CHANGELOG.md
+          VERSION=$(grep -oE '^## \[v?[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | head -1 | sed 's/^## \[//;s/]$//')
 
-      - name: Send deployment start notification
+          if [ -z "$VERSION" ]; then
+            echo "No version found in CHANGELOG.md"
+            echo "Please add a version entry in CHANGELOG.md format: ## [0.1.0]()"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION from CHANGELOG.md"
+
+      - name: Check if version already exists
+        id: check_version
+        run: |
+          VERSION="${{ steps.extract_version.outputs.version }}"
+
+          # Check if tag already exists
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Version $VERSION already exists, skipping release"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Version $VERSION is new, proceeding with release"
+          fi
+
+      - name: Extract Changelog
+        id: changelog
+        if: steps.check_version.outputs.exists == 'false'
+        uses: nickohold/changelog-version-extractor@v1.0.0
+        with:
+          version_prefix: '## ['
+          version: ${{ steps.extract_version.outputs.version }}
+          changelog_path: './CHANGELOG.md'
+
+      - name: Create Git tag
+        if: steps.check_version.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.extract_version.outputs.version }}"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin "$VERSION"
+
+      - name: Create GitHub Release
+        if: steps.check_version.outputs.exists == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_APP_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: Release ${{ steps.extract_version.outputs.version }}
+          body: |
+            ## Changes in ${{ steps.extract_version.outputs.version }}
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            ---
+
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.extract_version.outputs.version }}...HEAD
+          draft: false
+          prerelease: false
+
+      - name: Send release notification
+        if: steps.check_version.outputs.exists == 'false'
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            🚀 Deployment Started
+            🚀 New Release: ${{ steps.extract_version.outputs.version }}
 
-            📝 Commit: ${{ steps.commit_info.outputs.commit_hash }}
-            👤 Author: ${{ steps.commit_info.outputs.author }}
-            🌿 Branch: ${{ steps.commit_info.outputs.branch }}
-                        
-            ⏳ Building and deploying to codevn.dev...
+            📝 Version: ${{ steps.extract_version.outputs.version }}
+            🔗 Release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.extract_version.outputs.version }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+            📋 Changes:
+            ${{ steps.changelog.outputs.changelog }}
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Generate .env file
+      - name: Skip release notification
+        if: steps.check_version.outputs.exists == 'true'
         run: |
-          cat > .env << EOF
-
-          # Application Configuration
-          NODE_ENV=production
-
-          # Site Url
-          NEXT_PUBLIC_SITE_NAME=${{ vars.NEXT_PUBLIC_SITE_NAME }}
-
-          # API Url
-          API_URL=${{ vars.API_URL }}
-          APP_URL=${{ vars.APP_URL }}
-          NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
-
-          # Auth
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          JWT_ACCESS_TOKEN_EXPIRES_IN=${{ vars.JWT_ACCESS_TOKEN_EXPIRES_IN }}
-          JWT_REFRESH_TOKEN_EXPIRES_IN=${{ vars.JWT_REFRESH_TOKEN_EXPIRES_IN }}
-
-          # Chat
-          CHAT_ENCRYPTION_KEY=${{ secrets.CHAT_ENCRYPTION_KEY }}
-          CHAT_ENCRYPTION_SALT=${{ secrets.CHAT_ENCRYPTION_SALT }}
-
-          # Postgres
-          POSTGRES_HOST=${{ vars.POSTGRES_HOST }}
-          POSTGRES_DB=${{ vars.POSTGRES_DB }}
-          POSTGRES_USER=${{ vars.POSTGRES_USER }}
-          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_PORT=${{ vars.POSTGRES_PORT }}
-          POSTGRES_SSL=${{ vars.POSTGRES_SSL }}
-          PGADMIN_DEFAULT_EMAIL=${{ vars.PGADMIN_DEFAULT_EMAIL }}
-          PGADMIN_DEFAULT_PASSWORD=${{ secrets.PGADMIN_DEFAULT_PASSWORD }}
-
-          # Redis
-          REDIS_HOST=${{ vars.REDIS_HOST }}
-          REDIS_PORT=${{ vars.REDIS_PORT }}
-          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-          REDIS_DB=${{ vars.REDIS_DB }}
-
-          # Google Credentials
-          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-          EOF
-
-      - name: Build and push web image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/arm64
-          target: web
-          push: true
-          tags: codevn/codevn:web
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push api image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/arm64
-          target: api
-          push: true
-          tags: codevn/codevn:api
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: '.env,docker-compose.yml,nginx.conf'
-          target: '/data/codevn/'
-
-      - name: Release over SSH
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            cd /data/codevn
-
-            # Login to Docker Hub
-            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-            # Deploy application
-            echo "Deploying application..."
-            docker compose up -d
-            docker compose restart nginx
-
-            # Clean up Docker to free space
-            echo "Cleaning up Docker system..."
-            docker system prune -f
-
-      - name: Purge Cloudflare cache for codevn.dev
-        run: |
-          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data '{"purge_everything":true}'
-
-      - name: Send deployment success notification
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-            ✅ Deployment Successful!
-
-            🌐 Site: https://codevn.dev
-            📝 Commit: ${{ steps.commit_info.outputs.commit_hash }}
-            👤 Author: ${{ steps.commit_info.outputs.author }}
-                        
-            🚀 Site is now live with the latest changes!
-
-      - name: Send deployment failure notification
-        if: failure()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-            ❌ Deployment Failed!
-
-            📝 Commit: ${{ steps.commit_info.outputs.commit_hash }}
-            👤 Author: ${{ steps.commit_info.outputs.author }}
-                        
-            🔍 Please check the GitHub Actions logs for details.
+          echo "Version ${{ steps.extract_version.outputs.version }} already exists, skipping release creation"
