@@ -24,6 +24,7 @@ export const uploadConfig = {
 
 export const siteConfig = {
   name: process.env.NEXT_PUBLIC_SITE_NAME || 'CodeVN',
+  version: process.env.NEXT_PUBLIC_APP_VERSION || 'v0.1.0',
   links: {
     github: process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/codevn-dev',
     facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL || 'https://www.facebook.com/codevn.dev',

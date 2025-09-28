@@ -39,6 +39,7 @@ const store: Dictionary = {
   'common.enterEmail': { en: 'Enter email', vi: 'Nhập email' },
   'common.avatar': { en: 'Avatar', vi: 'Ảnh đại diện' },
   'common.copyrightSuffix': { en: 'All rights reserved.', vi: 'Đã đăng ký bản quyền.' },
+  'common.version': { en: 'Version', vi: 'Phiên bản' },
   'common.role': { en: 'Role', vi: 'Vai trò' },
   'common.role.admin': { en: 'Admin', vi: 'Quản trị viên' },
   'common.role.member': { en: 'Member', vi: 'Thành viên' },

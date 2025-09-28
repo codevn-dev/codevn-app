@@ -50,7 +50,7 @@ jobs:
 
           # Application Configuration
           NODE_ENV=production
-          APP_VERSION=${{ steps.release_info.outputs.version }}
+          NEXT_PUBLIC_APP_VERSION=${{ steps.release_info.outputs.version }}
 
           # Site Url
           NEXT_PUBLIC_SITE_NAME=${{ vars.NEXT_PUBLIC_SITE_NAME }}

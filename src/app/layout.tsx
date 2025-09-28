@@ -41,8 +41,8 @@ export default async function RootLayout({
           <AuthRedirectHandler />
           <CustomCursor />
           <PageTransition>
-            <div className="flex min-h-screen flex-col pt-16">
-              <div className="flex-1">{children}</div>
+            <div className="flex min-h-screen flex-col">
+              <main className="flex-1 pt-16">{children}</main>
               <AppFooter />
             </div>
           </PageTransition>
