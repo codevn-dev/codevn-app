@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Create GitHub App Token
         uses: actions/create-github-app-token@v2
-        id: github-app-token
+        id: github_app_token
         with:
           app-id: ${{ vars.GH_APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
@@ -66,7 +66,7 @@ jobs:
         if: steps.check_version.outputs.exists == 'false'
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ steps.github-app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.github_app_token.outputs.token }}
         with:
           tag_name: ${{ steps.extract_version.outputs.version }}
           release_name: Release ${{ steps.extract_version.outputs.version }}
