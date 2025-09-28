@@ -35,6 +35,9 @@ const store: Dictionary = {
   'common.signOut': { en: 'Sign Out', vi: 'Đăng xuất' },
   'common.title': { en: 'Title', vi: 'Tiêu đề' },
   'common.name': { en: 'Name', vi: 'Tên' },
+  'common.enterName': { en: 'Enter name', vi: 'Nhập tên' },
+  'common.enterEmail': { en: 'Enter email', vi: 'Nhập email' },
+  'common.avatar': { en: 'Avatar', vi: 'Ảnh đại diện' },
   'common.copyrightSuffix': { en: 'All rights reserved.', vi: 'Đã đăng ký bản quyền.' },
   'common.role': { en: 'Role', vi: 'Vai trò' },
   'common.role.admin': { en: 'Admin', vi: 'Quản trị viên' },
@@ -123,8 +126,43 @@ const store: Dictionary = {
   'chat.typeMessage': { en: 'Type a message...', vi: 'Nhập tin nhắn...' },
   'chat.findConversation': { en: 'Find a conversation...', vi: 'Tìm cuộc trò chuyện...' },
   'chat.noConversation': { en: 'No conversation found', vi: 'Không có cuộc trò chuyện' },
+  'chat.systemUsers': { en: 'System Users', vi: 'Người dùng hệ thống' },
+  'chat.systemUserReadOnly': {
+    en: 'Cannot send messages to system users',
+    vi: 'Không thể gửi tin nhắn đến người dùng hệ thống',
+  },
+  'chat.hideSystemUser': { en: 'Hide this system user', vi: 'Ẩn người dùng hệ thống này' },
+  'chat.showSystemUser': { en: 'Show this system user', vi: 'Hiện người dùng hệ thống này' },
+  'chat.hideFromSidebar': { en: 'Hide from sidebar', vi: 'Ẩn khỏi thanh bên' },
   'chat.send': { en: 'Send', vi: 'Gửi' },
   'chat.sendMessage': { en: 'Send Message', vi: 'Gửi tin nhắn' },
+  'common.action': { en: 'Action', vi: 'Hành động' },
+  'common.selectRecipients': { en: 'Select Recipients', vi: 'Chọn người nhận' },
+  'common.selectAll': { en: 'Select All', vi: 'Chọn tất cả' },
+  'common.allUsersSelected': {
+    en: 'All users will receive this message',
+    vi: 'Tất cả người dùng sẽ nhận tin nhắn này',
+  },
+  'common.sendToAllUsers': {
+    en: 'Send to all users in the system',
+    vi: 'Gửi đến tất cả người dùng trong hệ thống',
+  },
+  'common.pleaseSelectAllUsers': {
+    en: 'Please select "Send to all users" to send the message.',
+    vi: 'Vui lòng chọn "Gửi đến tất cả người dùng" để gửi tin nhắn.',
+  },
+  'common.searchUsersPlaceholder': {
+    en: 'Search users by name or email...',
+    vi: 'Tìm kiếm người dùng theo tên hoặc email...',
+  },
+  'common.selectedUsers': { en: 'Selected Users', vi: 'Người dùng đã chọn' },
+  'common.clearAll': { en: 'Clear All', vi: 'Xóa tất cả' },
+  'common.message': { en: 'Message', vi: 'Tin nhắn' },
+  'common.typeYourMessage': { en: 'Type your message...', vi: 'Nhập tin nhắn của bạn...' },
+  'common.send': { en: 'Send', vi: 'Gửi' },
+  'common.sending': { en: 'Sending...', vi: 'Đang gửi...' },
+  'common.sendMessage': { en: 'Send Message', vi: 'Gửi tin nhắn' },
+  'common.as': { en: 'as', vi: 'với tư cách' },
 
   // Articles
   'articles.my': { en: 'My Articles', vi: 'Bài viết của tôi' },
@@ -382,6 +420,22 @@ const store: Dictionary = {
     vi: 'Lỗi khi cập nhật người dùng hệ thống. Vui lòng thử lại.',
   },
   'admin.systemUser.deleteTitle': { en: 'Delete System User', vi: 'Xóa người dùng hệ thống' },
+  'admin.systemUser.onlyAdminCanDelete': {
+    en: 'Only admin can delete system users',
+    vi: 'Chỉ quản trị viên mới có thể xóa người dùng hệ thống',
+  },
+  'admin.systemUser.messageSentSuccess': {
+    en: 'Message sent successfully to {count} user(s)!',
+    vi: 'Tin nhắn đã được gửi thành công đến {count} người dùng!',
+  },
+  'admin.systemUser.pleaseSelectUsers': {
+    en: 'Please select "Send to all users" or search and select specific users.',
+    vi: 'Vui lòng chọn "Gửi đến tất cả người dùng" hoặc tìm kiếm và chọn người dùng cụ thể.',
+  },
+  'admin.systemUser.failedToEnqueueMessage': {
+    en: 'Failed to enqueue message',
+    vi: 'Không thể gửi tin nhắn',
+  },
 
   // Share
   'share.share': { en: 'Share', vi: 'Chia sẻ' },
@@ -555,6 +609,26 @@ const store: Dictionary = {
   'sessions.loadingSessions': {
     en: 'Loading session management...',
     vi: 'Đang tải quản lý phiên đăng nhập...',
+  },
+  'common.noUsersFound': {
+    en: 'No users found',
+    vi: 'Không tìm thấy người dùng',
+  },
+  'admin.systemUsers.title': {
+    en: 'System Users',
+    vi: 'Người dùng hệ thống',
+  },
+  'admin.systemUsers.create': {
+    en: 'Create System User',
+    vi: 'Tạo người dùng hệ thống',
+  },
+  'admin.systemUsers.noUsers': {
+    en: 'No system users',
+    vi: 'Chưa có người dùng hệ thống',
+  },
+  'admin.systemUsers.noUsersDescription': {
+    en: 'Get started by creating your first system user.',
+    vi: 'Bắt đầu bằng cách tạo người dùng hệ thống đầu tiên.',
   },
 };
 

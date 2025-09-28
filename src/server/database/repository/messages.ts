@@ -35,8 +35,18 @@ export const messageRepository = {
       return conversationId;
     }
 
-    // If no existing conversation, create a new ID (fallback to old method)
-    return [userA, userB].sort().join('|');
+    // If no existing conversation, we'll create one and return its ID
+    // First create the conversation
+    const [newConversation] = await db
+      .insert(conversations)
+      .values({
+        fromUserId: userA,
+        toUserId: userB,
+        type: 'message',
+      })
+      .returning({ id: conversations.id });
+
+    return newConversation.id;
   },
 
   // Ensure conversation exists - only create if not exists
@@ -46,12 +56,13 @@ export const messageRepository = {
     toUserId: string,
     type: ConversationTypes = ConversationType.message
   ): Promise<void> {
+    // This method is now mostly redundant since getConversationId creates conversations
+    // But we keep it for backward compatibility
     const db = getDb();
 
     await db
       .insert(conversations)
       .values({
-        id: conversationId,
         fromUserId,
         toUserId,
         type,

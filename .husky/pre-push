@@ -1,6 +1,7 @@
 # Check formatting
 echo "🎨 Checking code formatting..."
 pnpm format:check
+pnpm format
 
 # Run linting
 echo "🔍 Running ESLint..."

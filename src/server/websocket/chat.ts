@@ -83,6 +83,25 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
 
   // publish and lifecycle inherited
 
+  // Public helper to deliver a new message event from non-WS contexts
+  public async deliverNewMessage(messageData: {
+    id: string;
+    type: string;
+    chat: { id: string };
+    fromUser: { id: string };
+    toUser: { id: string };
+    text: string;
+    seen: boolean;
+    seenAt: Date | null;
+    timestamp: number;
+    createdAt: Date;
+  }): Promise<void> {
+    // Local delivery
+    this.sendToUser(messageData.toUser.id, { type: 'new_message', data: messageData });
+    // Cross-instance publish
+    await this.publish('chat:new_message', messageData);
+  }
+
   private async handleMessage(connectionId: string, message: ChatMessage) {
     const connection = this.connections.get(connectionId);
     if (!connection) return;
@@ -130,14 +149,6 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
     const conversationId = await messageRepository.getConversationId(
       connection.userId,
       message.toUserId
-    );
-
-    // Ensure conversation exists first (only if needed)
-    await messageRepository.ensureConversationExists(
-      conversationId,
-      connection.userId,
-      message.toUserId,
-      'message'
     );
 
     // Save message to database (optimized - no redundant conversation check)

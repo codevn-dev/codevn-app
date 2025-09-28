@@ -7,6 +7,7 @@ import { setupPlugins } from './plugins';
 import { createRedisAuthService } from './redis';
 import { setRedisService } from './middleware/jwt';
 import { CountryService } from './services/country';
+import { startWorkerService, stopWorkerService } from './worker';
 import { logger } from '@/lib/utils/logger';
 
 async function buildServer() {
@@ -42,6 +43,16 @@ async function buildServer() {
     logger.info('Country cache preloaded successfully');
   } catch (error) {
     logger.warn('Failed to preload country cache', { error });
+  }
+
+  // Start worker service
+  try {
+    logger.info('🔄 Starting worker service...');
+    await startWorkerService();
+    logger.info('✅ Worker service started successfully');
+  } catch (error) {
+    logger.error('❌ Failed to start worker service', undefined, error as Error);
+    throw error; // Re-throw to see the error
   }
 
   // Setup passport authentication
@@ -81,6 +92,15 @@ async function start() {
     // Graceful shutdown
     const shutdown = async () => {
       logger.info('Shutting down server...');
+
+      // Stop worker service
+      try {
+        await stopWorkerService();
+        logger.info('Worker service stopped');
+      } catch (error) {
+        logger.error('Error stopping worker service', undefined, error as Error);
+      }
+
       await fastify.close();
       process.exit(0);
     };

@@ -29,6 +29,22 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // GET /api/system-users/chat - Get system users for chat (public for all users)
+  fastify.get(
+    '/chat',
+    {
+      preHandler: authMiddleware,
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const response = await systemUsersService.getSystemUsers();
+        return reply.send(response);
+      } catch {
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+      }
+    }
+  );
+
   // POST /api/system-users - Create a new system user
   fastify.post<{ Body: CreateSystemUserRequest }>(
     '/',
@@ -54,6 +70,48 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
         return reply
           .status(isBad ? 400 : 500)
           .send({ error: isBad ? CommonError.BAD_REQUEST : CommonError.INTERNAL_ERROR });
+      }
+    }
+  );
+
+  // POST /api/system-users/:id/send-message - Enqueue system message to users
+  fastify.post<{
+    Params: { id: string };
+    Body: { toUserIds?: string[]; text: string; isSendAll?: boolean };
+  }>(
+    '/:id/send-message',
+    {
+      preHandler: authMiddleware,
+    },
+    async (
+      request: FastifyRequest<{
+        Params: { id: string };
+        Body: { toUserIds?: string[]; text: string; isSendAll?: boolean };
+      }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const authRequest = request as AuthenticatedRequest;
+
+        // Only admins can send via system users
+        if (!isAdmin(authRequest.user!.role)) {
+          return reply.status(403).send({ error: 'Access denied' });
+        }
+
+        const systemUserId = request.params.id;
+        const { toUserIds, text, isSendAll } = request.body || {};
+
+        // Use service to send message
+        const result = await systemUsersService.sendMessage({
+          systemUserId,
+          toUserIds,
+          text,
+          isSendAll,
+        });
+
+        return reply.send(result);
+      } catch {
+        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
       }
     }
   );

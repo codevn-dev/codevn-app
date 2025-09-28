@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, Search, X } from 'lucide-react';
+import { MessageCircle, Search, X, Bot } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useI18n } from '@/components/providers';
 import { useWebSocket } from './websocket-context';
 import { useHideConversation } from '@/hooks/use-hide-conversation';
 import { formatRelativeTime, formatDate, formatTime } from '@/lib/utils/time-format';
+import { apiGet } from '@/lib/utils/api-client';
+import { SystemUserResponse } from '@/types/shared/auth';
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -26,9 +28,12 @@ export function ChatSidebar({
   onCloseAll,
   chatWindowOpen,
 }: ChatSidebarProps) {
-  const { user: _user } = useAuthState();
+  const { user } = useAuthState();
   const [searchTerm, setSearchTerm] = useState('');
   const [hoveredConversation, setHoveredConversation] = useState<string | null>(null);
+  const [systemUsers, setSystemUsers] = useState<SystemUserResponse[]>([]);
+  const [hiddenSystemUsers, setHiddenSystemUsers] = useState<Set<string>>(new Set());
+  const [unreadSystemUsers, setUnreadSystemUsers] = useState<Set<string>>(new Set());
   const { t } = useI18n();
 
   // Use WebSocket hook
@@ -37,10 +42,35 @@ export function ChatSidebar({
     conversations: wsConversations,
     onlineUsers,
     fetchConversations,
+    addOnNewMessageCallback,
   } = useWebSocket();
 
   // Use hide conversation hook
   const { hideConversation, isHiding } = useHideConversation();
+
+  // Persist hidden system users to localStorage (per user)
+  useEffect(() => {
+    try {
+      const storageKey = `chat:hiddenSystemUsers:${user?.id || 'guest'}`;
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) {
+        const ids: string[] = JSON.parse(raw);
+        setHiddenSystemUsers(new Set(ids));
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    try {
+      const storageKey = `chat:hiddenSystemUsers:${user?.id || 'guest'}`;
+      const ids = Array.from(hiddenSystemUsers);
+      window.localStorage.setItem(storageKey, JSON.stringify(ids));
+    } catch {
+      // ignore storage errors
+    }
+  }, [hiddenSystemUsers, user?.id]);
 
   // Transform WebSocket conversations to UI format
   const conversations = wsConversations.map((conv: any) => ({
@@ -55,12 +85,74 @@ export function ChatSidebar({
     unreadCount: conv.unreadCount || 0,
   }));
 
-  // Fetch conversations when sidebar opens
+  // Fetch conversations and system users when sidebar opens
   useEffect(() => {
     if (isOpen && isConnected) {
       fetchConversations();
+      fetchSystemUsers();
     }
   }, [isOpen, isConnected, fetchConversations]);
+
+  // Fetch system users for chat (all users can view notifications)
+  const fetchSystemUsers = async () => {
+    try {
+      const response = await apiGet<SystemUserResponse[]>('/api/system-users/chat');
+      setSystemUsers(response);
+    } catch (error) {
+      console.error('Failed to fetch system users:', error);
+    }
+  };
+
+  // Subscribe to new message events to flag unread for system users
+  useEffect(() => {
+    const unsubscribe = addOnNewMessageCallback((msg) => {
+      // If message is from a system user and not currently hidden, mark unread
+      const isFromSystemUser = systemUsers.some((su) => su.id === msg.from);
+
+      if (!isFromSystemUser) {
+        // Not in current list; attempt to refresh system users then proceed
+        fetchSystemUsers();
+      }
+
+      // Auto-unhide if hidden and mark unread
+      setHiddenSystemUsers((prevHidden) => {
+        if (prevHidden.has(msg.from)) {
+          const nextHidden = new Set(prevHidden);
+          nextHidden.delete(msg.from);
+          try {
+            const storageKey = `chat:hiddenSystemUsers:${user?.id || 'guest'}`;
+            const ids = Array.from(nextHidden);
+            window.localStorage.setItem(storageKey, JSON.stringify(ids));
+          } catch {}
+          return nextHidden;
+        }
+        return prevHidden;
+      });
+
+      setUnreadSystemUsers((prev) => {
+        const next = new Set(prev);
+        next.add(msg.from);
+        return next;
+      });
+    });
+
+    return () => {
+      unsubscribe?.();
+    };
+  }, [addOnNewMessageCallback, systemUsers, hiddenSystemUsers, user?.id]);
+
+  // Toggle hide/show individual system user
+  const toggleSystemUserVisibility = (userId: string) => {
+    setHiddenSystemUsers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
 
   // Sort conversations by last message time (newest first)
   const sortedConversations = conversations.sort((a, b) => {
@@ -159,12 +251,87 @@ export function ChatSidebar({
 
         {/* Conversations List */}
         <div className="flex-1 overflow-y-auto">
-          {filteredConversations.length === 0 ? (
+          {/* System Users Section */}
+          {systemUsers.filter((user) => !hiddenSystemUsers.has(user.id)).length > 0 && (
+            <div className="border-b border-gray-100 p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Bot className="h-4 w-4 text-blue-500" />
+                <h3 className="text-sm font-medium text-gray-700">{t('chat.systemUsers')}</h3>
+              </div>
+              <div className="space-y-1">
+                {systemUsers
+                  .filter(
+                    (user) =>
+                      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                      !hiddenSystemUsers.has(user.id)
+                  )
+                  .map((systemUser) => (
+                    <div
+                      key={systemUser.id}
+                      className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50"
+                    >
+                      <button
+                        onClick={() => {
+                          onStartChat(
+                            systemUser.id,
+                            systemUser.name,
+                            systemUser.avatar || undefined
+                          );
+                          // Clear unread badge when opening chat with this system user
+                          setUnreadSystemUsers((prev) => {
+                            const next = new Set(prev);
+                            next.delete(systemUser.id);
+                            return next;
+                          });
+                        }}
+                        className="flex flex-1 items-center gap-3 text-left"
+                        title="View notifications from system user"
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={systemUser.avatar || undefined} />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-xs text-white">
+                            {systemUser.name?.charAt(0).toUpperCase() || 'S'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-medium text-gray-900">
+                            {systemUser.name}
+                          </div>
+                          <div className="text-xs text-blue-600">{t('common.role.system')}</div>
+                        </div>
+                        {/* Unread badge for system user notifications */}
+                        {unreadSystemUsers.has(systemUser.id) && (
+                          <div className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#B8956A] px-1.5 text-xs font-bold text-white">
+                            1
+                          </div>
+                        )}
+                      </button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 hover:bg-red-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSystemUserVisibility(systemUser.id);
+                        }}
+                        title={t('chat.hideFromSidebar')}
+                      >
+                        <X className="h-4 w-4 text-red-500 hover:text-red-600" />
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Regular Conversations Section */}
+          {filteredConversations.length === 0 &&
+          systemUsers.filter((user) => !hiddenSystemUsers.has(user.id)).length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <MessageCircle className="mb-2 h-12 w-12 text-gray-300" />
               <div className="text-sm text-gray-500">{t('chat.noConversation')}</div>
             </div>
-          ) : (
+          ) : filteredConversations.length > 0 ? (
             <div className="space-y-1">
               {filteredConversations.map((conversation) => (
                 <div
@@ -235,7 +402,7 @@ export function ChatSidebar({
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </>

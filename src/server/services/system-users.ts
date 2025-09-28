@@ -8,6 +8,8 @@ import {
 import { CommonError, RoleLevel } from '@/types/shared';
 import { UploadAvatarResponse } from '@/types/shared';
 import { fileUpload } from '@/lib/server';
+import { getWorkerService } from '../worker';
+import { JOB_NAMES } from '../worker/types';
 import crypto from 'crypto';
 
 export class SystemUsersService extends BaseService {
@@ -197,6 +199,56 @@ export class SystemUsersService extends BaseService {
       return response;
     } catch (error) {
       this.handleError(error, 'Upload system user avatar');
+    }
+  }
+
+  /**
+   * Send a message from a system user to one or more users
+   */
+  async sendMessage(request: {
+    systemUserId: string;
+    toUserIds?: string[];
+    text: string;
+    isSendAll?: boolean;
+  }): Promise<{
+    ok: boolean;
+    jobId: string;
+    recipientsCount: string | number;
+  }> {
+    const { systemUserId, toUserIds, text, isSendAll } = request;
+
+    // Validate required fields
+    if (!systemUserId || !text || text.trim().length === 0) {
+      throw new Error(CommonError.BAD_REQUEST);
+    }
+
+    // Validate based on send mode
+    if (isSendAll) {
+      // Send to all users - no need to validate toUserIds
+    } else {
+      // Send to specific users - validate toUserIds
+      if (!toUserIds || !Array.isArray(toUserIds) || toUserIds.length === 0) {
+        throw new Error(CommonError.BAD_REQUEST);
+      }
+    }
+
+    try {
+      // Get worker service and enqueue single bulk job
+      const worker = getWorkerService();
+      const job = await worker.addJob(JOB_NAMES.SYSTEM_SEND_MESSAGE, {
+        systemUserId,
+        toUserIds: isSendAll ? [] : toUserIds,
+        text,
+        isSendAll: isSendAll || false,
+      });
+
+      return {
+        ok: true,
+        jobId: job.id,
+        recipientsCount: isSendAll ? 'all' : toUserIds?.length || 0,
+      };
+    } catch {
+      throw new Error(CommonError.INTERNAL_ERROR);
     }
   }
 }

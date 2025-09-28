@@ -48,6 +48,12 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
   const userId = user?.id || '';
   const canChat = Boolean(userId && peer.id && userId !== peer.id);
 
+  // Check if peer is a system user (we need to fetch this info)
+  const [isSystemUser, setIsSystemUser] = useState(false);
+
+  // Disable emoji picker for system users
+  const canUseEmoji = !isSystemUser;
+
   // Track last message to detect new messages
   const [lastMessageId, setLastMessageId] = useState<string>('');
 
@@ -68,7 +74,26 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
   // Local state for messages
   const [messages, setMessages] = useState<UiMessage[]>([]);
   const [loading, setLoading] = useState(false);
-  const canSend = !!(canChat && !loading && text.trim().length > 0);
+  const canSend = !!(canChat && !loading && text.trim().length > 0 && !isSystemUser);
+
+  // Check if peer is system user
+  useEffect(() => {
+    if (!isOpen || !peer.id) return;
+
+    const checkUserRole = async () => {
+      try {
+        // Try to get user info from system users first
+        const systemUsers = await apiGet<any[]>('/api/system-users/chat');
+        const isSystem = systemUsers.some((su) => su.id === peer.id);
+        setIsSystemUser(isSystem);
+      } catch {
+        // If not found in system users, it's a regular user
+        setIsSystemUser(false);
+      }
+    };
+
+    checkUserRole();
+  }, [isOpen, peer.id]);
 
   // Load messages when chat window opens
   useEffect(() => {
@@ -360,12 +385,19 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
           <div>
             <div className="text-sm font-medium">{peer.name}</div>
             <div className="flex items-center gap-1">
-              <div
-                className={`h-2 w-2 rounded-full ${isUserOnline(peer.id) ? 'bg-green-400' : 'bg-gray-400'}`}
-              />
-              <span className="text-xs text-gray-300">
-                {isUserOnline(peer.id) ? t('chat.online') : t('chat.offline')}
-              </span>
+              {!isSystemUser && (
+                <>
+                  <div
+                    className={`h-2 w-2 rounded-full ${isUserOnline(peer.id) ? 'bg-green-400' : 'bg-gray-400'}`}
+                  />
+                  <span className="text-xs text-gray-300">
+                    {isUserOnline(peer.id) ? t('chat.online') : t('chat.offline')}
+                  </span>
+                </>
+              )}
+              {isSystemUser && (
+                <span className="text-xs text-blue-500">{t('common.role.system')}</span>
+              )}
             </div>
           </div>
         </div>
@@ -508,11 +540,14 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
             aria-label="Emoji"
             className={`text-brand hover:text-brand-700 flex h-10 w-10 items-center justify-center transition-colors ${
               showEmoji ? 'text-gray-700' : ''
-            }`}
+            } ${!canUseEmoji ? 'cursor-not-allowed opacity-50' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
-              setShowEmoji((v) => !v);
+              if (canUseEmoji) {
+                setShowEmoji((v) => !v);
+              }
             }}
+            disabled={!canUseEmoji}
           >
             <Smile className="h-6 w-6" />
           </button>
@@ -534,8 +569,8 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
               inputRef.current?.focus();
               setShowEmoji(false);
             }}
-            placeholder={t('chat.typeMessage')}
-            disabled={!canChat || loading}
+            placeholder={isSystemUser ? t('chat.systemUserReadOnly') : t('chat.typeMessage')}
+            disabled={!canChat || loading || isSystemUser}
             className="flex-1"
           />
           {showEmoji && (
