@@ -84,7 +84,7 @@ jobs:
           NODE_ENV=production
 
           # Site Url
-          NEXT_PUBLIC_SITE_NAME={{ vars.NEXT_PUBLIC_SITE_NAME }}
+          NEXT_PUBLIC_SITE_NAME=${{ vars.NEXT_PUBLIC_SITE_NAME }}
 
           # API Url
           API_URL=${{ vars.API_URL }}
@@ -93,8 +93,8 @@ jobs:
 
           # Auth
           JWT_SECRET=${{ secrets.JWT_SECRET }}
-          JWT_ACCESS_TOKEN_EXPIRES_IN=${{ secrets.JWT_ACCESS_TOKEN_EXPIRES_IN }}
-          JWT_REFRESH_TOKEN_EXPIRES_IN=${{ secrets.JWT_REFRESH_TOKEN_EXPIRES_IN }}
+          JWT_ACCESS_TOKEN_EXPIRES_IN=${{ vars.JWT_ACCESS_TOKEN_EXPIRES_IN }}
+          JWT_REFRESH_TOKEN_EXPIRES_IN=${{ vars.JWT_REFRESH_TOKEN_EXPIRES_IN }}
 
           # Chat
           CHAT_ENCRYPTION_KEY=${{ secrets.CHAT_ENCRYPTION_KEY }}
