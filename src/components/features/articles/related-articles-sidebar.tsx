@@ -22,7 +22,13 @@ export function RelatedArticlesSidebar({ articleId }: Props) {
       try {
         setLoading(true);
         const res = await apiGet<{ articles: Article[] }>(`/api/articles/${articleId}/related`);
-        if (mounted) setItems(res.articles || []);
+        if (mounted) {
+          // Filter out duplicates by ID
+          const uniqueArticles = (res.articles || []).filter(
+            (article, index, self) => index === self.findIndex((a) => a.id === article.id)
+          );
+          setItems(uniqueArticles);
+        }
       } catch {
         if (mounted) setItems([]);
       } finally {
