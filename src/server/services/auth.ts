@@ -231,7 +231,7 @@ export class AuthService extends BaseService {
    * Returns admin for first user, member for subsequent users
    */
   private async getRoleForNewUser(): Promise<'admin' | 'member'> {
-    const isFirst = await this.isFirstUser();
+    const isFirst = config.firstUser.enabled ? await this.isFirstUser() : false;
     return isFirst ? 'admin' : 'member';
   }
 

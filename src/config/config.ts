@@ -129,16 +129,10 @@ export const redisConfig = {
   db: parseInt(process.env.REDIS_DB || '0'),
 } as const;
 
-// Validation function to check required environment variables
-export function validateEnv() {
-  const requiredVars = ['JWT_SECRET', 'DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
-
-  const missingVars = requiredVars.filter((varName) => !process.env[varName]);
-
-  if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
-  }
-}
+// First User configuration
+export const firstUserConfig = {
+  enabled: process.env.ENABLED_CHECK_FIRST_USER === 'true',
+} as const;
 
 // Export all configs as a single object for convenience
 export const config = {
@@ -157,6 +151,7 @@ export const config = {
   dev: devConfig,
   email: emailConfig,
   redis: redisConfig,
+  firstUser: firstUserConfig,
 } as const;
 
 export default config;
