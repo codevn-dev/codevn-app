@@ -31,7 +31,7 @@ import { RoleLevel } from '@/types/shared';
 
 function UserProfileContent() {
   const { t } = useI18n();
-  const params = useParams();
+  const params = useParams<{ id: string }>()!;
   const router = useRouter();
   const { user: currentUser, isAuthenticated, isLoading } = useAuthState();
   const { handleStartChat } = useChat();
@@ -39,7 +39,7 @@ function UserProfileContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const userId = params.id as string;
+  const userId = params.id;
 
   useEffect(() => {
     // Wait for auth state to be determined

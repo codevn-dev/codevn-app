@@ -13,7 +13,7 @@ export function AppFooter() {
         <div className="flex flex-col items-center gap-3 sm:hidden">
           <FooterLinks className="flex-col" />
           <FooterSocial />
-          <div className="flex w-full items-center justify-between">
+          <div className="flex w-full flex-col items-center gap-1">
             <FooterCopyright />
             <FooterVersion />
           </div>
