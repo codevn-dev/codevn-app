@@ -2,32 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Shield,
-  X,
-  AlertTriangle,
-  Smartphone,
-  Monitor,
-  Tablet,
-  Globe,
-  Clock,
-  RefreshCw,
-  LogIn,
-  Earth,
-  Terminal,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import {} from 'framer-motion';
+import {} from 'lucide-react';
+import {} from '@/components/ui/button';
+import {} from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { MotionContainer, ClientOnly } from '@/components/layout';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { apiGet, apiPost } from '@/lib/utils/api-client';
 import { useI18n } from '@/components/providers';
 import type { SessionInterface } from '@/types/shared';
+import {
+  SessionsHeader,
+  SessionsControls,
+  SessionsList,
+  SessionDetailsModal,
+  ConfirmModal,
+} from '@/features/sessions';
 
 function SessionsPageContent() {
-  const { t, locale } = useI18n();
+  const { locale } = useI18n();
   const { isAuthenticated, isLoading } = useAuthState();
   const router = useRouter();
 
@@ -159,51 +153,6 @@ function SessionsPageContent() {
     }
   };
 
-  const getDeviceIcon = (deviceType: string) => {
-    switch (deviceType) {
-      case 'Mobile':
-        return <Smartphone className="h-5 w-5" />;
-      case 'Tablet':
-        return <Tablet className="h-5 w-5" />;
-      case 'Desktop':
-      default:
-        return <Monitor className="h-5 w-5" />;
-    }
-  };
-
-  const getOSIcon = (os: string) => {
-    switch (os.toLowerCase()) {
-      case 'windows':
-        return <Monitor className="h-4 w-4" />;
-      case 'macos':
-      case 'mac':
-        return <Monitor className="h-4 w-4" />;
-      case 'linux':
-        return <Terminal className="h-4 w-4" />;
-      case 'android':
-        return <Smartphone className="h-4 w-4" />;
-      case 'ios':
-        return <Smartphone className="h-4 w-4" />;
-      default:
-        return <Terminal className="h-4 w-4" />;
-    }
-  };
-
-  const formatRelativeTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays}d ago`;
-  };
-
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -217,372 +166,58 @@ function SessionsPageContent() {
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <MotionContainer>
           <div className="rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="mb-6 sm:mb-8">
-              <div className="mb-4 flex items-center gap-3">
-                <Shield className="h-8 w-8 text-blue-500" />
-                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                  {t('sessions.title')}
-                </h1>
-              </div>
-              <p className="mt-1 text-gray-700 sm:mt-2">{t('sessions.subtitle')}</p>
-            </div>
+            <SessionsHeader
+              total={sessions.length}
+              refreshing={refreshing}
+              onRefresh={(e) => refreshSessions(e)}
+              canLogoutAll={sessions.length > 1}
+              onLogoutAll={() => setShowLogoutAll(true)}
+            />
 
-            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-lg font-semibold sm:text-xl">
-                {t('sessions.activeSessions')} ({sessions.length})
-              </h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={(e) => refreshSessions(e)}
-                  disabled={refreshing}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
-                  type="button"
-                >
-                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                </button>
-                {sessions.length > 1 && (
-                  <Button
-                    variant="back"
-                    size="sm"
-                    onClick={() => setShowLogoutAll(true)}
-                    className="flex items-center gap-2 text-red-600 hover:bg-red-50"
-                  >
-                    {t('sessions.terminateOtherSessions')}
-                  </Button>
-                )}
-              </div>
-            </div>
+            <SessionsControls viewMode={viewMode} onChange={(mode) => setViewMode(mode)} />
 
-            {/* Sticky View Mode Controls */}
-            <div className="sticky top-16 z-40 mb-6 rounded-xl bg-white/80 p-4 shadow-xl shadow-gray-300/60 backdrop-blur-sm">
-              <div className="flex gap-1 sm:gap-2">
-                {[
-                  { key: 'all', label: t('sessions.allSessions') },
-                  { key: 'current', label: t('sessions.current') },
-                  { key: 'other', label: t('sessions.otherDevices') },
-                ].map(({ key, label }) => (
-                  <Button
-                    key={key}
-                    size="sm"
-                    variant={viewMode === key ? 'default' : 'back'}
-                    onClick={() => setViewMode(key as 'all' | 'current' | 'other')}
-                    className={`flex-1 px-2 py-1.5 text-xs transition-all sm:flex-none sm:px-3 ${
-                      viewMode === key ? 'bg-brand text-white shadow-md' : 'hover:bg-gray-100'
-                    }`}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <SessionsList
+              filteredSessions={filteredSessions}
+              locale={locale}
+              onSelect={(session) => {
+                setSelectedSession(session);
+                setShowDetails(true);
+              }}
+              onTerminate={(token) => handleTerminateSession(token)}
+              logoutLoading={logoutLoading}
+            />
 
-            {/* Sessions List */}
-            <div className="space-y-3">
-              <AnimatePresence mode="wait">
-                {filteredSessions.length === 0 ? (
-                  <motion.div
-                    key="empty"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="py-8 text-center"
-                  >
-                    <Shield className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-                    <p className="text-gray-500">{t('sessions.noSessionsFound')}</p>
-                  </motion.div>
-                ) : (
-                  filteredSessions.map((session, index) => (
-                    <motion.div
-                      key={`session-${index}-${session.token.substring(0, 10)}`}
-                      initial={{ opacity: 0, x: 24 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
-                      onClick={() => {
-                        setSelectedSession(session);
-                        setShowDetails(true);
-                      }}
-                      className={`flex min-h-[72px] cursor-pointer items-center gap-3 rounded-xl p-3 ${
-                        session.isCurrent
-                          ? 'border border-blue-200 bg-gradient-to-r from-blue-50 to-white'
-                          : 'hover:bg-brand/10'
-                      }`}
-                    >
-                      {/* Device Icon */}
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
-                        {session.deviceInfo ? (
-                          getDeviceIcon(session.deviceInfo?.device || t('sessions.unknownDevice'))
-                        ) : (
-                          <Monitor className="h-5 w-5" />
-                        )}
-                      </div>
+            <SessionDetailsModal
+              open={showDetails}
+              session={selectedSession}
+              locale={locale as any}
+              onClose={() => setShowDetails(false)}
+              onTerminate={(token) => handleTerminateSession(token)}
+              logoutLoading={logoutLoading}
+            />
 
-                      {/* Session Info */}
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 flex items-center gap-2">
-                          <h3 className="truncate text-sm font-semibold text-gray-900">
-                            {session.deviceInfo?.device || t('sessions.unknownDevice')}
-                          </h3>
-                          {session.isCurrent && (
-                            <Badge
-                              variant="secondary"
-                              className="bg-blue-100 text-xs text-blue-800"
-                            >
-                              {t('sessions.currentBadge')}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Earth className="h-3 w-3" />
-                            {session.country?.name[locale] || t('sessions.unknown')}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatRelativeTime(session.lastActive || session.loginTime)}
-                          </span>
-                          {session.deviceInfo?.browser && (
-                            <span className="flex items-center gap-1">
-                              <Globe className="h-3 w-3" />
-                              {session.deviceInfo.browser}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+            <ConfirmModal
+              open={showLogoutOther}
+              titleKey="sessions.terminateSession"
+              descriptionKey="sessions.terminateSessionDescription"
+              confirmKey="sessions.terminateSessionButton"
+              onClose={() => {
+                setShowLogoutOther(false);
+                setSessionToLogout(null);
+              }}
+              onConfirm={confirmLogoutOther}
+              loading={logoutLoading === sessionToLogout}
+            />
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-2">
-                        {!session.isCurrent && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleTerminateSession(session.token);
-                            }}
-                            disabled={logoutLoading === session.token}
-                            className="text-red-600 hover:bg-red-50"
-                          >
-                            {logoutLoading === session.token ? (
-                              <LoadingScreen size="sm" />
-                            ) : (
-                              <X className="h-4 w-4" />
-                            )}
-                          </Button>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Session Details Modal */}
-            {showDetails && selectedSession && (
-              <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4 backdrop-blur-sm sm:px-0"
-                onClick={() => setShowDetails(false)}
-              >
-                <div
-                  className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl shadow-gray-300/60"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      {t('sessions.sessionDetails')}
-                    </h2>
-                    <p className="text-sm text-gray-600">
-                      {t('sessions.sessionDetailsDescription')}
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium text-gray-900">
-                        {t('sessions.deviceInformation')}
-                      </h4>
-                      <div className="mt-2 space-y-2 text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          {selectedSession.deviceInfo ? (
-                            getDeviceIcon(selectedSession.deviceInfo?.device || 'Desktop')
-                          ) : (
-                            <Monitor className="h-4 w-4" />
-                          )}
-                          <span>
-                            {selectedSession.deviceInfo?.device || t('sessions.unknownDevice')}
-                          </span>
-                        </div>
-                        {selectedSession.deviceInfo?.browser && (
-                          <div className="flex items-center gap-2">
-                            <Globe className="h-4 w-4" />
-                            <span>Browser: {selectedSession.deviceInfo.browser}</span>
-                          </div>
-                        )}
-                        {selectedSession.deviceInfo?.os && (
-                          <div className="flex items-center gap-2">
-                            {getOSIcon(selectedSession.deviceInfo.os)}
-                            <span>OS: {selectedSession.deviceInfo.os}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-medium text-gray-900">{t('sessions.locationTime')}</h4>
-                      <div className="mt-2 space-y-2 text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Earth className="h-4 w-4" />
-                          <span>
-                            {t('sessions.country')}:{' '}
-                            {selectedSession.country?.name[locale] || t('sessions.unknown')}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <LogIn className="h-4 w-4" />
-                          <span>
-                            {t('sessions.loginTime')}:{' '}
-                            {formatRelativeTime(selectedSession.loginTime)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          <span>
-                            {t('sessions.lastActive')}:{' '}
-                            {formatRelativeTime(
-                              selectedSession.lastActive || selectedSession.loginTime
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex justify-end gap-2">
-                    <Button variant="back" onClick={() => setShowDetails(false)}>
-                      {t('common.close')}
-                    </Button>
-                    {!selectedSession.isCurrent && (
-                      <Button
-                        variant="destructive"
-                        onClick={() => {
-                          setShowDetails(false);
-                          handleTerminateSession(selectedSession.token);
-                        }}
-                        disabled={logoutLoading === selectedSession.token}
-                        className="text-red-600 hover:bg-red-50"
-                      >
-                        {logoutLoading === selectedSession.token ? (
-                          <LoadingScreen size="sm" />
-                        ) : (
-                          <>
-                            <X className="mr-1 h-4 w-4" />
-                            {t('sessions.terminate')}
-                          </>
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Terminate Session Confirmation Modal */}
-            {showLogoutOther && (
-              <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4 backdrop-blur-sm sm:px-0"
-                onClick={() => {
-                  setShowLogoutOther(false);
-                  setSessionToLogout(null);
-                }}
-              >
-                <div
-                  className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl shadow-gray-300/60"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="mb-4">
-                    <h2 className="flex items-center space-x-2 text-lg font-semibold">
-                      <AlertTriangle className="h-5 w-5 text-red-500" />
-                      <span>{t('sessions.terminateSession')}</span>
-                    </h2>
-                    <p className="text-sm text-gray-600">
-                      {t('sessions.terminateSessionDescription')}
-                    </p>
-                  </div>
-
-                  <div className="flex justify-end space-x-3">
-                    <Button
-                      variant="back"
-                      className="border-gray-300"
-                      onClick={() => {
-                        setShowLogoutOther(false);
-                        setSessionToLogout(null);
-                      }}
-                      disabled={logoutLoading === sessionToLogout}
-                    >
-                      {t('common.cancel')}
-                    </Button>
-                    <Button
-                      variant="back"
-                      className="border-red-500 text-red-600 hover:bg-red-50"
-                      onClick={confirmLogoutOther}
-                      disabled={logoutLoading === sessionToLogout}
-                    >
-                      {logoutLoading === sessionToLogout ? (
-                        <LoadingScreen size="sm" />
-                      ) : (
-                        t('sessions.terminateSessionButton')
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Terminate Other Sessions Confirmation Modal */}
-            {showLogoutAll && (
-              <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4 backdrop-blur-sm sm:px-0"
-                onClick={() => setShowLogoutAll(false)}
-              >
-                <div
-                  className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl shadow-gray-300/60"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="mb-4">
-                    <h2 className="flex items-center space-x-2 text-lg font-semibold">
-                      <AlertTriangle className="h-5 w-5 text-red-500" />
-                      <span>{t('sessions.terminateOtherSessionsTitle')}</span>
-                    </h2>
-                    <p className="text-sm text-gray-600">
-                      {t('sessions.terminateOtherSessionsDescription')}
-                    </p>
-                  </div>
-
-                  <div className="flex justify-end space-x-3">
-                    <Button
-                      variant="back"
-                      className="border-gray-300"
-                      onClick={() => setShowLogoutAll(false)}
-                      disabled={logoutLoading === 'all'}
-                    >
-                      {t('common.cancel')}
-                    </Button>
-                    <Button
-                      variant="back"
-                      className="border-red-500 text-red-600 hover:bg-red-50"
-                      onClick={logoutAllSessions}
-                      disabled={logoutLoading === 'all'}
-                    >
-                      {logoutLoading === 'all' ? (
-                        <LoadingScreen size="sm" />
-                      ) : (
-                        t('sessions.terminateOtherSessionsButton')
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <ConfirmModal
+              open={showLogoutAll}
+              titleKey="sessions.terminateOtherSessionsTitle"
+              descriptionKey="sessions.terminateOtherSessionsDescription"
+              confirmKey="sessions.terminateOtherSessionsButton"
+              onClose={() => setShowLogoutAll(false)}
+              onConfirm={logoutAllSessions}
+              loading={logoutLoading === 'all'}
+            />
           </div>
         </MotionContainer>
       </div>

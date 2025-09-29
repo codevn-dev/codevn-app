@@ -2,6 +2,12 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.3]() (2025-09-29)
+
+### Refactored
+
+- Improved my articles and session management structure and code organization
+
 ## [v0.1.2]() (2025-09-29)
 
 ### Refactored
