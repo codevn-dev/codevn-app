@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
     domains: ['localhost', '127.0.0.1'],
     formats: ['image/avif', 'image/webp'],
   },
-  swcMinify: true,
   productionBrowserSourceMaps: false,
   compiler: {
     removeConsole: {
