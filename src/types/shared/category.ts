@@ -8,7 +8,6 @@ export interface Category {
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: {
-    id: string;
     name: string;
   };
   parent?: Category | null;

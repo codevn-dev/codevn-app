@@ -71,7 +71,7 @@ export class ArticlesService extends BaseService {
       content: article.content,
       slug: article.slug,
       thumbnail: article.thumbnail || undefined,
-      categoryId: article.categoryId,
+      // categoryId removed from API response (UI uses category.id)
       published: article.published,
       createdAt: article.createdAt,
       updatedAt: article.updatedAt ?? null,
@@ -108,7 +108,7 @@ export class ArticlesService extends BaseService {
       title: article.title,
       slug: article.slug,
       thumbnail: article.thumbnail || undefined,
-      categoryId: article.categoryId,
+      // categoryId removed from API response (UI uses category.id)
       published: article.published,
       createdAt: article.createdAt,
       updatedAt: article.updatedAt ?? null,
@@ -156,10 +156,6 @@ export class ArticlesService extends BaseService {
         ? comment.replies.map((c: any) => this.transformCommentData(c))
         : undefined,
       replyCount: typeof comment.replyCount === 'number' ? comment.replyCount : undefined,
-      _count: {
-        replies: comment._count?.replies ?? 0,
-        likes: comment._count?.likes ?? 0,
-      },
       likeCount: typeof comment.likeCount === 'number' ? comment.likeCount : undefined,
       unlikeCount: typeof comment.unlikeCount === 'number' ? comment.unlikeCount : undefined,
       userHasLiked: comment.userHasLiked ?? undefined,
@@ -371,7 +367,7 @@ export class ArticlesService extends BaseService {
         content: article.content,
         slug: article.slug,
         thumbnail: article.thumbnail || undefined,
-        categoryId: article.categoryId,
+        // categoryId removed from API response (UI uses category.id)
         published: article.published,
         createdAt: article.createdAt as any,
         updatedAt: article.updatedAt as any,
@@ -475,7 +471,8 @@ export class ArticlesService extends BaseService {
 
       const scored: Array<{ article: any; score: number }> = [];
       for (const a of candidates) {
-        const aParentId = await getParentId(a.categoryId);
+        if (!a.categoryId) continue;
+        const aParentId = await getParentId(a.categoryId as string);
         const sameCategory = a.categoryId === base.categoryId;
         const relatedCategory =
           a.categoryId === baseParentId || // candidate is a child of base's parent

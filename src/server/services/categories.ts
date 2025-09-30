@@ -34,7 +34,6 @@ export class CategoriesService extends BaseService {
           createdAt: category.createdAt,
           updatedAt: category.updatedAt ?? category.createdAt,
           createdBy: {
-            id: category.createdBy?.id || (category as any).createdById,
             name: category.createdBy?.name || 'Unknown',
           },
           parent: category.parent
@@ -54,7 +53,6 @@ export class CategoriesService extends BaseService {
             createdAt: child.createdAt,
             updatedAt: child.updatedAt ?? child.createdAt,
             createdBy: {
-              id: child.createdBy?.id || (child as any).createdById,
               name: child.createdBy?.name || 'Unknown',
             },
             parent: child.parent

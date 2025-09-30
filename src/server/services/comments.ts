@@ -20,10 +20,7 @@ export class CommentsService extends BaseService {
         name: comment.author?.name || 'Unknown',
         avatar: comment.author?.avatar || null,
       },
-      _count: {
-        replies: comment._count?.replies ?? 0,
-        likes: comment._count?.likes ?? 0,
-      },
+      // drop _count from API; UI uses replyCount/likeCount/unlikeCount
       likeCount: typeof comment.likeCount === 'number' ? comment.likeCount : undefined,
       unlikeCount: typeof comment.unlikeCount === 'number' ? comment.unlikeCount : undefined,
       userHasLiked: comment.userHasLiked ?? undefined,

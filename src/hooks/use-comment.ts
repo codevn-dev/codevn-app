@@ -56,10 +56,6 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
               unlikeCount: message.data.unlikeCount || 0,
               userHasLiked: message.data.userHasLiked || false,
               userHasUnliked: message.data.userHasUnliked || false,
-              _count: {
-                replies: message.data.replyCount || 0,
-                likes: message.data.likeCount || 0,
-              },
             };
             onNewComment(comment);
           }
@@ -83,10 +79,6 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
               unlikeCount: message.data.unlikeCount || 0,
               userHasLiked: message.data.userHasLiked || false,
               userHasUnliked: message.data.userHasUnliked || false,
-              _count: {
-                replies: message.data.replyCount || 0,
-                likes: message.data.likeCount || 0,
-              },
             };
             onNewReply(reply);
           }

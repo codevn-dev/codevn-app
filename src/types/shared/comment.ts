@@ -12,10 +12,6 @@ export interface Comment {
   };
   replies?: Comment[];
   replyCount?: number;
-  _count: {
-    replies: number;
-    likes: number;
-  };
   likeCount?: number;
   unlikeCount?: number;
   userHasLiked?: boolean;

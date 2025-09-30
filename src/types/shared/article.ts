@@ -4,7 +4,7 @@ export interface Article {
   content: string;
   slug: string;
   thumbnail?: string;
-  categoryId: string;
+  categoryId?: string;
   published: boolean;
   createdAt: Date | string;
   updatedAt: Date | string | null;
