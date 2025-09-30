@@ -29,10 +29,10 @@ function DesktopCustomCursor() {
     checkDevice();
     const mediaQuery = window.matchMedia('(pointer: coarse)');
     const screenQuery = window.matchMedia('(min-width: 1024px)');
-    
+
     mediaQuery.addEventListener('change', checkDevice);
     screenQuery.addEventListener('change', checkDevice);
-    
+
     return () => {
       mediaQuery.removeEventListener('change', checkDevice);
       screenQuery.removeEventListener('change', checkDevice);
