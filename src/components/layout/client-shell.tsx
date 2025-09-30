@@ -1,35 +1,34 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import { Suspense, lazy } from 'react';
+import { PageTransition } from './page-transition';
+import { BackToTop } from './back-to-top';
+import { AuthRedirectHandler } from './auth-redirect-handler';
 
 interface ClientShellProps {
   children: React.ReactNode;
 }
 
-const DynamicPageTransition = dynamic(() => import('./index').then((m) => m.PageTransition), {
-  ssr: false,
-});
+// Sử dụng lazy thay vì dynamic để tránh lỗi SSR
+const LazyCustomCursor = lazy(() => import('./custom-cursor').then((m) => ({ default: m.CustomCursor })));
 
-const DynamicBackToTop = dynamic(() => import('./index').then((m) => m.BackToTop), { ssr: false });
-
-const DynamicAuthRedirectHandler = dynamic(
-  () => import('./index').then((m) => m.AuthRedirectHandler),
-  { ssr: false }
-);
-
-const DynamicCustomCursor = dynamic(() => import('./custom-cursor').then((m) => m.CustomCursor), {
-  ssr: false,
-});
-
+// ClientShell component chính
 export function ClientShell({ children }: ClientShellProps) {
   return (
     <>
-      <DynamicAuthRedirectHandler />
-      <DynamicCustomCursor />
-      <DynamicPageTransition>{children}</DynamicPageTransition>
-      <DynamicBackToTop />
+      <AuthRedirectHandler />
+      <Suspense fallback={null}>
+        <LazyCustomCursor />
+      </Suspense>
+      <PageTransition>{children}</PageTransition>
+      <BackToTop />
     </>
   );
+}
+
+// Export ClientShellWrapper để giữ tương thích với code hiện tại
+export function ClientShellWrapper({ children }: ClientShellProps) {
+  return <ClientShell>{children}</ClientShell>;
 }
 
 export default ClientShell;

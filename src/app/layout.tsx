@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
-import { AppFooter } from '@/components/layout';
-import ClientShell from '@/components/layout/client-shell';
+import { AppFooter, ClientShellWrapper } from '@/components/layout';
 import { cookies } from 'next/headers';
 import type { Locale } from '@/stores/i18n-store';
 
@@ -38,12 +37,12 @@ export default async function RootLayout({
         suppressHydrationWarning={true}
       >
         <Providers initialLocale={initialLocale}>
-          <ClientShell>
+          <ClientShellWrapper>
             <div className="flex min-h-screen flex-col">
               <main className="flex-1 pt-16">{children}</main>
               <AppFooter />
             </div>
-          </ClientShell>
+          </ClientShellWrapper>
         </Providers>
       </body>
     </html>

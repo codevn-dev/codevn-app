@@ -270,7 +270,7 @@ export class ArticlesService extends BaseService {
         if (cached) {
           const ids: string[] = JSON.parse(cached);
           if (Array.isArray(ids) && ids.length > 0) {
-            const articlesFull = await articleRepository.findManyByIdsWithCounts(ids);
+            const articlesFull = await articleRepository.findManyByIdsWithCounts(ids, undefined, true);
             const list = articlesFull.map((a: any) => this.transformArticleSummary(a));
             if (list.length > 0) return list as Article[];
           }

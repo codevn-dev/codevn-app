@@ -7,6 +7,8 @@ import { apiGet } from '@/lib/utils/api-client';
 import { cookies } from 'next/headers';
 import type { Article } from '@/types/shared/article';
 
+export const revalidate = 180; // ISR per-article page: 3 minutes
+
 interface ArticlePageProps {
   params: Promise<{
     slug: string;

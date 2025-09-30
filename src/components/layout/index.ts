@@ -9,3 +9,4 @@ export { FooterSocial } from './footer-social';
 export { FooterCopyright } from './footer-copyright';
 export { AuthRedirectHandler } from './auth-redirect-handler';
 export { BackToTop } from './back-to-top';
+export { ClientShellWrapper, ClientShell } from './client-shell';

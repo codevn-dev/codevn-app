@@ -23,7 +23,19 @@ const LeaderboardSidebar = dynamic(
   { ssr: false, loading: () => null }
 );
 
-export function HomepageContent() {
+interface HomepageInitialDataProps {
+  initialCategories?: Category[];
+  initialArticles?: Article[];
+  initialHasMore?: boolean;
+  initialFeatured?: Article[];
+}
+
+export function HomepageContent({
+  initialCategories,
+  initialArticles,
+  initialHasMore,
+  initialFeatured,
+}: HomepageInitialDataProps = {}) {
   const { t: _t } = useI18n();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -281,7 +293,7 @@ export function HomepageContent() {
 
   // Back-to-top is handled globally; no local scroll listener needed
 
-  const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
+  const [featuredArticles, setFeaturedArticles] = useState<Article[]>(initialFeatured || []);
   const [isXL, setIsXL] = useState(false);
 
   // Detect xl viewport for loading sidebars only on large screens
@@ -295,6 +307,7 @@ export function HomepageContent() {
   }, []);
 
   useEffect(() => {
+    if (Array.isArray(initialFeatured) && initialFeatured.length > 0) return;
     const fetchFeatured = async () => {
       try {
         const params = new URLSearchParams({ limit: '3', windowDays: '14' });
@@ -305,6 +318,23 @@ export function HomepageContent() {
       }
     };
     fetchFeatured();
+  }, [initialFeatured]);
+
+  // Hydrate store from server data once on mount
+  useEffect(() => {
+    let didHydrate = false;
+    if (Array.isArray(initialCategories) && initialCategories.length > 0) {
+      setCategories(initialCategories);
+      didHydrate = true;
+    }
+    if (Array.isArray(initialArticles) && initialArticles.length > 0) {
+      setArticles(initialArticles);
+      setHasMoreArticles(Boolean(initialHasMore));
+      initialPageLoadedRef.current = true;
+      lastLoadedPageRef.current = 1;
+    }
+    if (didHydrate) setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoading && !initialPageLoadedRef.current) {
