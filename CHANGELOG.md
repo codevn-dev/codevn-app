@@ -2,6 +2,13 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.6]() (2025-09-30)
+
+### Optimized
+
+- Improved API call parallelization for better performance.
+- Installed `cassnano` for enhanced functionality.
+
 ## [v0.1.5]() (2025-09-30)
 
 ### Optimized
