@@ -14,8 +14,35 @@ const nextConfig: NextConfig = {
     // Enable SWC minification for better performance
     styledComponents: true,
   },
+  // SWC minification is enabled by default in Next.js 13+
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+    optimizePackageImports: [
+      'lucide-react', 
+      '@radix-ui/react-dialog', 
+      '@radix-ui/react-dropdown-menu', 
+      '@radix-ui/react-select',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-label',
+      '@radix-ui/react-separator',
+      '@radix-ui/react-slot',
+      '@tiptap/react',
+      '@tiptap/starter-kit',
+      '@tiptap/extension-text-align',
+      '@tiptap/extension-underline',
+      '@tiptap/extension-link',
+      '@tiptap/extension-text-style',
+      '@tiptap/extension-color',
+      '@tiptap/extension-code-block-lowlight',
+      '@tiptap/extension-image',
+      '@tiptap/core',
+      'highlight.js',
+      'lowlight',
+      'framer-motion',
+      'zustand',
+      'clsx',
+      'tailwind-merge',
+      'class-variance-authority'
+    ],
     // Enable modern JavaScript for better performance
     esmExternals: true,
     // Optimize CSS imports - disabled for Turbopack compatibility
