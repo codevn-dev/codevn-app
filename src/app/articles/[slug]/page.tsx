@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ArticleContent } from '@/features/articles';
+import { ArticleContentClient } from '@/components/features/articles/article-content.client';
 import { PreviewGuard } from '@/components/layout';
 import { config } from '@/config';
 import { apiGet } from '@/lib/utils/api-client';
@@ -25,7 +25,8 @@ export default async function ArticlePage({
   let article: Article;
   try {
     const endpoint = `/api/articles/slug/${slug}${isPreview ? '?preview=true' : ''}`;
-    const cookieHeader = cookies().toString();
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
     article = await apiGet<Article>(endpoint, { headers: { cookie: cookieHeader } });
   } catch {
     notFound();
@@ -97,7 +98,7 @@ export default async function ArticlePage({
           />
         );
       })()}
-      <ArticleContent article={articleWithCounts} isPreview={isPreview} />
+      <ArticleContentClient article={articleWithCounts} isPreview={isPreview} />
     </PreviewGuard>
   );
 }

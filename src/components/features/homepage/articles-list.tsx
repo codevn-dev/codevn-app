@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MotionContainer } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -71,30 +72,56 @@ export function ArticlesList({
 
       <motion.div
         variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+        initial={
+          typeof window !== 'undefined' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? undefined
+            : 'hidden'
+        }
+        animate={
+          typeof window !== 'undefined' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? undefined
+            : 'visible'
+        }
         className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 400px' }}
       >
-        {filteredArticles.map((article) => (
+        {filteredArticles.map((article, index) => (
           <motion.div
             key={article.id}
             variants={itemVariants}
-            whileHover={{
-              y: -12,
-              scale: 1.02,
-              transition: { type: 'spring', stiffness: 380, damping: 28 },
-            }}
-            whileTap={{ scale: 0.99 }}
+            whileHover={
+              typeof window !== 'undefined' &&
+              window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? undefined
+                : {
+                    y: -12,
+                    scale: 1.02,
+                    transition: { type: 'spring', stiffness: 380, damping: 28 },
+                  }
+            }
+            whileTap={
+              typeof window !== 'undefined' &&
+              window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? undefined
+                : { scale: 0.99 }
+            }
           >
             <Link href={`/articles/${article.slug}`} className="block h-full">
-              <div className="group hover:shadow-3xl shadow-brand/30 hover:shadow-brand/40 block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl drop-shadow-2xl transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-[1.02]">
+              <div className="group block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-[1.02]">
                 {/* Thumbnail (consistent height whether exists or not) */}
                 <div className="relative aspect-[16/9] w-full overflow-hidden">
                   {article.thumbnail ? (
-                    <img
+                    <Image
                       src={article.thumbnail}
                       alt={article.title}
-                      className="h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      quality={70}
+                      priority={index === 0}
+                      fetchPriority={index === 0 ? 'high' : undefined}
+                      className="object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
                     />
                   ) : (
                     <div

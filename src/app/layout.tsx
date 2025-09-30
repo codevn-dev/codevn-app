@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
-import { PageTransition, AppFooter, AuthRedirectHandler, BackToTop } from '@/components/layout';
-import { CustomCursor } from '@/components/layout/custom-cursor';
+import { AppFooter } from '@/components/layout';
+import ClientShell from '@/components/layout/client-shell';
 import { cookies } from 'next/headers';
 import type { Locale } from '@/stores/i18n-store';
 
@@ -38,15 +38,12 @@ export default async function RootLayout({
         suppressHydrationWarning={true}
       >
         <Providers initialLocale={initialLocale}>
-          <AuthRedirectHandler />
-          <CustomCursor />
-          <PageTransition>
+          <ClientShell>
             <div className="flex min-h-screen flex-col">
               <main className="flex-1 pt-16">{children}</main>
               <AppFooter />
             </div>
-          </PageTransition>
-          <BackToTop />
+          </ClientShell>
         </Providers>
       </body>
     </html>

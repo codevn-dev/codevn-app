@@ -10,12 +10,14 @@ interface MotionContainerProps {
 }
 
 export function MotionContainer({ children, delay = 0, className }: MotionContainerProps) {
+  const prefersReducedMotion =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16, scale: 0.99 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: '0px 0px -80px 0px' }}
-      transition={{ ...transitionSpringMedium, delay }}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 16, scale: 0.99 }}
+      whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+      viewport={prefersReducedMotion ? { once: true } : { once: true, margin: '0px 0px -80px 0px' }}
+      transition={prefersReducedMotion ? undefined : { ...transitionSpringMedium, delay }}
       className={className}
     >
       {children}
@@ -24,12 +26,16 @@ export function MotionContainer({ children, delay = 0, className }: MotionContai
 }
 
 export function SectionReveal({ children, delay = 0, className }: MotionContainerProps) {
+  const prefersReducedMotion =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   return (
     <motion.section
-      initial={{ opacity: 0, y: 18, scale: 0.99 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: '0px 0px -120px 0px' }}
-      transition={{ ...transitionSpringMedium, delay }}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 18, scale: 0.99 }}
+      whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+      viewport={
+        prefersReducedMotion ? { once: true } : { once: true, margin: '0px 0px -120px 0px' }
+      }
+      transition={prefersReducedMotion ? undefined : { ...transitionSpringMedium, delay }}
       className={className}
     >
       {children}

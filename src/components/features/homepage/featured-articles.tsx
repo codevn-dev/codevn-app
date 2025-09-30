@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { MotionContainer } from '@/components/layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, Calendar, Eye, ThumbsUp } from 'lucide-react';
@@ -38,15 +39,20 @@ export function FeaturedArticles({
             </p>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {featuredArticles.map((article) => (
+            {featuredArticles.map((article, index) => (
               <Link key={article.id} href={`/articles/${article.slug}`} className="block h-full">
                 <div className="group hover:shadow-3xl shadow-brand/30 hover:shadow-brand/40 block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl drop-shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-[1.01]">
                   <div className="relative aspect-[16/9] w-full overflow-hidden">
                     {article.thumbnail ? (
-                      <img
+                      <Image
                         src={article.thumbnail}
                         alt={article.title}
-                        className="h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        priority={index === 0}
+                        fetchPriority={index === 0 ? 'high' : undefined}
+                        quality={70}
+                        className="object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
                       />
                     ) : (
                       <div

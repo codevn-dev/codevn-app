@@ -1,20 +1,27 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { MotionContainer } from '@/components/layout';
+import { MotionContainer } from './motion-lite';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { useForumStore } from '@/stores';
 import { useAuthState } from '@/hooks/use-auth-state';
-import { findCategoryById } from '@/features/articles';
+import { findCategoryById } from '@/features/articles/category-utils';
 import { apiGet } from '@/lib/utils';
 import { Category, ArticleListResponse, Article } from '@/types/shared';
 import { useI18n } from '@/components/providers';
-import { AboutSidebar } from './about-sidebar';
+import dynamic from 'next/dynamic';
 import { FeaturedArticles } from './featured-articles';
 import { ArticlesFilters } from './articles-filters';
 import { ArticlesList } from './articles-list';
-import { LeaderboardSidebar } from './leaderboard-sidebar';
+const AboutSidebar = dynamic(() => import('./about-sidebar').then((m) => m.AboutSidebar), {
+  ssr: false,
+  loading: () => null,
+});
+const LeaderboardSidebar = dynamic(
+  () => import('./leaderboard-sidebar').then((m) => m.LeaderboardSidebar),
+  { ssr: false, loading: () => null }
+);
 
 export function HomepageContent() {
   const { t: _t } = useI18n();
@@ -275,6 +282,17 @@ export function HomepageContent() {
   // Back-to-top is handled globally; no local scroll listener needed
 
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
+  const [isXL, setIsXL] = useState(false);
+
+  // Detect xl viewport for loading sidebars only on large screens
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(min-width: 1280px)');
+    const update = () => setIsXL(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -337,10 +355,12 @@ export function HomepageContent() {
     <div className="py-6">
       {/* Main Content with Leaderboard */}
       <div className="2xl:max-w-8xl relative mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
-        {/* About (left) and Leaderboard (right) on xl+ */}
-        <div className="hidden xl:block">
-          <AboutSidebar mounted={mounted} />
-        </div>
+        {/* About (left) only render/load on xl+ to reduce mobile JS */}
+        {isXL && (
+          <div className="hidden xl:block">
+            <AboutSidebar mounted={mounted} />
+          </div>
+        )}
 
         {/* Featured Articles Section */}
         <FeaturedArticles
@@ -382,8 +402,8 @@ export function HomepageContent() {
           </MotionContainer>
         </div>
 
-        {/* Leaderboard Section - Hidden on mobile, only show on xl+ screens */}
-        <LeaderboardSidebar mounted={mounted} />
+        {/* Leaderboard only render/load on xl+ */}
+        {isXL && <LeaderboardSidebar mounted={mounted} />}
       </div>
       {/* BackToTop is now global in layout */}
     </div>

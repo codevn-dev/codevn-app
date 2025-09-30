@@ -2,6 +2,16 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.5]() (2025-09-30)
+
+### Optimized
+
+- Improved Lighthouse performance scores for faster page speed.
+
+### Refactored
+
+- Removed unused API field for cleaner codebase.
+
 ## [v0.1.4]() (2025-09-30)
 
 ### Featured

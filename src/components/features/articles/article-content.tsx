@@ -1,9 +1,29 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { modalOverlay, modalContent } from '@/components/layout/motion-presets';
-import { MotionContainer } from '@/components/layout';
+import dynamic from 'next/dynamic';
+const MotionContainer = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) => <div className={className}>{children}</div>;
+const AnimatePresence = dynamic(() => import('framer-motion').then((m) => m.AnimatePresence), {
+  ssr: false,
+});
+const MotionDiv = dynamic(() => import('framer-motion').then((m) => m.motion.div), { ssr: false });
+const modalOverlay = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+} as const;
+const modalContent = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 8 },
+} as const;
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -589,14 +609,14 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
 
       <AnimatePresence>
         {isEditOpen && (
-          <motion.div
+          <MotionDiv
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
             variants={modalOverlay}
             initial="initial"
             animate="animate"
             exit="exit"
           >
-            <motion.div
+            <MotionDiv
               className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6 shadow-2xl"
               variants={modalContent}
             >
@@ -739,8 +759,8 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                   onClose={() => setShowImageUpload(false)}
                 />
               )}
-            </motion.div>
-          </motion.div>
+            </MotionDiv>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </div>

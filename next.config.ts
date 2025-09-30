@@ -1,6 +1,21 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  images: {
+    // TODO: replace with your actual image domains (CDN/storage)
+    domains: ['localhost', '127.0.0.1'],
+    formats: ['image/avif', 'image/webp'],
+  },
+  swcMinify: true,
+  productionBrowserSourceMaps: false,
+  compiler: {
+    removeConsole: {
+      exclude: ['error', 'warn'],
+    },
+  },
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
