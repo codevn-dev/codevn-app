@@ -17,7 +17,6 @@ export class UploadService extends BaseService {
       const uploadResult = await fileUpload.uploadImage(fileData, 'images');
 
       const response: UploadImageResponse = {
-        success: true,
         imageUrl: uploadResult.publicPath,
         fileName: uploadResult.originalName,
         size: uploadResult.size,

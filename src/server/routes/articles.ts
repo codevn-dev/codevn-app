@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest, optionalAuthMiddleware } from '../middleware';
 import { articlesService } from '../services';
 import { CommonError } from '@/types/shared';
+import { ok, fail } from '../utils/response';
 import { CreateArticleRequest, UpdateArticleRequest } from '@/types/shared/article';
 import { ReactionRequest } from '@/types/shared/reaction';
 import {
@@ -20,9 +21,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
       try {
         const authRequest = request as AuthenticatedRequest;
         const response = await articlesService.getArticles(request, authRequest.user?.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -37,9 +38,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
       try {
         const { id } = request.params;
         const list = await articlesService.getRelatedArticles(id, 5);
-        return reply.send({ articles: list });
+        return reply.send(ok({ articles: list }));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -54,9 +55,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
     ) => {
       try {
         const items = await articlesService.getFeaturedArticles(request);
-        return reply.send({ articles: items });
+        return reply.send(ok({ articles: items }));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -72,9 +73,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const body = request.body as CreateArticleRequest;
         const response = await articlesService.createArticle(body, authRequest.user!.id);
-        return reply.status(201).send(response);
+        return reply.status(201).send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -90,9 +91,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const body = request.body as UpdateArticleRequest;
         const response = await articlesService.updateArticle(body, authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -109,9 +110,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const query = request.query as any;
         const id = query.id;
         const response = await articlesService.deleteArticle(id, authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -142,9 +143,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
           authRequest.user!.id,
           action
         );
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -168,9 +169,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const userId = preview === 'true' ? authRequest.user?.id : undefined;
 
         const response = await articlesService.getArticleBySlug(slug, userId);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -192,7 +193,7 @@ export async function articleRoutes(fastify: FastifyInstance) {
 
         // Skip tracking for bots
         if (isBot) {
-          return reply.send({ success: true });
+          return reply.send(ok(true));
         }
 
         // Get country code from Cloudflare header
@@ -217,9 +218,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
           countryCode,
           device,
         });
-        return reply.send({ success: true });
+        return reply.send(ok(true));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -235,9 +236,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
         const response = await articlesService.getUserArticleReaction(id, authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -253,9 +254,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
         const response = await articlesService.removeUserArticleReaction(id, authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -281,9 +282,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const { id } = request.params;
         const query = request.query as CommentQuery;
         const response = await articlesService.getArticleComments(id, query, authRequest.user?.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -309,9 +310,9 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const { id } = request.params;
         const body = request.body as CreateCommentBody;
         const response = await articlesService.createArticleComment(id, body, authRequest.user!.id);
-        return reply.status(201).send(response);
+        return reply.status(201).send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );

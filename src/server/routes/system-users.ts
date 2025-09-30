@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { systemUsersService } from '../services';
 import { CommonError } from '@/types/shared/errors';
+import { ok, fail } from '../utils/response';
 import { CreateSystemUserRequest, UpdateSystemUserRequest } from '@/types/shared/auth';
 import { isAdmin } from '@/lib/utils';
 
@@ -18,13 +19,13 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
 
         // Only admins can access system users
         if (!isAdmin(authRequest.user!.role)) {
-          return reply.status(403).send({ error: 'Access denied' });
+          return reply.status(403).send(fail('Access denied'));
         }
 
         const response = await systemUsersService.getSystemUsers();
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -38,9 +39,9 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const response = await systemUsersService.getSystemUsers();
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -57,12 +58,12 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
 
         // Only admins can create system users
         if (!isAdmin(authRequest.user!.role)) {
-          return reply.status(403).send({ error: 'Access denied' });
+          return reply.status(403).send(fail('Access denied'));
         }
 
         const body = request.body as CreateSystemUserRequest;
         const response = await systemUsersService.createSystemUser(body);
-        return reply.status(201).send(response);
+        return reply.status(201).send(ok(response));
       } catch (e: any) {
         const message = e?.message || '';
         const isBad =
@@ -95,7 +96,7 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
 
         // Only admins can send via system users
         if (!isAdmin(authRequest.user!.role)) {
-          return reply.status(403).send({ error: 'Access denied' });
+          return reply.status(403).send(fail('Access denied'));
         }
 
         const systemUserId = request.params.id;
@@ -109,9 +110,9 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
           isSendAll,
         });
 
-        return reply.send(result);
+        return reply.send(ok(result));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -131,25 +132,29 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
 
         // Only admins can update system users
         if (!isAdmin(authRequest.user!.role)) {
-          return reply.status(403).send({ error: 'Access denied' });
+          return reply.status(403).send(fail('Access denied'));
         }
 
         const userId = request.params.id;
         const body = request.body as UpdateSystemUserRequest;
         const response = await systemUsersService.updateSystemUser(userId, body);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch (e: any) {
         const message = e?.message || '';
         const isNotFound = message.toLowerCase().includes('not found');
         const isBad =
           message.toLowerCase().includes('invalid') || message.toLowerCase().includes('required');
-        return reply.status(isNotFound ? 404 : isBad ? 400 : 500).send({
-          error: isNotFound
-            ? CommonError.NOT_FOUND
-            : isBad
-              ? CommonError.BAD_REQUEST
-              : CommonError.INTERNAL_ERROR,
-        });
+        return reply
+          .status(isNotFound ? 404 : isBad ? 400 : 500)
+          .send(
+            fail(
+              isNotFound
+                ? CommonError.NOT_FOUND
+                : isBad
+                  ? CommonError.BAD_REQUEST
+                  : CommonError.INTERNAL_ERROR
+            )
+          );
       }
     }
   );
@@ -166,24 +171,28 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
 
         // Only admins can delete system users
         if (!isAdmin(authRequest.user!.role)) {
-          return reply.status(403).send({ error: 'Access denied' });
+          return reply.status(403).send(fail('Access denied'));
         }
 
         const userId = request.params.id;
         const response = await systemUsersService.deleteSystemUser(userId);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch (e: any) {
         const message = e?.message || '';
         const isNotFound = message.toLowerCase().includes('not found');
         const isBad =
           message.toLowerCase().includes('invalid') || message.toLowerCase().includes('required');
-        return reply.status(isNotFound ? 404 : isBad ? 400 : 500).send({
-          error: isNotFound
-            ? CommonError.NOT_FOUND
-            : isBad
-              ? CommonError.BAD_REQUEST
-              : CommonError.INTERNAL_ERROR,
-        });
+        return reply
+          .status(isNotFound ? 404 : isBad ? 400 : 500)
+          .send(
+            fail(
+              isNotFound
+                ? CommonError.NOT_FOUND
+                : isBad
+                  ? CommonError.BAD_REQUEST
+                  : CommonError.INTERNAL_ERROR
+            )
+          );
       }
     }
   );
@@ -200,29 +209,33 @@ export async function systemUserRoutes(fastify: FastifyInstance) {
 
         // Only admins can upload avatars for system users
         if (!isAdmin(authRequest.user!.role)) {
-          return reply.status(403).send({ error: 'Access denied' });
+          return reply.status(403).send(fail('Access denied'));
         }
 
         const userId = request.params.id;
         const data = await (request as any).file();
         if (!data) {
-          return reply.status(400).send({ error: 'No file provided', code: 'BAD_REQUEST' });
+          return reply.status(400).send(fail('No file provided'));
         }
 
         const response = await systemUsersService.uploadSystemUserAvatar(userId, data);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch (e: any) {
         const message = e?.message || '';
         const isNotFound = message.toLowerCase().includes('not found');
         const isBad =
           message.toLowerCase().includes('invalid') || message.toLowerCase().includes('required');
-        return reply.status(isNotFound ? 404 : isBad ? 400 : 500).send({
-          error: isNotFound
-            ? CommonError.NOT_FOUND
-            : isBad
-              ? CommonError.BAD_REQUEST
-              : CommonError.INTERNAL_ERROR,
-        });
+        return reply
+          .status(isNotFound ? 404 : isBad ? 400 : 500)
+          .send(
+            fail(
+              isNotFound
+                ? CommonError.NOT_FOUND
+                : isBad
+                  ? CommonError.BAD_REQUEST
+                  : CommonError.INTERNAL_ERROR
+            )
+          );
       }
     }
   );

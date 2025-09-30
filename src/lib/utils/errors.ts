@@ -57,13 +57,13 @@ export function handleApiError(error: unknown): NextResponse {
   if (error instanceof Error) {
     const errStr = String(error.message) as SharedError | string;
     const status = mapErrorToStatus(errStr);
-    return NextResponse.json({ error: errStr }, { status });
+    return NextResponse.json({ success: false, error: errStr }, { status });
   }
 
   // Unknown error
-  return NextResponse.json({ error: CommonError.INTERNAL_ERROR }, { status: 500 });
+  return NextResponse.json({ success: false, error: CommonError.INTERNAL_ERROR }, { status: 500 });
 }
 
 export function createSuccessResponse(data: any, statusCode: number = 200): NextResponse {
-  return NextResponse.json(data, { status: statusCode });
+  return NextResponse.json({ success: true, data }, { status: statusCode });
 }

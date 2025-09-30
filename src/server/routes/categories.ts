@@ -3,15 +3,16 @@ import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { categoriesService, adminService } from '../services';
 import { CommonError, CategoryError } from '@/types/shared';
 import { CreateCategoryRequest, UpdateCategoryRequest } from '@/types/shared/category';
+import { ok, fail } from '../utils/response';
 
 export async function categoryRoutes(fastify: FastifyInstance) {
   // GET /api/categories - Get all categories with counts (public)
   fastify.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const response = await categoriesService.getCategories();
-      return reply.send(response);
+      return reply.send(ok(response));
     } catch {
-      return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+      return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
     }
   });
 
@@ -26,9 +27,9 @@ export async function categoryRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const body = request.body as CreateCategoryRequest;
         const response = await adminService.createCategory(authRequest.user!, body);
-        return reply.status(201).send(response);
+        return reply.status(201).send(ok(response));
       } catch {
-        return reply.status(400).send({ error: CommonError.BAD_REQUEST });
+        return reply.status(400).send(fail(CommonError.BAD_REQUEST));
       }
     }
   );
@@ -44,10 +45,10 @@ export async function categoryRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const body = request.body as UpdateCategoryRequest;
         const response = await adminService.updateCategory(authRequest.user!, body);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch (err: any) {
         const message = err?.message || 'Unable to update category. Please try again.';
-        return reply.status(400).send({ error: message });
+        return reply.status(400).send(fail(message));
       }
     }
   );
@@ -64,7 +65,7 @@ export async function categoryRoutes(fastify: FastifyInstance) {
         const query = request.query as any;
         const categoryId = query.id;
         const response = await adminService.deleteCategory(authRequest.user!, categoryId);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch (err: any) {
         const message = err?.message || '';
         const isFk =
@@ -72,7 +73,7 @@ export async function categoryRoutes(fastify: FastifyInstance) {
         const status = isFk ? 409 : 400;
         return reply
           .status(status)
-          .send({ error: isFk ? CategoryError.DELETE_CONFLICT : CommonError.BAD_REQUEST });
+          .send(fail(isFk ? CategoryError.DELETE_CONFLICT : CommonError.BAD_REQUEST));
       }
     }
   );

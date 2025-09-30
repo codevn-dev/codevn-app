@@ -5,6 +5,7 @@ import { UpdateCommentRequest } from '@/types/shared/comment';
 import { ReactionRequest } from '@/types/shared/reaction';
 import { commentWebSocketService } from '../websocket/comment';
 import { CommonError } from '@/types/shared/errors';
+import { ok, fail } from '../utils/response';
 
 // Use shared types directly
 
@@ -25,9 +26,9 @@ export async function commentRoutes(fastify: FastifyInstance) {
       try {
         const { id } = request.params;
         const response = await commentsService.getComment(id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -53,9 +54,9 @@ export async function commentRoutes(fastify: FastifyInstance) {
         const { id } = request.params;
         const body = request.body;
         const response = await commentsService.updateComment(id, body, authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -71,9 +72,9 @@ export async function commentRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
         const response = await commentsService.deleteComment(id, authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -103,9 +104,9 @@ export async function commentRoutes(fastify: FastifyInstance) {
           authRequest.user!.id,
           action
         );
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -121,9 +122,9 @@ export async function commentRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
         const response = await commentsService.getUserCommentReaction(id, authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -139,9 +140,9 @@ export async function commentRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const { id } = request.params;
         const response = await commentsService.removeUserCommentReaction(id, authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );

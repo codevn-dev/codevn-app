@@ -1,5 +1,4 @@
 export interface UploadImageResponse {
-  success: boolean;
   imageUrl: string;
   fileName: string;
   size: number;
@@ -9,7 +8,6 @@ export interface UploadImageResponse {
 import type { User } from './auth';
 
 export interface UploadAvatarResponse {
-  success: boolean;
   avatar: string;
   user?: User;
 }

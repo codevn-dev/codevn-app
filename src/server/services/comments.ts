@@ -1,7 +1,6 @@
 import { commentRepository, reactionsRepository, userRepository } from '../database/repository';
 import { BaseService } from './base';
 import { UpdateCommentRequest, Comment } from '@/types/shared/comment';
-import { SuccessResponse } from '@/types/shared/common';
 import { CommonError, RoleLevel } from '@/types/shared';
 
 export class CommentsService extends BaseService {
@@ -80,7 +79,7 @@ export class CommentsService extends BaseService {
   /**
    * Delete a comment
    */
-  async deleteComment(commentId: string, userId: string): Promise<SuccessResponse> {
+  async deleteComment(commentId: string, userId: string): Promise<boolean> {
     try {
       // Check if comment exists and user is the author or admin
       const existingComment = await commentRepository.findById(commentId);
@@ -98,7 +97,7 @@ export class CommentsService extends BaseService {
       }
 
       await commentRepository.delete(commentId);
-      return { success: true };
+      return true;
     } catch (error) {
       this.handleError(error, 'Delete comment');
     }
@@ -132,11 +131,7 @@ export class CommentsService extends BaseService {
       if (existingReaction) {
         // User already has this reaction, remove it
         await reactionsRepository.deleteCommentReaction(userId, commentId, normalizedType);
-        return {
-          success: true,
-          action: 'removed',
-          reaction: null,
-        };
+        return { action: 'removed', reaction: null } as any;
       } else {
         // Check if user has the opposite reaction
         const oppositeType = normalizedType === 'like' ? 'unlike' : 'like';
@@ -154,11 +149,7 @@ export class CommentsService extends BaseService {
         // Create new reaction
         await reactionsRepository.createCommentReaction(userId, commentId, normalizedType);
 
-        return {
-          success: true,
-          action: 'created',
-          reaction: { type: action },
-        };
+        return { action: 'created', reaction: { type: action } } as any;
       }
     } catch (error) {
       this.handleError(error, 'Comment reaction');
@@ -190,9 +181,7 @@ export class CommentsService extends BaseService {
 
       const reaction = likeReaction || unlikeReaction;
 
-      return {
-        reaction: reaction ? { type: reaction.type } : null,
-      };
+      return { reaction: reaction ? { type: reaction.type } : null };
     } catch (error) {
       this.handleError(error, 'Get comment reaction');
     }
@@ -230,11 +219,7 @@ export class CommentsService extends BaseService {
       // Remove the reaction
       await reactionsRepository.deleteCommentReaction(userId, commentId, existingReaction.type);
 
-      return {
-        success: true,
-        action: 'removed',
-        reaction: null,
-      };
+      return { action: 'removed', reaction: null } as any;
     } catch (error) {
       this.handleError(error, 'Delete comment reaction');
     }

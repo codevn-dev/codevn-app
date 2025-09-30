@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { authService } from '../services/auth';
 import { AuthError, CommonError } from '@/types/shared/errors';
+import { ok, fail } from '../utils/response';
 
 export async function sessionRoutes(fastify: FastifyInstance) {
   // GET /api/session - Get user's active sessions
@@ -20,13 +21,9 @@ export async function sessionRoutes(fastify: FastifyInstance) {
           undefined;
 
         const sessions = await authService.getUserActiveSessions(authRequest.user!.id, token);
-
-        return reply.send({
-          success: true,
-          sessions,
-        });
+        return reply.send(ok({ sessions }));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -43,17 +40,13 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         const { tokens } = request.body as { tokens: string[] };
 
         if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
-          return reply.status(400).send({ error: AuthError.TOKENS_REQUIRED });
+          return reply.status(400).send(fail(AuthError.TOKENS_REQUIRED));
         }
 
         const result = await authService.terminateSessions(authRequest.user!.id, tokens);
-
-        return reply.send({
-          success: true,
-          message: result.message,
-        });
+        return reply.send(ok({ message: result.message }));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );

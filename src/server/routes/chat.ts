@@ -4,6 +4,7 @@ import { chatService } from '../services';
 import { ChatQueryRequest, HideConversationRequest } from '@/types/shared/chat';
 import { chatWebSocketService } from '../websocket/chat';
 import { CommonError } from '@/types/shared/errors';
+import { ok, fail } from '../utils/response';
 
 export async function chatRoutes(fastify: FastifyInstance) {
   // WebSocket endpoint for real-time chat
@@ -28,9 +29,9 @@ export async function chatRoutes(fastify: FastifyInstance) {
         const maxConversations = Math.min(100, Math.max(1, parseInt(limit) || 20));
 
         const response = await chatService.getConversations(authRequest.user!.id, maxConversations);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -46,9 +47,9 @@ export async function chatRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const query = request.query as ChatQueryRequest;
         const response = await chatService.getChatMessages(authRequest.user!.id, query);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -65,7 +66,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
         const { peerId } = request.query;
 
         if (!peerId) {
-          return reply.status(400).send({ error: CommonError.BAD_REQUEST });
+          return reply.status(400).send(fail(CommonError.BAD_REQUEST));
         }
 
         const { messageRepository } = await import('../database/repository');
@@ -73,10 +74,9 @@ export async function chatRoutes(fastify: FastifyInstance) {
           authRequest.user!.id,
           peerId
         );
-
-        return reply.send({ conversationId });
+        return reply.send(ok({ conversationId }));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -93,7 +93,7 @@ export async function chatRoutes(fastify: FastifyInstance) {
         const { conversationId, hide } = request.body as HideConversationRequest;
 
         if (!conversationId) {
-          return reply.status(400).send({ error: CommonError.BAD_REQUEST });
+          return reply.status(400).send(fail(CommonError.BAD_REQUEST));
         }
 
         const response = await chatService.hideConversation(
@@ -101,9 +101,9 @@ export async function chatRoutes(fastify: FastifyInstance) {
           conversationId,
           hide
         );
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );

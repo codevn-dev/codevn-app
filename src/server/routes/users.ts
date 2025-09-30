@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { usersService } from '../services';
 import { CommonError } from '@/types/shared/errors';
+import { ok, fail } from '../utils/response';
 
 export async function userRoutes(fastify: FastifyInstance) {
   // GET /api/users/leaderboard - Get leaderboard data
@@ -18,20 +19,20 @@ export async function userRoutes(fastify: FastifyInstance) {
         const limitNum = parseInt(limit, 10);
 
         if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
-          return reply.status(400).send({ error: CommonError.INVALID_PARAM });
+          return reply.status(400).send(fail(CommonError.INVALID_PARAM));
         }
 
         if (!['7d', '30d', '90d', '1y', 'all'].includes(timeframe)) {
-          return reply.status(400).send({ error: CommonError.INVALID_PARAM });
+          return reply.status(400).send(fail(CommonError.INVALID_PARAM));
         }
 
         const response = await usersService.getLeaderboard(
           timeframe as '7d' | '30d' | '90d' | '1y' | 'all',
           limitNum
         );
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -47,9 +48,9 @@ export async function userRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         const userId = request.params.id;
         const response = await usersService.getUserProfile(userId, authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );

@@ -5,7 +5,6 @@ import {
   ConversationListResponse,
   MessageListResponse,
 } from '@/types/shared/chat';
-import { SuccessResponse } from '@/types/shared/common';
 import { CommonError, RoleLevel } from '@/types/shared';
 
 export class ChatService extends BaseService {
@@ -139,18 +138,14 @@ export class ChatService extends BaseService {
   /**
    * Hide conversation
    */
-  async hideConversation(
-    userId: string,
-    conversationId: string,
-    hide: boolean
-  ): Promise<SuccessResponse> {
+  async hideConversation(userId: string, conversationId: string, hide: boolean): Promise<boolean> {
     try {
       if (hide) {
         await messageRepository.hideConversation(conversationId, userId);
       } else {
         await messageRepository.unhideConversation(conversationId, userId);
       }
-      return { success: true };
+      return true;
     } catch (error) {
       this.handleError(error, 'Hide conversation');
     }

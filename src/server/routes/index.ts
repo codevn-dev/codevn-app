@@ -11,14 +11,12 @@ import { userRoutes } from './users';
 import { adminRoutes } from './admin';
 import { systemUserRoutes } from './system-users';
 import { siteConfig } from '@/config';
+import { ok } from '../utils/response';
 
 export async function setupRoutes(fastify: FastifyInstance) {
   // Health check
   fastify.get('/api/health', async (_request, _reply) => {
-    return {
-      ok: true,
-      version: siteConfig.version,
-    };
+    return ok({ version: siteConfig.version });
   });
 
   // Register all route modules

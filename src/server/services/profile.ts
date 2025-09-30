@@ -135,7 +135,6 @@ export class ProfileService extends BaseService {
       await redis.updateUserInAllTokens(userId, updatedUserData);
 
       const response: UploadAvatarResponse = {
-        success: true,
         avatar: uploadResult.publicPath,
         user: updatedUserData as any,
       };

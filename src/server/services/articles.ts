@@ -13,7 +13,6 @@ import {
   ArticleListResponse,
 } from '@/types/shared/article';
 import { CommentListResponse, Comment } from '@/types/shared/comment';
-import { SuccessResponse } from '@/types/shared/common';
 import {
   CommentQueryParams as CommentQuery,
   CreateCommentRequest as CreateCommentBody,
@@ -470,7 +469,7 @@ export class ArticlesService extends BaseService {
       countryCode?: string | null;
       device?: string | null;
     }
-  ): Promise<SuccessResponse> {
+  ): Promise<boolean> {
     try {
       if (!articleId) throw new Error(CommonError.BAD_REQUEST);
 
@@ -479,7 +478,7 @@ export class ArticlesService extends BaseService {
       if (!article) throw new Error(CommonError.NOT_FOUND);
 
       await articleRepository.recordArticleView({ articleId, ...opts });
-      return { success: true };
+      return true;
     } catch (error) {
       this.handleError(error, 'Track article view');
     }
@@ -585,7 +584,7 @@ export class ArticlesService extends BaseService {
   /**
    * Delete article
    */
-  async deleteArticle(articleId: string, userId: string): Promise<SuccessResponse> {
+  async deleteArticle(articleId: string, userId: string): Promise<boolean> {
     try {
       if (!articleId) {
         throw new Error(CommonError.BAD_REQUEST);
@@ -602,8 +601,7 @@ export class ArticlesService extends BaseService {
 
       // Delete article (cascade will handle related comments and likes)
       await articleRepository.delete(articleId);
-
-      return { success: true };
+      return true;
     } catch (error) {
       this.handleError(error, 'Delete article');
     }

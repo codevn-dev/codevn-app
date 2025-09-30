@@ -4,6 +4,7 @@ import fastifyPassport from '@fastify/passport';
 import { config } from '@/config';
 import { AuthError, CommonError } from '@/types/shared';
 import { authService } from '../services';
+import { ok, fail } from '../utils/response';
 import {
   RegisterRequest as RegisterBody,
   CheckEmailRequest as CheckEmailBody,
@@ -20,9 +21,9 @@ export async function authRoutes(fastify: FastifyInstance) {
       try {
         const user = (request as any).user;
         const response = await authService.signIn(user, reply, request);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -34,12 +35,12 @@ export async function authRoutes(fastify: FastifyInstance) {
       try {
         const body = request.body as RegisterBody;
         const response = await authService.signUp(body, reply, request);
-        return reply.status(201).send(response);
+        return reply.status(201).send(ok(response));
       } catch (e: any) {
         if (e?.code === AuthError.EMAIL_EXISTS) {
-          return reply.status(400).send({ error: AuthError.EMAIL_EXISTS });
+          return reply.status(400).send(fail(AuthError.EMAIL_EXISTS));
         }
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -51,9 +52,9 @@ export async function authRoutes(fastify: FastifyInstance) {
       try {
         const body = request.body as CheckEmailBody;
         const response = await authService.checkEmail(body);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -101,7 +102,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
         await authService.handleGoogleOAuth(user, reply, storedReturnUrl, request);
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -120,9 +121,9 @@ export async function authRoutes(fastify: FastifyInstance) {
       const refreshToken = request.cookies['refresh-token'];
 
       const response = await authService.signOut(reply, accessToken, refreshToken);
-      return reply.send(response);
+      return reply.send(ok(response));
     } catch {
-      return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+      return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
     }
   });
 
@@ -136,9 +137,9 @@ export async function authRoutes(fastify: FastifyInstance) {
       try {
         const authRequest = request as AuthenticatedRequest;
         const response = await authService.getCurrentUser(authRequest.user!.id);
-        return reply.send(response);
+        return reply.send(ok(response));
       } catch {
-        return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
     }
   );
@@ -149,7 +150,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       const refreshToken = request.cookies['refresh-token'];
 
       if (!refreshToken) {
-        return reply.status(400).send({ error: AuthError.INVALID_REFRESH_TOKEN });
+        return reply.status(400).send(fail(AuthError.INVALID_REFRESH_TOKEN));
       }
 
       const response = await authService.refreshAccessToken(refreshToken);
@@ -161,10 +162,10 @@ export async function authRoutes(fastify: FastifyInstance) {
           (response as any).refreshToken
         );
       }
-      return reply.send(response);
+      return reply.send(ok(response));
     } catch (error) {
       console.error('Refresh token error:', error);
-      return reply.status(401).send({ error: AuthError.INVALID_REFRESH_TOKEN });
+      return reply.status(401).send(fail(AuthError.INVALID_REFRESH_TOKEN));
     }
   });
 }

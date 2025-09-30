@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { adminService } from '../services';
 import { CommonError } from '@/types/shared';
+import { ok, fail } from '../utils/response';
 import { UpdateUserRoleRequest } from '@/types/shared/user';
 
 export async function adminRoutes(fastify: FastifyInstance) {
@@ -18,9 +19,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
           const authRequest = request as AuthenticatedRequest;
           const query = request.query as any;
           const response = await adminService.getUsers(authRequest.user!, query);
-          return reply.send(response);
+          return reply.send(ok(response));
         } catch {
-          return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+          return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
         }
       }
     );
@@ -36,9 +37,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
           const authRequest = request as AuthenticatedRequest;
           const body = request.body as UpdateUserRoleRequest;
           const response = await adminService.updateUserRole(authRequest.user!, body);
-          return reply.send(response);
+          return reply.send(ok(response));
         } catch {
-          return reply.status(500).send({ error: CommonError.INTERNAL_ERROR });
+          return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
         }
       }
     );

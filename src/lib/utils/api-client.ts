@@ -131,7 +131,15 @@ export async function apiFetch<T = unknown>(
       throw error;
     }
 
-    return (await response.json()) as T;
+    const raw = (await response.json()) as any;
+    if (raw && typeof raw === 'object' && 'success' in raw) {
+      if (raw.success) return raw.data as T;
+      const message = extractMessage(raw, 'Request failed');
+      const error = new Error(message) as Error & { response?: { error: string; data: unknown } };
+      error.response = { error: message, data: raw };
+      throw error;
+    }
+    return raw as T;
   } catch (error) {
     if (error instanceof Error) throw error;
     throw new Error(CommonError.INTERNAL_ERROR);
