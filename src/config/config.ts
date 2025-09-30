@@ -48,7 +48,6 @@ export const chatConfig = {
   maxMessagesPerPage: parseInt(process.env.CHAT_MAX_MESSAGES_PER_PAGE || '20'),
   typingTimeout: parseInt(process.env.CHAT_TYPING_TIMEOUT || '2000'), // 2 seconds
   maxReconnectAttempts: parseInt(process.env.CHAT_MAX_RECONNECT_ATTEMPTS || '5'),
-  // Default to backend port (3001) for WebSocket in development; Next.js dev server (3000) doesn't proxy WS
   wsUrl: `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/api/chat/ws`,
 } as const;
 
