@@ -11,9 +11,15 @@ const nextConfig: NextConfig = {
     removeConsole: {
       exclude: ['error', 'warn'],
     },
+    // Enable SWC minification for better performance
+    styledComponents: true,
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    // Enable modern JavaScript for better performance
+    esmExternals: true,
+    // Optimize CSS imports - temporarily disabled due to critters module issue
+    // optimizeCss: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

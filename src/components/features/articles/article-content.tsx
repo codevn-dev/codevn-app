@@ -12,8 +12,12 @@ const MotionContainer = ({
 }) => <div className={className}>{children}</div>;
 const AnimatePresence = dynamic(() => import('framer-motion').then((m) => m.AnimatePresence), {
   ssr: false,
+  loading: () => null,
 });
-const MotionDiv = dynamic(() => import('framer-motion').then((m) => m.motion.div), { ssr: false });
+const MotionDiv = dynamic(() => import('framer-motion').then((m) => m.motion.div), {
+  ssr: false,
+  loading: () => <div />,
+});
 const modalOverlay = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },

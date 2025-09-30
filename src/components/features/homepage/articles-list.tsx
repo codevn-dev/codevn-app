@@ -2,8 +2,14 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { MotionContainer } from '@/components/layout';
+
+// Lazy load framer-motion to reduce initial bundle size
+const MotionDiv = dynamic(() => import('framer-motion').then((m) => m.motion.div), {
+  ssr: false,
+  loading: () => 'div' as any,
+});
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, Calendar, Eye, ThumbsUp, BookOpen } from 'lucide-react';
@@ -70,7 +76,7 @@ export function ArticlesList({
         {mounted ? t('home.tagline') : ''}
       </p>
 
-      <motion.div
+      <MotionDiv
         variants={containerVariants}
         initial={
           typeof window !== 'undefined' &&
@@ -88,7 +94,7 @@ export function ArticlesList({
         style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 400px' }}
       >
         {filteredArticles.map((article, index) => (
-          <motion.div
+          <MotionDiv
             key={article.id}
             variants={itemVariants}
             whileHover={
@@ -228,9 +234,9 @@ export function ArticlesList({
                 </div>
               </div>
             </Link>
-          </motion.div>
+          </MotionDiv>
         ))}
-      </motion.div>
+      </MotionDiv>
 
       {filteredArticles.length === 0 && (
         <div className="px-4 py-12 text-center sm:py-16">

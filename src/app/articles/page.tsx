@@ -15,7 +15,22 @@ import {
   ArticlesFormModal,
   ArticlesDeleteModal,
 } from '@/features/articles';
-import { ImageUpload } from '@/features/upload';
+import dynamic from 'next/dynamic';
+
+// Lazy load ImageUpload component to reduce initial bundle size
+const ImageUpload = dynamic(
+  () => import('@/features/upload').then((m) => m.ImageUpload),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-lg bg-white p-6 text-center">
+          <div className="text-lg font-semibold">Loading image upload...</div>
+        </div>
+      </div>
+    ),
+  }
+);
 import {} from '@/lib/utils/time-format';
 import {
   Article,

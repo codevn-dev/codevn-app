@@ -297,13 +297,15 @@ export function HomepageContent({
   const [isXL, setIsXL] = useState(false);
 
   // Detect xl viewport for loading sidebars only on large screens
+  // Also check if it's not a mobile device to avoid loading heavy components on mobile
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mq = window.matchMedia('(min-width: 1280px)');
-    const update = () => setIsXL(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
+    const isMobile = window.matchMedia('(pointer: coarse)').matches;
+    const handleChange = () => setIsXL(mq.matches && !isMobile);
+    handleChange(); // Set initial value
+    mq.addEventListener('change', handleChange);
+    return () => mq.removeEventListener('change', handleChange);
   }, []);
 
   useEffect(() => {

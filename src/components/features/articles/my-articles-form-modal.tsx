@@ -10,9 +10,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Upload, X } from 'lucide-react';
-import { TiptapRichTextEditor } from '@/features/articles';
 import { Category } from '@/types/shared';
 import { useI18n } from '@/components/providers';
+import dynamic from 'next/dynamic';
+
+// Lazy load TipTap Rich Text Editor to reduce initial bundle size
+const TiptapRichTextEditor = dynamic(
+  () => import('@/features/articles').then((m) => m.TiptapRichTextEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[400px] rounded-lg border border-gray-300 bg-gray-50 p-4 text-center text-gray-500">
+        Loading editor...
+      </div>
+    ),
+  }
+);
 
 interface ArticleFormState {
   title: string;
