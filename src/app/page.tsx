@@ -1,20 +1,24 @@
 import { HomepageContent } from '@/features/homepage';
-import { apiGet } from '@/lib/utils/api-client';
-import type { Article } from '@/types/shared/article';
-import type { Category } from '@/types/shared/category';
+import { apiParallel } from '@/lib/utils/api-client';
 
 export const revalidate = 120; // ISR: rebuild homepage every 2 minutes
 
 export default async function Home() {
-  // Fetch initial data on server for fast LCP
-  const [categories, articlesRes, featuredRes] = await Promise.all([
-    apiGet<Category[]>(`/api/categories`).catch(() => []),
-    apiGet<{ articles: Article[]; pagination: { hasNext: boolean } }>(
-      `/api/articles?publishedOnly=true&page=1&limit=9&sortBy=createdAt&sortOrder=desc`
-    ).catch(() => ({ articles: [], pagination: { hasNext: false } })),
-    apiGet<{ articles: Article[] }>(`/api/articles/featured?limit=3&windowDays=14`).catch(
-      () => ({ articles: [] })
-    ),
+  // Fetch initial data on server for fast LCP using apiParallel
+  const [categories, articlesRes, featuredRes] = await apiParallel([
+    { method: 'GET', endpoint: '/api/categories' },
+    {
+      method: 'GET',
+      endpoint: '/api/articles?publishedOnly=true&page=1&limit=9&sortBy=createdAt&sortOrder=desc',
+    },
+    {
+      method: 'GET',
+      endpoint: '/api/articles/featured?limit=3&windowDays=14',
+    },
+  ]).catch(() => [
+    [], // Fallback for categories
+    { articles: [], pagination: { hasNext: false } }, // Fallback for articlesRes
+    { articles: [] }, // Fallback for featuredRes
   ]);
 
   return (

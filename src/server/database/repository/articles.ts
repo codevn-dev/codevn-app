@@ -441,11 +441,15 @@ export class ArticleRepository {
     return !!result;
   }
 
-  async findManyByIdsWithCounts(ids: string[], userId?: string, publishedOnly: boolean = true): Promise<SharedArticle[]> {
+  async findManyByIdsWithCounts(
+    ids: string[],
+    userId?: string,
+    publishedOnly: boolean = true
+  ): Promise<SharedArticle[]> {
     if (!ids || ids.length === 0) return [];
 
     const whereConditions = [isNull(articles.deletedAt), inArray(articles.id, ids)];
-    
+
     // Only show published articles if publishedOnly is true
     if (publishedOnly) {
       whereConditions.push(eq(articles.published, true));

@@ -10,7 +10,9 @@ interface ClientShellProps {
 }
 
 // Sử dụng lazy thay vì dynamic để tránh lỗi SSR
-const LazyCustomCursor = lazy(() => import('./custom-cursor').then((m) => ({ default: m.CustomCursor })));
+const LazyCustomCursor = lazy(() =>
+  import('./custom-cursor').then((m) => ({ default: m.CustomCursor }))
+);
 
 // ClientShell component chính
 export function ClientShell({ children }: ClientShellProps) {

@@ -50,6 +50,8 @@ function SessionsPageContent() {
   const fetchSessions = async () => {
     try {
       setLoading(true);
+      // Using apiGet to fetch sessions data
+      // Can add parallel API calls here in the future if needed
       const response = await apiGet<{ success: boolean; sessions: any[] }>('/api/session');
       const sessions = response.sessions || [];
 

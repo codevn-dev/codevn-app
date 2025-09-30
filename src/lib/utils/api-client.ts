@@ -192,6 +192,41 @@ export async function apiGet<T = unknown>(endpoint: string, options: RequestInit
 }
 
 /**
+ * Parallel API requests helper
+ * Executes multiple API requests in parallel and returns the results
+ * @param requests - Array of request configurations
+ * @returns Promise with array of results in the same order as requests
+ */
+export async function apiParallel<T extends any[]>(
+  requests: {
+    endpoint: string;
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    data?: any;
+    options?: RequestInit;
+  }[]
+): Promise<T> {
+  return Promise.all(
+    requests.map((req) => {
+      const { endpoint, method = 'GET', data, options = {} } = req;
+
+      switch (method) {
+        case 'POST':
+          return apiPost(endpoint, data, options);
+        case 'PUT':
+          return apiPut(endpoint, data, options);
+        case 'DELETE':
+          return apiDelete(endpoint, options);
+        case 'PATCH':
+          return apiPatch(endpoint, data, options);
+        case 'GET':
+        default:
+          return apiGet(endpoint, options);
+      }
+    })
+  ) as Promise<T>;
+}
+
+/**
  * POST request helper
  */
 export async function apiPost<T = unknown>(

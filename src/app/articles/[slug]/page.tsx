@@ -29,6 +29,8 @@ export default async function ArticlePage({
     const endpoint = `/api/articles/slug/${slug}${isPreview ? '?preview=true' : ''}`;
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
+
+    // Using apiGet for this simple case
     article = await apiGet<Article>(endpoint, { headers: { cookie: cookieHeader } });
   } catch {
     notFound();
