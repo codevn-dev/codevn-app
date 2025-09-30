@@ -2,6 +2,12 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.7]() (2025-09-30)
+
+### Optimized
+
+- Optimize homepage and article content performance.
+
 ## [v0.1.6]() (2025-09-30)
 
 ### Optimized
