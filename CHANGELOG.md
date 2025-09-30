@@ -2,6 +2,21 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.4]() (2025-09-30)
+
+### Featured
+
+- Redesigned footer layout for improved UI.
+- Added logic to detect and handle the first registered user.
+
+### Refactored
+
+- Standardized API response conventions.
+
+## Upgraded
+
+- Bumped library dependencies to the latest versions.
+
 ## [v0.1.3]() (2025-09-29)
 
 ### Refactored
