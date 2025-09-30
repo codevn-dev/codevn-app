@@ -144,7 +144,14 @@ export class AdminService extends BaseService {
         createdAt: new Date().toISOString(),
       });
 
-      return updatedUser[0];
+      return {
+        id: updatedUser[0].id,
+        name: updatedUser[0].name,
+        email: updatedUser[0].email,
+        avatar: updatedUser[0].avatar || undefined,
+        role: updatedUser[0].role,
+        createdAt: new Date().toISOString(),
+      } as any;
     } catch (error) {
       this.handleError(error, 'Update user role');
     }

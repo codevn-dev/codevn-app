@@ -65,14 +65,37 @@ export class ArticlesService extends BaseService {
    * Transform article data to include author information
    */
   private transformArticleData(article: any): any {
-    const { authorId, ...articleWithoutFlatFields } = article;
     return {
-      ...articleWithoutFlatFields,
+      id: article.id,
+      title: article.title,
+      content: article.content,
+      slug: article.slug,
+      thumbnail: article.thumbnail || undefined,
+      categoryId: article.categoryId,
+      published: article.published,
+      createdAt: article.createdAt,
+      updatedAt: article.updatedAt ?? null,
       author: {
-        id: article.author?.id || authorId,
+        id: article.author?.id || article.authorId,
         name: article.author?.name || 'Unknown',
         avatar: article.author?.avatar || null,
       },
+      category: article.category
+        ? {
+            id: article.categoryId,
+            name: article.category?.name || 'Unknown',
+            color: article.category?.color || '#000000',
+            slug: article.category?.slug || '',
+          }
+        : undefined,
+      _count: {
+        comments: article._count?.comments ?? 0,
+        likes: article._count?.likes ?? 0,
+        unlikes: article._count?.unlikes ?? 0,
+      },
+      userHasLiked: article.userHasLiked ?? undefined,
+      userHasUnliked: article.userHasUnliked ?? undefined,
+      views: typeof article.views === 'number' ? article.views : undefined,
     };
   }
 
@@ -80,14 +103,36 @@ export class ArticlesService extends BaseService {
    * Transform article data for list views (omit heavy fields like content)
    */
   private transformArticleSummary(article: any): any {
-    const { authorId, content: _omit, ...rest } = article;
     return {
-      ...rest,
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      thumbnail: article.thumbnail || undefined,
+      categoryId: article.categoryId,
+      published: article.published,
+      createdAt: article.createdAt,
+      updatedAt: article.updatedAt ?? null,
       author: {
-        id: article.author?.id || authorId,
+        id: article.author?.id || article.authorId,
         name: article.author?.name || 'Unknown',
         avatar: article.author?.avatar || null,
       },
+      category: article.category
+        ? {
+            id: article.categoryId,
+            name: article.category?.name || 'Unknown',
+            color: article.category?.color || '#000000',
+            slug: article.category?.slug || '',
+          }
+        : undefined,
+      _count: {
+        comments: article._count?.comments ?? 0,
+        likes: article._count?.likes ?? 0,
+        unlikes: article._count?.unlikes ?? 0,
+      },
+      userHasLiked: article.userHasLiked ?? undefined,
+      userHasUnliked: article.userHasUnliked ?? undefined,
+      views: typeof article.views === 'number' ? article.views : undefined,
     };
   }
 
@@ -95,25 +140,39 @@ export class ArticlesService extends BaseService {
    * Transform comment data to include author information
    */
   private transformCommentData(comment: any): any {
-    const { authorId, ...commentWithoutFlatFields } = comment;
     return {
-      ...commentWithoutFlatFields,
+      id: comment.id,
+      content: comment.content,
+      articleId: comment.articleId,
+      parentId: comment.parentId ?? null,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt ?? null,
       author: {
-        id: comment.author?.id || authorId,
+        id: comment.author?.id || comment.authorId,
         name: comment.author?.name || 'Unknown',
         avatar: comment.author?.avatar || null,
       },
+      replies: Array.isArray(comment.replies)
+        ? comment.replies.map((c: any) => this.transformCommentData(c))
+        : undefined,
+      replyCount: typeof comment.replyCount === 'number' ? comment.replyCount : undefined,
+      _count: {
+        replies: comment._count?.replies ?? 0,
+        likes: comment._count?.likes ?? 0,
+      },
+      likeCount: typeof comment.likeCount === 'number' ? comment.likeCount : undefined,
+      unlikeCount: typeof comment.unlikeCount === 'number' ? comment.unlikeCount : undefined,
+      userHasLiked: comment.userHasLiked ?? undefined,
+      userHasUnliked: comment.userHasUnliked ?? undefined,
       parent: comment.parent
-        ? (() => {
-            const { authorId: parentAuthorId, ...parentWithoutFlatFields } = comment.parent;
-            return {
-              ...parentWithoutFlatFields,
-              author: {
-                id: comment.parent.author?.id || parentAuthorId,
-                name: comment.parent.author?.name || 'Unknown',
-              },
-            };
-          })()
+        ? {
+            id: comment.parent.id,
+            content: comment.parent.content,
+            author: {
+              id: comment.parent.author?.id || comment.parent.authorId,
+              name: comment.parent.author?.name || 'Unknown',
+            },
+          }
         : undefined,
     };
   }

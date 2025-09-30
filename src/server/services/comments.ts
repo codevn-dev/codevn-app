@@ -8,14 +8,26 @@ export class CommentsService extends BaseService {
    * Transform comment data to include author information
    */
   private transformCommentData(comment: any): any {
-    const { authorId, ...commentWithoutFlatFields } = comment;
     return {
-      ...commentWithoutFlatFields,
+      id: comment.id,
+      content: comment.content,
+      articleId: comment.articleId,
+      parentId: comment.parentId ?? null,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt ?? null,
       author: {
-        id: comment.author?.id || authorId,
+        id: comment.author?.id || comment.authorId,
         name: comment.author?.name || 'Unknown',
         avatar: comment.author?.avatar || null,
       },
+      _count: {
+        replies: comment._count?.replies ?? 0,
+        likes: comment._count?.likes ?? 0,
+      },
+      likeCount: typeof comment.likeCount === 'number' ? comment.likeCount : undefined,
+      unlikeCount: typeof comment.unlikeCount === 'number' ? comment.unlikeCount : undefined,
+      userHasLiked: comment.userHasLiked ?? undefined,
+      userHasUnliked: comment.userHasUnliked ?? undefined,
     };
   }
 

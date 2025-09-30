@@ -24,29 +24,53 @@ export class CategoriesService extends BaseService {
 
       const rootCategories = await categoryRepository.findAllWithCounts();
       const response = rootCategories.map((category: any) => {
-        const { createdById, /* createdByName, */ ...categoryWithoutFlatFields } = category;
         return {
-          ...categoryWithoutFlatFields,
+          id: category.id,
+          name: category.name,
+          description: category.description ?? null,
+          slug: category.slug,
+          color: category.color,
+          parentId: category.parentId ?? null,
+          createdAt: category.createdAt,
+          updatedAt: category.updatedAt ?? category.createdAt,
           createdBy: {
-            id: category.createdBy?.id || createdById,
+            id: category.createdBy?.id || (category as any).createdById,
             name: category.createdBy?.name || 'Unknown',
           },
-          children: category.children?.map((child: any) => {
-            const {
-              createdById: childCreatedById,
-              /* createdByName: childCreatedByName, */
-              ...childWithoutFlatFields
-            } = child;
-            return {
-              ...childWithoutFlatFields,
-              createdBy: {
-                id: child.createdBy?.id || childCreatedById,
-                name: child.createdBy?.name || 'Unknown',
-              },
-            };
-          }),
-        };
-      }) as unknown as Category[];
+          parent: category.parent
+            ? {
+                id: category.parent.id,
+                name: category.parent.name,
+                slug: category.parent.slug,
+              }
+            : null,
+          children: (category.children || []).map((child: any) => ({
+            id: child.id,
+            name: child.name,
+            description: child.description ?? null,
+            slug: child.slug,
+            color: child.color,
+            parentId: child.parentId ?? category.id,
+            createdAt: child.createdAt,
+            updatedAt: child.updatedAt ?? child.createdAt,
+            createdBy: {
+              id: child.createdBy?.id || (child as any).createdById,
+              name: child.createdBy?.name || 'Unknown',
+            },
+            parent: child.parent
+              ? { id: child.parent.id, name: child.parent.name, slug: child.parent.slug }
+              : null,
+            _count: {
+              articles: child._count?.articles ?? 0,
+              children: child._count?.children ?? 0,
+            },
+          })),
+          _count: {
+            articles: category._count?.articles ?? 0,
+            children: category._count?.children ?? (category.children || []).length,
+          },
+        } as Category;
+      });
       // Store in cache (best-effort)
       try {
         const cacheTTL = 3600; // 60 minutes
