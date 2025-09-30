@@ -48,12 +48,38 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CodeHighlighter, ShareMenu, RelatedArticlesSidebar } from '@/features/articles';
-import { CommentsSection } from '@/features/comments';
+import { RelatedArticlesSidebar } from '@/features/articles';
+
+// Lazy load CodeHighlighter for better performance
+const CodeHighlighter = dynamic(() => import('@/features/articles').then(m => ({ default: m.CodeHighlighter })), {
+  ssr: false,
+  loading: () => (
+    <div className="space-y-4">
+      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+      <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
+      <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+  ),
+});
 import type { CommentsSectionRef } from '@/features/comments';
+
+// Dynamic imports for components that are not immediately needed
+const ShareMenu = dynamic(() => import('@/features/articles').then(m => ({ default: m.ShareMenu })), {
+  ssr: false,
+  loading: () => null,
+});
+
+const CommentsSection = dynamic(() => import('@/features/comments').then(m => ({ default: m.CommentsSection })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-200 h-32 rounded-lg" />,
+});
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
-import { AvatarWithDropdown } from '@/components/ui/avatar-with-dropdown';
+// Lazy load AvatarWithDropdown
+const AvatarWithDropdown = dynamic(() => import('@/components/ui/avatar-with-dropdown').then(m => ({ default: m.AvatarWithDropdown })), {
+  ssr: false,
+  loading: () => <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />,
+});
 import { Article, RoleLevel } from '@/types/shared';
 import { apiDelete, apiPost, apiPut, apiGet } from '@/lib/utils/api-client';
 import {
@@ -70,8 +96,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TiptapRichTextEditor } from '@/features/articles';
-import { ImageUpload } from '@/features/upload';
+// Dynamic imports for edit modal components
+const TiptapRichTextEditor = dynamic(() => import('@/features/articles').then(m => ({ default: m.TiptapRichTextEditor })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded-lg" />,
+});
+
+const ImageUpload = dynamic(() => import('@/features/upload').then(m => ({ default: m.ImageUpload })), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-200 h-32 rounded-lg" />,
+});
 import { SuccessResponse } from '@/types/shared/common';
 import { useI18n } from '@/components/providers';
 import { ReactionRequest } from '@/types/shared/reaction';
@@ -80,21 +114,78 @@ import { v4 as uuidv4 } from 'uuid';
 interface ArticleContentProps {
   article: Article;
   isPreview?: boolean;
+  initialRelatedArticles?: any[];
+  initialCategories?: any[];
 }
 
-export function ArticleContent({ article, isPreview = false }: ArticleContentProps) {
+// Skeleton component for loading states
+const ArticleSkeleton = () => (
+  <div className="animate-pulse">
+    <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+    <div className="h-8 bg-gray-200 rounded w-3/4 mb-6"></div>
+    <div className="flex items-center space-x-4 mb-6">
+      <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+      <div className="space-y-2">
+        <div className="h-4 bg-gray-200 rounded w-24"></div>
+        <div className="h-3 bg-gray-200 rounded w-32"></div>
+      </div>
+    </div>
+    <div className="space-y-3">
+      <div className="h-4 bg-gray-200 rounded"></div>
+      <div className="h-4 bg-gray-200 rounded"></div>
+      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+    </div>
+  </div>
+);
+
+export function ArticleContent({ 
+  article, 
+  isPreview = false, 
+  initialRelatedArticles = [],
+  initialCategories = []
+}: ArticleContentProps) {
   const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [isContentLoading, setIsContentLoading] = useState(true);
+  const [isContentVisible, setIsContentVisible] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    setMounted(true);
+    // Simulate content loading for better UX
+    const timer = setTimeout(() => setIsContentLoading(false), 100);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Intersection Observer for lazy loading content
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsContentVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+    
+    if (contentRef.current) {
+      observer.observe(contentRef.current);
+    }
+    
+    return () => observer.disconnect();
+  }, []);
   const { isAuthenticated, user } = useAuthState();
   const { setAuthModalOpen, setAuthMode } = useUIStore();
   const [isLiked, setIsLiked] = useState((isAuthenticated && article.userHasLiked) || false);
   const [isUnliked, setIsUnliked] = useState((isAuthenticated && article.userHasUnliked) || false);
   const [likeCount, setLikeCount] = useState(article._count.likes);
   const [unlikeCount, setUnlikeCount] = useState(article._count.unlikes || 0);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [isUnlikeLoading, setIsUnlikeLoading] = useState(false);
   const commentsSectionRef = useRef<CommentsSectionRef>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [editForm, setEditForm] = useState({
     title: article.title,
@@ -260,6 +351,18 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
       return;
     }
 
+    // Prevent multiple simultaneous requests
+    if ((action === 'like' && isLikeLoading) || (action === 'unlike' && isUnlikeLoading)) {
+      return;
+    }
+
+    // Set loading state
+    if (action === 'like') {
+      setIsLikeLoading(true);
+    } else {
+      setIsUnlikeLoading(true);
+    }
+
     try {
       const shouldDelete = (action === 'like' && isLiked) || (action === 'unlike' && isUnliked);
 
@@ -301,6 +404,13 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
       }
     } catch {
       // Error handled silently
+    } finally {
+      // Clear loading state
+      if (action === 'like') {
+        setIsLikeLoading(false);
+      } else {
+        setIsUnlikeLoading(false);
+      }
     }
   };
 
@@ -389,7 +499,10 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
         <div className="relative mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
           {/* Related sidebar on xl+ */}
           <div className="hidden xl:absolute xl:top-0 xl:right-[-320px] xl:block xl:w-[320px] xl:max-w-[360px] xl:min-w-[320px]">
-            <RelatedArticlesSidebar articleId={article.id} />
+            <RelatedArticlesSidebar 
+              articleId={article.id} 
+              initialArticles={initialRelatedArticles}
+            />
           </div>
           <div className="rounded-2xl bg-white p-4 shadow-2xl shadow-gray-400/80 sm:p-6">
             {isPreview && (
@@ -537,16 +650,17 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                         variant="back"
                         size="sm"
                         onClick={handleLike}
+                        disabled={isLikeLoading}
                         className={`transition-colors duration-200 ${
                           likedEffective
                             ? 'border-emerald-500 bg-emerald-50/50 text-emerald-600 hover:border-emerald-600 hover:bg-emerald-50'
                             : 'hover:border-emerald-500 hover:bg-emerald-50/30 hover:text-emerald-600'
-                        }`}
+                        } ${isLikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <ThumbsUp
                           className={`mr-1 h-4 w-4 transition-colors duration-200 ${
                             likedEffective ? 'fill-current text-emerald-600' : 'text-brand'
-                          }`}
+                          } ${isLikeLoading ? 'animate-pulse' : ''}`}
                         />
                         {likeCount}
                       </Button>
@@ -554,16 +668,17 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
                         variant="back"
                         size="sm"
                         onClick={handleUnlike}
+                        disabled={isUnlikeLoading}
                         className={`transition-colors duration-200 ${
                           unlikedEffective
                             ? 'border-rose-500 bg-rose-50/50 text-rose-600 hover:border-rose-600 hover:bg-rose-50'
                             : 'hover:border-rose-500 hover:bg-rose-50/30 hover:text-rose-600'
-                        }`}
+                        } ${isUnlikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <ThumbsDown
                           className={`mr-1 h-4 w-4 transition-colors duration-200 ${
                             unlikedEffective ? 'fill-current text-rose-600' : 'text-brand'
-                          }`}
+                          } ${isUnlikeLoading ? 'animate-pulse' : ''}`}
                         />
                         {unlikeCount}
                       </Button>
@@ -585,10 +700,23 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
               </div>
 
               <MotionContainer delay={0.05} className="mt-6 pt-0 sm:mt-8">
-                <CodeHighlighter
-                  content={article.content}
-                  className="leading-relaxed text-gray-700"
-                />
+                <div ref={contentRef}>
+                  {isContentLoading || !isContentVisible ? (
+                    <div className="space-y-4">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5"></div>
+                      <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  ) : (
+                    <CodeHighlighter
+                      content={article.content}
+                      className="leading-relaxed text-gray-700"
+                    />
+                  )}
+                </div>
               </MotionContainer>
 
               <div className="my-6 border-t border-gray-200 sm:my-8" />
@@ -604,7 +732,10 @@ export function ArticleContent({ article, isPreview = false }: ArticleContentPro
 
               {/* Related Articles for tablet/mobile - shown below comments */}
               <div className="mt-8 xl:hidden">
-                <RelatedArticlesSidebar articleId={article.id} />
+                <RelatedArticlesSidebar 
+            articleId={article.id} 
+            initialArticles={initialRelatedArticles}
+          />
               </div>
             </div>
           </div>

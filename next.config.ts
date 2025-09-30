@@ -15,11 +15,13 @@ const nextConfig: NextConfig = {
     styledComponents: true,
   },
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
     // Enable modern JavaScript for better performance
     esmExternals: true,
-    // Optimize CSS imports - temporarily disabled due to critters module issue
+    // Optimize CSS imports - disabled for Turbopack compatibility
     // optimizeCss: true,
+    // Enable webpack build worker for faster builds
+    webpackBuildWorker: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -28,6 +30,28 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   output: 'standalone',
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/articles/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=180, stale-while-revalidate=3600',
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     // Only use rewrites in development for API proxy
     // In production with nginx, nginx handles the API proxying

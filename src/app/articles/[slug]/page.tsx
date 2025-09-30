@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { ArticleContentClient } from '@/components/features/articles/article-content.client';
 import { PreviewGuard } from '@/components/layout';
 import { config } from '@/config';
-import { apiGet } from '@/lib/utils/api-client';
+import { apiGet, apiParallel } from '@/lib/utils/api-client';
 import { cookies } from 'next/headers';
 import type { Article } from '@/types/shared/article';
 
@@ -23,22 +23,33 @@ export default async function ArticlePage({
   const { preview } = await searchParams;
   const isPreview = preview === 'true';
 
-  // Fetch article from API (forward cookies so preview works server-side)
+  // Fetch article and related data in parallel for better performance
   let article: Article;
+  let relatedArticles: any[] = [];
+  let categories: any[] = [];
+  
   try {
-    const endpoint = `/api/articles/slug/${slug}${isPreview ? '?preview=true' : ''}`;
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
+    const endpoint = `/api/articles/slug/${slug}${isPreview ? '?preview=true' : ''}`;
 
-    // Using apiGet for this simple case
+    // First fetch the article to get its ID for related articles
     article = await apiGet<Article>(endpoint, { headers: { cookie: cookieHeader } });
+    
+    // Then fetch related data in parallel
+    const [relatedRes, categoriesRes] = await apiParallel([
+      { method: 'GET', endpoint: `/api/articles/${article.id}/related` },
+      { method: 'GET', endpoint: '/api/categories' }
+    ]).catch(() => [
+      { articles: [] }, // Fallback for related articles
+      [] // Fallback for categories
+    ]);
+    
+    relatedArticles = relatedRes.articles || [];
+    categories = categoriesRes || [];
   } catch {
     notFound();
   }
-
-  // Old immediate increment removed in favor of validated tracking
-
-  // Data is already complete from API response, no need for additional queries
 
   const articleWithCounts = {
     ...article,
@@ -102,7 +113,12 @@ export default async function ArticlePage({
           />
         );
       })()}
-      <ArticleContentClient article={articleWithCounts} isPreview={isPreview} />
+      <ArticleContentClient 
+        article={articleWithCounts} 
+        isPreview={isPreview}
+        initialRelatedArticles={relatedArticles}
+        initialCategories={categories}
+      />
     </PreviewGuard>
   );
 }

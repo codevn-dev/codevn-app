@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build --turbopack",
+    "build": "NODE_ENV=production next build --turbopack",
     "start": "next start",
     "api": "tsx src/server/index.ts",
     "worker": "WORKER=true tsx src/server/index.ts",

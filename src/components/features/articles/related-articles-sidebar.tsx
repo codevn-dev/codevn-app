@@ -9,14 +9,21 @@ import type { Article } from '@/types/shared/article';
 
 interface Props {
   articleId: string;
+  initialArticles?: Article[];
 }
 
-export function RelatedArticlesSidebar({ articleId }: Props) {
-  const [items, setItems] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
+export function RelatedArticlesSidebar({ articleId, initialArticles = [] }: Props) {
+  const [items, setItems] = useState<Article[]>(initialArticles);
+  const [loading, setLoading] = useState(initialArticles.length === 0);
   const { t } = useI18n();
 
   useEffect(() => {
+    // Skip fetch if we already have initial data
+    if (initialArticles.length > 0) {
+      setLoading(false);
+      return;
+    }
+
     let mounted = true;
     (async () => {
       try {
@@ -38,7 +45,7 @@ export function RelatedArticlesSidebar({ articleId }: Props) {
     return () => {
       mounted = false;
     };
-  }, [articleId]);
+  }, [articleId, initialArticles.length]);
 
   return (
     <div className="rounded-2xl bg-white p-4 shadow-2xl sm:p-6">

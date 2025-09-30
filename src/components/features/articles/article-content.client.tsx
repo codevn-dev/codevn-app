@@ -1,13 +1,16 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import { ArticleContent } from './article-content';
 import type { Article } from '@/types/shared';
 
-const ArticleContent = dynamic(() => import('./article-content').then((m) => m.ArticleContent), {
-  ssr: false,
-});
+interface ArticleContentClientProps {
+  article: Article;
+  isPreview?: boolean;
+  initialRelatedArticles?: any[];
+  initialCategories?: any[];
+}
 
-export function ArticleContentClient(props: { article: Article; isPreview?: boolean }) {
+export function ArticleContentClient(props: ArticleContentClientProps) {
   return <ArticleContent {...props} />;
 }
 
