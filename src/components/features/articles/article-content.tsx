@@ -51,59 +51,74 @@ import {
 import { RelatedArticlesSidebar } from '@/features/articles';
 
 // Lazy load CodeHighlighter for better performance
-const CodeHighlighter = dynamic(() => import('@/features/articles').then(m => ({ default: m.CodeHighlighter })), {
-  ssr: false,
-  loading: () => (
-    <div className="leading-relaxed text-gray-700 min-h-[200px] space-y-4">
-      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-      <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
-      <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5"></div>
-      <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
-      <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-    </div>
-  ),
-});
+const CodeHighlighter = dynamic(
+  () => import('@/features/articles').then((m) => ({ default: m.CodeHighlighter })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[200px] space-y-4 leading-relaxed text-gray-700">
+        <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-4 w-5/6 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-4 w-4/5 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-32 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+      </div>
+    ),
+  }
+);
 import type { CommentsSectionRef } from '@/features/comments';
 
 // Dynamic imports for components that are not immediately needed
-const ShareMenu = dynamic(() => import('@/features/articles').then(m => ({ default: m.ShareMenu })), {
-  ssr: false,
-  loading: () => <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />,
-});
+const ShareMenu = dynamic(
+  () => import('@/features/articles').then((m) => ({ default: m.ShareMenu })),
+  {
+    ssr: false,
+    loading: () => <div className="h-8 w-8 animate-pulse rounded bg-gray-200" />,
+  }
+);
 
-const CommentsSection = dynamic(() => import('@/features/comments').then(m => ({ default: m.CommentsSection })), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-[400px] space-y-6">
-      <div className="h-8 bg-gray-200 rounded animate-pulse w-1/3"></div>
-      <div className="space-y-4">
-        <div className="flex space-x-3">
-          <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
-            <div className="h-16 bg-gray-200 rounded animate-pulse"></div>
+const CommentsSection = dynamic(
+  () => import('@/features/comments').then((m) => ({ default: m.CommentsSection })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[400px] space-y-6">
+        <div className="h-8 w-1/3 animate-pulse rounded bg-gray-200"></div>
+        <div className="space-y-4">
+          <div className="flex space-x-3">
+            <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-1/4 animate-pulse rounded bg-gray-200"></div>
+              <div className="h-16 animate-pulse rounded bg-gray-200"></div>
+            </div>
+          </div>
+          <div className="flex space-x-3">
+            <div className="h-10 w-10 animate-pulse rounded-full bg-gray-200"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-1/4 animate-pulse rounded bg-gray-200"></div>
+              <div className="h-20 animate-pulse rounded bg-gray-200"></div>
+            </div>
           </div>
         </div>
-        <div className="flex space-x-3">
-          <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
-            <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-        </div>
+        <div className="h-32 animate-pulse rounded bg-gray-200"></div>
       </div>
-      <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
-    </div>
-  ),
-});
+    ),
+  }
+);
 import { useAuthState } from '@/hooks/use-auth-state';
 import { useUIStore } from '@/stores';
 // Lazy load AvatarWithDropdown
-const AvatarWithDropdown = dynamic(() => import('@/components/ui/avatar-with-dropdown').then(m => ({ default: m.AvatarWithDropdown })), {
-  ssr: false,
-  loading: () => <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse flex-shrink-0" />,
-});
+const AvatarWithDropdown = dynamic(
+  () =>
+    import('@/components/ui/avatar-with-dropdown').then((m) => ({ default: m.AvatarWithDropdown })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-10 w-10 flex-shrink-0 animate-pulse rounded-full bg-gray-200" />
+    ),
+  }
+);
 import { Article, RoleLevel } from '@/types/shared';
 import { apiDelete, apiPost, apiPut, apiGet } from '@/lib/utils/api-client';
 import {
@@ -121,15 +136,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 // Dynamic imports for edit modal components
-const TiptapRichTextEditor = dynamic(() => import('@/features/articles').then(m => ({ default: m.TiptapRichTextEditor })), {
-  ssr: false,
-  loading: () => <div className="animate-pulse bg-gray-200 min-h-[400px] rounded-lg" />,
-});
+const TiptapRichTextEditor = dynamic(
+  () => import('@/features/articles').then((m) => ({ default: m.TiptapRichTextEditor })),
+  {
+    ssr: false,
+    loading: () => <div className="min-h-[400px] animate-pulse rounded-lg bg-gray-200" />,
+  }
+);
 
-const ImageUpload = dynamic(() => import('@/features/upload').then(m => ({ default: m.ImageUpload })), {
-  ssr: false,
-  loading: () => <div className="animate-pulse bg-gray-200 h-32 rounded-lg" />,
-});
+const ImageUpload = dynamic(
+  () => import('@/features/upload').then((m) => ({ default: m.ImageUpload })),
+  {
+    ssr: false,
+    loading: () => <div className="h-32 animate-pulse rounded-lg bg-gray-200" />,
+  }
+);
 import { SuccessResponse } from '@/types/shared/common';
 import { useI18n } from '@/components/providers';
 import { ReactionRequest } from '@/types/shared/reaction';
@@ -142,76 +163,25 @@ interface ArticleContentProps {
   initialCategories?: any[];
 }
 
-// Skeleton component for loading states
-const ArticleSkeleton = () => (
-  <div className="animate-pulse min-h-[600px]">
-    {/* Back button area */}
-    <div className="mb-4 flex items-center justify-between">
-      <div className="h-8 bg-gray-200 rounded w-20"></div>
-      <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
-    </div>
-    
-    {/* Category badge */}
-    <div className="h-6 bg-gray-200 rounded-full w-24 mb-4"></div>
-    
-    {/* Title */}
-    <div className="h-8 bg-gray-200 rounded w-3/4 mb-6"></div>
-    
-    {/* Author and meta info */}
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-      <div className="flex items-center space-x-4">
-        <div className="h-10 w-10 bg-gray-200 rounded-full flex-shrink-0"></div>
-        <div className="space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-24"></div>
-          <div className="h-3 bg-gray-200 rounded w-32"></div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="h-8 bg-gray-200 rounded w-12"></div>
-        <div className="h-8 bg-gray-200 rounded w-12"></div>
-        <div className="h-8 bg-gray-200 rounded w-12"></div>
-        <div className="h-8 bg-gray-200 rounded w-12"></div>
-      </div>
-    </div>
-    
-    {/* Content area */}
-    <div className="min-h-[200px] space-y-4 mb-8">
-      <div className="h-4 bg-gray-200 rounded"></div>
-      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-      <div className="h-4 bg-gray-200 rounded w-4/5"></div>
-      <div className="h-32 bg-gray-200 rounded"></div>
-      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-      <div className="h-4 bg-gray-200 rounded"></div>
-      <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-    </div>
-    
-    {/* Comments section */}
-    <div className="border-t border-gray-200 pt-8">
-      <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
-      <div className="min-h-[200px] bg-gray-200 rounded"></div>
-    </div>
-  </div>
-);
-
-export function ArticleContent({ 
-  article, 
-  isPreview = false, 
+export function ArticleContent({
+  article,
+  isPreview = false,
   initialRelatedArticles = [],
-  initialCategories = []
+  initialCategories = [],
 }: ArticleContentProps) {
   const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const [isContentLoading, setIsContentLoading] = useState(true);
   const [isContentVisible, setIsContentVisible] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     setMounted(true);
     // Simulate content loading for better UX
     const timer = setTimeout(() => setIsContentLoading(false), 100);
     return () => clearTimeout(timer);
   }, []);
-  
+
   // Intersection Observer for lazy loading content
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -223,11 +193,11 @@ export function ArticleContent({
       },
       { threshold: 0.1, rootMargin: '50px' }
     );
-    
+
     if (contentRef.current) {
       observer.observe(contentRef.current);
     }
-    
+
     return () => observer.disconnect();
   }, []);
   const { isAuthenticated, user } = useAuthState();
@@ -553,13 +523,13 @@ export function ArticleContent({
       <div className="py-8">
         <div className="relative mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
           {/* Related sidebar on xl+ */}
-          <div className="hidden xl:absolute xl:top-0 xl:right-[-320px] xl:block xl:w-[320px] xl:max-w-[360px] xl:min-w-[320px] xl:min-h-[400px]">
-            <RelatedArticlesSidebar 
-              articleId={article.id} 
+          <div className="hidden xl:absolute xl:top-0 xl:right-[-320px] xl:block xl:min-h-[400px] xl:w-[320px] xl:max-w-[360px] xl:min-w-[320px]">
+            <RelatedArticlesSidebar
+              articleId={article.id}
               initialArticles={initialRelatedArticles}
             />
           </div>
-          <div className="rounded-2xl bg-white p-4 shadow-2xl shadow-gray-400/80 sm:p-6 min-h-[600px]">
+          <div className="min-h-[600px] rounded-2xl bg-white p-4 shadow-2xl shadow-gray-400/80 sm:p-6">
             {isPreview && (
               <div className="-m-6 mb-6 rounded-t-2xl border-b border-yellow-200 bg-yellow-100 px-6 py-3">
                 <div className="flex items-center text-sm font-medium text-yellow-800">
@@ -710,7 +680,7 @@ export function ArticleContent({
                           likedEffective
                             ? 'border-emerald-500 bg-emerald-50/50 text-emerald-600 hover:border-emerald-600 hover:bg-emerald-50'
                             : 'hover:border-emerald-500 hover:bg-emerald-50/30 hover:text-emerald-600'
-                        } ${isLikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        } ${isLikeLoading ? 'cursor-not-allowed opacity-50' : ''}`}
                       >
                         <ThumbsUp
                           className={`mr-1 h-4 w-4 transition-colors duration-200 ${
@@ -728,7 +698,7 @@ export function ArticleContent({
                           unlikedEffective
                             ? 'border-rose-500 bg-rose-50/50 text-rose-600 hover:border-rose-600 hover:bg-rose-50'
                             : 'hover:border-rose-500 hover:bg-rose-50/30 hover:text-rose-600'
-                        } ${isUnlikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        } ${isUnlikeLoading ? 'cursor-not-allowed opacity-50' : ''}`}
                       >
                         <ThumbsDown
                           className={`mr-1 h-4 w-4 transition-colors duration-200 ${
@@ -757,15 +727,15 @@ export function ArticleContent({
               <MotionContainer delay={0.05} className="mt-6 pt-0 sm:mt-8">
                 <div ref={contentRef} className="min-h-[200px]">
                   {isContentLoading || !isContentVisible ? (
-                    <div className="leading-relaxed text-gray-700 min-h-[200px] space-y-4">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse w-5/6"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse w-4/5"></div>
-                      <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="min-h-[200px] space-y-4 leading-relaxed text-gray-700">
+                      <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                      <div className="h-4 w-5/6 animate-pulse rounded bg-gray-200"></div>
+                      <div className="h-4 w-4/5 animate-pulse rounded bg-gray-200"></div>
+                      <div className="h-32 animate-pulse rounded bg-gray-200"></div>
+                      <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200"></div>
+                      <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                      <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200"></div>
+                      <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                     </div>
                   ) : (
                     <CodeHighlighter
@@ -778,7 +748,7 @@ export function ArticleContent({
 
               <div className="my-6 border-t border-gray-200 sm:my-8" />
 
-              <div className="mt-6 pt-0 sm:mt-8 sm:pt-0 min-h-[400px]" data-comments-section>
+              <div className="mt-6 min-h-[400px] pt-0 sm:mt-8 sm:pt-0" data-comments-section>
                 <CommentsSection
                   ref={commentsSectionRef}
                   articleId={article.id}
@@ -788,11 +758,11 @@ export function ArticleContent({
               </div>
 
               {/* Related Articles for tablet/mobile - shown below comments */}
-              <div className="mt-8 xl:hidden min-h-[300px]">
-                <RelatedArticlesSidebar 
-            articleId={article.id} 
-            initialArticles={initialRelatedArticles}
-          />
+              <div className="mt-8 min-h-[300px] xl:hidden">
+                <RelatedArticlesSidebar
+                  articleId={article.id}
+                  initialArticles={initialRelatedArticles}
+                />
               </div>
             </div>
           </div>

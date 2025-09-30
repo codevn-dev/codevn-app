@@ -27,7 +27,7 @@ export default async function ArticlePage({
   let article: Article;
   let relatedArticles: any[] = [];
   let categories: any[] = [];
-  
+
   try {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
@@ -35,16 +35,16 @@ export default async function ArticlePage({
 
     // First fetch the article to get its ID for related articles
     article = await apiGet<Article>(endpoint, { headers: { cookie: cookieHeader } });
-    
+
     // Then fetch related data in parallel
     const [relatedRes, categoriesRes] = await apiParallel([
       { method: 'GET', endpoint: `/api/articles/${article.id}/related` },
-      { method: 'GET', endpoint: '/api/categories' }
+      { method: 'GET', endpoint: '/api/categories' },
     ]).catch(() => [
       { articles: [] }, // Fallback for related articles
-      [] // Fallback for categories
+      [], // Fallback for categories
     ]);
-    
+
     relatedArticles = relatedRes.articles || [];
     categories = categoriesRes || [];
   } catch {
@@ -113,8 +113,8 @@ export default async function ArticlePage({
           />
         );
       })()}
-      <ArticleContentClient 
-        article={articleWithCounts} 
+      <ArticleContentClient
+        article={articleWithCounts}
         isPreview={isPreview}
         initialRelatedArticles={relatedArticles}
         initialCategories={categories}

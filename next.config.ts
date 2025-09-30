@@ -17,9 +17,9 @@ const nextConfig: NextConfig = {
   // SWC minification is enabled by default in Next.js 13+
   experimental: {
     optimizePackageImports: [
-      'lucide-react', 
-      '@radix-ui/react-dialog', 
-      '@radix-ui/react-dropdown-menu', 
+      'lucide-react',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
       '@radix-ui/react-select',
       '@radix-ui/react-avatar',
       '@radix-ui/react-label',
@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
       'zustand',
       'clsx',
       'tailwind-merge',
-      'class-variance-authority'
+      'class-variance-authority',
     ],
     // Enable modern JavaScript for better performance
     esmExternals: true,
