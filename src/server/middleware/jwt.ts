@@ -29,10 +29,14 @@ export async function generateTokenPair(
   });
 
   // Access token (include sessionMetadata for consistency)
+  const accessSessionMetadata = {
+    ...sessionMetadata,
+    lastActive: new Date().toISOString(),
+  };
   const accessTokenPayload = {
     id: payload.id,
     role: payload.role,
-    sessionMetadata: sessionMetadata,
+    sessionMetadata: accessSessionMetadata,
   };
   const accessToken = jwt.sign(accessTokenPayload, config.auth.secret, {
     expiresIn: config.auth.accessTokenExpiresIn,
@@ -42,20 +46,20 @@ export async function generateTokenPair(
   // Store user data in Redis for fast access
   if (redisService) {
     try {
+      const refreshRedisPayload = {
+        userId: payload.id,
+        accessJti,
+        sessionMetadata: sessionMetadata,
+      };
       const accessRedisPayload = {
         userId: payload.id,
         refreshJti,
-        sessionMetadata: sessionMetadata,
-      };
-
-      const refreshRedisPayload = {
-        userId: payload.id,
-        sessionMetadata: sessionMetadata,
+        sessionMetadata: accessSessionMetadata,
       };
 
       // Store by JTI
-      await redisService.storeToken(accessJti, accessRedisPayload, 'access');
       await redisService.storeToken(refreshJti, refreshRedisPayload, 'refresh');
+      await redisService.storeToken(accessJti, accessRedisPayload, 'access');
       await redisService.addTokenToUser(payload.id, refreshJti);
     } catch (error) {
       console.error('[JWT] Error storing token data in Redis:', error);
@@ -187,9 +191,19 @@ export async function getUserFromToken(token: string): Promise<JWTPayload | null
       // Get sessionMetadata from access token (now stored in both tokens)
       const sessionMetadata = accessData.sessionMetadata;
       if (sessionMetadata) {
-        // Update lastActive time for this session (only in access token)
-        sessionMetadata.lastActive = new Date().toISOString();
-        await redisService.storeToken(jti, accessData, 'access');
+        const now = Date.now();
+        const lastActive = sessionMetadata.lastActive
+          ? new Date(sessionMetadata.lastActive).getTime()
+          : 0;
+
+        // Only store the new active time if it's been more than 60s since last update
+        if (now - lastActive > 60 * 1000) {
+          sessionMetadata.lastActive = new Date().toISOString();
+
+          const ttl = payload.exp ? payload.exp - Math.floor(now / 1000) : undefined;
+
+          await redisService.storeToken(jti, accessData, 'access', ttl);
+        }
       }
 
       // Fetch latest role from user profile cache if available

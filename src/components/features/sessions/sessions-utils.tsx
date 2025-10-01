@@ -33,7 +33,8 @@ export function getOSIcon(os?: string) {
   }
 }
 
-export function formatRelativeTime(dateString: string) {
+export function formatRelativeTime(dateString?: string) {
+  if (!dateString) return 'Unknown';
   const date = new Date(dateString);
   const now = new Date();
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));

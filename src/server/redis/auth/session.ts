@@ -60,12 +60,14 @@ export class SessionService {
 
           const isCurrent = currentRefreshJti ? refreshJti === currentRefreshJti : false;
 
+          const accessToken = await this.tokenService.getToken(refreshData.accessJti, 'access');
+
           return {
             token: refreshJti,
             country,
             deviceInfo: sessionMetadata.deviceInfo || 'Unknown Device',
-            loginTime: sessionMetadata.loginTime || new Date().toISOString(),
-            lastActive: sessionMetadata.lastActive || new Date().toISOString(),
+            loginTime: sessionMetadata.loginTime,
+            lastActive: accessToken?.sessionMetadata?.lastActive,
             isCurrent,
           };
         })

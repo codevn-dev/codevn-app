@@ -80,7 +80,7 @@ export function SessionsList({
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {formatRelativeTime(session.lastActive || session.loginTime)}
+                    {formatRelativeTime(session.lastActive)}
                   </span>
                   {session.deviceInfo?.browser && (
                     <span className="flex items-center gap-1">
