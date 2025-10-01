@@ -8,6 +8,13 @@
       "when": 1758915297166,
       "tag": "0000_first_blood",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759330662182,
+      "tag": "0001_greedy_johnny_blaze",
+      "breakpoints": true
     }
   ]
 }

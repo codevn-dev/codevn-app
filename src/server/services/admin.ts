@@ -178,7 +178,7 @@ export class AdminService extends BaseService {
     try {
       this.requireAdmin(currentUser);
 
-      const { name, description, color, parentId } = body;
+      const { name, description, color, parentId, order } = body;
 
       if (!name) {
         throw new Error(CommonError.BAD_REQUEST);
@@ -204,6 +204,7 @@ export class AdminService extends BaseService {
         description,
         color,
         parentId,
+        order,
         createdById: currentUser.id,
       });
 
@@ -239,7 +240,7 @@ export class AdminService extends BaseService {
     try {
       this.requireAdmin(currentUser);
 
-      const { id, name, description, color, parentId } = body;
+      const { id, name, description, color, parentId, order } = body;
 
       if (!id || !name) {
         throw new Error(CommonError.BAD_REQUEST);
@@ -277,6 +278,7 @@ export class AdminService extends BaseService {
         description,
         color: color || existingCategory.color,
         parentId: parentId || null,
+        order,
       });
 
       // Invalidate categories cache

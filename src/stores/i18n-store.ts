@@ -374,6 +374,26 @@ const store: Dictionary = {
   'admin.category.color': { en: 'Color', vi: 'Màu' },
   'admin.parentCategory': { en: 'Parent Category', vi: 'Danh mục cha' },
   'admin.category.noParentRoot': { en: 'No parent (Root Category)', vi: 'Không có (Danh mục gốc)' },
+  'admin.category.deleteTitle': { en: 'Delete Category', vi: 'Xóa danh mục' },
+  'admin.category.deleteConfirm': {
+    en: 'Are you sure you want to delete',
+    vi: 'Bạn có chắc chắn muốn xóa',
+  },
+  'admin.category.deleteConfirmSuffix': {
+    en: '? This action cannot be undone.',
+    vi: '? Hành động này không thể hoàn tác.',
+  },
+  'admin.category.cannotDeleteTitle': { en: 'Cannot Delete Category', vi: 'Không thể xóa danh mục' },
+  'admin.category.deleteInstructions': { en: 'To delete this category:', vi: 'Để xóa danh mục này:' },
+  'admin.category.moveArticles': {
+    en: 'Move all articles to another category, or',
+    vi: 'Chuyển tất cả bài viết sang danh mục khác, hoặc',
+  },
+  'admin.category.deleteArticles': {
+    en: 'Delete all articles in this category first',
+    vi: 'Xóa tất cả bài viết trong danh mục này trước',
+  },
+  'admin.category.deleting': { en: 'Deleting...', vi: 'Đang xóa...' },
 
   // System Users
   'admin.systemUsers': { en: 'System Users', vi: 'Người dùng hệ thống' },

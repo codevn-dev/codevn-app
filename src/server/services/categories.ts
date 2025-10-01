@@ -1,6 +1,6 @@
 import { categoryRepository } from '../database/repository';
 import { BaseService } from './base';
-import { Category } from '@/types/shared/category';
+import { Category, ReorderCategoriesRequest } from '@/types/shared/category';
 import { getRedis } from '@/lib/server';
 
 export class CategoriesService extends BaseService {
@@ -30,6 +30,7 @@ export class CategoriesService extends BaseService {
           description: category.description ?? null,
           slug: category.slug,
           color: category.color,
+          order: category.order,
           parentId: category.parentId ?? null,
           createdAt: category.createdAt,
           updatedAt: category.updatedAt ?? category.createdAt,
@@ -49,6 +50,7 @@ export class CategoriesService extends BaseService {
             description: child.description ?? null,
             slug: child.slug,
             color: child.color,
+            order: child.order,
             parentId: child.parentId ?? category.id,
             createdAt: child.createdAt,
             updatedAt: child.updatedAt ?? child.createdAt,
@@ -80,6 +82,25 @@ export class CategoriesService extends BaseService {
       return response;
     } catch (error) {
       this.handleError(error, 'Get categories');
+    }
+  }
+
+  /**
+   * Reorder categories
+   */
+  async reorderCategories(reorderData: ReorderCategoriesRequest): Promise<void> {
+    try {
+      await categoryRepository.reorderCategories(reorderData.categories);
+      
+      // Clear cache after reordering
+      try {
+        const redis = getRedis();
+        await redis.del('categories:all');
+      } catch {
+        // ignore cache clear errors
+      }
+    } catch (error) {
+      this.handleError(error, 'Reorder categories');
     }
   }
 }

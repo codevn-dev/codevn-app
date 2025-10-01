@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { categoriesService, adminService } from '../services';
 import { CommonError, CategoryError } from '@/types/shared';
-import { CreateCategoryRequest, UpdateCategoryRequest } from '@/types/shared/category';
+import { CreateCategoryRequest, UpdateCategoryRequest, ReorderCategoriesRequest } from '@/types/shared/category';
 import { ok, fail } from '../utils/response';
 
 export async function categoryRoutes(fastify: FastifyInstance) {
@@ -48,6 +48,25 @@ export async function categoryRoutes(fastify: FastifyInstance) {
         return reply.send(ok(response));
       } catch (err: any) {
         const message = err?.message || 'Unable to update category. Please try again.';
+        return reply.status(400).send(fail(message));
+      }
+    }
+  );
+
+  // POST /api/categories/reorder - Reorder categories (admin only)
+  fastify.post<{ Body: ReorderCategoriesRequest }>(
+    '/reorder',
+    {
+      preHandler: authMiddleware,
+    },
+    async (request: FastifyRequest<{ Body: ReorderCategoriesRequest }>, reply: FastifyReply) => {
+      try {
+        const authRequest = request as AuthenticatedRequest;
+        const body = request.body as ReorderCategoriesRequest;
+        await categoriesService.reorderCategories(body);
+        return reply.send(ok({ message: 'Categories reordered successfully' }));
+      } catch (err: any) {
+        const message = err?.message || 'Unable to reorder categories. Please try again.';
         return reply.status(400).send(fail(message));
       }
     }

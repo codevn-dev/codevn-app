@@ -1,28 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardBody, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Plus, Tag, Edit, Trash2, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
-import { useAuthState } from '@/hooks/use-auth-state';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardBody } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, Tag, Edit, Trash2, ChevronDown, ChevronRight, XCircle } from 'lucide-react';
+import { useAuthState } from '@/hooks/use-auth-state';
 import { RoleLevel } from '@/types/shared/roles';
 import { Category } from '@/types/shared/category';
 import { SuccessResponse } from '@/types/shared/common';
@@ -519,81 +506,79 @@ export function Categories({ onDataChange }: CategoriesProps) {
         )}
       </div>
 
-      <Dialog
-        open={!!showDeleteConfirm}
-        onOpenChange={(open) => {
-          if (!open) {
-            setShowDeleteConfirm(null);
-            setDeleteError(null);
-          }
-        }}
-      >
-        <DialogContent className="p-6">
-          <DialogHeader>
-            <DialogTitle>Delete Category</DialogTitle>
-          </DialogHeader>
-          <p className="mb-2 text-gray-600">
-            Are you sure you want to delete &quot;{showDeleteConfirm?.name}&quot;? This action
-            cannot be undone.
-          </p>
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div
+            className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">{t('admin.category.deleteTitle')}</h2>
+            </div>
+            <p className="mb-2 text-gray-600">
+              {t('admin.category.deleteConfirm')} &quot;{showDeleteConfirm?.name}&quot;{t('admin.category.deleteConfirmSuffix')}
+            </p>
 
-          {deleteError && (
-            <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <XCircle className="h-5 w-5 text-red-400" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Cannot Delete Category</h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>{deleteError}</p>
-                    {deleteError.includes('articles') && (
-                      <div className="mt-2">
-                        <p className="font-medium">To delete this category:</p>
-                        <ul className="mt-1 list-inside list-disc space-y-1">
-                          <li>Move all articles to another category, or</li>
-                          <li>Delete all articles in this category first</li>
-                        </ul>
-                      </div>
-                    )}
+            {deleteError && (
+              <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <XCircle className="h-5 w-5 text-red-400" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">{t('admin.category.cannotDeleteTitle')}</h3>
+                    <div className="mt-2 text-sm text-red-700">
+                      <p>{deleteError}</p>
+                      {deleteError.includes('articles') && (
+                        <div className="mt-2">
+                          <p className="font-medium">{t('admin.category.deleteInstructions')}</p>
+                          <ul className="mt-1 list-inside list-disc space-y-1">
+                            <li>{t('admin.category.moveArticles')}</li>
+                            <li>{t('admin.category.deleteArticles')}</li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowDeleteConfirm(null);
-                setDeleteError(null);
-              }}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => showDeleteConfirm && handleDeleteCategory(showDeleteConfirm)}
-              className="border-red-600 text-red-600 hover:bg-red-50"
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
-                  Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="mr-1 h-4 w-4" />
-                  Delete
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteConfirm(null);
+                  setDeleteError(null);
+                }}
+                disabled={isDeleting}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => showDeleteConfirm && handleDeleteCategory(showDeleteConfirm)}
+                className="border-red-600 text-red-600 hover:bg-red-50"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+                    {t('admin.category.deleting')}
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-1 h-4 w-4" />
+                    {t('common.delete')}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

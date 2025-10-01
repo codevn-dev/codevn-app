@@ -5,6 +5,7 @@ export interface Category {
   slug: string;
   color: string;
   parentId: string | null;
+  order: string;
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: {
@@ -25,6 +26,7 @@ export interface CreateCategoryRequest {
   slug: string;
   color: string;
   parentId?: string;
+  order?: string;
 }
 
 export interface UpdateCategoryRequest {
@@ -34,6 +36,15 @@ export interface UpdateCategoryRequest {
   slug?: string;
   color?: string;
   parentId?: string;
+  order?: string;
+}
+
+export interface ReorderCategoriesRequest {
+  categories: Array<{
+    id: string;
+    order: string;
+    parentId?: string | null;
+  }>;
 }
 
 // Response types
@@ -62,6 +73,7 @@ export interface CategoryWithCounts {
   description: string | null;
   slug: string;
   color: string;
+  order: string;
   createdAt: Date;
   updatedAt: Date | null;
   createdBy: {
@@ -78,6 +90,7 @@ export interface CategoryWithCounts {
     description: string | null;
     slug: string;
     color: string;
+    order: string;
     createdAt: Date;
     updatedAt: Date | null;
     createdBy: {

@@ -67,6 +67,7 @@ export class CategoryRepository {
             description: true,
             slug: true,
             color: true,
+            order: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -84,9 +85,10 @@ export class CategoryRepository {
               },
             },
           },
+          orderBy: (categories, { asc }) => [asc(categories.order)],
         },
       },
-      orderBy: (categories, { asc }) => [asc(categories.name)],
+      orderBy: (categories, { asc }) => [asc(categories.order)],
     });
 
     // Get article counts and children counts for each category
@@ -159,6 +161,7 @@ export class CategoryRepository {
             description: true,
             slug: true,
             color: true,
+            order: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -176,9 +179,10 @@ export class CategoryRepository {
               },
             },
           },
+          orderBy: (categories, { asc }) => [asc(categories.order)],
         },
       },
-      orderBy: (categories, { asc }) => [asc(categories.name)],
+      orderBy: (categories, { asc }) => [asc(categories.order)],
     });
 
     // Filter to only return root categories (categories without parentId)
@@ -205,6 +209,7 @@ export class CategoryRepository {
     description?: string;
     color?: string;
     parentId?: string;
+    order?: string;
     createdById: string;
   }): Promise<
     Array<{
@@ -214,6 +219,7 @@ export class CategoryRepository {
       slug: string;
       color: string;
       parentId: string | null;
+      order: string;
       createdById: string;
       createdAt: Date;
       updatedAt: Date | null;
@@ -224,6 +230,25 @@ export class CategoryRepository {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
 
+    // If no order is provided, generate one based on existing categories
+    let order = categoryData.order;
+    if (!order) {
+      const existingCategories = await getDb()
+        .select({ order: categories.order })
+        .from(categories)
+        .where(
+          categoryData.parentId 
+            ? eq(categories.parentId, categoryData.parentId)
+            : isNull(categories.parentId)
+        )
+        .orderBy(categories.order);
+      
+      // Generate next order value
+      const lastOrder = existingCategories[existingCategories.length - 1]?.order || '0';
+      const nextOrderNum = parseInt(lastOrder) + 1;
+      order = nextOrderNum.toString();
+    }
+
     return await getDb()
       .insert(categories)
       .values({
@@ -232,6 +257,7 @@ export class CategoryRepository {
         slug,
         color: categoryData.color || '#3B82F6',
         parentId: categoryData.parentId || null,
+        order,
         createdById: categoryData.createdById,
       })
       .returning();
@@ -258,6 +284,7 @@ export class CategoryRepository {
       description?: string;
       color?: string;
       parentId?: string | null;
+      order?: string;
     }
   ): Promise<
     Array<{
@@ -267,6 +294,7 @@ export class CategoryRepository {
       slug: string;
       color: string;
       parentId: string | null;
+      order: string;
       createdById: string;
       createdAt: Date;
       updatedAt: Date | null;
@@ -328,6 +356,24 @@ export class CategoryRepository {
       .from(categories)
       .where(and(eq(categories.parentId, parentId), isNull(categories.deletedAt)));
     return rows.map((r) => r.id);
+  }
+
+  async reorderCategories(reorderData: Array<{ id: string; order: string; parentId?: string | null }>): Promise<void> {
+    const db = getDb();
+    
+    // Use transaction to ensure all updates succeed or fail together
+    await db.transaction(async (tx) => {
+      for (const item of reorderData) {
+        await tx
+          .update(categories)
+          .set({ 
+            order: item.order,
+            parentId: item.parentId,
+            updatedAt: new Date()
+          })
+          .where(eq(categories.id, item.id));
+      }
+    });
   }
 }
 

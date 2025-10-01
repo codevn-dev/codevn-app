@@ -27,6 +27,7 @@ export const categories = pgTable('categories', {
   slug: text('slug').notNull().unique(),
   color: text('color').notNull().default('#3B82F6'), // Default blue color
   parentId: uuid('parent_id'),
+  order: text('order').notNull().default('0'), // Order for sorting categories
   createdById: uuid('created_by_id')
     .notNull()
     .references(() => users.id),
