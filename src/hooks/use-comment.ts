@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuthState } from './use-auth-state';
 import { Comment } from '@/types/shared';
 import { config } from '@/config/config';
+import { ACCESS_TOKEN } from '@/types/shared/tokens';
 
 interface CommentWebSocketMessage {
   type: 'connected' | 'new_comment' | 'new_reply' | 'error';
@@ -107,7 +108,7 @@ export function useCommentWebSocket({ onNewComment, onNewReply }: UseCommentWebS
       // Get auth token from cookies
       const token = document.cookie
         .split('; ')
-        .find((row) => row.startsWith('auth-token='))
+        .find((row) => row.startsWith(`${ACCESS_TOKEN}=`))
         ?.split('=')[1];
 
       // Include token in WebSocket URL as query parameter

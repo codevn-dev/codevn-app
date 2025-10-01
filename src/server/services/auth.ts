@@ -13,6 +13,7 @@ import { LoginResponse, RegisterResponse, CheckEmailResponse } from '@/types/sha
 import { UserResponse } from '@/types/shared/user';
 import { SuccessResponse } from '@/types/shared/common';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '@/types/shared/tokens';
+import { parseUserAgent } from '@/lib/utils/user-agent';
 
 export class AuthService extends BaseService {
   private redisFirstUserService = createRedisFirstUserService();
@@ -46,23 +47,6 @@ export class AuthService extends BaseService {
   }
 
   /**
-   * Set authentication cookie (backward compatibility)
-   */
-  private setAuthCookie(reply: FastifyReply, token: string): void {
-    reply.cookie(ACCESS_TOKEN, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      domain:
-        process.env.NODE_ENV === 'production'
-          ? process.env.COOKIE_DOMAIN || undefined
-          : 'localhost',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    });
-  }
-
-  /**
    * Clear authentication cookies
    */
   private clearAuthCookies(reply: FastifyReply): void {
@@ -79,13 +63,6 @@ export class AuthService extends BaseService {
   }
 
   /**
-   * Clear authentication cookie (backward compatibility)
-   */
-  private clearAuthCookie(reply: FastifyReply): void {
-    reply.clearCookie(ACCESS_TOKEN);
-  }
-
-  /**
    * Extract session metadata from request
    */
   private extractSessionMetadata(request?: any): any {
@@ -94,69 +71,19 @@ export class AuthService extends BaseService {
     const loginTime = new Date().toISOString();
 
     // Try to get country code from headers (if using CloudFlare, etc.)
-    const countryCode = 'VN';
+    const countryCode =
+      request.headers['cf-ipcountry'] || request.headers['x-country-code'] || undefined;
 
     // Parse device info from User Agent
     const userAgent = request.headers['user-agent'] || 'unknown';
-    const deviceInfo = this.parseUserAgent(userAgent);
+    const deviceType = request.headers['cf-device-type'] || undefined;
+    const deviceInfo = parseUserAgent(userAgent, deviceType);
 
     return {
       countryCode,
       deviceInfo,
       loginTime,
     };
-  }
-
-  /**
-   * Parse User Agent to extract device info
-   */
-  private parseUserAgent(userAgent: string): any {
-    const deviceInfo: any = {};
-
-    // Browser detection
-    if (userAgent.includes('Chrome')) {
-      deviceInfo.browser = 'Chrome';
-    } else if (userAgent.includes('Firefox')) {
-      deviceInfo.browser = 'Firefox';
-    } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-      deviceInfo.browser = 'Safari';
-    } else if (userAgent.includes('Edge')) {
-      deviceInfo.browser = 'Edge';
-    } else if (userAgent.includes('Opera')) {
-      deviceInfo.browser = 'Opera';
-    }
-
-    // OS detection
-    if (userAgent.includes('Windows')) {
-      deviceInfo.os = 'Windows';
-    } else if (userAgent.includes('Mac OS')) {
-      deviceInfo.os = 'macOS';
-    } else if (userAgent.includes('Linux')) {
-      deviceInfo.os = 'Linux';
-    } else if (userAgent.includes('Android')) {
-      deviceInfo.os = 'Android';
-    } else if (
-      userAgent.includes('iOS') ||
-      userAgent.includes('iPhone') ||
-      userAgent.includes('iPad')
-    ) {
-      deviceInfo.os = 'iOS';
-    }
-
-    // Device type detection
-    if (
-      userAgent.includes('Mobile') ||
-      userAgent.includes('Android') ||
-      userAgent.includes('iPhone')
-    ) {
-      deviceInfo.device = 'Mobile';
-    } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
-      deviceInfo.device = 'Tablet';
-    } else {
-      deviceInfo.device = 'Desktop';
-    }
-
-    return deviceInfo;
   }
 
   /**

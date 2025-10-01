@@ -2,6 +2,16 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.10]() (2025-10-01)
+
+### Refactored
+
+- Refactored the auth-token to access-token.
+
+### Optimized
+
+- Optimized the nginx cache.
+
 ## [v0.1.9]() (2025-10-01)
 
 ### Fixed

@@ -9,6 +9,7 @@ import {
   CommentQueryParams as CommentQuery,
   CreateCommentRequest as CreateCommentBody,
 } from '@/types/shared/comment';
+import { detectDevice } from '@/lib/utils/user-agent';
 
 export async function articleRoutes(fastify: FastifyInstance) {
   // GET /api/articles - Get articles with filtering and pagination
@@ -200,13 +201,8 @@ export async function articleRoutes(fastify: FastifyInstance) {
         const countryCode = (request.headers['cf-ipcountry'] as string) || null;
 
         // Detect device type from user agent
-        const detectDevice = (userAgent: string): string => {
-          if (/tablet|ipad/i.test(userAgent)) return 'tablet';
-          if (/mobile|android|iphone|ipod|blackberry|windows phone/i.test(userAgent))
-            return 'mobile';
-          return 'desktop';
-        };
-        const device = detectDevice(ua);
+        const device =
+          (request.headers['cf-device-type'] as string) || detectDevice(ua).toLocaleLowerCase();
 
         // Accept optional metadata from client
         const body = (request as any).body || {};

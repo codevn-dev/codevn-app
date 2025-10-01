@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import { getUserFromToken } from '../middleware/jwt';
 import { BaseWebSocketService, BaseConnection } from './base';
 import { RoleLevel } from '@/types/shared';
+import { ACCESS_TOKEN } from '@/types/shared/tokens';
 
 interface ChatConnection extends BaseConnection {
   userId: string;

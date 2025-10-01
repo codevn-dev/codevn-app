@@ -6,13 +6,13 @@ import { useUIStore } from '@/stores/ui-store';
 import { useChat as useChatContext } from '@/components/features/chat/chat-context';
 import { UiMessage, UserResponse } from '@/types/shared';
 import { chatConfig } from '@/config/config';
-import { ACCESS_TOKEN } from '@/types/shared/tokens';
 import { apiGet, apiPost } from '@/lib/utils/api-client';
 import {
   ChatConversationsResponse,
   ChatQueryResponse,
   HideConversationRequest,
 } from '@/types/shared/chat';
+import { ACCESS_TOKEN } from '@/types/shared/tokens';
 
 interface Conversation {
   id: string;
@@ -502,7 +502,7 @@ export function useChatMessages({
       // Get auth token from cookies
       const token = document.cookie
         .split('; ')
-        .find((row) => row.startsWith('auth-token='))
+        .find((row) => row.startsWith(`${ACCESS_TOKEN}=`))
         ?.split('=')[1];
 
       // Include token in WebSocket URL as query parameter
