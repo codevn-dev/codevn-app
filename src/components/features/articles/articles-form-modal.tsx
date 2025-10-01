@@ -74,12 +74,16 @@ export function ArticlesFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6">
-        <div className="mb-4">
+      <div className="flex h-[90vh] w-full max-w-4xl flex-col rounded-lg bg-white">
+        {/* Header */}
+        <div className="border-b border-gray-200 p-6 pb-4">
           <h2 className="text-lg font-semibold">
             {isEditing ? t('common.edit') + ' Article' : t('articles.form.createNew')}
           </h2>
         </div>
+        
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6">
 
         <form
           onSubmit={(e) => {
@@ -228,19 +232,23 @@ export function ArticlesFormModal({
             </label>
           </div>
         </form>
-
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="back" onClick={onClose}>
-            {t('common.cancel')}
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            onClick={() => onSubmit()}
-            disabled={isEditing ? false : isCreateDisabled}
-          >
-            {isEditing ? t('common.edit') : t('common.create')}
-          </Button>
+        </div>
+        
+        {/* Sticky Footer with Buttons */}
+        <div className="border-t border-gray-200 p-6 pt-4">
+          <div className="flex justify-end gap-2">
+            <Button variant="back" onClick={onClose}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              onClick={() => onSubmit()}
+              disabled={isEditing ? false : isCreateDisabled}
+            >
+              {isEditing ? t('common.edit') : t('common.create')}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
