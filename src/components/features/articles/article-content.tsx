@@ -217,7 +217,7 @@ export function ArticleContent({
     content: article.content,
     slug: article.slug,
     thumbnail: article.thumbnail || '',
-    categoryId: article.category.id,
+    categoryIds: (article.categories || []).map(cat => cat.id),
     published: article.published,
   });
 
@@ -475,7 +475,7 @@ export function ArticleContent({
       content: article.content,
       slug: article.slug,
       thumbnail: article.thumbnail || '',
-      categoryId: article.category.id,
+      categoryIds: (article.categories || []).map(cat => cat.id),
       published: article.published,
     });
     setIsEditOpen(true);
@@ -502,7 +502,7 @@ export function ArticleContent({
         content: editForm.content,
         slug: editForm.slug,
         thumbnail: editForm.thumbnail,
-        categoryId: editForm.categoryId,
+        categoryIds: editForm.categoryIds,
         published: editForm.published,
       } as UpdateArticleRequest);
       setIsEditOpen(false);
@@ -598,20 +598,23 @@ export function ArticleContent({
               </div>
 
               <div>
-                <div className="mb-4">
-                  <button
-                    className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
-                    style={{
-                      backgroundColor: `${article.category.color}15`,
-                      color: article.category.color,
-                    }}
-                  >
-                    <div
-                      className="mr-2 h-2 w-2 rounded-full"
-                      style={{ backgroundColor: article.category.color }}
-                    />
-                    {article.category.name}
-                  </button>
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {(article.categories || []).map((category) => (
+                    <button
+                      key={category.id}
+                      className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
+                      style={{
+                        backgroundColor: `${category.color}15`,
+                        color: category.color,
+                      }}
+                    >
+                      <div
+                        className="mr-2 h-2 w-2 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      {category.name}
+                    </button>
+                  ))}
                 </div>
 
                 <h1 className="mb-3 text-2xl font-bold text-gray-900 sm:mb-4 sm:text-3xl">
@@ -852,33 +855,45 @@ export function ArticleContent({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Category *</label>
-                  <Select
-                    value={editForm.categoryId || 'placeholder'}
-                    onValueChange={(value) =>
-                      setEditForm({ ...editForm, categoryId: value === 'placeholder' ? '' : value })
-                    }
-                  >
-                    <SelectTrigger className="focus:ring-brand/20 focus:ring-2">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled>
-                        Select a category
-                      </SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Categories *</label>
+                  <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 p-3">
+                    {categories.length === 0 ? (
+                      <p className="text-sm text-gray-500">Loading categories...</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {categories.map((category) => (
+                          <label key={category.id} className="flex cursor-pointer items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={editForm.categoryIds.includes(category.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEditForm({
+                                    ...editForm,
+                                    categoryIds: [...editForm.categoryIds, category.id],
+                                  });
+                                } else {
+                                  setEditForm({
+                                    ...editForm,
+                                    categoryIds: editForm.categoryIds.filter(id => id !== category.id),
+                                  });
+                                }
+                              }}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
                             <div
                               className="h-3 w-3 rounded-full"
                               style={{ backgroundColor: category.color }}
                             />
-                            {category.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                            <span className="text-sm">{category.name}</span>
+                          </label>
+                        ))}
+                        {editForm.categoryIds.length === 0 && (
+                          <p className="text-sm text-red-500">Please select at least one category</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">

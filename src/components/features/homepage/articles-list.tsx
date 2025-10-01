@@ -133,7 +133,7 @@ export function ArticlesList({
                     <div
                       className="h-full w-full transition-all duration-500 ease-out group-hover:scale-110"
                       style={{
-                        background: `linear-gradient(135deg, ${article.category.color}12, #ffffff)`,
+                        background: `linear-gradient(135deg, ${article.categories?.[0]?.color || '#6366f1'}12, #ffffff)`,
                       }}
                     />
                   )}
@@ -144,25 +144,35 @@ export function ArticlesList({
                 {/* Article Header */}
                 <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
                   <div className="mb-3 flex items-center justify-between sm:mb-4">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const categoryName = article.category.name.toLowerCase();
-                        onCategoryClick(categoryName);
-                      }}
-                      className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
-                      style={{
-                        backgroundColor: `${article.category.color}15`,
-                        color: article.category.color,
-                      }}
-                    >
-                      <div
-                        className="mr-2 h-2 w-2 rounded-full"
-                        style={{ backgroundColor: article.category.color }}
-                      />
-                      {article.category.name}
-                    </button>
+                    <div className="flex flex-wrap gap-1">
+                      {(article.categories || []).slice(0, 2).map((category) => (
+                        <button
+                          key={category.id}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const categoryName = category.name.toLowerCase();
+                            onCategoryClick(categoryName);
+                          }}
+                          className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
+                          style={{
+                            backgroundColor: `${category.color}15`,
+                            color: category.color,
+                          }}
+                        >
+                          <div
+                            className="mr-2 h-2 w-2 rounded-full"
+                            style={{ backgroundColor: category.color }}
+                          />
+                          {category.name}
+                        </button>
+                      ))}
+                      {(article.categories || []).length > 2 && (
+                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1.5 text-[10px] font-semibold text-gray-600 sm:px-3 sm:text-xs">
+                          +{(article.categories || []).length - 2}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center text-xs text-gray-600">
                       <Calendar className="mr-1 h-3 w-3" />
                       {formatDateTime(article.createdAt)}

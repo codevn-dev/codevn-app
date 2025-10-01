@@ -32,7 +32,7 @@ interface ArticleFormState {
   content: string;
   slug: string;
   thumbnail: string;
-  categoryId: string;
+  categoryIds: string[];
   published: boolean;
 }
 
@@ -166,34 +166,43 @@ export function ArticlesFormModal({
 
           <div className="space-y-2">
             <label className="text-sm font-medium">{t('articles.form.category')} *</label>
-            <Select
-              value={form.categoryId || 'placeholder'}
-              onValueChange={(value) =>
-                onChange({ ...form, categoryId: value === 'placeholder' ? '' : value })
-              }
-            >
-              <SelectTrigger
-                className={`focus:ring-brand/20 focus:ring-2 ${form.categoryId ? 'bg-brand/10 text-brand-600' : 'bg-white text-gray-700'}`}
-              >
-                <SelectValue placeholder={t('articles.form.selectCategory')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="placeholder" disabled>
-                  {t('articles.form.selectCategory')}
-                </SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: category.color }}
+            <div className="rounded-lg border border-gray-300 bg-white p-3 max-h-48 overflow-y-auto">
+              {categories.length === 0 ? (
+                <p className="text-sm text-gray-500">No categories available</p>
+              ) : (
+                <div className="space-y-2">
+                  {categories.map((category) => (
+                    <label
+                      key={category.id}
+                      className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={form.categoryIds.includes(category.id)}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          const newCategoryIds = isChecked
+                            ? [...form.categoryIds, category.id]
+                            : form.categoryIds.filter(id => id !== category.id);
+                          onChange({ ...form, categoryIds: newCategoryIds });
+                        }}
+                        className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
                       />
-                      {category.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: category.color }}
+                        />
+                        <span className="text-sm font-medium">{category.name}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            {form.categoryIds.length === 0 && (
+              <p className="text-xs text-red-600">Please select at least one category</p>
+            )}
           </div>
 
           <div className="space-y-2">

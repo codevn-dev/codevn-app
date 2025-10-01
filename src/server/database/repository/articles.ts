@@ -1,5 +1,5 @@
 import { getDb } from '..';
-import { articles, comments, reactions, categories, users, articleViews } from '../schema';
+import { articles, comments, reactions, categories, users, articleViews, articleCategories } from '../schema';
 import { and, eq, or, ilike, isNull, sql, count, inArray, exists, gte } from 'drizzle-orm';
 import { Article as SharedArticle } from '@/types/shared/article';
 import { ArticleFilters, PaginatedArticles, ArticleInsertReturning } from '@/types/shared/article';
@@ -17,12 +17,16 @@ export class ArticleRepository {
             avatar: true,
           },
         },
-        category: {
-          columns: {
-            id: true,
-            name: true,
-            color: true,
-            slug: true,
+        articleCategories: {
+          with: {
+            category: {
+              columns: {
+                id: true,
+                name: true,
+                color: true,
+                slug: true,
+              },
+            },
           },
         },
       },
@@ -41,12 +45,16 @@ export class ArticleRepository {
             avatar: true,
           },
         },
-        category: {
-          columns: {
-            id: true,
-            name: true,
-            color: true,
-            slug: true,
+        articleCategories: {
+          with: {
+            category: {
+              columns: {
+                id: true,
+                name: true,
+                color: true,
+                slug: true,
+              },
+            },
           },
         },
       },
@@ -137,7 +145,19 @@ export class ArticleRepository {
     }
 
     if (filters.categoryIds && filters.categoryIds.length > 0) {
-      whereConditions.push(inArray(articles.categoryId, filters.categoryIds));
+      whereConditions.push(
+        exists(
+          getDb()
+            .select()
+            .from(articleCategories)
+            .where(
+              and(
+                eq(articleCategories.articleId, articles.id),
+                inArray(articleCategories.categoryId, filters.categoryIds)
+              )
+            )
+        )
+      );
     }
 
     if (filters.categoryNames && filters.categoryNames.length > 0) {
@@ -146,10 +166,11 @@ export class ArticleRepository {
         exists(
           getDb()
             .select()
-            .from(categories)
+            .from(articleCategories)
+            .innerJoin(categories, eq(categories.id, articleCategories.categoryId))
             .where(
               and(
-                eq(categories.id, articles.categoryId),
+                eq(articleCategories.articleId, articles.id),
                 sql`lower(${categories.name}) in (${sql.join(
                   namesLower.map((name) => sql`${name}`),
                   sql`, `
@@ -195,12 +216,16 @@ export class ArticleRepository {
             avatar: true,
           },
         },
-        category: {
-          columns: {
-            id: true,
-            name: true,
-            color: true,
-            slug: true,
+        articleCategories: {
+          with: {
+            category: {
+              columns: {
+                id: true,
+                name: true,
+                color: true,
+                slug: true,
+              },
+            },
           },
         },
       },
@@ -284,9 +309,11 @@ export class ArticleRepository {
     const userUnlikesSet = new Set((userUnlikesRows as any[]).map((r) => r.articleId));
 
     const articlesWithCounts: SharedArticle[] = articlesData.map(
-      (article) =>
-        ({
-          ...(article as any),
+      (article) => {
+        const { articleCategories, ...articleData } = article as any;
+        return {
+          ...articleData,
+          categories: articleCategories?.map((ac: any) => ac.category) || [],
           views: viewsMap.get(article.id) || 0,
           _count: {
             comments: commentsMap.get(article.id) || 0,
@@ -295,7 +322,8 @@ export class ArticleRepository {
           },
           userHasLiked: userId ? userLikesSet.has(article.id) : false,
           userHasUnliked: userId ? userUnlikesSet.has(article.id) : false,
-        }) as unknown as SharedArticle
+        } as unknown as SharedArticle;
+      }
     );
 
     return {
@@ -314,18 +342,20 @@ export class ArticleRepository {
     content: string;
     slug: string;
     thumbnail?: string;
-    categoryId: string;
+    categoryIds: string[];
     authorId: string;
     published?: boolean;
   }): Promise<ArticleInsertReturning[]> {
-    return await getDb()
+    const db = getDb();
+    
+    // Create article first
+    const createdArticles = await db
       .insert(articles)
       .values({
         title: articleData.title,
         content: articleData.content,
         slug: articleData.slug,
         thumbnail: articleData.thumbnail,
-        categoryId: articleData.categoryId,
         authorId: articleData.authorId,
         published: articleData.published || false,
       })
@@ -335,12 +365,23 @@ export class ArticleRepository {
         content: articles.content,
         slug: articles.slug,
         thumbnail: articles.thumbnail,
-        categoryId: articles.categoryId,
         authorId: articles.authorId,
         published: articles.published,
         createdAt: articles.createdAt,
         updatedAt: articles.updatedAt,
       });
+
+    // Create article-category relationships
+    if (articleData.categoryIds.length > 0 && createdArticles[0]) {
+      const articleCategoryValues = articleData.categoryIds.map(categoryId => ({
+        articleId: createdArticles[0].id,
+        categoryId: categoryId,
+      }));
+      
+      await db.insert(articleCategories).values(articleCategoryValues);
+    }
+
+    return createdArticles;
   }
 
   async update(
@@ -350,16 +391,34 @@ export class ArticleRepository {
       content?: string;
       slug?: string;
       thumbnail?: string;
-      categoryId?: string;
+      categoryIds?: string[];
       published?: boolean;
     }
   ): Promise<Awaited<ReturnType<ArticleRepository['findById']>>> {
-    const dataToUpdate: any = { ...updateData };
-    if (Object.keys(dataToUpdate).length > 0) {
-      dataToUpdate.updatedAt = new Date();
+    const db = getDb();
+    const { categoryIds, ...articleData } = updateData;
+    
+    // Update article data if provided
+    if (Object.keys(articleData).length > 0) {
+      const dataToUpdate = { ...articleData, updatedAt: new Date() };
+      await db.update(articles).set(dataToUpdate).where(eq(articles.id, id));
     }
 
-    await getDb().update(articles).set(dataToUpdate).where(eq(articles.id, id));
+    // Update categories if provided
+    if (categoryIds !== undefined) {
+      // Remove existing category relationships
+      await db.delete(articleCategories).where(eq(articleCategories.articleId, id));
+      
+      // Add new category relationships
+      if (categoryIds.length > 0) {
+        const articleCategoryValues = categoryIds.map(categoryId => ({
+          articleId: id,
+          categoryId: categoryId,
+        }));
+        
+        await db.insert(articleCategories).values(articleCategoryValues);
+      }
+    }
 
     // Return updated article with relations
     return await this.findById(id);
@@ -460,8 +519,12 @@ export class ArticleRepository {
         author: {
           columns: { id: true, name: true, email: true, avatar: true },
         },
-        category: {
-          columns: { id: true, name: true, color: true, slug: true },
+        articleCategories: {
+          with: {
+            category: {
+              columns: { id: true, name: true, color: true, slug: true },
+            },
+          },
         },
       },
       where: and(...whereConditions),
@@ -538,9 +601,11 @@ export class ArticleRepository {
     const userUnlikesSet = new Set((userUnlikesRows as any[]).map((r) => r.articleId));
 
     const enriched: SharedArticle[] = articlesData.map(
-      (article) =>
-        ({
-          ...(article as any),
+      (article) => {
+        const { articleCategories, ...articleData } = article as any;
+        return {
+          ...articleData,
+          categories: articleCategories?.map((ac: any) => ac.category) || [],
           views: viewsMap.get(article.id) || 0,
           _count: {
             comments: commentsMap.get(article.id) || 0,
@@ -549,7 +614,8 @@ export class ArticleRepository {
           },
           userHasLiked: userId ? userLikesSet.has(article.id) : false,
           userHasUnliked: userId ? userUnlikesSet.has(article.id) : false,
-        }) as unknown as SharedArticle
+        } as unknown as SharedArticle;
+      }
     );
 
     // Preserve input order

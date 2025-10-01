@@ -71,7 +71,6 @@ export class ArticlesService extends BaseService {
       content: article.content,
       slug: article.slug,
       thumbnail: article.thumbnail || undefined,
-      // categoryId removed from API response (UI uses category.id)
       published: article.published,
       createdAt: article.createdAt,
       updatedAt: article.updatedAt ?? null,
@@ -80,14 +79,7 @@ export class ArticlesService extends BaseService {
         name: article.author?.name || 'Unknown',
         avatar: article.author?.avatar || null,
       },
-      category: article.category
-        ? {
-            id: article.categoryId,
-            name: article.category?.name || 'Unknown',
-            color: article.category?.color || '#000000',
-            slug: article.category?.slug || '',
-          }
-        : undefined,
+      categories: article.articleCategories?.map((ac: any) => ac.category) || [],
       _count: {
         comments: article._count?.comments ?? 0,
         likes: article._count?.likes ?? 0,
@@ -108,7 +100,6 @@ export class ArticlesService extends BaseService {
       title: article.title,
       slug: article.slug,
       thumbnail: article.thumbnail || undefined,
-      // categoryId removed from API response (UI uses category.id)
       published: article.published,
       createdAt: article.createdAt,
       updatedAt: article.updatedAt ?? null,
@@ -117,14 +108,7 @@ export class ArticlesService extends BaseService {
         name: article.author?.name || 'Unknown',
         avatar: article.author?.avatar || null,
       },
-      category: article.category
-        ? {
-            id: article.categoryId,
-            name: article.category?.name || 'Unknown',
-            color: article.category?.color || '#000000',
-            slug: article.category?.slug || '',
-          }
-        : undefined,
+      categories: article.articleCategories?.map((ac: any) => ac.category) || [],
       _count: {
         comments: article._count?.comments ?? 0,
         likes: article._count?.likes ?? 0,
@@ -381,12 +365,7 @@ export class ArticlesService extends BaseService {
           name: article.author?.name || 'Unknown',
           avatar: article.author?.avatar || undefined,
         },
-        category: {
-          id: article.categoryId,
-          name: article.category?.name || 'Unknown',
-          color: article.category?.color || '#000000',
-          slug: article.category?.slug || '',
-        },
+        categories: article.articleCategories?.map((ac: any) => ac.category) || [],
         _count: {
           likes: likeCount.length,
           unlikes: unlikeCount.length,
@@ -410,8 +389,23 @@ export class ArticlesService extends BaseService {
       // Base article
       const base = await articleRepository.findById(articleId);
       if (!base) throw new Error(CommonError.NOT_FOUND);
-      const baseCategory = await categoryRepoDirect.findById(base.categoryId);
-      const baseParentId = (baseCategory as any)?.parent?.id || null;
+      
+      // Get all category IDs from base article
+      const baseCategoryIds = base.articleCategories?.map((ac: any) => ac.category.id) || [];
+      if (baseCategoryIds.length === 0) {
+        // If no categories, just return by author
+        const byAuthor = await articleRepository.findManyWithPagination({
+          page: 1,
+          limit,
+          status: 'published',
+          publishedOnly: true,
+          authorId: (base as any).author?.id || (base as any).authorId,
+        });
+        return (byAuthor.articles || [])
+          .filter((a: any) => a.id !== base.id)
+          .slice(0, limit)
+          .map((a: any) => this.transformArticleSummary(a)) as Article[];
+      }
 
       // Cache by base article id and limit
       const redis = getRedis();
@@ -432,22 +426,29 @@ export class ArticlesService extends BaseService {
         }
       } catch {}
 
-      // Query 1: by category family (same or siblings/children)
-      let categoryIds: string[] = [base.categoryId];
-      if (baseParentId) {
-        const siblings = await categoryRepoDirect.findChildrenIds(baseParentId);
-        categoryIds = Array.from(new Set([...categoryIds, ...siblings]));
-      } else if ((baseCategory as any)?.id) {
-        const children = await categoryRepoDirect.findChildrenIds((baseCategory as any).id);
-        categoryIds = Array.from(new Set([...categoryIds, ...children]));
+      // Expand category IDs to include related categories
+      let expandedCategoryIds: string[] = [...baseCategoryIds];
+      for (const categoryId of baseCategoryIds) {
+        const category = await categoryRepoDirect.findById(categoryId);
+        const parentId = (category as any)?.parent?.id;
+        if (parentId) {
+          // Add siblings
+          const siblings = await categoryRepoDirect.findChildrenIds(parentId);
+          expandedCategoryIds = Array.from(new Set([...expandedCategoryIds, ...siblings]));
+        } else {
+          // Add children
+          const children = await categoryRepoDirect.findChildrenIds(categoryId);
+          expandedCategoryIds = Array.from(new Set([...expandedCategoryIds, ...children]));
+        }
       }
 
+      // Query 1: by category family
       const byCategory = await articleRepository.findManyWithPagination({
         page: 1,
         limit: 1000,
         status: 'published',
         publishedOnly: true,
-        categoryIds,
+        categoryIds: expandedCategoryIds,
       });
 
       // Query 2: by author
@@ -463,25 +464,15 @@ export class ArticlesService extends BaseService {
         (a: any) => a.id !== base.id
       );
 
-      // Precompute category parents (small N)
-      const parentCache = new Map<string, string | null>();
-      const getParentId = async (catId: string): Promise<string | null> => {
-        if (parentCache.has(catId)) return parentCache.get(catId)!;
-        const cat = await categoryRepoDirect.findById(catId);
-        const pid = (cat as any)?.parent?.id || null;
-        parentCache.set(catId, pid);
-        return pid;
-      };
-
       const scored: Array<{ article: any; score: number }> = [];
       for (const a of candidates) {
-        if (!a.categoryId) continue;
-        const aParentId = await getParentId(a.categoryId as string);
-        const sameCategory = a.categoryId === base.categoryId;
-        const relatedCategory =
-          a.categoryId === baseParentId || // candidate is a child of base's parent
-          base.categoryId === aParentId || // base is a child of candidate's parent
-          (aParentId && baseParentId && aParentId === baseParentId); // share same parent
+        const aCategoryIds = a.categories?.map((cat: any) => cat.id) || [];
+        
+        // Calculate category overlap
+        const sharedCategories = aCategoryIds.filter((id: string) => baseCategoryIds.includes(id));
+        const sameCategory = sharedCategories.length > 0;
+        const relatedCategory = aCategoryIds.some((id: string) => expandedCategoryIds.includes(id));
+        
         const sameAuthor =
           (a.author?.id || (a as any).authorId) === (base as any).authorId ||
           a.author?.id === (base as any).author?.id;
@@ -489,6 +480,10 @@ export class ArticlesService extends BaseService {
         const dislikes = a._count?.unlikes || 0;
         const comments = a._count?.comments || 0;
         const views = typeof a.views === 'number' ? a.views : 0;
+        
+        // Boost score based on number of shared categories
+        const categoryBoost = sharedCategories.length * 0.2;
+        
         const score = calculateRelatedArticleScore({
           likes,
           dislikes,
@@ -497,7 +492,8 @@ export class ArticlesService extends BaseService {
           sameCategory,
           relatedCategory,
           sameAuthor,
-        } as any);
+        } as any) + categoryBoost;
+        
         scored.push({ article: a, score });
       }
 
@@ -549,9 +545,9 @@ export class ArticlesService extends BaseService {
    */
   async createArticle(body: CreateArticleRequest, userId: string): Promise<Article> {
     try {
-      const { title, content, slug, thumbnail, categoryId, published = false } = body;
+      const { title, content, slug, thumbnail, categoryIds, published = false } = body;
 
-      this.validateRequiredFields(body, ['title', 'content', 'slug', 'categoryId']);
+      this.validateRequiredFields(body, ['title', 'content', 'slug', 'categoryIds']);
 
       // Check if slug already exists
       const existingArticle = await articleRepository.checkSlugExists(slug);
@@ -559,10 +555,14 @@ export class ArticlesService extends BaseService {
         throw new Error(CommonError.CONFLICT);
       }
 
-      // Verify category exists
-      const category = await categoryRepository.findById(categoryId);
-      if (!category) {
-        throw new Error(CommonError.NOT_FOUND);
+      // Verify categories exist
+      if (categoryIds && categoryIds.length > 0) {
+        for (const categoryId of categoryIds) {
+          const category = await categoryRepository.findById(categoryId);
+          if (!category) {
+            throw new Error(CommonError.NOT_FOUND);
+          }
+        }
       }
 
       // Create article
@@ -571,7 +571,7 @@ export class ArticlesService extends BaseService {
         content,
         slug,
         thumbnail,
-        categoryId,
+        categoryIds: categoryIds || [],
         authorId: userId,
         published,
       });
@@ -593,7 +593,7 @@ export class ArticlesService extends BaseService {
    */
   async updateArticle(body: UpdateArticleRequest, userId: string): Promise<Article> {
     try {
-      const { id, title, content, slug, thumbnail, categoryId, published } = body;
+      const { id, title, content, slug, thumbnail, categoryIds, published } = body;
 
       if (!id) {
         throw new Error(CommonError.BAD_REQUEST);
@@ -616,11 +616,13 @@ export class ArticlesService extends BaseService {
         }
       }
 
-      // Verify category exists if provided
-      if (categoryId) {
-        const category = await categoryRepository.findById(categoryId);
-        if (!category) {
-          throw new Error(CommonError.NOT_FOUND);
+      // Verify categories exist if provided
+      if (categoryIds && categoryIds.length > 0) {
+        for (const categoryId of categoryIds) {
+          const category = await categoryRepository.findById(categoryId);
+          if (!category) {
+            throw new Error(CommonError.NOT_FOUND);
+          }
         }
       }
 
@@ -630,7 +632,7 @@ export class ArticlesService extends BaseService {
       if (content !== undefined) updateData.content = content;
       if (slug !== undefined) updateData.slug = slug;
       if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
-      if (categoryId !== undefined) updateData.categoryId = categoryId;
+      if (categoryIds !== undefined) updateData.categoryIds = categoryIds;
       if (published !== undefined) updateData.published = published;
 
       const updatedArticle = await articleRepository.update(id, updateData);

@@ -71,7 +71,7 @@ export function RelatedArticlesSidebar({ articleId, initialArticles = [] }: Prop
                   <div
                     className="h-full w-full transition-all duration-500 ease-out group-hover:scale-110"
                     style={{
-                      background: `linear-gradient(135deg, ${a.category.color}12, #ffffff)`,
+                      background: `linear-gradient(135deg, ${a.categories?.[0]?.color || '#e5e7eb'}12, #ffffff)`,
                     }}
                   />
                 )}
@@ -79,16 +79,29 @@ export function RelatedArticlesSidebar({ articleId, initialArticles = [] }: Prop
               </div>
               <div className="p-3">
                 <div className="mb-2 flex items-center justify-between">
-                  <button
-                    className="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold sm:text-xs"
-                    style={{ backgroundColor: `${a.category.color}15`, color: a.category.color }}
-                  >
-                    <div
-                      className="mr-2 h-2 w-2 rounded-full"
-                      style={{ backgroundColor: a.category.color }}
-                    />
-                    {a.category.name}
-                  </button>
+                  <div className="flex flex-wrap gap-1">
+                    {(a.categories || []).slice(0, 1).map((category) => (
+                    <button
+                      key={category.id}
+                      className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
+                      style={{
+                        backgroundColor: `${category.color}15`,
+                        color: category.color,
+                      }}
+                    >
+                      <div
+                        className="mr-2 h-2 w-2 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      {category.name}
+                    </button>
+                  ))}
+                  {(a.categories || []).length > 1 && (
+                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1.5 text-[10px] font-semibold text-gray-600 sm:px-3 sm:text-xs">
+                      +{(a.categories || []).length - 1}
+                    </span>
+                  )}
+                  </div>
                   <span className="inline-flex items-center text-xs text-gray-600">
                     <Eye className="mr-1 h-3 w-3" />
                     {typeof a.views === 'number' ? a.views : 0}

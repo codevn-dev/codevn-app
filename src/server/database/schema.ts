@@ -41,9 +41,6 @@ export const articles = pgTable('articles', {
   content: text('content').notNull(),
   slug: text('slug').notNull().unique(),
   thumbnail: text('thumbnail'), // URL to thumbnail image
-  categoryId: uuid('category_id')
-    .notNull()
-    .references(() => categories.id),
   authorId: uuid('author_id')
     .notNull()
     .references(() => users.id),
@@ -51,6 +48,17 @@ export const articles = pgTable('articles', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at'),
   deletedAt: timestamp('deleted_at'),
+});
+
+export const articleCategories = pgTable('article_categories', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  articleId: uuid('article_id')
+    .notNull()
+    .references(() => articles.id),
+  categoryId: uuid('category_id')
+    .notNull()
+    .references(() => categories.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 export const comments = pgTable('comments', {
@@ -158,7 +166,7 @@ export const categoriesRelations = relations(categories, ({ one, many }) => ({
   children: many(categories, {
     relationName: 'parentChild',
   }),
-  articles: many(articles),
+  articleCategories: many(articleCategories),
 }));
 
 export const articlesRelations = relations(articles, ({ one, many }) => ({
@@ -166,12 +174,20 @@ export const articlesRelations = relations(articles, ({ one, many }) => ({
     fields: [articles.authorId],
     references: [users.id],
   }),
-  category: one(categories, {
-    fields: [articles.categoryId],
-    references: [categories.id],
-  }),
+  articleCategories: many(articleCategories),
   comments: many(comments),
   reactions: many(reactions),
+}));
+
+export const articleCategoriesRelations = relations(articleCategories, ({ one }) => ({
+  article: one(articles, {
+    fields: [articleCategories.articleId],
+    references: [articles.id],
+  }),
+  category: one(categories, {
+    fields: [articleCategories.categoryId],
+    references: [categories.id],
+  }),
 }));
 
 export const commentsRelations = relations(comments, ({ one, many }) => ({

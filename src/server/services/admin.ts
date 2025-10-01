@@ -178,7 +178,7 @@ export class AdminService extends BaseService {
     try {
       this.requireAdmin(currentUser);
 
-      const { name, description, color, parentId, order } = body;
+      const { name, color, parentId, order } = body;
 
       if (!name) {
         throw new Error(CommonError.BAD_REQUEST);
@@ -201,7 +201,6 @@ export class AdminService extends BaseService {
 
       const newCategory = await categoryRepository.create({
         name,
-        description,
         color,
         parentId,
         order,
@@ -240,7 +239,7 @@ export class AdminService extends BaseService {
     try {
       this.requireAdmin(currentUser);
 
-      const { id, name, description, color, parentId, order } = body;
+      const { id, name, color, parentId, order } = body;
 
       if (!id || !name) {
         throw new Error(CommonError.BAD_REQUEST);
@@ -275,7 +274,6 @@ export class AdminService extends BaseService {
       // Update category
       const updatedCategory = await categoryRepository.update(id, {
         name,
-        description,
         color: color || existingCategory.color,
         parentId: parentId || null,
         order,

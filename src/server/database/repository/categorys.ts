@@ -1,5 +1,5 @@
 import { getDb } from '..';
-import { categories, articles } from '../schema';
+import { categories, articles, articleCategories } from '../schema';
 import { eq, count, and, isNull, sql } from 'drizzle-orm';
 import { CategoryWithCounts } from '@/types/shared/category';
 
@@ -96,8 +96,8 @@ export class CategoryRepository {
         const [articleCount, childrenCount] = await Promise.all([
           getDb()
             .select({ count: count() })
-            .from(articles)
-            .where(eq(articles.categoryId, category.id)),
+            .from(articleCategories)
+            .where(eq(articleCategories.categoryId, category.id)),
           getDb()
             .select({ count: count() })
             .from(categories)
@@ -109,8 +109,8 @@ export class CategoryRepository {
           (category.children || []).map(async (child) => {
             const childArticleCount = await getDb()
               .select({ count: count() })
-              .from(articles)
-              .where(eq(articles.categoryId, child.id));
+              .from(articleCategories)
+              .where(eq(articleCategories.categoryId, child.id));
 
             return {
               ...child,
@@ -337,8 +337,8 @@ export class CategoryRepository {
   async getArticlesCount(categoryId: string) {
     const result = await getDb()
       .select({ count: count() })
-      .from(articles)
-      .where(eq(articles.categoryId, categoryId));
+      .from(articleCategories)
+      .where(eq(articleCategories.categoryId, categoryId));
 
     return result[0]?.count || 0;
   }

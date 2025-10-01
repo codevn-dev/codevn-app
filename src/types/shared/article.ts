@@ -4,7 +4,6 @@ export interface Article {
   content: string;
   slug: string;
   thumbnail?: string;
-  categoryId?: string;
   published: boolean;
   createdAt: Date | string;
   updatedAt: Date | string | null;
@@ -13,12 +12,12 @@ export interface Article {
     name: string;
     avatar?: string | null;
   };
-  category: {
+  categories: {
     id: string;
     name: string;
     color: string;
     slug: string;
-  };
+  }[];
   _count: {
     comments: number;
     likes: number;
@@ -35,7 +34,7 @@ export interface CreateArticleRequest {
   content: string;
   slug: string;
   thumbnail?: string;
-  categoryId: string;
+  categoryIds: string[];
   published?: boolean;
 }
 
@@ -45,7 +44,7 @@ export interface UpdateArticleRequest {
   content?: string;
   slug?: string;
   thumbnail?: string;
-  categoryId?: string;
+  categoryIds?: string[];
   published?: boolean;
 }
 
@@ -124,7 +123,6 @@ export interface ArticleInsertReturning {
   content: string;
   slug: string;
   thumbnail: string | null;
-  categoryId: string;
   authorId: string;
   published: boolean;
   createdAt: Date;

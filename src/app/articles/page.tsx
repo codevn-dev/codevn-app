@@ -77,7 +77,7 @@ function ArticlesContent() {
     content: '',
     slug: '',
     thumbnail: '',
-    categoryId: '',
+    categoryIds: [] as string[],
     published: false,
   });
 
@@ -90,9 +90,9 @@ function ArticlesContent() {
       !articleForm.title.trim() ||
       !articleForm.slug.trim() ||
       !articleForm.content.trim() ||
-      !articleForm.categoryId.trim()
+      articleForm.categoryIds.length === 0
     );
-  }, [articleForm.title, articleForm.slug, articleForm.content, articleForm.categoryId]);
+  }, [articleForm.title, articleForm.slug, articleForm.content, articleForm.categoryIds]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -200,7 +200,7 @@ function ArticlesContent() {
             content: (target as any).content || '',
             slug: target.slug,
             thumbnail: target.thumbnail || '',
-            categoryId: target.category.id,
+            categoryIds: target.categories.map(cat => cat.id),
             published: target.published,
           });
           setShowArticleForm(true);
@@ -278,7 +278,7 @@ function ArticlesContent() {
         content: '',
         slug: '',
         thumbnail: '',
-        categoryId: '',
+        categoryIds: [],
         published: false,
       });
       setShowArticleForm(false);
@@ -295,7 +295,7 @@ function ArticlesContent() {
       content: (article as any).content || '',
       slug: article.slug,
       thumbnail: article.thumbnail || '',
-      categoryId: article.category.id,
+      categoryIds: article.categories.map(cat => cat.id),
       published: article.published,
     });
     setShowArticleForm(true);
@@ -319,7 +319,7 @@ function ArticlesContent() {
         content: '',
         slug: '',
         thumbnail: '',
-        categoryId: '',
+        categoryIds: [],
         published: false,
       });
       setShowArticleForm(false);
@@ -374,7 +374,7 @@ function ArticlesContent() {
       content: '',
       slug: '',
       thumbnail: '',
-      categoryId: '',
+      categoryIds: [],
       published: false,
     });
     setShowArticleForm(false);
