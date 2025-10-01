@@ -401,36 +401,38 @@ export function HomepageContent({
           onCategoryClick={handleCategoryClick}
         />
 
-        {/* Articles Section */}
-        <div>
-          <MotionContainer className="rounded-2xl bg-white p-5 shadow-2xl sm:p-6 lg:p-6">
-            <ArticlesFilters
-              categories={categories}
-              selectedCategoryNames={selectedCategoryNames}
-              searchTerm={searchTerm}
-              onlyMine={onlyMine}
-              isAuthenticated={isAuthenticated}
-              mounted={mounted}
-              onSearchChange={setSearchTerm}
-              onCategoryToggle={handleCategoryToggle}
-              onOnlyMineToggle={() => setOnlyMine((v) => !v)}
-              onClearFilters={handleClearFilters}
-              onCategoryClick={handleCategoryClick}
-              getCategoryById={getCategoryById}
-              getCategoryByName={getCategoryByName}
-            />
-
-            <ArticlesList
-              articles={articles}
-              selectedCategoryNames={selectedCategoryNames}
-              mounted={mounted}
-              isLoadingMore={isLoadingMore}
-              hasMoreArticles={hasMoreArticles}
-              isLoading={isLoading}
-              onCategoryClick={handleCategoryClick}
-              onClearFilters={handleClearFilters}
-              loadMoreRef={loadMoreRef}
-            />
+        {/* Articles Section - Structured exactly like Featured Articles */}
+        <div className="mb-6 sm:mb-8">
+          <MotionContainer>
+            <div className="rounded-2xl bg-white p-5 shadow-2xl sm:p-6 lg:p-6">
+              <ArticlesFilters
+                categories={categories}
+                selectedCategoryNames={selectedCategoryNames}
+                searchTerm={searchTerm}
+                onlyMine={onlyMine}
+                isAuthenticated={isAuthenticated}
+                mounted={mounted}
+                onSearchChange={setSearchTerm}
+                onCategoryToggle={handleCategoryToggle}
+                onOnlyMineToggle={() => setOnlyMine((v) => !v)}
+                onClearFilters={handleClearFilters}
+                onCategoryClick={handleCategoryClick}
+                getCategoryById={getCategoryById}
+                getCategoryByName={getCategoryByName}
+              />
+              
+              <ArticlesList
+                articles={articles}
+                selectedCategoryNames={selectedCategoryNames}
+                mounted={mounted}
+                isLoadingMore={isLoadingMore}
+                hasMoreArticles={hasMoreArticles}
+                isLoading={isLoading}
+                onCategoryClick={handleCategoryClick}
+                onClearFilters={handleClearFilters}
+                loadMoreRef={loadMoreRef}
+              />
+            </div>
           </MotionContainer>
         </div>
 

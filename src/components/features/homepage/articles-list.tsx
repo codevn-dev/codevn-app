@@ -24,6 +24,7 @@ interface ArticlesListProps {
   isLoadingMore: boolean;
   hasMoreArticles: boolean;
   isLoading: boolean;
+  onlyMine?: boolean;
   onCategoryClick: (categoryName: string) => void;
   onClearFilters: () => void;
   loadMoreRef: React.RefObject<HTMLDivElement | null>;
@@ -76,46 +77,10 @@ export function ArticlesList({
         {mounted ? t('home.tagline') : ''}
       </p>
 
-      <MotionDiv
-        variants={containerVariants}
-        initial={
-          typeof window !== 'undefined' &&
-          window.matchMedia('(prefers-reduced-motion: reduce)').matches
-            ? undefined
-            : 'hidden'
-        }
-        animate={
-          typeof window !== 'undefined' &&
-          window.matchMedia('(prefers-reduced-motion: reduce)').matches
-            ? undefined
-            : 'visible'
-        }
-        className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3"
-        style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 400px' }}
-      >
+      <div className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
         {filteredArticles.map((article, index) => (
-          <MotionDiv
-            key={article.id}
-            variants={itemVariants}
-            whileHover={
-              typeof window !== 'undefined' &&
-              window.matchMedia('(prefers-reduced-motion: reduce)').matches
-                ? undefined
-                : {
-                    y: -12,
-                    scale: 1.02,
-                    transition: { type: 'spring', stiffness: 380, damping: 28 },
-                  }
-            }
-            whileTap={
-              typeof window !== 'undefined' &&
-              window.matchMedia('(prefers-reduced-motion: reduce)').matches
-                ? undefined
-                : { scale: 0.99 }
-            }
-          >
-            <Link href={`/articles/${article.slug}`} className="block h-full">
-              <div className="group block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-[1.02]">
+          <Link key={article.id} href={`/articles/${article.slug}`} className="block h-full">
+            <div className="group hover:shadow-3xl shadow-brand/30 hover:shadow-brand/40 block flex h-full transform cursor-pointer flex-col overflow-hidden rounded-2xl bg-white shadow-2xl drop-shadow-2xl transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-[1.01]">
                 {/* Thumbnail (consistent height whether exists or not) */}
                 <div className="relative aspect-[16/9] w-full overflow-hidden">
                   {article.thumbnail ? (
@@ -179,13 +144,13 @@ export function ArticlesList({
                     </div>
                   </div>
 
-                  <h3 className="group-hover:text-brand mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-all duration-300 ease-out group-hover:scale-[1.02] sm:mb-3 sm:text-xl">
+                  <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 sm:mb-3 sm:text-xl">
                     {article.title}
                   </h3>
 
-                  <div className="flex items-center text-xs text-gray-700 transition-all duration-300 ease-out group-hover:translate-x-1 sm:text-sm">
+                  <div className="flex items-center text-xs text-gray-700 sm:text-sm">
                     <div className="mr-2 sm:mr-3">
-                      <Avatar className="h-6 w-6 transition-all duration-300 ease-out group-hover:scale-110 group-hover:shadow-lg">
+                      <Avatar className="h-6 w-6">
                         <AvatarImage
                           src={article.author.avatar || undefined}
                           alt={article.author.name}
@@ -195,7 +160,7 @@ export function ArticlesList({
                         </AvatarFallback>
                       </Avatar>
                     </div>
-                    <span className="group-hover:text-brand font-medium transition-colors duration-300 ease-out">
+                    <span className="font-medium">
                       {article.author.name}
                     </span>
                   </div>
@@ -244,9 +209,8 @@ export function ArticlesList({
                 </div>
               </div>
             </Link>
-          </MotionDiv>
         ))}
-      </MotionDiv>
+      </div>
 
       {filteredArticles.length === 0 && (
         <div className="px-4 py-12 text-center sm:py-16">

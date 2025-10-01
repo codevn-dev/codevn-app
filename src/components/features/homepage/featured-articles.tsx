@@ -2,7 +2,12 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { MotionContainer } from '@/components/layout';
+const MotionDiv = dynamic(() => import('framer-motion').then((m) => m.motion.div), {
+  ssr: false,
+  loading: () => 'div' as any,
+});
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, Calendar, Eye, ThumbsUp } from 'lucide-react';
 import { Article } from '@/types/shared';
@@ -37,6 +42,29 @@ export function FeaturedArticles({
   if (featuredArticles.length === 0) {
     return null;
   }
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        stiffness: 300,
+        damping: 24,
+      },
+    },
+  };
 
   return (
     <div className="mb-6 sm:mb-8">

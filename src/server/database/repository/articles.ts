@@ -189,8 +189,8 @@ export class ArticleRepository {
       whereConditions.push(gte(articles.createdAt, filters.createdAfter as Date));
     }
 
-    // If publishedOnly is true and no authorId specified, only show published articles
-    if (publishedOnly && !authorId) {
+    // If publishedOnly is true, only show published articles
+    if (publishedOnly) {
       whereConditions.push(eq(articles.published, true));
     }
 

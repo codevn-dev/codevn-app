@@ -137,6 +137,7 @@ function ArticlesContent() {
         status: statusFilter,
         categoryId: categoryFilter,
         authorId: user.id, // Only fetch user's own articles
+        publishedOnly: 'false', // Show all articles including drafts in management page
       });
 
       const data = await apiGet<ArticleListResponse>(`/api/articles?${params}`);
