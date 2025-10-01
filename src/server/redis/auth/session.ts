@@ -34,41 +34,43 @@ export class SessionService {
       }
     }
 
-    const sessions = await Promise.all(
-      refreshTokens.map(async (refreshJti) => {
-        const refreshData = await this.tokenService.getToken(refreshJti, 'refresh');
-        if (!refreshData || !refreshData.sessionMetadata) return null;
+    const sessions = (
+      await Promise.all(
+        refreshTokens.map(async (refreshJti) => {
+          const refreshData = await this.tokenService.getToken(refreshJti, 'refresh');
+          if (!refreshData || !refreshData.sessionMetadata) return null;
 
-        const sessionMetadata = refreshData.sessionMetadata;
-        const countryCode = sessionMetadata.countryCode;
-        let country = null;
+          const sessionMetadata = refreshData.sessionMetadata;
+          const countryCode = sessionMetadata.countryCode;
+          let country = null;
 
-        if (countryCode && countryCode !== 'Unknown') {
-          try {
-            const countryInfo = await CountryService.getByCode(countryCode);
-            if (countryInfo) {
-              country = {
-                code: countryCode,
-                name: countryInfo.name,
-              };
+          if (countryCode && countryCode !== 'Unknown') {
+            try {
+              const countryInfo = await CountryService.getByCode(countryCode);
+              if (countryInfo) {
+                country = {
+                  code: countryCode,
+                  name: countryInfo.name,
+                };
+              }
+            } catch (error) {
+              logger.error('Failed to get country info:', { error });
             }
-          } catch (error) {
-            logger.error('Failed to get country info:', { error });
           }
-        }
 
-        const isCurrent = currentRefreshJti ? refreshJti === currentRefreshJti : false;
+          const isCurrent = currentRefreshJti ? refreshJti === currentRefreshJti : false;
 
-        return {
-          token: refreshJti,
-          country,
-          deviceInfo: sessionMetadata.deviceInfo || 'Unknown Device',
-          loginTime: sessionMetadata.loginTime || new Date().toISOString(),
-          lastActive: sessionMetadata.lastActive || new Date().toISOString(),
-          isCurrent,
-        };
-      })
-    );
+          return {
+            token: refreshJti,
+            country,
+            deviceInfo: sessionMetadata.deviceInfo || 'Unknown Device',
+            loginTime: sessionMetadata.loginTime || new Date().toISOString(),
+            lastActive: sessionMetadata.lastActive || new Date().toISOString(),
+            isCurrent,
+          };
+        })
+      )
+    ).filter((session) => session !== null);
 
     return sessions;
   }

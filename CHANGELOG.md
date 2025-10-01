@@ -2,6 +2,13 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.11]() (2025-10-01)
+
+### Fixed
+
+- Fixed session management response.
+- Fixed loading message in chat window.
+
 ## [v0.1.10]() (2025-10-01)
 
 ### Refactored
