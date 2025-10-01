@@ -27,7 +27,6 @@ export class CategoriesService extends BaseService {
         return {
           id: category.id,
           name: category.name,
-          description: category.description ?? null,
           slug: category.slug,
           color: category.color,
           order: category.order,
@@ -47,7 +46,6 @@ export class CategoriesService extends BaseService {
           children: (category.children || []).map((child: any) => ({
             id: child.id,
             name: child.name,
-            description: child.description ?? null,
             slug: child.slug,
             color: child.color,
             order: child.order,

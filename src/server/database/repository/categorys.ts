@@ -64,7 +64,6 @@ export class CategoryRepository {
           columns: {
             id: true,
             name: true,
-            description: true,
             slug: true,
             color: true,
             order: true,
@@ -158,7 +157,6 @@ export class CategoryRepository {
           columns: {
             id: true,
             name: true,
-            description: true,
             slug: true,
             color: true,
             order: true,
@@ -206,7 +204,6 @@ export class CategoryRepository {
 
   async create(categoryData: {
     name: string;
-    description?: string;
     color?: string;
     parentId?: string;
     order?: string;
@@ -215,7 +212,6 @@ export class CategoryRepository {
     Array<{
       id: string;
       name: string;
-      description: string | null;
       slug: string;
       color: string;
       parentId: string | null;
@@ -253,7 +249,6 @@ export class CategoryRepository {
       .insert(categories)
       .values({
         name: categoryData.name,
-        description: categoryData.description,
         slug,
         color: categoryData.color || '#3B82F6',
         parentId: categoryData.parentId || null,
@@ -281,7 +276,6 @@ export class CategoryRepository {
     id: string,
     updateData: {
       name?: string;
-      description?: string;
       color?: string;
       parentId?: string | null;
       order?: string;
@@ -290,7 +284,6 @@ export class CategoryRepository {
     Array<{
       id: string;
       name: string;
-      description: string | null;
       slug: string;
       color: string;
       parentId: string | null;

@@ -23,7 +23,6 @@ export const users = pgTable('users', {
 export const categories = pgTable('categories', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  description: text('description'),
   slug: text('slug').notNull().unique(),
   color: text('color').notNull().default('#3B82F6'), // Default blue color
   parentId: uuid('parent_id'),

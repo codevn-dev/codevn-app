@@ -130,7 +130,6 @@ async function ensureCategories(db: Db, authorIds: string[]) {
   const parentRows = baseCategories.map((c) => ({
     id: randomUUID(),
     name: c.name,
-    description: `${c.name} articles and tutorials`,
     slug: slugify(c.name),
     color: c.color,
     parentId: null,
@@ -159,7 +158,6 @@ async function ensureCategories(db: Db, authorIds: string[]) {
         subCategoryRows.push({
           id: randomUUID(),
           name: subName,
-          description: `${subName} in ${parent.name}`,
           slug: slugify(`${parent.name}-${subName}`),
           color: parentData.color,
           parentId: parent.id,

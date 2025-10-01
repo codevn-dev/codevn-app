@@ -112,9 +112,7 @@ function SortableCategory({
                   </h3>
                   <Badge>{t('admin.rootCategory')}</Badge>
                 </div>
-                {category.description && (
-                  <p className="mb-3 text-sm text-gray-600">{category.description}</p>
-                )}
+
                 <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500 sm:text-sm">
                   <span className="font-medium">
                     {t('admin.createdBy')} {category.createdBy.name}
@@ -253,11 +251,7 @@ function SortableChildCategory({ category, onEdit, onDelete, t }: SortableChildC
               <h5 className="line-clamp-2 font-semibold text-gray-900">
                 {category.name}
               </h5>
-              {category.description && (
-                <p className="mt-1 text-sm text-gray-600">
-                  {category.description}
-                </p>
-              )}
+
               <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
                 <span>
                   {t('admin.createdBy')} {category.createdBy.name}
@@ -302,7 +296,6 @@ export function Categories({ onDataChange }: CategoriesProps) {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryForm, setCategoryForm] = useState({
     name: '',
-    description: '',
     color: '#3B82F6',
     parentId: '',
   });
@@ -514,7 +507,7 @@ export function Categories({ onDataChange }: CategoriesProps) {
 
     try {
       await apiPost<Category>('/api/categories', categoryForm);
-      setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
+      setCategoryForm({ name: '', color: '#3B82F6', parentId: '' });
       setShowCategoryForm(false);
       setCategoryError(null);
       fetchCategories();
@@ -532,7 +525,6 @@ export function Categories({ onDataChange }: CategoriesProps) {
     setEditingCategory(category);
     setCategoryForm({
       name: category.name,
-      description: category.description || '',
       color: category.color,
       parentId: category.parentId || '',
     });
@@ -557,7 +549,7 @@ export function Categories({ onDataChange }: CategoriesProps) {
         id: editingCategory.id,
         ...categoryForm,
       });
-      setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
+      setCategoryForm({ name: '', color: '#3B82F6', parentId: '' });
       setShowCategoryForm(false);
       setEditingCategory(null);
       setCategoryError(null);
@@ -598,7 +590,7 @@ export function Categories({ onDataChange }: CategoriesProps) {
   };
 
   const resetForm = () => {
-    setCategoryForm({ name: '', description: '', color: '#3B82F6', parentId: '' });
+    setCategoryForm({ name: '', color: '#3B82F6', parentId: '' });
     setShowCategoryForm(false);
     setEditingCategory(null);
     setCategoryError(null);
@@ -656,16 +648,7 @@ export function Categories({ onDataChange }: CategoriesProps) {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t('admin.category.description')}</label>
-                <Input
-                  placeholder={t('admin.category.descriptionPlaceholder')}
-                  value={categoryForm.description}
-                  onChange={(e) =>
-                    setCategoryForm({ ...categoryForm, description: e.target.value })
-                  }
-                />
-              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t('admin.category.color')}</label>
                 <Input

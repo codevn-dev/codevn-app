@@ -1,7 +1,6 @@
 export interface Category {
   id: string;
   name: string;
-  description: string | null;
   slug: string;
   color: string;
   parentId: string | null;
@@ -22,7 +21,6 @@ export interface Category {
 // Request types
 export interface CreateCategoryRequest {
   name: string;
-  description?: string;
   slug: string;
   color: string;
   parentId?: string;
@@ -32,7 +30,6 @@ export interface CreateCategoryRequest {
 export interface UpdateCategoryRequest {
   id: string;
   name?: string;
-  description?: string;
   slug?: string;
   color?: string;
   parentId?: string;
@@ -70,7 +67,6 @@ export interface UpdateCategoryResponse {
 export interface CategoryWithCounts {
   id: string;
   name: string;
-  description: string | null;
   slug: string;
   color: string;
   order: string;
@@ -87,7 +83,6 @@ export interface CategoryWithCounts {
   children: Array<{
     id: string;
     name: string;
-    description: string | null;
     slug: string;
     color: string;
     order: string;
