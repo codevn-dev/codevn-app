@@ -419,9 +419,7 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
         onClick={(e) => e.stopPropagation()}
       >
         {loading && messages.length === 0 ? (
-          <div className="py-4 text-center text-sm text-gray-500">
-            {t('common.loading')}
-          </div>
+          <div className="py-4 text-center text-sm text-gray-500">{t('common.loading')}</div>
         ) : (
           <>
             {/* Load More Button */}
