@@ -24,6 +24,8 @@ export function AboutContent() {
         <p>{t('about.p1')}</p>
         <br />
         <p>{t('about.p2')}</p>
+        <br />
+        <p>{t('about.p3')}{t('about.p4')}</p>        
       </div>
 
       {/* Feature grid */}
@@ -50,15 +52,15 @@ export function AboutContent() {
 
       {/* Philosophy text */}
       <div className="prose prose-gray mx-auto max-w-none text-gray-700">
-        <p>{t('about.p3')}</p>
+        <p>{t('about.p5')}</p>
       </div>
 
       {/* Callout card */}
       <div className="rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 p-6 shadow-sm">
         <div className="prose prose-gray max-w-none text-gray-700">
-          <p>{t('about.p4')}</p>
+          <p>{t('about.p6')}</p>
           <br />
-          <p>{t('about.p5')}</p>
+          <p>{t('about.p7')}</p>
         </div>
         <div className="mt-5 flex w-full flex-wrap items-center justify-end gap-3">
           {siteConfig.links.github && (
@@ -90,9 +92,9 @@ export function AboutContent() {
 
       {/* Final call-to-action paragraphs moved to the end */}
       <div className="prose prose-gray mx-auto max-w-none text-gray-700">
-        <p>{t('about.p6')}</p>
+        <p>{t('about.p8')}</p>
         <br />
-        <p>{t('about.p7')}</p>
+        <p>{t('about.p9')}</p>
         <br />
       </div>
     </div>

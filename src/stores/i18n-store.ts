@@ -299,12 +299,20 @@ const store: Dictionary = {
     vi: 'Chào bạn, đồng nghiệp coder thân mến! 👋',
   },
   'about.p1': {
-    en: "Tired of coding in a vacuum? So were we! That's why we built CodeVN – not just another platform, but a vibrant digital playground for developers like you.",
-    vi: 'Bạn có cảm thấy đôi khi code một mình hơi... buồn không? Chúng tôi cũng thế! Đó là lý do CodeVN ra đời – không phải một nền tảng nhàm chán, mà là một sân chơi sống động, được xây bởi và dành cho chính những lập trình viên.',
+    en: "Tired of coding in a vacuum? ",
+    vi: 'Bạn có cảm thấy đôi khi code một mình hơi... buồn không? ',
   },
   'about.p2': {
-    en: "Think of us as your favorite coffee shop, but online. It's the place where you can:",
-    vi: 'Hãy nghĩ về CodeVN như một quán cà phê đầy ắp tâm hồn đồng điệu. Nơi bạn có thể:',
+    en: "So were we! That's why we built CodeVN – not just another platform, but a vibrant digital playground for developers like you.",
+    vi: 'Chúng tôi cũng thế! Đó là lý do CodeVN ra đời – không phải một nền tảng nhàm chán, mà là một sân chơi sống động, được xây bởi và dành cho chính những lập trình viên.',
+  },
+  'about.p3': {
+    en: "Think of us as your favorite coffee shop, but online. ",
+    vi: 'Hãy nghĩ về CodeVN như một quán cà phê đầy ắp tâm hồn đồng điệu. ',
+  },
+  'about.p4': {
+    en: "It's the place where you can:",
+    vi: 'Nơi bạn có thể:',
   },
   'about.list1': {
     en: "Brag about your brainchild: Show off that side project you've been burning the midnight oil on. We want to see it!",
@@ -318,23 +326,23 @@ const store: Dictionary = {
     en: "Find your people: Connect with peers who don't just understand your code, but also the struggle and the euphoria that comes with it.",
     vi: 'Tìm thấy "hội" của mình: Kết nối với những người không chỉ hiểu code của bạn, mà còn thấu hiểu cả những "nỗi đau" và niềm vui bất tận trong nghề.',
   },
-  'about.p3': {
+  'about.p5': {
     en: "We're obsessed with keeping things high-quality, clean, and smooth. No clutter, no noise. Just pure, unadulterated developer joy.",
     vi: 'Triết lý của chúng tôi rất đơn giản: Nội dung chất lượng, thiết kế sạch đẹp, và trải nghiệm mượt mà. Không rối rắm, không quảng cáo phiền phức. Chỉ có sự đam mê thuần khiết dành cho công nghệ.',
   },
-  'about.p4': {
+  'about.p6': {
     en: 'Every great project needs a home. CodeVN was born from that simple idea. You can actually visit our very first commit and see how it all began on our GitHub repository – it’s an open book!',
     vi: 'Mọi dự án tuyệt vời đều cần một nơi để "sinh sống". CodeVN cũng được ấp ủ như thế. Bạn thậm chí có thể "ghé thăm" nơi tôi ra đời và xem những dòng code đầu tiên tại kho GitHub của chúng tôi – mọi thứ đều minh bạch!',
   },
-  'about.p5': {
+  'about.p7': {
     en: 'But a platform is nothing without its people. This is also the place for you to share your story, your projects, and your expertise. Here, everyone has a profile, a space to let others know more about who you are and what you build.',
     vi: 'Nhưng một nền tảng sẽ chẳng là gì nếu không có cộng đồng. Đây cũng là nơi dành cho bạn để chia sẻ câu chuyện của mình, những dự án "chất lừ" và kinh nghiệm bạn có. Tại đây, mỗi người đều có một không gian riêng để mọi người biết nhiều hơn về bạn và những gì bạn tạo ra.',
   },
-  'about.p6': {
+  'about.p8': {
     en: "So, what are you waiting for? Pull up a virtual chair, pour yourself a drink (coffee, boba, or whatever fuels your code), and let's build something amazing, together.",
     vi: 'Còn chần chừ gì nữa? Ghé ngay một "góc" ảo, pha một ly cà phê (hoặc trà sữa, nước tăng lực... thứ gì khiến bạn tỉnh táo để code), và cùng chúng tôi kiến tạo những điều tuyệt vời nhé!',
   },
-  'about.p7': {
+  'about.p9': {
     en: 'Welcome to your new tech home.',
     vi: 'Chào mừng bạn đến với ngôi nhà công nghệ của chúng mình!',
   },
