@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -9,9 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { Category } from '@/types/shared';
 import { useI18n } from '@/components/providers';
+import { useArticlesActions } from '@/hooks/use-articles-actions';
 import dynamic from 'next/dynamic';
 
 // Lazy load TipTap Rich Text Editor to reduce initial bundle size
@@ -62,6 +64,88 @@ export function ArticlesFormModal({
   isCreateDisabled,
 }: ArticlesFormModalProps) {
   const { t } = useI18n();
+  const { checkSlug } = useArticlesActions();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [slugValidation, setSlugValidation] = useState<{
+    status: 'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'error';
+    message: string;
+  }>({ status: 'idle', message: '' });
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const slugCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced slug validation
+  const validateSlug = useCallback(async (slug: string) => {
+    console.log('validateSlug called with:', slug);
+    if (!slug.trim()) {
+      setSlugValidation({ status: 'idle', message: '' });
+      return;
+    }
+
+    // Basic slug format validation
+    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    if (!slugRegex.test(slug)) {
+      setSlugValidation({ 
+        status: 'invalid', 
+        message: t('articles.form.slugInvalid') 
+      });
+      return;
+    }
+
+    setSlugValidation({ 
+      status: 'checking', 
+      message: t('articles.form.slugChecking') 
+    });
+
+    try {
+       const result = await checkSlug(slug);
+       setSlugValidation({
+         status: result.available ? 'available' : 'taken',
+         message: result.available 
+           ? t('articles.form.slugAvailable') 
+           : t('articles.form.slugTaken')
+       });
+     } catch (error) {
+      setSlugValidation({ 
+        status: 'error', 
+        message: t('articles.form.slugCheckFailed') 
+      });
+    }
+  }, [checkSlug, t]);
+
+  // Debounce slug validation
+  const debouncedValidateSlug = useCallback((slug: string) => {
+    console.log('debouncedValidateSlug called with:', slug);
+    if (slugCheckTimeoutRef.current) {
+      clearTimeout(slugCheckTimeoutRef.current);
+    }
+    
+    slugCheckTimeoutRef.current = setTimeout(() => {
+      validateSlug(slug);
+    }, 500);
+  }, [validateSlug]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (slugCheckTimeoutRef.current) {
+        clearTimeout(slugCheckTimeoutRef.current);
+      }
+    };
+  }, []);
   if (!open) return null;
 
   const generateSlug = (title: string) =>
@@ -100,11 +184,20 @@ export function ArticlesFormModal({
                 value={form.title}
                 onChange={(e) => {
                   const title = e.target.value;
+                  const newSlug = isEditing ? form.slug : generateSlug(title);
+                  console.log('Title changed:', title, 'Generated slug:', newSlug, 'isEditing:', isEditing);
+                  
                   onChange({
                     ...form,
                     title,
-                    slug: isEditing ? form.slug : generateSlug(title),
+                    slug: newSlug,
                   });
+                  
+                  // Validate auto-generated slug for new articles
+                  if (!isEditing && newSlug !== form.slug) {
+                    console.log('Calling debouncedValidateSlug for auto-generated slug');
+                    debouncedValidateSlug(newSlug);
+                  }
                 }}
                 required
               />
@@ -112,12 +205,55 @@ export function ArticlesFormModal({
 
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('articles.form.slug')} *</label>
-              <Input
-                placeholder={t('articles.form.slugPlaceholder')}
-                value={form.slug}
-                onChange={(e) => onChange({ ...form, slug: e.target.value })}
-                required
-              />
+              <div className="relative">
+                <Input
+                  placeholder={t('articles.form.slugPlaceholder')}
+                  value={form.slug}
+                  onChange={(e) => {
+                    const newSlug = e.target.value;
+                    console.log('Slug input changed:', newSlug, 'isEditing:', isEditing);
+                    onChange({ ...form, slug: newSlug });
+                    
+                    // Only validate for new articles, not when editing
+                    if (!isEditing) {
+                      console.log('Calling debouncedValidateSlug');
+                      debouncedValidateSlug(newSlug);
+                    } else {
+                      console.log('Skipping validation because isEditing is true');
+                    }
+                  }}
+                  className={`pr-10 ${
+                    slugValidation.status === 'available' ? 'border-green-500 focus:border-green-500' :
+                    slugValidation.status === 'taken' || slugValidation.status === 'invalid' || slugValidation.status === 'error' ? 'border-red-500 focus:border-red-500' :
+                    ''
+                  }`}
+                  required
+                />
+                
+                {/* Validation Icon */}
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {slugValidation.status === 'checking' && (
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  )}
+                  {slugValidation.status === 'available' && (
+                    <Check className="h-4 w-4 text-green-500" />
+                  )}
+                  {(slugValidation.status === 'taken' || slugValidation.status === 'invalid' || slugValidation.status === 'error') && (
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                  )}
+                </div>
+              </div>
+              
+              {/* Validation Message */}
+              {slugValidation.message && (
+                <p className={`text-xs ${
+                  slugValidation.status === 'available' ? 'text-green-600' :
+                  slugValidation.status === 'taken' || slugValidation.status === 'invalid' || slugValidation.status === 'error' ? 'text-red-600' :
+                  'text-gray-500'
+                }`}>
+                  {slugValidation.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -170,42 +306,142 @@ export function ArticlesFormModal({
 
           <div className="space-y-2">
             <label className="text-sm font-medium">{t('articles.form.category')} *</label>
-            <div className="rounded-lg border border-gray-300 bg-white p-3 max-h-48 overflow-y-auto">
-              {categories.length === 0 ? (
-                <p className="text-sm text-gray-500">No categories available</p>
-              ) : (
-                <div className="space-y-2">
-                  {categories.map((category) => (
-                    <label
-                      key={category.id}
-                      className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={form.categoryIds.includes(category.id)}
-                        onChange={(e) => {
-                          const isChecked = e.target.checked;
-                          const newCategoryIds = isChecked
-                            ? [...form.categoryIds, category.id]
-                            : form.categoryIds.filter(id => id !== category.id);
-                          onChange({ ...form, categoryIds: newCategoryIds });
-                        }}
-                        className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
-                      />
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-3 w-3 rounded-full"
-                          style={{ backgroundColor: category.color }}
-                        />
-                        <span className="text-sm font-medium">{category.name}</span>
-                      </div>
-                    </label>
-                  ))}
+            <div className="relative" ref={dropdownRef}>
+              {/* Dropdown Button */}
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-full flex items-center justify-between rounded-lg border border-gray-300 bg-white p-3 text-sm focus:border-brand-500 focus:ring-brand-500 hover:bg-gray-50"
+              >
+                <span className="text-gray-700">
+                  {form.categoryIds.length === 0 
+                    ? t('articles.form.selectCategories') + '...' 
+                    : `${form.categoryIds.length} categories selected`
+                  }
+                </span>
+                <svg
+                  className={`h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                  {categories.length === 0 ? (
+                    <div className="p-3 text-sm text-gray-500">No categories available</div>
+                  ) : (
+                    <div className="py-1">
+                      {categories.map((category) => (
+                        <div key={category.id}>
+                          {/* Parent Category */}
+                          <div
+                            className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                            onClick={() => {
+                              const isSelected = form.categoryIds.includes(category.id);
+                              const newCategoryIds = isSelected
+                                ? form.categoryIds.filter(id => id !== category.id)
+                                : [...form.categoryIds, category.id];
+                              onChange({ ...form, categoryIds: newCategoryIds });
+                            }}
+                          >
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={form.categoryIds.includes(category.id)}
+                                onChange={() => {}} // Handled by parent div onClick
+                                className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="h-3 w-3 rounded-full"
+                                style={{ backgroundColor: category.color }}
+                              />
+                              <span className="text-sm font-semibold">{category.name}</span>
+                              {category.children && category.children.length > 0 && (
+                                <span className="text-xs text-gray-500">({category.children.length})</span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Subcategories */}
+                          {category.children && category.children.map((subCategory) => (
+                            <div
+                              key={subCategory.id}
+                              className="flex items-center gap-3 px-3 py-2 pl-8 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => {
+                                const isSelected = form.categoryIds.includes(subCategory.id);
+                                const newCategoryIds = isSelected
+                                  ? form.categoryIds.filter(id => id !== subCategory.id)
+                                  : [...form.categoryIds, subCategory.id];
+                                onChange({ ...form, categoryIds: newCategoryIds });
+                              }}
+                            >
+                              <div className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={form.categoryIds.includes(subCategory.id)}
+                                  onChange={() => {}} // Handled by parent div onClick
+                                  className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
+                                />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="h-2.5 w-2.5 rounded-full"
+                                  style={{ backgroundColor: subCategory.color }}
+                                />
+                                <span className="text-sm text-gray-700">{subCategory.name}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
+
             {form.categoryIds.length === 0 && (
-              <p className="text-xs text-red-600">Please select at least one category</p>
+              <p className="text-xs text-red-600">{t('articles.form.pleaseSelectCategory')}</p>
+            )}
+            
+            {/* Selected Categories Tags */}
+            {form.categoryIds.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {form.categoryIds.map((categoryId) => {
+                  const category = categories.find(c => c.id === categoryId) || 
+                                 categories.flatMap(c => c.children || []).find(c => c.id === categoryId);
+                  if (!category) return null;
+                  return (
+                    <span
+                      key={categoryId}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                    >
+                      <div
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      {category.name}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newCategoryIds = form.categoryIds.filter(id => id !== categoryId);
+                          onChange({ ...form, categoryIds: newCategoryIds });
+                        }}
+                        className="ml-1 text-gray-400 hover:text-gray-600"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
             )}
           </div>
 

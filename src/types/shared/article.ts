@@ -128,3 +128,14 @@ export interface ArticleInsertReturning {
   createdAt: Date;
   updatedAt: Date | null;
 }
+
+// Slug checking types
+export interface CheckSlugRequest {
+  slug: string;
+  excludeId?: string;
+}
+
+export interface CheckSlugResponse {
+  available: boolean;
+  message: string;
+}

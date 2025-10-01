@@ -206,8 +206,15 @@ const store: Dictionary = {
   },
   'articles.form.category': { en: 'Category', vi: 'Danh mục' },
   'articles.form.selectCategory': { en: 'Select a category', vi: 'Chọn danh mục' },
+  'articles.form.selectCategories': { en: 'Select categories', vi: 'Chọn danh mục' },
+  'articles.form.pleaseSelectCategory': { en: 'Please select at least one category', vi: 'Vui lòng chọn ít nhất một danh mục' },
   'articles.form.content': { en: 'Content', vi: 'Nội dung' },
   'articles.form.publishNow': { en: 'Publish immediately', vi: 'Xuất bản ngay' },
+  'articles.form.slugAvailable': { en: 'Available', vi: 'Có thể sử dụng' },
+  'articles.form.slugTaken': { en: 'Already taken', vi: 'Đã được sử dụng' },
+  'articles.form.slugChecking': { en: 'Checking...', vi: 'Đang kiểm tra...' },
+  'articles.form.slugInvalid': { en: 'Invalid slug format', vi: 'Định dạng slug không hợp lệ' },
+  'articles.form.slugCheckFailed': { en: 'Failed to check slug availability', vi: 'Không thể kiểm tra slug' },
 
   // Profile
   'profile.notFound': { en: 'Profile not found', vi: 'Không tìm thấy hồ sơ' },

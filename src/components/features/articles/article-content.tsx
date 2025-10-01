@@ -889,7 +889,7 @@ export function ArticleContent({
                           </label>
                         ))}
                         {editForm.categoryIds.length === 0 && (
-                          <p className="text-sm text-red-500">Please select at least one category</p>
+                          <p className="text-sm text-red-500">{t('articles.form.pleaseSelectCategory')}</p>
                         )}
                       </div>
                     )}

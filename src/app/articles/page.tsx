@@ -392,7 +392,10 @@ function ArticlesContent() {
           <div className="rounded-2xl bg-white p-6 shadow-2xl">
             <ArticlesHeader
               totalItems={pagination.totalItems}
-              onCreate={() => setShowArticleForm(true)}
+              onCreate={() => {
+                setEditingArticle(null);
+                setShowArticleForm(true);
+              }}
             />
 
             <ArticlesControls
@@ -421,7 +424,10 @@ function ArticlesContent() {
                   {t('myArticles.noArticlesFound')}
                 </h3>
                 <p className="mb-4 text-gray-700">{t('myArticles.startSharingKnowledge')}</p>
-                <Button onClick={() => setShowArticleForm(true)}>
+                <Button onClick={() => {
+                  setEditingArticle(null);
+                  setShowArticleForm(true);
+                }}>
                   <Plus className="mr-1 h-4 w-4" />
                   {t('myArticles.newArticle')}
                 </Button>

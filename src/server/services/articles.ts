@@ -541,6 +541,38 @@ export class ArticlesService extends BaseService {
   }
 
   /**
+   * Check slug availability
+   */
+  async checkSlug(body: { slug: string; excludeId?: string }): Promise<{ available: boolean; message: string }> {
+    try {
+      const { slug, excludeId } = body;
+
+      if (!slug) {
+        return { available: false, message: 'Slug is required' };
+      }
+
+      // Check if slug format is valid (basic validation)
+      const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+      if (!slugRegex.test(slug)) {
+        return {
+          available: false,
+          message: 'Invalid slug format',
+        };
+      }
+
+      // Check if slug already exists
+      const existingArticle = await articleRepository.checkSlugExists(slug, excludeId);
+
+      return {
+        available: !existingArticle,
+        message: existingArticle ? 'Slug already exists' : 'Slug is available',
+      };
+    } catch (error) {
+      this.handleError(error, 'Slug check');
+    }
+  }
+
+  /**
    * Create new article
    */
   async createArticle(body: CreateArticleRequest, userId: string): Promise<Article> {

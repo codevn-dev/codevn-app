@@ -3,7 +3,7 @@ import { authMiddleware, AuthenticatedRequest, optionalAuthMiddleware } from '..
 import { articlesService } from '../services';
 import { CommonError } from '@/types/shared';
 import { ok, fail } from '../utils/response';
-import { CreateArticleRequest, UpdateArticleRequest } from '@/types/shared/article';
+import { CreateArticleRequest, UpdateArticleRequest, CheckSlugRequest } from '@/types/shared/article';
 import { ReactionRequest } from '@/types/shared/reaction';
 import {
   CommentQueryParams as CommentQuery,
@@ -57,6 +57,20 @@ export async function articleRoutes(fastify: FastifyInstance) {
       try {
         const items = await articlesService.getFeaturedArticles(request);
         return reply.send(ok({ articles: items }));
+      } catch {
+        return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
+      }
+    }
+  );
+
+  // POST /api/articles/check-slug - Check slug availability
+  fastify.post<{ Body: CheckSlugRequest }>(
+    '/check-slug',
+    async (request: FastifyRequest<{ Body: CheckSlugRequest }>, reply: FastifyReply) => {
+      try {
+        const body = request.body as CheckSlugRequest;
+        const response = await articlesService.checkSlug(body);
+        return reply.send(ok(response));
       } catch {
         return reply.status(500).send(fail(CommonError.INTERNAL_ERROR));
       }
