@@ -420,7 +420,7 @@ export function ChatWindow({ peer, isOpen, onClose }: ChatWindowProps) {
       >
         {loading && messages.length === 0 ? (
           <div className="py-4 text-center text-sm text-gray-500">
-            {t('common.loadingMessages')}
+            {t('common.loading')}
           </div>
         ) : (
           <>
