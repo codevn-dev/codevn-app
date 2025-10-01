@@ -25,7 +25,10 @@ export function AboutContent() {
         <br />
         <p>{t('about.p2')}</p>
         <br />
-        <p>{t('about.p3')}{t('about.p4')}</p>        
+        <p>
+          {t('about.p3')}
+          {t('about.p4')}
+        </p>
       </div>
 
       {/* Feature grid */}

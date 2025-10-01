@@ -23,13 +23,13 @@ export function AboutSidebar({ mounted }: AboutSidebarProps) {
         >
           {mounted ? t('about.title') : 'About CodeVN'}
         </h2>
-        {["about.greeting", "about.p1", "about.p2"].map((key, idx) => (
+        {['about.greeting', 'about.p1', 'about.p2'].map((key, idx) => (
           <p
             key={key}
             className={`mt-${idx === 0 ? 2 : 3} text-sm text-gray-700`}
             suppressHydrationWarning
           >
-            {mounted ? t(key) : ""}
+            {mounted ? t(key) : ''}
           </p>
         ))}
         <div className="mt-4 flex w-full items-center gap-2">

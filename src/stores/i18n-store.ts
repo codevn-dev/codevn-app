@@ -274,8 +274,8 @@ const store: Dictionary = {
 
   // Homepage
   'home.searchPlaceholder': {
-    en: 'Search articles, author or email...',
-    vi: 'Tìm bài viết, tác giả hoặc email...',
+    en: 'Search articles or author...',
+    vi: 'Tìm bài viết hoặc tác giả...',
   },
   'home.featured': { en: 'Featured', vi: 'Nổi bật' },
   'home.featuredSubtitle': {
@@ -299,7 +299,7 @@ const store: Dictionary = {
     vi: 'Chào bạn, đồng nghiệp coder thân mến! 👋',
   },
   'about.p1': {
-    en: "Tired of coding in a vacuum? ",
+    en: 'Tired of coding in a vacuum? ',
     vi: 'Bạn có cảm thấy đôi khi code một mình hơi... buồn không? ',
   },
   'about.p2': {
@@ -307,7 +307,7 @@ const store: Dictionary = {
     vi: 'Chúng tôi cũng thế! Đó là lý do CodeVN ra đời – không phải một nền tảng nhàm chán, mà là một sân chơi sống động, được xây bởi và dành cho chính những lập trình viên.',
   },
   'about.p3': {
-    en: "Think of us as your favorite coffee shop, but online. ",
+    en: 'Think of us as your favorite coffee shop, but online. ',
     vi: 'Hãy nghĩ về CodeVN như một quán cà phê đầy ắp tâm hồn đồng điệu. ',
   },
   'about.p4': {
