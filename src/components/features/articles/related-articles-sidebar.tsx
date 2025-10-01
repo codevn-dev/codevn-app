@@ -13,13 +13,18 @@ interface Props {
 }
 
 export function RelatedArticlesSidebar({ articleId, initialArticles = [] }: Props) {
-  const [items, setItems] = useState<Article[]>(initialArticles);
-  const [loading, setLoading] = useState(initialArticles.length === 0);
+  // Deduplicate initial articles to prevent duplicate keys
+  const deduplicatedInitialArticles = initialArticles.filter(
+    (article, index, self) => index === self.findIndex((a) => a.id === article.id)
+  );
+
+  const [items, setItems] = useState<Article[]>(deduplicatedInitialArticles);
+  const [loading, setLoading] = useState(deduplicatedInitialArticles.length === 0);
   const { t } = useI18n();
 
   useEffect(() => {
     // Skip fetch if we already have initial data
-    if (initialArticles.length > 0) {
+    if (deduplicatedInitialArticles.length > 0) {
       setLoading(false);
       return;
     }
@@ -45,7 +50,7 @@ export function RelatedArticlesSidebar({ articleId, initialArticles = [] }: Prop
     return () => {
       mounted = false;
     };
-  }, [articleId, initialArticles.length]);
+  }, [articleId, deduplicatedInitialArticles.length]);
 
   return (
     <div className="rounded-2xl bg-white p-4 shadow-2xl sm:p-6">
@@ -57,8 +62,8 @@ export function RelatedArticlesSidebar({ articleId, initialArticles = [] }: Prop
         {!loading && items.length === 0 && (
           <div className="text-center text-sm text-gray-500">No related articles</div>
         )}
-        {items.map((a) => (
-          <Link key={a.id} href={`/articles/${a.slug}`} className="block">
+        {items.map((a, index) => (
+          <Link key={`${a.id}-${index}`} href={`/articles/${a.slug}`} className="block">
             <div className="hover:shadow-3xl shadow-brand/30 hover:shadow-brand/40 group block transform cursor-pointer overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.01]">
               <div className="relative aspect-[16/9] w-full overflow-hidden">
                 {a.thumbnail ? (

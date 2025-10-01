@@ -2,6 +2,13 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.14]() (2025-10-02)
+
+### Fixed
+
+- **Articles / Detail Page**
+  - Fixed update modal page content.
+
 ## [v0.1.13]() (2025-10-02)
 
 ### Featured

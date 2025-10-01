@@ -10,24 +10,7 @@ const MotionContainer = ({
   className?: string;
   delay?: number;
 }) => <div className={className}>{children}</div>;
-const AnimatePresence = dynamic(() => import('framer-motion').then((m) => m.AnimatePresence), {
-  ssr: false,
-  loading: () => null,
-});
-const MotionDiv = dynamic(() => import('framer-motion').then((m) => m.motion.div), {
-  ssr: false,
-  loading: () => <div />,
-});
-const modalOverlay = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-} as const;
-const modalContent = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: 8 },
-} as const;
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,7 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { RelatedArticlesSidebar } from '@/features/articles';
+import { RelatedArticlesSidebar, ArticlesFormModal } from '@/features/articles';
 
 // Lazy load CodeHighlighter for better performance
 const CodeHighlighter = dynamic(
@@ -127,23 +110,7 @@ import {
   DeleteArticleResponse,
 } from '@/types/shared/article';
 import { Category } from '@/types/shared/category';
-import { Input } from '@/components/ui/input';
-// Dynamic imports for edit modal components
-const TiptapRichTextEditor = dynamic(
-  () => import('@/features/articles').then((m) => ({ default: m.TiptapRichTextEditor })),
-  {
-    ssr: false,
-    loading: () => <div className="min-h-[400px] animate-pulse rounded-lg bg-gray-200" />,
-  }
-);
-
-const ImageUpload = dynamic(
-  () => import('@/features/upload').then((m) => ({ default: m.ImageUpload })),
-  {
-    ssr: false,
-    loading: () => <div className="h-32 animate-pulse rounded-lg bg-gray-200" />,
-  }
-);
+// Dynamic imports for edit modal components removed as they are no longer needed
 import { SuccessResponse } from '@/types/shared/common';
 import { useI18n } from '@/components/providers';
 import { ReactionRequest } from '@/types/shared/reaction';
@@ -204,7 +171,7 @@ export function ArticleContent({
   const commentsSectionRef = useRef<CommentsSectionRef>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [_, setShowImageUpload] = useState(false);
   const [editForm, setEditForm] = useState({
     title: article.title,
     content: article.content,
@@ -213,6 +180,33 @@ export function ArticleContent({
     categoryIds: (article.categories || []).map((cat) => cat.id),
     published: article.published,
   });
+
+  // Handlers for ArticlesFormModal
+  const handleFormChange = (newForm: typeof editForm) => {
+    setEditForm(newForm);
+  };
+
+  const handleCloseModal = () => {
+    setIsEditOpen(false);
+    setShowImageUpload(false);
+    // Reset form to original values
+    setEditForm({
+      title: article.title,
+      content: article.content,
+      slug: article.slug,
+      thumbnail: article.thumbnail || '',
+      categoryIds: (article.categories || []).map((cat) => cat.id),
+      published: article.published,
+    });
+  };
+
+  const handleOpenImageUpload = () => {
+    setShowImageUpload(true);
+  };
+
+  const handleRemoveThumbnail = () => {
+    setEditForm((prev) => ({ ...prev, thumbnail: '' }));
+  };
 
   // Ensure view starts at top when opening an article
   useEffect(() => {
@@ -765,181 +759,18 @@ export function ArticleContent({
         </div>
       </div>
 
-      <AnimatePresence>
-        {isEditOpen && (
-          <MotionDiv
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
-            variants={modalOverlay}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            <MotionDiv
-              className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6 shadow-2xl"
-              variants={modalContent}
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Edit Article</h2>
-                <Button variant="back" size="sm" onClick={() => setIsEditOpen(false)}>
-                  Close
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Title *</label>
-                    <Input
-                      value={editForm.title}
-                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Slug *</label>
-                    <Input
-                      value={editForm.slug}
-                      onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Thumbnail</label>
-                  {editForm.thumbnail ? (
-                    <div className="space-y-2">
-                      <div className="relative w-full max-w-sm">
-                        <img
-                          src={editForm.thumbnail}
-                          alt="Thumbnail"
-                          className="h-40 w-full rounded-lg object-cover"
-                        />
-                        <Button
-                          type="button"
-                          variant="back"
-                          size="sm"
-                          onClick={() => setEditForm({ ...editForm, thumbnail: '' })}
-                          className="absolute top-2 right-2 bg-white/80 hover:bg-white"
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="back"
-                        onClick={() => setShowImageUpload(true)}
-                        className="w-full max-w-sm"
-                      >
-                        Change Image
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="w-full max-w-sm">
-                      <button
-                        type="button"
-                        onClick={() => setShowImageUpload(true)}
-                        className="group flex h-40 w-full flex-col items-center justify-center space-y-2 rounded-lg bg-white transition-colors"
-                      >
-                        Upload image
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Categories *</label>
-                  <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200 p-3">
-                    {categories.length === 0 ? (
-                      <p className="text-sm text-gray-500">Loading categories...</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {categories.map((category) => (
-                          <label
-                            key={category.id}
-                            className="flex cursor-pointer items-center gap-2"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={editForm.categoryIds.includes(category.id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setEditForm({
-                                    ...editForm,
-                                    categoryIds: [...editForm.categoryIds, category.id],
-                                  });
-                                } else {
-                                  setEditForm({
-                                    ...editForm,
-                                    categoryIds: editForm.categoryIds.filter(
-                                      (id) => id !== category.id
-                                    ),
-                                  });
-                                }
-                              }}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <div
-                              className="h-3 w-3 rounded-full"
-                              style={{ backgroundColor: category.color }}
-                            />
-                            <span className="text-sm">{category.name}</span>
-                          </label>
-                        ))}
-                        {editForm.categoryIds.length === 0 && (
-                          <p className="text-sm text-red-500">
-                            {t('articles.form.pleaseSelectCategory')}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Content *</label>
-                  <TiptapRichTextEditor
-                    value={editForm.content}
-                    onChange={(value) => setEditForm({ ...editForm, content: value })}
-                    placeholder="Write your article content here..."
-                    className="min-h-[400px]"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="published-detail"
-                    checked={editForm.published}
-                    onChange={(e) => setEditForm({ ...editForm, published: e.target.checked })}
-                    className="text-brand focus:ring-brand h-4 w-4 rounded border-gray-300"
-                  />
-                  <label htmlFor="published-detail" className="text-sm font-medium">
-                    Published
-                  </label>
-                </div>
-
-                <div className="mt-4 flex justify-end gap-2">
-                  <Button variant="back" onClick={() => setIsEditOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveEdit}>Save changes</Button>
-                </div>
-              </div>
-
-              {showImageUpload && (
-                <ImageUpload
-                  onImageUploaded={(imageUrl) => {
-                    setEditForm({ ...editForm, thumbnail: imageUrl });
-                    setShowImageUpload(false);
-                  }}
-                  onClose={() => setShowImageUpload(false)}
-                />
-              )}
-            </MotionDiv>
-          </MotionDiv>
-        )}
-      </AnimatePresence>
+      <ArticlesFormModal
+        open={isEditOpen}
+        isEditing={true}
+        form={editForm}
+        categories={categories}
+        onClose={handleCloseModal}
+        onChange={handleFormChange}
+        onSubmit={handleSaveEdit}
+        onOpenImageUpload={handleOpenImageUpload}
+        onRemoveThumbnail={handleRemoveThumbnail}
+        isCreateDisabled={!editForm.title || !editForm.content || editForm.categoryIds.length === 0}
+      />
     </div>
   );
 }
