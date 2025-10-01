@@ -4,6 +4,7 @@ import { commentRepository } from '../database/repository';
 import { logger } from '@/lib/utils/logger';
 import { getUserFromToken } from '../middleware/jwt';
 import { BaseWebSocketService, BaseConnection } from './base';
+import { ACCESS_TOKEN } from '@/types/shared/tokens';
 
 interface CommentConnection extends BaseConnection {}
 
@@ -195,7 +196,7 @@ class CommentWebSocketService extends BaseWebSocketService<CommentConnection> {
       const token =
         (request.query as any)?.token ||
         request.headers.authorization?.replace('Bearer ', '') ||
-        request.cookies?.['auth-token'];
+        request.cookies?.[ACCESS_TOKEN];
 
       let userId: string | null = null;
       if (token) {

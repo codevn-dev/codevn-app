@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { extractTokenFromHeader, getUserFromToken } from './jwt';
 import { logger } from '@/lib/utils/logger';
 import { UserRole } from '@/types/shared/roles';
+import { ACCESS_TOKEN } from '@/types/shared/tokens';
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user?: {
@@ -18,7 +19,7 @@ export async function authMiddleware(request: FastifyRequest, reply: FastifyRepl
 
     // If no token in header, try to get from cookie
     if (!token) {
-      token = request.cookies['auth-token'] || null;
+      token = request.cookies[ACCESS_TOKEN] || null;
     }
 
     if (!token) {
@@ -54,7 +55,7 @@ export async function optionalAuthMiddleware(
 
     // If no token in header, try to get from cookie
     if (!token) {
-      token = request.cookies['auth-token'] || null;
+      token = request.cookies[ACCESS_TOKEN] || null;
     }
 
     if (token) {

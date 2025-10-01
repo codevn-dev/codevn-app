@@ -271,7 +271,7 @@ class ChatWebSocketService extends BaseWebSocketService<ChatConnection> {
       const token =
         (request.query as any)?.token ||
         request.headers.authorization?.replace('Bearer ', '') ||
-        request.cookies?.['auth-token'];
+        request.cookies?.[ACCESS_TOKEN];
 
       if (!token) {
         socket.close(1008, 'Token required');

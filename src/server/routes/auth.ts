@@ -9,6 +9,7 @@ import {
   RegisterRequest as RegisterBody,
   CheckEmailRequest as CheckEmailBody,
 } from '@/types/shared/auth';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '@/types/shared/tokens';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Sign-in endpoint
@@ -112,13 +113,13 @@ export async function authRoutes(fastify: FastifyInstance) {
     try {
       // Get access token from cookie or header
       const accessToken =
-        request.cookies['auth-token'] ||
+        request.cookies[ACCESS_TOKEN] ||
         (request.headers.authorization?.startsWith('Bearer ')
           ? request.headers.authorization.substring(7)
           : null);
 
       // Get refresh token from cookie
-      const refreshToken = request.cookies['refresh-token'];
+      const refreshToken = request.cookies[REFRESH_TOKEN];
 
       const response = await authService.signOut(reply, accessToken, refreshToken);
       return reply.send(ok(response));
@@ -147,7 +148,7 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Refresh token (from cookie)
   fastify.post('/refresh', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const refreshToken = request.cookies['refresh-token'];
+      const refreshToken = request.cookies[REFRESH_TOKEN];
 
       if (!refreshToken) {
         return reply.status(400).send(fail(AuthError.INVALID_REFRESH_TOKEN));

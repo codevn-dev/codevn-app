@@ -3,6 +3,7 @@ import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { authService } from '../services/auth';
 import { AuthError, CommonError } from '@/types/shared/errors';
 import { ok, fail } from '../utils/response';
+import { ACCESS_TOKEN } from '@/types/shared/tokens';
 
 export async function sessionRoutes(fastify: FastifyInstance) {
   // GET /api/session - Get user's active sessions
@@ -16,7 +17,7 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         const authRequest = request as AuthenticatedRequest;
         // Get token from cookie or header
         const token =
-          authRequest.cookies['auth-token'] ||
+          authRequest.cookies[ACCESS_TOKEN] ||
           authRequest.headers.authorization?.replace('Bearer ', '') ||
           undefined;
 

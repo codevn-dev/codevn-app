@@ -12,6 +12,7 @@ import {
 import { LoginResponse, RegisterResponse, CheckEmailResponse } from '@/types/shared/auth';
 import { UserResponse } from '@/types/shared/user';
 import { SuccessResponse } from '@/types/shared/common';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '@/types/shared/tokens';
 
 export class AuthService extends BaseService {
   private redisFirstUserService = createRedisFirstUserService();
@@ -22,7 +23,7 @@ export class AuthService extends BaseService {
    */
   private setAuthCookies(reply: FastifyReply, accessToken: string, refreshToken: string): void {
     // Access token cookie (15 minutes)
-    reply.cookie('auth-token', accessToken, {
+    reply.cookie(ACCESS_TOKEN, accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -33,7 +34,7 @@ export class AuthService extends BaseService {
     });
 
     // Refresh token cookie (7 days)
-    reply.cookie('refresh-token', refreshToken, {
+    reply.cookie(REFRESH_TOKEN, refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -48,7 +49,7 @@ export class AuthService extends BaseService {
    * Set authentication cookie (backward compatibility)
    */
   private setAuthCookie(reply: FastifyReply, token: string): void {
-    reply.cookie('auth-token', token, {
+    reply.cookie(ACCESS_TOKEN, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -65,12 +66,12 @@ export class AuthService extends BaseService {
    * Clear authentication cookies
    */
   private clearAuthCookies(reply: FastifyReply): void {
-    reply.clearCookie('auth-token', {
+    reply.clearCookie(ACCESS_TOKEN, {
       path: '/',
       domain:
         process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
     });
-    reply.clearCookie('refresh-token', {
+    reply.clearCookie(REFRESH_TOKEN, {
       path: '/',
       domain:
         process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN || undefined : undefined,
@@ -81,7 +82,7 @@ export class AuthService extends BaseService {
    * Clear authentication cookie (backward compatibility)
    */
   private clearAuthCookie(reply: FastifyReply): void {
-    reply.clearCookie('auth-token');
+    reply.clearCookie(ACCESS_TOKEN);
   }
 
   /**

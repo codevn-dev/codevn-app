@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { useChat as useChatContext } from '@/components/features/chat/chat-context';
 import { UiMessage, UserResponse } from '@/types/shared';
 import { chatConfig } from '@/config/config';
+import { ACCESS_TOKEN } from '@/types/shared/tokens';
 import { apiGet, apiPost } from '@/lib/utils/api-client';
 import {
   ChatConversationsResponse,
