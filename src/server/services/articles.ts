@@ -108,7 +108,7 @@ export class ArticlesService extends BaseService {
         name: article.author?.name || 'Unknown',
         avatar: article.author?.avatar || null,
       },
-      categories: article.articleCategories?.map((ac: any) => ac.category) || [],
+      categories: article.categories,
       _count: {
         comments: article._count?.comments ?? 0,
         likes: article._count?.likes ?? 0,
@@ -193,7 +193,7 @@ export class ArticlesService extends BaseService {
           ? categoryIdsParam.split(',').filter(Boolean)
           : undefined;
 
-      // Prepare categoryNames (CSV or array). Lowercase for lookup; repository will handle exists subquery
+      // Prepare categoryNames . Lowercase for lookup; repository will handle exists subquery
       const categoryNames: string[] | undefined = (() => {
         const partsNew = Array.isArray(categoriesParam)
           ? (categoriesParam as string[])
@@ -389,7 +389,7 @@ export class ArticlesService extends BaseService {
       // Base article
       const base = await articleRepository.findById(articleId);
       if (!base) throw new Error(CommonError.NOT_FOUND);
-      
+
       // Get all category IDs from base article
       const baseCategoryIds = base.articleCategories?.map((ac: any) => ac.category.id) || [];
       if (baseCategoryIds.length === 0) {
@@ -467,12 +467,12 @@ export class ArticlesService extends BaseService {
       const scored: Array<{ article: any; score: number }> = [];
       for (const a of candidates) {
         const aCategoryIds = a.categories?.map((cat: any) => cat.id) || [];
-        
+
         // Calculate category overlap
         const sharedCategories = aCategoryIds.filter((id: string) => baseCategoryIds.includes(id));
         const sameCategory = sharedCategories.length > 0;
         const relatedCategory = aCategoryIds.some((id: string) => expandedCategoryIds.includes(id));
-        
+
         const sameAuthor =
           (a.author?.id || (a as any).authorId) === (base as any).authorId ||
           a.author?.id === (base as any).author?.id;
@@ -480,20 +480,21 @@ export class ArticlesService extends BaseService {
         const dislikes = a._count?.unlikes || 0;
         const comments = a._count?.comments || 0;
         const views = typeof a.views === 'number' ? a.views : 0;
-        
+
         // Boost score based on number of shared categories
         const categoryBoost = sharedCategories.length * 0.2;
-        
-        const score = calculateRelatedArticleScore({
-          likes,
-          dislikes,
-          comments,
-          views,
-          sameCategory,
-          relatedCategory,
-          sameAuthor,
-        } as any) + categoryBoost;
-        
+
+        const score =
+          calculateRelatedArticleScore({
+            likes,
+            dislikes,
+            comments,
+            views,
+            sameCategory,
+            relatedCategory,
+            sameAuthor,
+          } as any) + categoryBoost;
+
         scored.push({ article: a, score });
       }
 
@@ -511,8 +512,6 @@ export class ArticlesService extends BaseService {
       this.handleError(error, 'Get related articles');
     }
   }
-
-  // Legacy increment removed; views are now recorded via trackArticleView
 
   /**
    * Track a validated view with optional session/user uniqueness and metadata
@@ -543,7 +542,10 @@ export class ArticlesService extends BaseService {
   /**
    * Check slug availability
    */
-  async checkSlug(body: { slug: string; excludeId?: string }): Promise<{ available: boolean; message: string }> {
+  async checkSlug(body: {
+    slug: string;
+    excludeId?: string;
+  }): Promise<{ available: boolean; message: string }> {
     try {
       const { slug, excludeId } = body;
 

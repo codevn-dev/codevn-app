@@ -2,12 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
 import { MotionContainer } from '@/components/layout';
-const MotionDiv = dynamic(() => import('framer-motion').then((m) => m.motion.div), {
-  ssr: false,
-  loading: () => 'div' as any,
-});
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, Calendar, Eye, ThumbsUp } from 'lucide-react';
 import { Article } from '@/types/shared';
@@ -27,44 +22,9 @@ export function FeaturedArticles({
 }: FeaturedArticlesProps) {
   const { t } = useI18n();
 
-  // Debug logging
-  console.log('FeaturedArticles received:', featuredArticles);
-  featuredArticles.forEach((article, index) => {
-    console.log(`Article ${index}:`, article);
-    console.log(`Article ${index} categories:`, article.categories);
-    if (article.categories) {
-      article.categories.forEach((cat, catIndex) => {
-        console.log(`Article ${index} category ${catIndex}:`, cat);
-      });
-    }
-  });
-
   if (featuredArticles.length === 0) {
     return null;
   }
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 300,
-        damping: 24,
-      },
-    },
-  };
 
   return (
     <div className="mb-6 sm:mb-8">
@@ -107,36 +67,41 @@ export function FeaturedArticles({
                   <div className="flex flex-1 flex-col p-4 pb-3 sm:p-6 sm:pb-4">
                     <div className="mb-3 flex items-center justify-between sm:mb-4">
                       <div className="flex flex-wrap gap-1">
-                        {Array.isArray(article.categories) && article.categories.slice(0, 2).filter(category => 
-                          category && 
-                          typeof category === 'object' && 
-                          category.id && 
-                          category.color && 
-                          category.name &&
-                          typeof category.color === 'string' &&
-                          typeof category.name === 'string'
-                        ).map((category) => (
-                          <button
-                            key={category.id}
-                            className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
-                            style={{
-                              backgroundColor: `${category.color}15`,
-                              color: category.color,
-                            }}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const name = category.name.toLowerCase();
-                              onCategoryClick(name);
-                            }}
-                          >
-                            <div
-                              className="mr-2 h-2 w-2 rounded-full"
-                              style={{ backgroundColor: category.color }}
-                            />
-                            {category.name}
-                          </button>
-                        ))}
+                        {Array.isArray(article.categories) &&
+                          article.categories
+                            .slice(0, 2)
+                            .filter(
+                              (category) =>
+                                category &&
+                                typeof category === 'object' &&
+                                category.id &&
+                                category.color &&
+                                category.name &&
+                                typeof category.color === 'string' &&
+                                typeof category.name === 'string'
+                            )
+                            .map((category) => (
+                              <button
+                                key={category.id}
+                                className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
+                                style={{
+                                  backgroundColor: `${category.color}15`,
+                                  color: category.color,
+                                }}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const name = category.name.toLowerCase();
+                                  onCategoryClick(name);
+                                }}
+                              >
+                                <div
+                                  className="mr-2 h-2 w-2 rounded-full"
+                                  style={{ backgroundColor: category.color }}
+                                />
+                                {category.name}
+                              </button>
+                            ))}
                         {Array.isArray(article.categories) && article.categories.length > 2 && (
                           <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1.5 text-[10px] font-semibold text-gray-600 sm:px-3 sm:text-xs">
                             +{article.categories.length - 2}
@@ -148,12 +113,12 @@ export function FeaturedArticles({
                         {formatDateTime(article.createdAt)}
                       </div>
                     </div>
-                    <h3 className="mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 sm:mb-3 sm:text-xl">
+                    <h3 className="group-hover:text-brand mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-colors duration-300 sm:mb-3 sm:text-xl">
                       {article.title}
                     </h3>
-                    <div className="flex items-center text-xs text-gray-700 sm:text-sm">
+                    <div className="group-hover:text-brand flex items-center text-xs text-gray-700 transition-colors duration-300 sm:text-sm">
                       <div className="mr-2 sm:mr-3">
-                        <Avatar className="h-6 w-6">
+                        <Avatar className="h-6 w-6 transition-transform duration-300 group-hover:scale-110">
                           <AvatarImage
                             src={article.author.avatar || undefined}
                             alt={article.author.name}

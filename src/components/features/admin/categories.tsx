@@ -7,8 +7,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardBody } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Tag, Edit, Trash2, ChevronDown, ChevronRight, XCircle, GripVertical } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Plus,
+  Tag,
+  Edit,
+  Trash2,
+  ChevronDown,
+  ChevronRight,
+  XCircle,
+  GripVertical,
+} from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -24,9 +39,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import {
-  useSortable,
-} from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { RoleLevel } from '@/types/shared/roles';
@@ -49,22 +62,17 @@ interface SortableCategoryProps {
   t: (key: string) => string;
 }
 
-function SortableCategory({ 
-  category, 
-  onEdit, 
-  onDelete, 
-  onToggleCollapse, 
-  isCollapsed, 
-  t 
+function SortableCategory({
+  category,
+  onEdit,
+  onDelete,
+  onToggleCollapse,
+  isCollapsed,
+  t,
 }: SortableCategoryProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: category.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: category.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -73,7 +81,7 @@ function SortableCategory({
   };
 
   return (
-    <motion.div 
+    <motion.div
       variants={{
         hidden: { opacity: 0, y: 14, scale: 0.99 },
         visible: {
@@ -84,10 +92,10 @@ function SortableCategory({
         },
       }}
     >
-      <Card 
-        ref={setNodeRef} 
+      <Card
+        ref={setNodeRef}
         style={style}
-        className="border border-gray-200 hover:border-brand/60 transition-all duration-300"
+        className="hover:border-brand/60 border border-gray-200 transition-all duration-300"
       >
         <CardHeader className="pb-4">
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -100,7 +108,7 @@ function SortableCategory({
               >
                 <GripVertical className="h-5 w-5" />
               </button>
-              
+
               <div
                 className="mr-3 h-5 w-5 rounded-full shadow-sm sm:mr-4"
                 style={{ backgroundColor: category.color }}
@@ -131,11 +139,7 @@ function SortableCategory({
               </div>
             </div>
             <div className="ml-0 flex space-x-2 sm:ml-4">
-              <Button
-                variant="back"
-                size="sm"
-                onClick={() => onEdit(category)}
-              >
+              <Button variant="back" size="sm" onClick={() => onEdit(category)}>
                 <Edit className="mr-1 h-4 w-4" />
                 {t('common.edit')}
               </Button>
@@ -158,7 +162,7 @@ function SortableCategory({
             <div className="rounded-lg bg-gray-50/50 p-6">
               <button
                 onClick={() => onToggleCollapse(category.id)}
-                className="mb-4 flex w-full items-center justify-between text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+                className="mb-4 flex w-full items-center justify-between text-sm font-semibold text-gray-700 transition-colors hover:text-gray-900"
               >
                 <div className="flex items-center">
                   <div className="mr-2 h-2 w-2 rounded-full bg-gray-400"></div>
@@ -178,8 +182,8 @@ function SortableCategory({
                   transition={{ duration: 0.3, ease: 'easeInOut' }}
                   className="grid gap-3 overflow-hidden"
                 >
-                  <SortableContext 
-                    items={category.children.map(child => child.id)}
+                  <SortableContext
+                    items={category.children.map((child) => child.id)}
                     strategy={verticalListSortingStrategy}
                   >
                     {category.children.map((child: Category) => (
@@ -210,14 +214,9 @@ interface SortableChildCategoryProps {
 }
 
 function SortableChildCategory({ category, onEdit, onDelete, t }: SortableChildCategoryProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: category.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: category.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -229,7 +228,7 @@ function SortableChildCategory({ category, onEdit, onDelete, t }: SortableChildC
     <Card
       ref={setNodeRef}
       style={style}
-      className="border border-gray-200 hover:border-brand/60 transition-all duration-300"
+      className="hover:border-brand/60 border border-gray-200 transition-all duration-300"
     >
       <CardBody className="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -242,15 +241,13 @@ function SortableChildCategory({ category, onEdit, onDelete, t }: SortableChildC
             >
               <GripVertical className="h-4 w-4" />
             </button>
-            
+
             <div
               className="mr-3 h-4 w-4 rounded-full shadow-sm"
               style={{ backgroundColor: category.color }}
             ></div>
             <div>
-              <h5 className="line-clamp-2 font-semibold text-gray-900">
-                {category.name}
-              </h5>
+              <h5 className="line-clamp-2 font-semibold text-gray-900">{category.name}</h5>
 
               <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
                 <span>
@@ -262,11 +259,7 @@ function SortableChildCategory({ category, onEdit, onDelete, t }: SortableChildC
             </div>
           </div>
           <div className="flex space-x-2">
-            <Button
-              variant="back"
-              size="sm"
-              onClick={() => onEdit(category)}
-            >
+            <Button variant="back" size="sm" onClick={() => onEdit(category)}>
               <Edit className="mr-1 h-3 w-3" />
               {t('common.edit')}
             </Button>
@@ -324,7 +317,7 @@ export function Categories({ onDataChange }: CategoriesProps) {
     try {
       const categoriesData = await apiGet<Category[]>('/api/categories');
       setCategories(categoriesData);
-      
+
       // Set all categories with children as collapsed by default
       const categoriesWithChildren = categoriesData
         .filter((cat: Category) => cat.children && cat.children.length > 0)
@@ -339,7 +332,7 @@ export function Categories({ onDataChange }: CategoriesProps) {
 
   // Toggle collapse state for a category
   const toggleCategoryCollapse = (categoryId: string) => {
-    setCollapsedCategories(prev => {
+    setCollapsedCategories((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(categoryId)) {
         newSet.delete(categoryId);
@@ -403,31 +396,31 @@ export function Categories({ onDataChange }: CategoriesProps) {
     }
 
     // Update local state optimistically
-    setCategories(prevCategories => {
+    setCategories((prevCategories) => {
       const newCategories = [...prevCategories];
 
       if (activeParentId === null) {
         // Reordering root categories
-        const activeIndex = newCategories.findIndex(cat => cat.id === activeId);
-        const overIndex = newCategories.findIndex(cat => cat.id === overId);
-        
+        const activeIndex = newCategories.findIndex((cat) => cat.id === activeId);
+        const overIndex = newCategories.findIndex((cat) => cat.id === overId);
+
         if (activeIndex !== -1 && overIndex !== -1) {
           const reorderedCategories = arrayMove(newCategories, activeIndex, overIndex);
           return reorderedCategories;
         }
       } else {
         // Reordering child categories
-        const parentIndex = newCategories.findIndex(cat => cat.id === activeParentId);
+        const parentIndex = newCategories.findIndex((cat) => cat.id === activeParentId);
         if (parentIndex !== -1 && newCategories[parentIndex].children) {
           const children = [...newCategories[parentIndex].children!];
-          const activeIndex = children.findIndex(child => child.id === activeId);
-          const overIndex = children.findIndex(child => child.id === overId);
-          
+          const activeIndex = children.findIndex((child) => child.id === activeId);
+          const overIndex = children.findIndex((child) => child.id === overId);
+
           if (activeIndex !== -1 && overIndex !== -1) {
             const reorderedChildren = arrayMove(children, activeIndex, overIndex);
             newCategories[parentIndex] = {
               ...newCategories[parentIndex],
-              children: reorderedChildren
+              children: reorderedChildren,
             };
           }
         }
@@ -442,32 +435,32 @@ export function Categories({ onDataChange }: CategoriesProps) {
 
       if (activeParentId === null) {
         // Reordering root categories
-        const rootCategories = categories.filter(cat => !cat.parentId);
-        const activeIndex = rootCategories.findIndex(cat => cat.id === activeId);
-        const overIndex = rootCategories.findIndex(cat => cat.id === overId);
-        
+        const rootCategories = categories.filter((cat) => !cat.parentId);
+        const activeIndex = rootCategories.findIndex((cat) => cat.id === activeId);
+        const overIndex = rootCategories.findIndex((cat) => cat.id === overId);
+
         if (activeIndex !== -1 && overIndex !== -1) {
           const reorderedCategories = arrayMove(rootCategories, activeIndex, overIndex);
           reorderData = reorderedCategories.map((cat, index) => ({
             id: cat.id,
             order: index.toString(),
-            parentId: null
+            parentId: null,
           }));
         }
       } else {
         // Reordering child categories
-        const parentCategory = categories.find(cat => cat.id === activeParentId);
+        const parentCategory = categories.find((cat) => cat.id === activeParentId);
         if (parentCategory && parentCategory.children) {
           const children = [...parentCategory.children];
-          const activeIndex = children.findIndex(child => child.id === activeId);
-          const overIndex = children.findIndex(child => child.id === overId);
-          
+          const activeIndex = children.findIndex((child) => child.id === activeId);
+          const overIndex = children.findIndex((child) => child.id === overId);
+
           if (activeIndex !== -1 && overIndex !== -1) {
             const reorderedChildren = arrayMove(children, activeIndex, overIndex);
             reorderData = reorderedChildren.map((child, index) => ({
               id: child.id,
               order: index.toString(),
-              parentId: activeParentId
+              parentId: activeParentId,
             }));
           }
         }
@@ -615,103 +608,104 @@ export function Categories({ onDataChange }: CategoriesProps) {
       </div>
 
       {/* Category Form Modal */}
-      {showCategoryForm && createPortal(
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowCategoryForm(false);
-              resetForm();
-            }
-          }}
-        >
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold">
-                {editingCategory
-                  ? t('common.update') + ' ' + t('admin.categories')
-                  : t('admin.category.new')}
-              </h2>
+      {showCategoryForm &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowCategoryForm(false);
+                resetForm();
+              }
+            }}
+          >
+            <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">
+                  {editingCategory
+                    ? t('common.update') + ' ' + t('admin.categories')
+                    : t('admin.category.new')}
+                </h2>
+              </div>
+
+              <form
+                id="category-form"
+                onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('admin.category.name')}</label>
+                  <Input
+                    placeholder={t('admin.category.namePlaceholder')}
+                    value={categoryForm.name}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('admin.category.color')}</label>
+                  <Input
+                    type="color"
+                    value={categoryForm.color}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, color: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('admin.parentCategory')}</label>
+                  <Select
+                    value={categoryForm.parentId || 'none'}
+                    onValueChange={(value) =>
+                      setCategoryForm({
+                        ...categoryForm,
+                        parentId: value === 'none' ? '' : value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="focus:ring-brand/20 bg-white transition-colors focus:ring-2">
+                      <SelectValue placeholder={'Select a parent category (optional)'} />
+                    </SelectTrigger>
+                    <SelectContent className="z-[80]">
+                      <SelectItem value="none">{t('admin.category.noParentRoot')}</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="h-3 w-3 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            {category.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {categoryError && <p className="text-sm text-red-600">{categoryError}</p>}
+
+                <div className="mt-6 flex justify-end gap-2">
+                  <Button variant="back" onClick={resetForm}>
+                    {t('common.cancel')}
+                  </Button>
+                  <Button type="submit" variant="primary" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        {editingCategory ? t('common.update') + '...' : t('common.create') + '...'}
+                      </>
+                    ) : editingCategory ? (
+                      t('common.update')
+                    ) : (
+                      t('common.create')
+                    )}
+                  </Button>
+                </div>
+              </form>
             </div>
-
-            <form
-              id="category-form"
-              onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t('admin.category.name')}</label>
-                <Input
-                  placeholder={t('admin.category.namePlaceholder')}
-                  value={categoryForm.name}
-                  onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t('admin.category.color')}</label>
-                <Input
-                  type="color"
-                  value={categoryForm.color}
-                  onChange={(e) => setCategoryForm({ ...categoryForm, color: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t('admin.parentCategory')}</label>
-                <Select
-                  value={categoryForm.parentId || 'none'}
-                  onValueChange={(value) =>
-                    setCategoryForm({
-                      ...categoryForm,
-                      parentId: value === 'none' ? '' : value,
-                    })
-                  }
-                >
-                  <SelectTrigger className="focus:ring-brand/20 bg-white transition-colors focus:ring-2">
-                    <SelectValue placeholder={'Select a parent category (optional)'} />
-                  </SelectTrigger>
-                  <SelectContent className="z-[80]">
-                    <SelectItem value="none">{t('admin.category.noParentRoot')}</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-3 w-3 rounded-full"
-                            style={{ backgroundColor: category.color }}
-                          />
-                          {category.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {categoryError && <p className="text-sm text-red-600">{categoryError}</p>}
-
-              <div className="mt-6 flex justify-end gap-2">
-                <Button variant="back" onClick={resetForm}>
-                  {t('common.cancel')}
-                </Button>
-                <Button type="submit" variant="primary" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      {editingCategory ? t('common.update') + '...' : t('common.create') + '...'}
-                    </>
-                  ) : editingCategory ? (
-                    t('common.update')
-                  ) : (
-                    t('common.create')
-                  )}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
 
       <div className="grid gap-4 sm:gap-6">
         {categories.length === 0 ? (
@@ -736,16 +730,6 @@ export function Categories({ onDataChange }: CategoriesProps) {
               },
             } as const;
 
-            const itemVariants = {
-              hidden: { opacity: 0, y: 14, scale: 0.99 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 },
-              },
-            } as const;
-
             return (
               <DndContext
                 sensors={sensors}
@@ -753,7 +737,7 @@ export function Categories({ onDataChange }: CategoriesProps) {
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={categories.map(cat => cat.id)}
+                  items={categories.map((cat) => cat.id)}
                   strategy={verticalListSortingStrategy}
                 >
                   <motion.div
@@ -782,78 +766,82 @@ export function Categories({ onDataChange }: CategoriesProps) {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div
-            className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold">{t('admin.category.deleteTitle')}</h2>
-            </div>
-            <p className="mb-2 text-gray-600">
-              {t('admin.category.deleteConfirm')} &quot;{showDeleteConfirm?.name}&quot;{t('admin.category.deleteConfirmSuffix')}
-            </p>
+      {showDeleteConfirm &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+            <div
+              className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">{t('admin.category.deleteTitle')}</h2>
+              </div>
+              <p className="mb-2 text-gray-600">
+                {t('admin.category.deleteConfirm')} &quot;{showDeleteConfirm?.name}&quot;
+                {t('admin.category.deleteConfirmSuffix')}
+              </p>
 
-            {deleteError && (
-              <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <XCircle className="h-5 w-5 text-red-400" />
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">{t('admin.category.cannotDeleteTitle')}</h3>
-                    <div className="mt-2 text-sm text-red-700">
-                      <p>{deleteError}</p>
-                      {deleteError.includes('articles') && (
-                        <div className="mt-2">
-                          <p className="font-medium">{t('admin.category.deleteInstructions')}</p>
-                          <ul className="mt-1 list-inside list-disc space-y-1">
-                            <li>{t('admin.category.moveArticles')}</li>
-                            <li>{t('admin.category.deleteArticles')}</li>
-                          </ul>
-                        </div>
-                      )}
+              {deleteError && (
+                <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <XCircle className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">
+                        {t('admin.category.cannotDeleteTitle')}
+                      </h3>
+                      <div className="mt-2 text-sm text-red-700">
+                        <p>{deleteError}</p>
+                        {deleteError.includes('articles') && (
+                          <div className="mt-2">
+                            <p className="font-medium">{t('admin.category.deleteInstructions')}</p>
+                            <ul className="mt-1 list-inside list-disc space-y-1">
+                              <li>{t('admin.category.moveArticles')}</li>
+                              <li>{t('admin.category.deleteArticles')}</li>
+                            </ul>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowDeleteConfirm(null);
-                  setDeleteError(null);
-                }}
-                disabled={isDeleting}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => showDeleteConfirm && handleDeleteCategory(showDeleteConfirm)}
-                className="border-red-600 text-red-600 hover:bg-red-50"
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
-                    {t('admin.category.deleting')}
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="mr-1 h-4 w-4" />
-                    {t('common.delete')}
-                  </>
-                )}
-              </Button>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowDeleteConfirm(null);
+                    setDeleteError(null);
+                  }}
+                  disabled={isDeleting}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => showDeleteConfirm && handleDeleteCategory(showDeleteConfirm)}
+                  className="border-red-600 text-red-600 hover:bg-red-50"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+                      {t('admin.category.deleting')}
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      {t('common.delete')}
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

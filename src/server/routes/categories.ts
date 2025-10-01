@@ -2,7 +2,11 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware, AuthenticatedRequest } from '../middleware';
 import { categoriesService, adminService } from '../services';
 import { CommonError, CategoryError } from '@/types/shared';
-import { CreateCategoryRequest, UpdateCategoryRequest, ReorderCategoriesRequest } from '@/types/shared/category';
+import {
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
+  ReorderCategoriesRequest,
+} from '@/types/shared/category';
 import { ok, fail } from '../utils/response';
 
 export async function categoryRoutes(fastify: FastifyInstance) {
@@ -61,7 +65,6 @@ export async function categoryRoutes(fastify: FastifyInstance) {
     },
     async (request: FastifyRequest<{ Body: ReorderCategoriesRequest }>, reply: FastifyReply) => {
       try {
-        const authRequest = request as AuthenticatedRequest;
         const body = request.body as ReorderCategoriesRequest;
         await categoriesService.reorderCategories(body);
         return reply.send(ok({ message: 'Categories reordered successfully' }));

@@ -81,26 +81,26 @@ export function RelatedArticlesSidebar({ articleId, initialArticles = [] }: Prop
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex flex-wrap gap-1">
                     {(a.categories || []).slice(0, 1).map((category) => (
-                    <button
-                      key={category.id}
-                      className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
-                      style={{
-                        backgroundColor: `${category.color}15`,
-                        color: category.color,
-                      }}
-                    >
-                      <div
-                        className="mr-2 h-2 w-2 rounded-full"
-                        style={{ backgroundColor: category.color }}
-                      />
-                      {category.name}
-                    </button>
-                  ))}
-                  {(a.categories || []).length > 1 && (
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1.5 text-[10px] font-semibold text-gray-600 sm:px-3 sm:text-xs">
-                      +{(a.categories || []).length - 1}
-                    </span>
-                  )}
+                      <button
+                        key={category.id}
+                        className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold sm:px-3 sm:text-xs"
+                        style={{
+                          backgroundColor: `${category.color}15`,
+                          color: category.color,
+                        }}
+                      >
+                        <div
+                          className="mr-2 h-2 w-2 rounded-full"
+                          style={{ backgroundColor: category.color }}
+                        />
+                        {category.name}
+                      </button>
+                    ))}
+                    {(a.categories || []).length > 1 && (
+                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1.5 text-[10px] font-semibold text-gray-600 sm:px-3 sm:text-xs">
+                        +{(a.categories || []).length - 1}
+                      </span>
+                    )}
                   </div>
                   <span className="inline-flex items-center text-xs text-gray-600">
                     <Eye className="mr-1 h-3 w-3" />

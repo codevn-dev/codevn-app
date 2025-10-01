@@ -201,7 +201,7 @@ function ArticlesContent() {
             content: (target as any).content || '',
             slug: target.slug,
             thumbnail: target.thumbnail || '',
-            categoryIds: target.categories.map(cat => cat.id),
+            categoryIds: target.categories.map((cat) => cat.id),
             published: target.published,
           });
           setShowArticleForm(true);
@@ -296,7 +296,7 @@ function ArticlesContent() {
       content: (article as any).content || '',
       slug: article.slug,
       thumbnail: article.thumbnail || '',
-      categoryIds: article.categories.map(cat => cat.id),
+      categoryIds: article.categories.map((cat) => cat.id),
       published: article.published,
     });
     setShowArticleForm(true);
@@ -425,10 +425,12 @@ function ArticlesContent() {
                   {t('myArticles.noArticlesFound')}
                 </h3>
                 <p className="mb-4 text-gray-700">{t('myArticles.startSharingKnowledge')}</p>
-                <Button onClick={() => {
-                  setEditingArticle(null);
-                  setShowArticleForm(true);
-                }}>
+                <Button
+                  onClick={() => {
+                    setEditingArticle(null);
+                    setShowArticleForm(true);
+                  }}
+                >
                   <Plus className="mr-1 h-4 w-4" />
                   {t('myArticles.newArticle')}
                 </Button>

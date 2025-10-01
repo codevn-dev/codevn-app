@@ -1,5 +1,13 @@
 import { getDb } from '..';
-import { articles, comments, reactions, categories, users, articleViews, articleCategories } from '../schema';
+import {
+  articles,
+  comments,
+  reactions,
+  categories,
+  users,
+  articleViews,
+  articleCategories,
+} from '../schema';
 import { and, eq, or, ilike, isNull, sql, count, inArray, exists, gte } from 'drizzle-orm';
 import { Article as SharedArticle } from '@/types/shared/article';
 import { ArticleFilters, PaginatedArticles, ArticleInsertReturning } from '@/types/shared/article';
@@ -308,23 +316,21 @@ export class ArticleRepository {
     const userLikesSet = new Set((userLikesRows as any[]).map((r) => r.articleId));
     const userUnlikesSet = new Set((userUnlikesRows as any[]).map((r) => r.articleId));
 
-    const articlesWithCounts: SharedArticle[] = articlesData.map(
-      (article) => {
-        const { articleCategories, ...articleData } = article as any;
-        return {
-          ...articleData,
-          categories: articleCategories?.map((ac: any) => ac.category) || [],
-          views: viewsMap.get(article.id) || 0,
-          _count: {
-            comments: commentsMap.get(article.id) || 0,
-            likes: likesMap.get(article.id) || 0,
-            unlikes: unlikesMap.get(article.id) || 0,
-          },
-          userHasLiked: userId ? userLikesSet.has(article.id) : false,
-          userHasUnliked: userId ? userUnlikesSet.has(article.id) : false,
-        } as unknown as SharedArticle;
-      }
-    );
+    const articlesWithCounts: SharedArticle[] = articlesData.map((article) => {
+      const { articleCategories, ...articleData } = article as any;
+      return {
+        ...articleData,
+        categories: articleCategories?.map((ac: any) => ac.category) || [],
+        views: viewsMap.get(article.id) || 0,
+        _count: {
+          comments: commentsMap.get(article.id) || 0,
+          likes: likesMap.get(article.id) || 0,
+          unlikes: unlikesMap.get(article.id) || 0,
+        },
+        userHasLiked: userId ? userLikesSet.has(article.id) : false,
+        userHasUnliked: userId ? userUnlikesSet.has(article.id) : false,
+      } as unknown as SharedArticle;
+    });
 
     return {
       articles: articlesWithCounts,
@@ -347,7 +353,7 @@ export class ArticleRepository {
     published?: boolean;
   }): Promise<ArticleInsertReturning[]> {
     const db = getDb();
-    
+
     // Create article first
     const createdArticles = await db
       .insert(articles)
@@ -373,11 +379,11 @@ export class ArticleRepository {
 
     // Create article-category relationships
     if (articleData.categoryIds.length > 0 && createdArticles[0]) {
-      const articleCategoryValues = articleData.categoryIds.map(categoryId => ({
+      const articleCategoryValues = articleData.categoryIds.map((categoryId) => ({
         articleId: createdArticles[0].id,
         categoryId: categoryId,
       }));
-      
+
       await db.insert(articleCategories).values(articleCategoryValues);
     }
 
@@ -397,7 +403,7 @@ export class ArticleRepository {
   ): Promise<Awaited<ReturnType<ArticleRepository['findById']>>> {
     const db = getDb();
     const { categoryIds, ...articleData } = updateData;
-    
+
     // Update article data if provided
     if (Object.keys(articleData).length > 0) {
       const dataToUpdate = { ...articleData, updatedAt: new Date() };
@@ -408,14 +414,14 @@ export class ArticleRepository {
     if (categoryIds !== undefined) {
       // Remove existing category relationships
       await db.delete(articleCategories).where(eq(articleCategories.articleId, id));
-      
+
       // Add new category relationships
       if (categoryIds.length > 0) {
-        const articleCategoryValues = categoryIds.map(categoryId => ({
+        const articleCategoryValues = categoryIds.map((categoryId) => ({
           articleId: id,
           categoryId: categoryId,
         }));
-        
+
         await db.insert(articleCategories).values(articleCategoryValues);
       }
     }
@@ -600,23 +606,21 @@ export class ArticleRepository {
     const userLikesSet = new Set((userLikesRows as any[]).map((r) => r.articleId));
     const userUnlikesSet = new Set((userUnlikesRows as any[]).map((r) => r.articleId));
 
-    const enriched: SharedArticle[] = articlesData.map(
-      (article) => {
-        const { articleCategories, ...articleData } = article as any;
-        return {
-          ...articleData,
-          categories: articleCategories?.map((ac: any) => ac.category) || [],
-          views: viewsMap.get(article.id) || 0,
-          _count: {
-            comments: commentsMap.get(article.id) || 0,
-            likes: likesMap.get(article.id) || 0,
-            unlikes: unlikesMap.get(article.id) || 0,
-          },
-          userHasLiked: userId ? userLikesSet.has(article.id) : false,
-          userHasUnliked: userId ? userUnlikesSet.has(article.id) : false,
-        } as unknown as SharedArticle;
-      }
-    );
+    const enriched: SharedArticle[] = articlesData.map((article) => {
+      const { articleCategories, ...articleData } = article as any;
+      return {
+        ...articleData,
+        categories: articleCategories?.map((ac: any) => ac.category) || [],
+        views: viewsMap.get(article.id) || 0,
+        _count: {
+          comments: commentsMap.get(article.id) || 0,
+          likes: likesMap.get(article.id) || 0,
+          unlikes: unlikesMap.get(article.id) || 0,
+        },
+        userHasLiked: userId ? userLikesSet.has(article.id) : false,
+        userHasUnliked: userId ? userUnlikesSet.has(article.id) : false,
+      } as unknown as SharedArticle;
+    });
 
     // Preserve input order
     const order = new Map(ids.map((id, idx) => [id, idx] as const));

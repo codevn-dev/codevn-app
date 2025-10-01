@@ -89,7 +89,7 @@ export class CategoriesService extends BaseService {
   async reorderCategories(reorderData: ReorderCategoriesRequest): Promise<void> {
     try {
       await categoryRepository.reorderCategories(reorderData.categories);
-      
+
       // Clear cache after reordering
       try {
         const redis = getRedis();

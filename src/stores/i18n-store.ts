@@ -207,14 +207,20 @@ const store: Dictionary = {
   'articles.form.category': { en: 'Category', vi: 'Danh mục' },
   'articles.form.selectCategory': { en: 'Select a category', vi: 'Chọn danh mục' },
   'articles.form.selectCategories': { en: 'Select categories', vi: 'Chọn danh mục' },
-  'articles.form.pleaseSelectCategory': { en: 'Please select at least one category', vi: 'Vui lòng chọn ít nhất một danh mục' },
+  'articles.form.pleaseSelectCategory': {
+    en: 'Please select at least one category',
+    vi: 'Vui lòng chọn ít nhất một danh mục',
+  },
   'articles.form.content': { en: 'Content', vi: 'Nội dung' },
   'articles.form.publishNow': { en: 'Publish immediately', vi: 'Xuất bản ngay' },
   'articles.form.slugAvailable': { en: 'Available', vi: 'Có thể sử dụng' },
   'articles.form.slugTaken': { en: 'Already taken', vi: 'Đã được sử dụng' },
   'articles.form.slugChecking': { en: 'Checking...', vi: 'Đang kiểm tra...' },
   'articles.form.slugInvalid': { en: 'Invalid slug format', vi: 'Định dạng slug không hợp lệ' },
-  'articles.form.slugCheckFailed': { en: 'Failed to check slug availability', vi: 'Không thể kiểm tra slug' },
+  'articles.form.slugCheckFailed': {
+    en: 'Failed to check slug availability',
+    vi: 'Không thể kiểm tra slug',
+  },
 
   // Profile
   'profile.notFound': { en: 'Profile not found', vi: 'Không tìm thấy hồ sơ' },
@@ -390,8 +396,14 @@ const store: Dictionary = {
     en: '? This action cannot be undone.',
     vi: '? Hành động này không thể hoàn tác.',
   },
-  'admin.category.cannotDeleteTitle': { en: 'Cannot Delete Category', vi: 'Không thể xóa danh mục' },
-  'admin.category.deleteInstructions': { en: 'To delete this category:', vi: 'Để xóa danh mục này:' },
+  'admin.category.cannotDeleteTitle': {
+    en: 'Cannot Delete Category',
+    vi: 'Không thể xóa danh mục',
+  },
+  'admin.category.deleteInstructions': {
+    en: 'To delete this category:',
+    vi: 'Để xóa danh mục này:',
+  },
   'admin.category.moveArticles': {
     en: 'Move all articles to another category, or',
     vi: 'Chuyển tất cả bài viết sang danh mục khác, hoặc',

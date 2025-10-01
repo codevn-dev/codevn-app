@@ -146,51 +146,52 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteSystemUserConfirm && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div
-            className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold">{t('admin.systemUser.deleteTitle')}</h2>
+      {showDeleteSystemUserConfirm &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+            <div
+              className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">{t('admin.systemUser.deleteTitle')}</h2>
+              </div>
+              <p className="mb-6 text-gray-600">
+                {t('admin.systemUser.deleteConfirm')} &quot;{showDeleteSystemUserConfirm.name}
+                &quot;
+                {t('admin.systemUser.deleteConfirmSuffix')}
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteSystemUserConfirm(null)}
+                  disabled={isDeletingSystemUser}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleDeleteSystemUser(showDeleteSystemUserConfirm)}
+                  className="border-red-600 text-red-600 hover:bg-red-50"
+                  disabled={isDeletingSystemUser}
+                >
+                  {isDeletingSystemUser ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+                      {t('common.saving')}
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      {t('common.delete')}
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-            <p className="mb-6 text-gray-600">
-              {t('admin.systemUser.deleteConfirm')} &quot;{showDeleteSystemUserConfirm.name}
-              &quot;
-              {t('admin.systemUser.deleteConfirmSuffix')}
-            </p>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteSystemUserConfirm(null)}
-                disabled={isDeletingSystemUser}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleDeleteSystemUser(showDeleteSystemUserConfirm)}
-                className="border-red-600 text-red-600 hover:bg-red-50"
-                disabled={isDeletingSystemUser}
-              >
-                {isDeletingSystemUser ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
-                    {t('common.saving')}
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="mr-1 h-4 w-4" />
-                    {t('common.delete')}
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

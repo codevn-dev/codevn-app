@@ -420,7 +420,7 @@ export function HomepageContent({
                 getCategoryById={getCategoryById}
                 getCategoryByName={getCategoryByName}
               />
-              
+
               <ArticlesList
                 articles={articles}
                 selectedCategoryNames={selectedCategoryNames}

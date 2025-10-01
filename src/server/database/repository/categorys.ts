@@ -1,5 +1,5 @@
 import { getDb } from '..';
-import { categories, articles, articleCategories } from '../schema';
+import { categories, articleCategories } from '../schema';
 import { eq, count, and, isNull, sql } from 'drizzle-orm';
 import { CategoryWithCounts } from '@/types/shared/category';
 
@@ -233,12 +233,12 @@ export class CategoryRepository {
         .select({ order: categories.order })
         .from(categories)
         .where(
-          categoryData.parentId 
+          categoryData.parentId
             ? eq(categories.parentId, categoryData.parentId)
             : isNull(categories.parentId)
         )
         .orderBy(categories.order);
-      
+
       // Generate next order value
       const lastOrder = existingCategories[existingCategories.length - 1]?.order || '0';
       const nextOrderNum = parseInt(lastOrder) + 1;
@@ -351,18 +351,20 @@ export class CategoryRepository {
     return rows.map((r) => r.id);
   }
 
-  async reorderCategories(reorderData: Array<{ id: string; order: string; parentId?: string | null }>): Promise<void> {
+  async reorderCategories(
+    reorderData: Array<{ id: string; order: string; parentId?: string | null }>
+  ): Promise<void> {
     const db = getDb();
-    
+
     // Use transaction to ensure all updates succeed or fail together
     await db.transaction(async (tx) => {
       for (const item of reorderData) {
         await tx
           .update(categories)
-          .set({ 
+          .set({
             order: item.order,
             parentId: item.parentId,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(categories.id, item.id));
       }

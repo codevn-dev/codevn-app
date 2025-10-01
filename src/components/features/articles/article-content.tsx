@@ -128,13 +128,6 @@ import {
 } from '@/types/shared/article';
 import { Category } from '@/types/shared/category';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 // Dynamic imports for edit modal components
 const TiptapRichTextEditor = dynamic(
   () => import('@/features/articles').then((m) => ({ default: m.TiptapRichTextEditor })),
@@ -217,7 +210,7 @@ export function ArticleContent({
     content: article.content,
     slug: article.slug,
     thumbnail: article.thumbnail || '',
-    categoryIds: (article.categories || []).map(cat => cat.id),
+    categoryIds: (article.categories || []).map((cat) => cat.id),
     published: article.published,
   });
 
@@ -475,7 +468,7 @@ export function ArticleContent({
       content: article.content,
       slug: article.slug,
       thumbnail: article.thumbnail || '',
-      categoryIds: (article.categories || []).map(cat => cat.id),
+      categoryIds: (article.categories || []).map((cat) => cat.id),
       published: article.published,
     });
     setIsEditOpen(true);
@@ -862,7 +855,10 @@ export function ArticleContent({
                     ) : (
                       <div className="space-y-2">
                         {categories.map((category) => (
-                          <label key={category.id} className="flex cursor-pointer items-center gap-2">
+                          <label
+                            key={category.id}
+                            className="flex cursor-pointer items-center gap-2"
+                          >
                             <input
                               type="checkbox"
                               checked={editForm.categoryIds.includes(category.id)}
@@ -875,7 +871,9 @@ export function ArticleContent({
                                 } else {
                                   setEditForm({
                                     ...editForm,
-                                    categoryIds: editForm.categoryIds.filter(id => id !== category.id),
+                                    categoryIds: editForm.categoryIds.filter(
+                                      (id) => id !== category.id
+                                    ),
                                   });
                                 }
                               }}
@@ -889,7 +887,9 @@ export function ArticleContent({
                           </label>
                         ))}
                         {editForm.categoryIds.length === 0 && (
-                          <p className="text-sm text-red-500">{t('articles.form.pleaseSelectCategory')}</p>
+                          <p className="text-sm text-red-500">
+                            {t('articles.form.pleaseSelectCategory')}
+                          </p>
                         )}
                       </div>
                     )}

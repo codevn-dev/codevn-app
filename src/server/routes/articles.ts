@@ -3,7 +3,11 @@ import { authMiddleware, AuthenticatedRequest, optionalAuthMiddleware } from '..
 import { articlesService } from '../services';
 import { CommonError } from '@/types/shared';
 import { ok, fail } from '../utils/response';
-import { CreateArticleRequest, UpdateArticleRequest, CheckSlugRequest } from '@/types/shared/article';
+import {
+  CreateArticleRequest,
+  UpdateArticleRequest,
+  CheckSlugRequest,
+} from '@/types/shared/article';
 import { ReactionRequest } from '@/types/shared/reaction';
 import {
   CommentQueryParams as CommentQuery,

@@ -5,10 +5,15 @@ loadEnv();
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { randomUUID } from 'crypto';
-import { articles, categories, users } from '../src/server/database/schema';
+import { articles, categories, users, articleCategories } from '../src/server/database/schema';
 
 type Db = ReturnType<
-  typeof drizzle<{ articles: typeof articles; categories: typeof categories; users: typeof users }>
+  typeof drizzle<{
+    articles: typeof articles;
+    categories: typeof categories;
+    users: typeof users;
+    articleCategories: typeof articleCategories;
+  }>
 >;
 
 function pick<T>(arr: T[]): T {
@@ -228,29 +233,66 @@ async function main() {
     const published = Math.random() < 0.8;
     const createdAt = randomDateWithin(365);
     return {
-      title,
-      content,
-      slug,
-      thumbnail: null,
+      article: {
+        title,
+        content,
+        slug,
+        thumbnail: null,
+        authorId,
+        published,
+        createdAt,
+      },
       categoryId,
-      authorId,
-      published,
-      createdAt,
     };
   });
 
   const chunkSize = 200;
   let inserted = 0;
+  const articleCategoryRecords: Array<{ articleId: string; categoryId: string }> = [];
+
   for (let i = 0; i < records.length; i += chunkSize) {
     const chunk = records.slice(i, i + chunkSize);
-    await (db as any).insert(articles).values(chunk).onConflictDoNothing({ target: articles.slug });
+    const articleRecords = chunk.map((r) => r.article);
+
+    // Insert articles and get their IDs
+    const insertedArticles = await (db as any)
+      .insert(articles)
+      .values(articleRecords)
+      .onConflictDoNothing({ target: articles.slug })
+      .returning({ id: articles.id, slug: articles.slug });
+
+    // Create articleCategories records for the inserted articles
+    for (let j = 0; j < insertedArticles.length; j++) {
+      const insertedArticle = insertedArticles[j];
+      const originalRecord = chunk.find((r) => r.article.slug === insertedArticle.slug);
+      if (originalRecord && insertedArticle.id) {
+        articleCategoryRecords.push({
+          articleId: insertedArticle.id,
+          categoryId: originalRecord.categoryId,
+        });
+      }
+    }
+
     inserted += chunk.length;
     // eslint-disable-next-line no-console
-    console.log(`Inserted ${Math.min(inserted, records.length)} / ${records.length}`);
+    console.log(`Inserted ${Math.min(inserted, records.length)} / ${records.length} articles`);
+  }
+
+  // Insert article-category relationships
+  if (articleCategoryRecords.length > 0) {
+    console.log(`Creating ${articleCategoryRecords.length} article-category relationships...`);
+    const categoryChunkSize = 500;
+    for (let i = 0; i < articleCategoryRecords.length; i += categoryChunkSize) {
+      const chunk = articleCategoryRecords.slice(i, i + categoryChunkSize);
+      await (db as any).insert(articleCategories).values(chunk).onConflictDoNothing();
+      console.log(
+        `Inserted ${Math.min(i + categoryChunkSize, articleCategoryRecords.length)} / ${articleCategoryRecords.length} relationships`
+      );
+    }
   }
 
   // eslint-disable-next-line no-console
-  console.log(`Done. Seeded up to ${records.length} articles (skipped existing by slug).`);
+  console.log(`Done. Seeded up to ${records.length} articles with category relationships.`);
 }
 
 main()
