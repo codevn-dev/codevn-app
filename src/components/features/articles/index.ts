@@ -5,7 +5,7 @@ export { CodeHighlighter } from './code-highlighter';
 export * from './category-utils';
 export { ShareMenu } from './share-menu';
 export { RelatedArticlesSidebar } from './related-articles-sidebar';
-export { MyArticlesHeader as ArticlesHeader } from './articles-header';
+export { ArticlesHeader as ArticlesHeader } from './articles-header';
 export { ArticlesControls } from './articles-controls';
 export { ArticlesGrid } from './articles-grid';
 export { ArticlesFormModal } from './articles-form-modal';

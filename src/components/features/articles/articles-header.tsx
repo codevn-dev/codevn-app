@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useI18n } from '@/components/providers';
 
-interface MyArticlesHeaderProps {
+interface ArticlesHeaderProps {
   totalItems: number;
   onCreate: () => void;
 }
 
-export function MyArticlesHeader({ totalItems, onCreate }: MyArticlesHeaderProps) {
+export function ArticlesHeader({ totalItems, onCreate }: ArticlesHeaderProps) {
   const { t } = useI18n();
 
   return (
