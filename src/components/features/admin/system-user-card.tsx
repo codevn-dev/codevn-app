@@ -52,7 +52,7 @@ export function SystemUserCard({ systemUser, onEdit, onDelete, onAction }: Syste
               variant="back"
               size="sm"
               onClick={() => onDelete(systemUser)}
-              className="border-destructive text-destructive hover:bg-destructive/10"
+              className="border-red-600 text-red-600 hover:bg-red-50"
             >
               <Trash2 className="mr-1 h-4 w-4" />
               {t('common.delete')}

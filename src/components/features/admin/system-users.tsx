@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Plus, Users, Trash2 } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -145,7 +146,7 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteSystemUserConfirm && (
+      {showDeleteSystemUserConfirm && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
           <div
             className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
@@ -170,12 +171,12 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
               <Button
                 variant="outline"
                 onClick={() => handleDeleteSystemUser(showDeleteSystemUserConfirm)}
-                className="border-destructive text-destructive hover:bg-destructive/10"
+                className="border-red-600 text-red-600 hover:bg-red-50"
                 disabled={isDeletingSystemUser}
               >
                 {isDeletingSystemUser ? (
                   <>
-                    <div className="border-destructive mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
                     {t('common.saving')}
                   </>
                 ) : (
@@ -187,7 +188,8 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

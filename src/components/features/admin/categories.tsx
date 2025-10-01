@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
@@ -19,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Tag, Edit, Trash2, XCircle } from 'lucide-react';
+import { Plus, Tag, Edit, Trash2, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { motion } from 'framer-motion';
 import { RoleLevel } from '@/types/shared/roles';
@@ -52,6 +53,7 @@ export function Categories({ onDataChange }: CategoriesProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [categoryError, setCategoryError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
   // Fetch categories data
   const fetchCategories = useCallback(async () => {
@@ -63,12 +65,31 @@ export function Categories({ onDataChange }: CategoriesProps) {
     try {
       const categoriesData = await apiGet<Category[]>('/api/categories');
       setCategories(categoriesData);
+      
+      // Set all categories with children as collapsed by default
+      const categoriesWithChildren = categoriesData
+        .filter((cat: Category) => cat.children && cat.children.length > 0)
+        .map((cat: Category) => cat.id);
+      setCollapsedCategories(new Set(categoriesWithChildren));
     } catch {
       // Error handled silently
     } finally {
       setLoading(false);
     }
   }, [user]);
+
+  // Toggle collapse state for a category
+  const toggleCategoryCollapse = (categoryId: string) => {
+    setCollapsedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId);
+      } else {
+        newSet.add(categoryId);
+      }
+      return newSet;
+    });
+  };
 
   // Fetch data when component mounts
   useEffect(() => {
@@ -199,9 +220,9 @@ export function Categories({ onDataChange }: CategoriesProps) {
       </div>
 
       {/* Category Form Modal */}
-      {showCategoryForm && (
+      {showCategoryForm && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 pt-8 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowCategoryForm(false);
@@ -302,7 +323,8 @@ export function Categories({ onDataChange }: CategoriesProps) {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <div className="grid gap-4 sm:gap-6">
@@ -408,15 +430,32 @@ export function Categories({ onDataChange }: CategoriesProps) {
                       {category.children && category.children.length > 0 && (
                         <CardBody className="pt-0">
                           <div className="rounded-lg bg-gray-50/50 p-6">
-                            <h4 className="mb-4 flex items-center text-sm font-semibold text-gray-700">
-                              <div className="mr-2 h-2 w-2 rounded-full bg-gray-400"></div>
-                              {t('admin.subCategories')} ({category.children.length})
-                            </h4>
-                            <div className="grid gap-3">
-                              {category.children.map((child: Category) => (
+                            <button
+                              onClick={() => toggleCategoryCollapse(category.id)}
+                              className="mb-4 flex w-full items-center justify-between text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+                            >
+                              <div className="flex items-center">
+                                <div className="mr-2 h-2 w-2 rounded-full bg-gray-400"></div>
+                                {t('admin.subCategories')} ({category.children.length})
+                              </div>
+                              {collapsedCategories.has(category.id) ? (
+                                <ChevronRight className="h-4 w-4" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4" />
+                              )}
+                            </button>
+                             {!collapsedCategories.has(category.id) && (
+                               <motion.div
+                                 initial={{ opacity: 0, height: 0 }}
+                                 animate={{ opacity: 1, height: 'auto' }}
+                                 exit={{ opacity: 0, height: 0 }}
+                                 transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                 className="grid gap-3 overflow-hidden"
+                               >
+                                 {category.children.map((child: Category) => (
                                 <Card
                                   key={child.id}
-                                  className="shadow-brand/30 hover:shadow-brand/40 bg-white/90 shadow-2xl drop-shadow-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl"
+                                  className="shadow-brand/30 hover:shadow-brand/40 shadow-2xl drop-shadow-2xl transition-all duration-300 hover:shadow-2xl"
                                 >
                                   <CardBody className="p-4">
                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -466,7 +505,8 @@ export function Categories({ onDataChange }: CategoriesProps) {
                                   </CardBody>
                                 </Card>
                               ))}
-                            </div>
+                                </motion.div>
+                              )}
                           </div>
                         </CardBody>
                       )}

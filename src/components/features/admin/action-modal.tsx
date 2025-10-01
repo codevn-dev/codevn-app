@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -206,10 +207,13 @@ export function ActionModal({ systemUser, onClose }: ActionModalProps) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 pt-8 backdrop-blur-sm">
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
-        className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6"
+        className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4">
@@ -354,6 +358,7 @@ export function ActionModal({ systemUser, onClose }: ActionModalProps) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
