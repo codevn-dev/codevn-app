@@ -113,10 +113,16 @@ export function FeaturedArticles({
                         {formatDateTime(article.createdAt)}
                       </div>
                     </div>
-                    <h3 className="group-hover:text-brand mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-colors duration-300 sm:mb-3 sm:text-xl">
+                    <h3
+                      className="group-hover:text-brand mb-2 line-clamp-2 flex-1 text-lg font-bold text-gray-900 transition-colors duration-300 sm:mb-3 sm:text-xl"
+                      suppressHydrationWarning
+                    >
                       {article.title}
                     </h3>
-                    <div className="group-hover:text-brand flex items-center text-xs text-gray-700 transition-colors duration-300 sm:text-sm">
+                    <div
+                      className="group-hover:text-brand flex items-center text-xs text-gray-700 transition-colors duration-300 sm:text-sm"
+                      suppressHydrationWarning
+                    >
                       <div className="mr-2 sm:mr-3">
                         <Avatar className="h-6 w-6 transition-transform duration-300 group-hover:scale-110">
                           <AvatarImage

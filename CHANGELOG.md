@@ -2,6 +2,23 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.12]() (2025-10-01)
+
+### Featured
+
+- **Articles**
+  - Updated homepage layout
+  - Improved animation
+  - Enhanced article creation flow
+  - Made "Create" button sticky in modal
+
+- **Categories**
+  - Added drag & drop support
+  - Updated ordering and delete button
+  - Improved collapse behavior
+  - Updated category details
+  - Removed descriptions
+
 ## [v0.1.11]() (2025-10-01)
 
 ### Fixed

@@ -75,6 +75,7 @@ export function ArticlesFilters({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={mounted ? t('home.searchPlaceholder') : ''}
             className="focus:ring-brand/20 w-full pl-10 focus:ring-2"
+            suppressHydrationWarning
           />
         </div>
         <div className="flex w-full items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
