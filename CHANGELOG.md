@@ -2,6 +2,19 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.13]() (2025-10-02)
+
+### Featured
+
+- **Articles / Homepage**
+  - Updated About page content on homepage
+
+- **Categories**
+  - Improved category selector
+
+- **Session / Auth**
+  - Updated session to track last active time
+
 ## [v0.1.12]() (2025-10-01)
 
 ### Featured
