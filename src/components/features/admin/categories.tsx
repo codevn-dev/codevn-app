@@ -8,7 +8,26 @@ import { Card, CardHeader, CardBody } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Tag, Edit, Trash2, ChevronDown, ChevronRight, XCircle } from 'lucide-react';
+import { Plus, Tag, Edit, Trash2, ChevronDown, ChevronRight, XCircle, GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { RoleLevel } from '@/types/shared/roles';
 import { Category } from '@/types/shared/category';
@@ -19,6 +38,258 @@ import { formatDateTime } from '@/lib/utils/time-format';
 
 interface CategoriesProps {
   onDataChange?: () => void;
+}
+
+interface SortableCategoryProps {
+  category: Category;
+  onEdit: (category: Category) => void;
+  onDelete: (category: Category) => void;
+  onToggleCollapse: (categoryId: string) => void;
+  isCollapsed: boolean;
+  t: (key: string) => string;
+}
+
+function SortableCategory({ 
+  category, 
+  onEdit, 
+  onDelete, 
+  onToggleCollapse, 
+  isCollapsed, 
+  t 
+}: SortableCategoryProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <motion.div 
+      variants={{
+        hidden: { opacity: 0, y: 14, scale: 0.99 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          transition: { type: 'spring', stiffness: 420, damping: 32, mass: 0.8 },
+        },
+      }}
+    >
+      <Card 
+        ref={setNodeRef} 
+        style={style}
+        className="border border-gray-200 hover:border-brand/60 transition-all duration-300"
+      >
+        <CardHeader className="pb-4">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <div className="flex flex-1 items-center">
+              {/* Drag Handle */}
+              <button
+                className="mr-2 cursor-grab p-1 text-gray-400 hover:text-gray-600 active:cursor-grabbing"
+                {...attributes}
+                {...listeners}
+              >
+                <GripVertical className="h-5 w-5" />
+              </button>
+              
+              <div
+                className="mr-3 h-5 w-5 rounded-full shadow-sm sm:mr-4"
+                style={{ backgroundColor: category.color }}
+              ></div>
+              <div className="flex-1">
+                <div className="mb-2 flex items-center gap-2 sm:gap-3">
+                  <h3 className="line-clamp-2 text-lg font-bold text-gray-900 sm:text-xl">
+                    {category.name}
+                  </h3>
+                  <Badge>{t('admin.rootCategory')}</Badge>
+                </div>
+                {category.description && (
+                  <p className="mb-3 text-sm text-gray-600">{category.description}</p>
+                )}
+                <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500 sm:text-sm">
+                  <span className="font-medium">
+                    {t('admin.createdBy')} {category.createdBy.name}
+                  </span>
+                  <span className="mx-2 hidden sm:inline">•</span>
+                  <span>{formatDateTime(category.createdAt)}</span>
+                  {category.children && category.children.length > 0 && (
+                    <>
+                      <span className="mx-2 hidden sm:inline">•</span>
+                      <span className="text-brand font-medium">
+                        {t('admin.subCategories')} ({category.children.length})
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="ml-0 flex space-x-2 sm:ml-4">
+              <Button
+                variant="back"
+                size="sm"
+                onClick={() => onEdit(category)}
+              >
+                <Edit className="mr-1 h-4 w-4" />
+                {t('common.edit')}
+              </Button>
+              <Button
+                variant="back"
+                size="sm"
+                onClick={() => onDelete(category)}
+                className="border-red-600 text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="mr-1 h-4 w-4" />
+                {t('common.delete')}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        {/* Children Categories */}
+        {category.children && category.children.length > 0 && (
+          <CardBody className="pt-0">
+            <div className="rounded-lg bg-gray-50/50 p-6">
+              <button
+                onClick={() => onToggleCollapse(category.id)}
+                className="mb-4 flex w-full items-center justify-between text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+              >
+                <div className="flex items-center">
+                  <div className="mr-2 h-2 w-2 rounded-full bg-gray-400"></div>
+                  {t('admin.subCategories')} ({category.children.length})
+                </div>
+                {isCollapsed ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+              {!isCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="grid gap-3 overflow-hidden"
+                >
+                  <SortableContext 
+                    items={category.children.map(child => child.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {category.children.map((child: Category) => (
+                      <SortableChildCategory
+                        key={child.id}
+                        category={child}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        t={t}
+                      />
+                    ))}
+                  </SortableContext>
+                </motion.div>
+              )}
+            </div>
+          </CardBody>
+        )}
+      </Card>
+    </motion.div>
+  );
+}
+
+interface SortableChildCategoryProps {
+  category: Category;
+  onEdit: (category: Category) => void;
+  onDelete: (category: Category) => void;
+  t: (key: string) => string;
+}
+
+function SortableChildCategory({ category, onEdit, onDelete, t }: SortableChildCategoryProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className="border border-gray-200 hover:border-brand/60 transition-all duration-300"
+    >
+      <CardBody className="p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center">
+            {/* Drag Handle */}
+            <button
+              className="mr-2 cursor-grab p-1 text-gray-400 hover:text-gray-600 active:cursor-grabbing"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+            
+            <div
+              className="mr-3 h-4 w-4 rounded-full shadow-sm"
+              style={{ backgroundColor: category.color }}
+            ></div>
+            <div>
+              <h5 className="line-clamp-2 font-semibold text-gray-900">
+                {category.name}
+              </h5>
+              {category.description && (
+                <p className="mt-1 text-sm text-gray-600">
+                  {category.description}
+                </p>
+              )}
+              <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
+                <span>
+                  {t('admin.createdBy')} {category.createdBy.name}
+                </span>
+                <span className="mx-2 hidden sm:inline">•</span>
+                <span>{formatDateTime(category.createdAt)}</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              variant="back"
+              size="sm"
+              onClick={() => onEdit(category)}
+            >
+              <Edit className="mr-1 h-3 w-3" />
+              {t('common.edit')}
+            </Button>
+            <Button
+              variant="back"
+              size="sm"
+              onClick={() => onDelete(category)}
+              className="border-red-600 text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="mr-1 h-3 w-3" />
+              {t('common.delete')}
+            </Button>
+          </div>
+        </div>
+      </CardBody>
+    </Card>
+  );
 }
 
 export function Categories({ onDataChange }: CategoriesProps) {
@@ -41,6 +312,14 @@ export function Categories({ onDataChange }: CategoriesProps) {
   const [categoryError, setCategoryError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Fetch categories data
   const fetchCategories = useCallback(async () => {
@@ -76,6 +355,143 @@ export function Categories({ onDataChange }: CategoriesProps) {
       }
       return newSet;
     });
+  };
+
+  // Handle drag end for reordering
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Find the active and over categories
+    let activeCategory: Category | null = null;
+    let overCategory: Category | null = null;
+    let activeParentId: string | null = null;
+    let overParentId: string | null = null;
+
+    // Check if they are root categories
+    for (const category of categories) {
+      if (category.id === activeId) {
+        activeCategory = category;
+        activeParentId = null;
+      }
+      if (category.id === overId) {
+        overCategory = category;
+        overParentId = null;
+      }
+
+      // Check children
+      if (category.children) {
+        for (const child of category.children) {
+          if (child.id === activeId) {
+            activeCategory = child;
+            activeParentId = category.id;
+          }
+          if (child.id === overId) {
+            overCategory = child;
+            overParentId = category.id;
+          }
+        }
+      }
+    }
+
+    if (!activeCategory || !overCategory) {
+      return;
+    }
+
+    // Only allow reordering within the same parent level
+    if (activeParentId !== overParentId) {
+      return;
+    }
+
+    // Update local state optimistically
+    setCategories(prevCategories => {
+      const newCategories = [...prevCategories];
+
+      if (activeParentId === null) {
+        // Reordering root categories
+        const activeIndex = newCategories.findIndex(cat => cat.id === activeId);
+        const overIndex = newCategories.findIndex(cat => cat.id === overId);
+        
+        if (activeIndex !== -1 && overIndex !== -1) {
+          const reorderedCategories = arrayMove(newCategories, activeIndex, overIndex);
+          return reorderedCategories;
+        }
+      } else {
+        // Reordering child categories
+        const parentIndex = newCategories.findIndex(cat => cat.id === activeParentId);
+        if (parentIndex !== -1 && newCategories[parentIndex].children) {
+          const children = [...newCategories[parentIndex].children!];
+          const activeIndex = children.findIndex(child => child.id === activeId);
+          const overIndex = children.findIndex(child => child.id === overId);
+          
+          if (activeIndex !== -1 && overIndex !== -1) {
+            const reorderedChildren = arrayMove(children, activeIndex, overIndex);
+            newCategories[parentIndex] = {
+              ...newCategories[parentIndex],
+              children: reorderedChildren
+            };
+          }
+        }
+      }
+
+      return newCategories;
+    });
+
+    // Prepare reorder data for API
+    try {
+      let reorderData: Array<{ id: string; order: string; parentId?: string | null }> = [];
+
+      if (activeParentId === null) {
+        // Reordering root categories
+        const rootCategories = categories.filter(cat => !cat.parentId);
+        const activeIndex = rootCategories.findIndex(cat => cat.id === activeId);
+        const overIndex = rootCategories.findIndex(cat => cat.id === overId);
+        
+        if (activeIndex !== -1 && overIndex !== -1) {
+          const reorderedCategories = arrayMove(rootCategories, activeIndex, overIndex);
+          reorderData = reorderedCategories.map((cat, index) => ({
+            id: cat.id,
+            order: index.toString(),
+            parentId: null
+          }));
+        }
+      } else {
+        // Reordering child categories
+        const parentCategory = categories.find(cat => cat.id === activeParentId);
+        if (parentCategory && parentCategory.children) {
+          const children = [...parentCategory.children];
+          const activeIndex = children.findIndex(child => child.id === activeId);
+          const overIndex = children.findIndex(child => child.id === overId);
+          
+          if (activeIndex !== -1 && overIndex !== -1) {
+            const reorderedChildren = arrayMove(children, activeIndex, overIndex);
+            reorderData = reorderedChildren.map((child, index) => ({
+              id: child.id,
+              order: index.toString(),
+              parentId: activeParentId
+            }));
+          }
+        }
+      }
+
+      // Send reorder request to API
+      if (reorderData.length > 0) {
+        await apiPost('/api/categories/reorder', { categories: reorderData });
+        // Don't refresh categories to preserve collapse state
+        // The optimistic update already reflects the changes
+        onDataChange?.();
+      }
+    } catch (error) {
+      console.error('Failed to reorder categories:', error);
+      // Revert optimistic update by refetching
+      fetchCategories();
+    }
   };
 
   // Fetch data when component mounts
@@ -348,159 +764,35 @@ export function Categories({ onDataChange }: CategoriesProps) {
             } as const;
 
             return (
-              <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                className="grid gap-4 sm:gap-6"
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                {categories.map((category) => (
-                  <motion.div key={category.id} variants={itemVariants}>
-                    <Card className="shadow-brand/30 hover:shadow-brand/40 shadow-2xl drop-shadow-2xl transition-all duration-300 hover:shadow-2xl">
-                      <CardHeader className="pb-4">
-                        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                          <div className="flex flex-1 items-center">
-                            <div
-                              className="mr-3 h-5 w-5 rounded-full shadow-sm sm:mr-4"
-                              style={{ backgroundColor: category.color }}
-                            ></div>
-                            <div className="flex-1">
-                              <div className="mb-2 flex items-center gap-2 sm:gap-3">
-                                <h3 className="line-clamp-2 text-lg font-bold text-gray-900 sm:text-xl">
-                                  {category.name}
-                                </h3>
-                                <Badge>{t('admin.rootCategory')}</Badge>
-                              </div>
-                              {category.description && (
-                                <p className="mb-3 text-sm text-gray-600">{category.description}</p>
-                              )}
-                              <div className="flex flex-wrap items-center gap-x-2 text-xs text-gray-500 sm:text-sm">
-                                <span className="font-medium">
-                                  {t('admin.createdBy')} {category.createdBy.name}
-                                </span>
-                                <span className="mx-2 hidden sm:inline">•</span>
-                                <span>{formatDateTime(category.createdAt)}</span>
-                                {category.children && category.children.length > 0 && (
-                                  <>
-                                    <span className="mx-2 hidden sm:inline">•</span>
-                                    <span className="text-brand font-medium">
-                                      {t('admin.subCategories')} ({category.children.length})
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="ml-0 flex space-x-2 sm:ml-4">
-                            <Button
-                              variant="back"
-                              size="sm"
-                              onClick={() => handleEditCategory(category)}
-                            >
-                              <Edit className="mr-1 h-4 w-4" />
-                              {t('common.edit')}
-                            </Button>
-                            <Button
-                              variant="back"
-                              size="sm"
-                              onClick={() => setShowDeleteConfirm(category)}
-                              className="border-red-600 text-red-600 hover:bg-red-50"
-                            >
-                              <Trash2 className="mr-1 h-4 w-4" />
-                              {t('common.delete')}
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-
-                      {/* Children Categories */}
-                      {category.children && category.children.length > 0 && (
-                        <CardBody className="pt-0">
-                          <div className="rounded-lg bg-gray-50/50 p-6">
-                            <button
-                              onClick={() => toggleCategoryCollapse(category.id)}
-                              className="mb-4 flex w-full items-center justify-between text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
-                            >
-                              <div className="flex items-center">
-                                <div className="mr-2 h-2 w-2 rounded-full bg-gray-400"></div>
-                                {t('admin.subCategories')} ({category.children.length})
-                              </div>
-                              {collapsedCategories.has(category.id) ? (
-                                <ChevronRight className="h-4 w-4" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4" />
-                              )}
-                            </button>
-                             {!collapsedCategories.has(category.id) && (
-                               <motion.div
-                                 initial={{ opacity: 0, height: 0 }}
-                                 animate={{ opacity: 1, height: 'auto' }}
-                                 exit={{ opacity: 0, height: 0 }}
-                                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                 className="grid gap-3 overflow-hidden"
-                               >
-                                 {category.children.map((child: Category) => (
-                                <Card
-                                  key={child.id}
-                                  className="shadow-brand/30 hover:shadow-brand/40 shadow-2xl drop-shadow-2xl transition-all duration-300 hover:shadow-2xl"
-                                >
-                                  <CardBody className="p-4">
-                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                      <div className="flex items-center">
-                                        <div
-                                          className="mr-3 h-4 w-4 rounded-full shadow-sm"
-                                          style={{ backgroundColor: child.color }}
-                                        ></div>
-                                        <div>
-                                          <h5 className="line-clamp-2 font-semibold text-gray-900">
-                                            {child.name}
-                                          </h5>
-                                          {child.description && (
-                                            <p className="mt-1 text-sm text-gray-600">
-                                              {child.description}
-                                            </p>
-                                          )}
-                                          <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-gray-500">
-                                            <span>
-                                              {t('admin.createdBy')} {child.createdBy.name}
-                                            </span>
-                                            <span className="mx-2 hidden sm:inline">•</span>
-                                            <span>{formatDateTime(child.createdAt)}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex space-x-2">
-                                        <Button
-                                          variant="back"
-                                          size="sm"
-                                          onClick={() => handleEditCategory(child)}
-                                        >
-                                          <Edit className="mr-1 h-3 w-3" />
-                                          {t('common.edit')}
-                                        </Button>
-                                        <Button
-                                          variant="back"
-                                          size="sm"
-                                          onClick={() => setShowDeleteConfirm(child)}
-                                          className="border-red-600 text-red-600 hover:bg-red-50"
-                                        >
-                                          <Trash2 className="mr-1 h-3 w-3" />
-                                          {t('common.delete')}
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </CardBody>
-                                </Card>
-                              ))}
-                                </motion.div>
-                              )}
-                          </div>
-                        </CardBody>
-                      )}
-                    </Card>
+                <SortableContext
+                  items={categories.map(cat => cat.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid gap-4 sm:gap-6"
+                  >
+                    {categories.map((category) => (
+                      <SortableCategory
+                        key={category.id}
+                        category={category}
+                        onEdit={handleEditCategory}
+                        onDelete={setShowDeleteConfirm}
+                        onToggleCollapse={toggleCategoryCollapse}
+                        isCollapsed={collapsedCategories.has(category.id)}
+                        t={t}
+                      />
+                    ))}
                   </motion.div>
-                ))}
-              </motion.div>
+                </SortableContext>
+              </DndContext>
             );
           })()
         )}
