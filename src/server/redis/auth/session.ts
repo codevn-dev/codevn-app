@@ -16,7 +16,6 @@ export class SessionService {
 
   async getUserActiveSessions(userId: string, currentToken?: string): Promise<any[]> {
     const refreshTokens = await this.userService.getUserTokens(userId); // Now contains refresh JTIs
-    const sessions = [] as any[];
     let currentRefreshJti: string | null = null;
 
     if (currentToken) {
@@ -35,14 +34,13 @@ export class SessionService {
       }
     }
 
-    for (const refreshJti of refreshTokens) {
-      // Get session data directly from refresh token (more reliable for active sessions)
-      const refreshData = await this.tokenService.getToken(refreshJti, 'refresh');
-      if (refreshData && refreshData.sessionMetadata) {
-        const sessionMetadata = refreshData.sessionMetadata;
-        const countryCode = sessionMetadata.country?.code;
+    const sessions = await Promise.all(
+      refreshTokens.map(async (refreshJti) => {
+        const refreshData = await this.tokenService.getToken(refreshJti, 'refresh');
+        if (!refreshData || !refreshData.sessionMetadata) return null;
 
-        // Get country name from country service
+        const sessionMetadata = refreshData.sessionMetadata;
+        const countryCode = sessionMetadata.countryCode;
         let country = null;
 
         if (countryCode && countryCode !== 'Unknown') {
@@ -55,24 +53,22 @@ export class SessionService {
               };
             }
           } catch (error) {
-            // If country lookup fails, keep default values
             logger.error('Failed to get country info:', { error });
           }
         }
 
-        // Check if this is the current session by comparing refresh JTI
         const isCurrent = currentRefreshJti ? refreshJti === currentRefreshJti : false;
 
-        sessions.push({
-          token: refreshJti, // Use refresh JTI for token field (for terminateSession)
+        return {
+          token: refreshJti,
           country,
           deviceInfo: sessionMetadata.deviceInfo || 'Unknown Device',
           loginTime: sessionMetadata.loginTime || new Date().toISOString(),
           lastActive: sessionMetadata.lastActive || new Date().toISOString(),
           isCurrent,
-        });
-      }
-    }
+        };
+      })
+    );
 
     return sessions;
   }

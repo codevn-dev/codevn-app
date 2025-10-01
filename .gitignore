@@ -44,7 +44,7 @@ next-env.d.ts
 public/uploads
 
 # IDE
-.vscode/
+#.vscode/
 .idea/
 *.swp
 *.swo

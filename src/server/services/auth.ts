@@ -90,14 +90,13 @@ export class AuthService extends BaseService {
   private extractSessionMetadata(request?: any): any {
     if (!request) return undefined;
 
-    const userAgent = request.headers['user-agent'] || 'unknown';
     const loginTime = new Date().toISOString();
 
     // Try to get country code from headers (if using CloudFlare, etc.)
-    const countryCode =
-      request.headers['cf-ipcountry'] || request.headers['x-country-code'] || undefined;
+    const countryCode = 'VN';
 
     // Parse device info from User Agent
+    const userAgent = request.headers['user-agent'] || 'unknown';
     const deviceInfo = this.parseUserAgent(userAgent);
 
     return {

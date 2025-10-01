@@ -2,6 +2,12 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.9]() (2025-10-01)
+
+### Fixed
+
+- Fixed session management country code.
+
 ## [v0.1.8]() (2025-10-01)
 
 ### Optimized
