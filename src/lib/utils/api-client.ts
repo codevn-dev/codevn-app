@@ -318,7 +318,16 @@ export async function apiUpload<T = unknown>(
       throw new Error(message);
     }
 
-    return (await response.json()) as T;
+    const raw = await response.json();
+    // Normalize success-wrapped API responses to return data directly
+    if (raw && typeof raw === 'object' && 'success' in raw) {
+      if (raw.success) {
+        return raw.data as T;
+      }
+      const message = extractMessage(raw, 'Upload failed');
+      throw new Error(message);
+    }
+    return raw as T;
   } catch (error) {
     if (error instanceof Error) throw error;
     throw new Error(CommonError.INTERNAL_ERROR);

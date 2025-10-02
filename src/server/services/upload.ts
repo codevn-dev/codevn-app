@@ -2,6 +2,7 @@ import { fileUpload } from '@/lib/server';
 import { BaseService } from './base';
 import { UploadImageResponse } from '@/types/shared';
 import { CommonError } from '@/types/shared';
+import { cloudflareLoader } from '@/lib/utils/cdn';
 
 export class UploadService extends BaseService {
   /**
@@ -16,8 +17,13 @@ export class UploadService extends BaseService {
       // Upload image using utils
       const uploadResult = await fileUpload.uploadImage(fileData, 'images');
 
+      const cdnUrl = cloudflareLoader(uploadResult.publicPath, {
+        format: 'auto',
+        quality: 85,
+      });
+
       const response: UploadImageResponse = {
-        imageUrl: uploadResult.publicPath,
+        imageUrl: cdnUrl,
         fileName: uploadResult.originalName,
         size: uploadResult.size,
         type: uploadResult.type,

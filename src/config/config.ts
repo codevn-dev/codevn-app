@@ -3,6 +3,9 @@
  * Centralized environment variables management for Next.js
  */
 
+// Node environment configuration
+export const production = process.env.NODE_ENV === 'production';
+
 // Auth configuration (includes JWT settings)
 export const authConfig = {
   secret: process.env.JWT_SECRET || 'your-super-secret-key-that-is-at-least-32-characters-long',
@@ -29,6 +32,7 @@ export const siteConfig = {
     github: process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/codevn-dev',
     facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL || 'https://www.facebook.com/codevn.dev',
   },
+  cdn_url: process.env.NEXT_PUBLIC_CDN_URL || 'http://localhost:3000',
 } as const;
 
 // API configuration
@@ -90,14 +94,6 @@ export const loggingConfig = {
   filePath: process.env.LOG_FILE_PATH || 'logs/app.log',
 } as const;
 
-// Development configuration
-export const devConfig = {
-  isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production',
-  isTest: process.env.NODE_ENV === 'test',
-  enableDebug: process.env.ENABLE_DEBUG === 'true',
-} as const;
-
 // Email configuration (if needed)
 export const emailConfig = {
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
@@ -147,7 +143,6 @@ export const config = {
   // rateLimit removed
   cors: corsConfig,
   logging: loggingConfig,
-  dev: devConfig,
   email: emailConfig,
   redis: redisConfig,
   firstUser: firstUserConfig,

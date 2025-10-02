@@ -8,6 +8,7 @@ import {
 import { CommonError, RoleLevel } from '@/types/shared';
 import { UploadAvatarResponse } from '@/types/shared';
 import { fileUpload } from '@/lib/server';
+import { cloudflareLoader } from '@/lib/utils/cdn';
 import { getWorkerService } from '../worker';
 import { JOB_NAMES } from '../worker/types';
 import crypto from 'crypto';
@@ -191,8 +192,16 @@ export class SystemUsersService extends BaseService {
         createdAt: updatedUser[0].createdAt.toISOString(),
       };
 
+      const cdnUrl = cloudflareLoader(uploadResult.publicPath, {
+        format: 'auto',
+        quality: 85,
+        width: 80,
+        height: 80,
+        fit: 'cover',
+      });
+
       const response: UploadAvatarResponse = {
-        avatar: uploadResult.publicPath,
+        avatar: cdnUrl,
         user: updatedUserData as any,
       };
       return response;

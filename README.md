@@ -169,10 +169,11 @@ A modern, full-featured forum application built with Next.js 15, TypeScript, and
    ```env
    # Site Url
    NEXT_PUBLIC_SITE_NAME=CodeVN
+   NEXT_PUBLIC_CDN_URL=http://localhost:3000
+
 
    # API Url
    API_URL=http://localhost:3001
-   APP_URL=http://localhost:3000
    NEXT_PUBLIC_API_URL=http://localhost:3000
 
    # Auth

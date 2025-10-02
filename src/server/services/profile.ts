@@ -5,6 +5,7 @@ import { createRedisAuthService, createRedisLeaderboardService } from '../redis'
 import { UpdateProfileRequest, UserResponse } from '@/types/shared/user';
 import { CommonError } from '@/types/shared';
 import { UploadAvatarResponse } from '@/types/shared';
+import { cloudflareLoader } from '@/lib/utils/cdn';
 
 export class ProfileService extends BaseService {
   /**
@@ -134,8 +135,16 @@ export class ProfileService extends BaseService {
       };
       await redis.updateUserInAllTokens(userId, updatedUserData);
 
+      const cdnUrl = cloudflareLoader(uploadResult.publicPath, {
+        format: 'auto',
+        quality: 85,
+        width: 80,
+        height: 80,
+        fit: 'cover',
+      });
+
       const response: UploadAvatarResponse = {
-        avatar: uploadResult.publicPath,
+        avatar: cdnUrl,
         user: updatedUserData as any,
       };
       return response;

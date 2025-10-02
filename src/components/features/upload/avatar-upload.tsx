@@ -59,7 +59,7 @@ export function AvatarUpload({
     enabled: true,
     quality: 0.8,
     maxSizeMB: 1.0,
-    maxWidthOrHeight: 400,
+    maxWidthOrHeight: 160,
     fileType: 'image/jpeg',
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -238,6 +238,7 @@ export function AvatarUpload({
         // For regular users
         const result = await apiUpload<UploadAvatarResponse>('/api/profile/avatar', formData);
         updateUser({ avatar: result.avatar });
+        console.log('Avatar updated:', result.avatar);
         onAvatarChange?.(result.avatar);
       }
 

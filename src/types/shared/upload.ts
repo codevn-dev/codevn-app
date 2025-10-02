@@ -1,5 +1,5 @@
 export interface UploadImageResponse {
-  imageUrl: string;
+  imageUrl: string; // Cloudflare transform URL by default
   fileName: string;
   size: number;
   type: string;
