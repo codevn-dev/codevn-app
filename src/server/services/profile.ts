@@ -111,9 +111,17 @@ export class ProfileService extends BaseService {
       // Upload avatar using utils
       const uploadResult = await fileUpload.uploadImage(fileData, 'avatars');
 
+      const cdnUrl = cloudflareLoader(uploadResult.publicPath, {
+        format: 'avif',
+        quality: 85,
+        width: 160,
+        height: 160,
+        fit: 'cover',
+      });
+
       // Update user's avatar in database
       const updatedUser = await userRepository.update(userId, {
-        avatar: uploadResult.publicPath,
+        avatar: cdnUrl,
       });
 
       // Invalidate user profile cache
@@ -133,15 +141,8 @@ export class ProfileService extends BaseService {
         avatar: uploadResult.publicPath,
         role: updatedUser[0].role,
       };
-      await redis.updateUserInAllTokens(userId, updatedUserData);
 
-      const cdnUrl = cloudflareLoader(uploadResult.publicPath, {
-        format: 'auto',
-        quality: 85,
-        width: 80,
-        height: 80,
-        fit: 'cover',
-      });
+      await redis.updateUserInAllTokens(userId, updatedUserData);
 
       const response: UploadAvatarResponse = {
         avatar: cdnUrl,

@@ -18,7 +18,7 @@ export class UploadService extends BaseService {
       const uploadResult = await fileUpload.uploadImage(fileData, 'images');
 
       const cdnUrl = cloudflareLoader(uploadResult.publicPath, {
-        format: 'auto',
+        format: 'avif',
         quality: 85,
       });
 

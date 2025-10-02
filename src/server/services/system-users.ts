@@ -178,27 +178,27 @@ export class SystemUsersService extends BaseService {
       // Upload avatar using utils
       const uploadResult = await fileUpload.uploadImage(fileData, 'avatars');
 
+      const cdnUrl = cloudflareLoader(uploadResult.publicPath, {
+        format: 'avif',
+        quality: 85,
+        width: 160,
+        height: 160,
+        fit: 'cover',
+      });
+
       // Update user's avatar in database
       const updatedUser = await userRepository.update(userId, {
-        avatar: uploadResult.publicPath,
+        avatar: cdnUrl,
       });
 
       const updatedUserData = {
         id: updatedUser[0].id,
         email: updatedUser[0].email,
         name: updatedUser[0].name,
-        avatar: uploadResult.publicPath,
+        avatar: cdnUrl,
         role: updatedUser[0].role,
         createdAt: updatedUser[0].createdAt.toISOString(),
       };
-
-      const cdnUrl = cloudflareLoader(uploadResult.publicPath, {
-        format: 'auto',
-        quality: 85,
-        width: 80,
-        height: 80,
-        fit: 'cover',
-      });
 
       const response: UploadAvatarResponse = {
         avatar: cdnUrl,
