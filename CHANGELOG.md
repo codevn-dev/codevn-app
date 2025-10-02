@@ -2,6 +2,13 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.15]() (2025-10-02)
+
+### Refactored
+
+- Refactored the article card component to use the common UI components.
+- Refactored the button component to use the common UI components.
+
 ## [v0.1.14]() (2025-10-02)
 
 ### Fixed
