@@ -2,6 +2,12 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.16]() (2025-10-02)
+
+### Optimized
+
+- Optimized file uploads by using cloudflare loader.
+
 ## [v0.1.15]() (2025-10-02)
 
 ### Refactored
