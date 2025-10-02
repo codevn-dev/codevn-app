@@ -6,6 +6,7 @@ export type CloudflareImageParams = {
   quality?: number; // 1-100
   format?: 'auto' | 'avif' | 'webp' | 'jpeg' | 'png';
   fit?: 'scale-down' | 'contain' | 'cover';
+  onerror?: 'redirect' | '500';
 };
 
 const normalizeSrc = (src: string) => {
@@ -28,6 +29,8 @@ export function cloudflareLoader(src: string, params: CloudflareImageParams = {}
   if (params.quality) parts.push(`quality=${params.quality}`);
   parts.push(`format=${params.format || 'auto'}`);
   if (params.fit) parts.push(`fit=${params.fit}`);
+  // Handle error docs: https://developers.cloudflare.com/images/transform-images/transform-via-url/#onerror
+  parts.push(`onerror=${params.onerror || 'redirect'}`);
 
   const paramStr = parts.join(',');
   return `${siteConfig.cdn_url}/cdn-cgi/image/${paramStr}/${normalizeSrc(src)}`;

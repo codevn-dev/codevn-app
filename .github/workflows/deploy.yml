@@ -6,6 +6,9 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
 
+env:
+  ENABLED_CLOUDFLARE_CLEAR_CACHE: false
+
 jobs:
   release:
     runs-on: ubuntu-24.04-arm
@@ -154,7 +157,8 @@ jobs:
             echo "Cleaning up Docker system..."
             docker system prune -f
 
-      - name: Purge Cloudflare cache for codevn.dev
+      - name: Clear Cloudflare cache for codevn.dev
+        if: env.ENABLED_CLOUDFLARE_CLEAR_CACHE == 'true'
         run: |
           curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
