@@ -369,7 +369,7 @@ export const CommentsSection = forwardRef<CommentsSectionRef, CommentsSectionPro
           topLevelComments.length === 0 &&
           isAuthenticated &&
           !isAuthLoading && (
-            <div className="py-4 text-gray-500">
+            <div className="py-4 text-center text-gray-500">
               <p>{t('comments.noCommentsYet')}</p>
             </div>
           )}
