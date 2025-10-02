@@ -2,6 +2,13 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.18]() (2025-10-03)
+
+### Fixed
+
+- Fixed the loading message during image uploads.
+- Fixed an issue where the image upload modal could not be opened.
+
 ## [v0.1.17]() (2025-10-03)
 
 ### Optimized

@@ -3,10 +3,11 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { imageCompressionUtils } from '@/lib/utils/image-compression';
 import { apiUpload } from '@/lib/utils';
 import { UploadImageResponse } from '@/types/shared';
+import { useI18n } from '@/components/providers';
 
 interface ImageUploadProps {
   onImageUploaded: (imageUrl: string) => void;
@@ -18,22 +19,32 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
   const [isCompressing, setIsCompressing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useI18n();
 
   const handleFile = async (file: File) => {
     if (!file) return;
+    setErrorMessage(null);
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+    ];
     if (!allowedTypes.includes(file.type)) {
-      alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+      setErrorMessage(t('upload.image.invalidType'));
       return;
     }
 
     // Validate file size (10MB max before compression)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      alert('File too large. Maximum size is 10MB.');
+      setErrorMessage(t('upload.image.fileTooLarge'));
       return;
     }
 
@@ -56,7 +67,7 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
       }
     } catch (error) {
       console.error('Compression failed:', error);
-      alert('Failed to compress image. Uploading original file.');
+      setErrorMessage(t('upload.image.compressFailed'));
     } finally {
       setIsCompressing(false);
     }
@@ -71,9 +82,8 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
       onImageUploaded(result.imageUrl);
       onClose();
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Error uploading image. Please try again.';
-      alert(errorMessage);
+      const msg = error instanceof Error ? error.message : t('upload.image.uploadError');
+      setErrorMessage(msg);
     } finally {
       setIsUploading(false);
       setPreview(null);
@@ -113,11 +123,20 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
     fileInputRef.current?.click();
   };
 
+  const onClickTextUpload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isUploading || isCompressing) return;
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-lg bg-white p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Upload Image</h3>
+          <h3 className="text-lg font-semibold" suppressHydrationWarning>
+            {t('upload.image.title')}
+          </h3>
           <Button
             variant="outline"
             size="sm"
@@ -131,6 +150,13 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
             <X className="h-4 w-4" />
           </Button>
         </div>
+
+        {errorMessage && (
+          <div className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <AlertCircle className="h-4 w-4" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         <div
           className={`rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
@@ -149,14 +175,18 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
               {isCompressing && (
                 <div className="flex items-center justify-center space-x-2">
                   <Spinner size="sm" color="primary" />
-                  <span className="text-sm text-gray-600">Compressing image...</span>
+                  <span className="text-sm text-gray-600" suppressHydrationWarning>
+                    {t('upload.image.compressing')}
+                  </span>
                 </div>
               )}
 
               {isUploading && !isCompressing && (
                 <div className="flex items-center justify-center space-x-2">
                   <Spinner size="sm" color="primary" />
-                  <span className="text-sm text-gray-600">Uploading...</span>
+                  <span className="text-sm text-gray-600" suppressHydrationWarning>
+                    {t('upload.image.uploading')}
+                  </span>
                 </div>
               )}
             </div>
@@ -166,12 +196,21 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
                 <ImageIcon className="h-8 w-8 text-gray-400" />
               </div>
               <div>
-                <p className="text-lg font-medium text-gray-900">
-                  {isUploading ? 'UpLoading' : 'Drop your image here'}
+                <p className="text-lg font-medium text-gray-900" suppressHydrationWarning>
+                  {isUploading ? t('upload.image.uploading') : t('upload.image.dropHere')}
                 </p>
-                <p className="mt-1 text-sm text-gray-500">or click to browse files</p>
-                <p className="mt-2 text-xs text-gray-400">
-                  PNG, JPG, GIF, WebP up to 10MB (auto-compressed)
+                <p className="mt-1 text-sm text-gray-500" suppressHydrationWarning>
+                  <button
+                    type="button"
+                    onClick={onClickTextUpload}
+                    className="text-blue-600 hover:underline"
+                    disabled={isUploading || isCompressing}
+                  >
+                    {t('upload.image.orClick')}
+                  </button>
+                </p>
+                <p className="mt-2 text-xs text-gray-400" suppressHydrationWarning>
+                  {t('upload.image.hint')}
                 </p>
               </div>
               <Button
@@ -182,17 +221,17 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
                 {isCompressing ? (
                   <>
                     <Spinner size="sm" color="primary" className="mr-2" />
-                    Compressing...
+                    {t('upload.image.compressing')}
                   </>
                 ) : isUploading ? (
                   <>
                     <Spinner size="sm" color="primary" className="mr-2" />
-                    Uploading...
+                    {t('upload.image.uploading')}
                   </>
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    Choose File
+                    {t('upload.image.chooseFile')}
                   </>
                 )}
               </Button>
@@ -218,7 +257,7 @@ export function ImageUpload({ onImageUploaded, onClose }: ImageUploadProps) {
             }}
             disabled={isUploading}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </div>

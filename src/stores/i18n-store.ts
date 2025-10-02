@@ -201,8 +201,8 @@ const store: Dictionary = {
     vi: 'Nhấn để tải ảnh đại diện',
   },
   'articles.form.thumbHint': {
-    en: 'PNG, JPG, GIF, WebP up to 5MB',
-    vi: 'PNG, JPG, GIF, WebP tối đa 5MB',
+    en: 'PNG, JPG, GIF, WebP, AVIF, SVG up to 1MB',
+    vi: 'PNG, JPG, GIF, WebP, AVIF, SVG tối đa 1MB',
   },
   'articles.form.category': { en: 'Category', vi: 'Danh mục' },
   'articles.form.selectCategory': { en: 'Select a category', vi: 'Chọn danh mục' },
@@ -717,6 +717,38 @@ const store: Dictionary = {
   'myArticles.newArticle': {
     en: 'New Article',
     vi: 'Bài viết mới',
+  },
+
+  // Upload - Image
+  'upload.image.title': { en: 'Upload Image', vi: 'Tải ảnh lên' },
+  'upload.image.dropHere': { en: 'Drop your image here', vi: 'Kéo thả ảnh của bạn vào đây' },
+  'upload.image.orClick': { en: 'or click to browse files', vi: 'hoặc nhấn để chọn tệp' },
+  'upload.image.hint': {
+    en: 'PNG, JPG, GIF, WebP, AVIF, SVG up to 1MB (auto-compressed)',
+    vi: 'PNG, JPG, GIF, WebP, AVIF, SVG tối đa 1MB (tự động nén)',
+  },
+  'upload.image.compressing': { en: 'Compressing image...', vi: 'Đang nén ảnh...' },
+  'upload.image.uploading': { en: 'Uploading...', vi: 'Đang tải lên...' },
+  'upload.image.chooseFile': { en: 'Choose File', vi: 'Chọn tệp' },
+  'upload.image.loading': {
+    en: 'Loading image upload...',
+    vi: 'Đang tải khung tải ảnh...',
+  },
+  'upload.image.invalidType': {
+    en: 'Invalid file type. Only JPEG, PNG, GIF, AVIF, WebP, and SVG are allowed.',
+    vi: 'Định dạng tệp không hợp lệ. Chỉ cho phép JPEG, PNG, GIF, AVIF, WebP và SVG.',
+  },
+  'upload.image.fileTooLarge': {
+    en: 'File too large. Maximum size is 1MB.',
+    vi: 'Tệp quá lớn. Kích thước tối đa là 1MB.',
+  },
+  'upload.image.compressFailed': {
+    en: 'Failed to compress image. Uploading original file.',
+    vi: 'Không thể nén ảnh. Đang tải lên tệp gốc.',
+  },
+  'upload.image.uploadError': {
+    en: 'Error uploading image. Please try again.',
+    vi: 'Lỗi khi tải ảnh lên. Vui lòng thử lại.',
   },
 };
 

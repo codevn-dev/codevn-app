@@ -33,6 +33,23 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { RelatedArticlesSidebar, ArticlesFormModal } from '@/features/articles';
 
+// Lazy load ImageUpload to reduce initial bundle size
+const ImageUpload = dynamic(() => import('@/features/upload').then((m) => m.ImageUpload), {
+  ssr: false,
+  loading: () => {
+    const { t } = useI18n();
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-lg bg-white p-6 text-center">
+          <div className="text-lg font-semibold" suppressHydrationWarning>
+            {t('upload.image.loading')}
+          </div>
+        </div>
+      </div>
+    );
+  },
+});
+
 // Lazy load CodeHighlighter for better performance
 const CodeHighlighter = dynamic(
   () => import('@/features/articles').then((m) => ({ default: m.CodeHighlighter })),
@@ -171,7 +188,7 @@ export function ArticleContent({
   const commentsSectionRef = useRef<CommentsSectionRef>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [_, setShowImageUpload] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
   const [editForm, setEditForm] = useState({
     title: article.title,
     content: article.content,
@@ -771,6 +788,17 @@ export function ArticleContent({
         onRemoveThumbnail={handleRemoveThumbnail}
         isCreateDisabled={!editForm.title || !editForm.content || editForm.categoryIds.length === 0}
       />
+
+      {/* Image Upload Modal */}
+      {showImageUpload && (
+        <ImageUpload
+          onImageUploaded={(imageUrl) => {
+            setEditForm({ ...editForm, thumbnail: imageUrl });
+            setShowImageUpload(false);
+          }}
+          onClose={() => setShowImageUpload(false)}
+        />
+      )}
     </div>
   );
 }
