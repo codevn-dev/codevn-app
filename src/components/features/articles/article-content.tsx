@@ -34,20 +34,22 @@ import {
 import { RelatedArticlesSidebar, ArticlesFormModal } from '@/features/articles';
 
 // Lazy load ImageUpload to reduce initial bundle size
-const ImageUpload = dynamic(() => import('@/features/upload').then((m) => m.ImageUpload), {
-  ssr: false,
-  loading: () => {
-    const { t } = useI18n();
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-        <div className="w-full max-w-md rounded-lg bg-white p-6 text-center">
-          <div className="text-lg font-semibold" suppressHydrationWarning>
-            {t('upload.image.loading')}
-          </div>
+const ImageUploadLoading = () => {
+  const { t } = useI18n();
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 text-center">
+        <div className="text-lg font-semibold" suppressHydrationWarning>
+          {t('upload.image.loading')}
         </div>
       </div>
-    );
-  },
+    </div>
+  );
+};
+
+const ImageUpload = dynamic(() => import('@/features/upload').then((m) => m.ImageUpload), {
+  ssr: false,
+  loading: () => <ImageUploadLoading />,
 });
 
 // Lazy load CodeHighlighter for better performance
