@@ -2,6 +2,13 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.17]() (2025-10-03)
+
+### Optimized
+
+- Optimized cloudflare loader with onerror and redirect.
+- Optimized the article thumbnail sizes.
+
 ## [v0.1.16]() (2025-10-02)
 
 ### Optimized
