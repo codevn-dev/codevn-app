@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { CreateButton } from '@/components/ui/button/index';
 import { useI18n } from '@/components/providers';
 
 interface ArticlesHeaderProps {
@@ -21,10 +20,7 @@ export function ArticlesHeader({ totalItems, onCreate }: ArticlesHeaderProps) {
         <h2 className="text-lg font-semibold sm:text-xl">
           {t('articles.total')} ({totalItems})
         </h2>
-        <Button className="w-full sm:w-auto" onClick={onCreate}>
-          <Plus className="mr-1 h-4 w-4" />
-          {t('articles.new')}
-        </Button>
+        <CreateButton className="w-full sm:w-auto" onClick={onCreate} labelKey="articles.new" />
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/ui/button/index';
 import { Input } from '@/components/ui/input';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/ui/loading-screen';
@@ -238,14 +238,9 @@ function ProfilePageContent() {
                 )}
 
                 <div className="flex justify-end pt-6">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={saving || !hasChanges()}
-                    size="lg"
-                  >
+                  <SaveButton type="submit" disabled={saving || !hasChanges()} size="lg">
                     {saving ? <LoadingScreen message={t('common.saving')} /> : t('common.save')}
-                  </Button>
+                  </SaveButton>
                 </div>
               </form>
             </CardBody>

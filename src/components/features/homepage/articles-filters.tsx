@@ -96,7 +96,9 @@ export function ArticlesFilters({
       </div>
       {selectedCategoryNames.length > 0 && (
         <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-          <span className="text-xs font-medium text-gray-700 flex-shrink-0 sm:text-sm">Filtered by:</span>
+          <span className="flex-shrink-0 text-xs font-medium text-gray-700 sm:text-sm">
+            Filtered by:
+          </span>
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {selectedCategoryNames.map((name) => {
               const cat = getCategoryByName(name);
@@ -111,15 +113,15 @@ export function ArticlesFilters({
                   }}
                 >
                   <div
-                    className="mr-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0 sm:mr-2 sm:h-2 sm:w-2"
+                    className="mr-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full sm:mr-2 sm:h-2 sm:w-2"
                     style={{ backgroundColor: cat.color || '#3B82F6' }}
                   />
-                  <span className="truncate max-w-[120px] sm:max-w-none">{cat.name}</span>
+                  <span className="max-w-[120px] truncate sm:max-w-none">{cat.name}</span>
                   <button
                     onClick={() => onCategoryClick(name)}
                     aria-label={`Remove ${cat.name}`}
                     title={`Remove ${cat.name}`}
-                    className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-current hover:bg-current/10 flex-shrink-0 sm:ml-2 sm:h-5 sm:w-5"
+                    className="ml-1.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-current hover:bg-current/10 sm:ml-2 sm:h-5 sm:w-5"
                   >
                     <X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   </button>

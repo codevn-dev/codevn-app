@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { CancelButton, DeleteButton } from '@/components/ui/button/index';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Trash2 } from 'lucide-react';
+import { Users, Trash2, Plus } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { RoleLevel } from '@/types/shared/roles';
 import { SystemUserResponse } from '@/types/shared/auth';
@@ -97,7 +98,7 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
     <div className="mt-6">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold sm:text-xl">{t('admin.systemUsers.title')}</h2>
-        <Button className="w-full sm:w-auto" onClick={handleCreateSystemUser}>
+        <Button onClick={handleCreateSystemUser}>
           <Plus className="mr-1 h-4 w-4" />
           {t('admin.systemUsers.create')}
         </Button>
@@ -162,14 +163,12 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
                 {t('admin.systemUser.deleteConfirmSuffix')}
               </p>
               <div className="flex justify-end gap-2">
-                <Button
+                <CancelButton
                   variant="outline"
                   onClick={() => setShowDeleteSystemUserConfirm(null)}
                   disabled={isDeletingSystemUser}
-                >
-                  {t('common.cancel')}
-                </Button>
-                <Button
+                />
+                <DeleteButton
                   variant="outline"
                   onClick={() => handleDeleteSystemUser(showDeleteSystemUserConfirm)}
                   className="border-red-600 text-red-600 hover:bg-red-50"
@@ -186,7 +185,7 @@ export function SystemUsers({ onDataChange }: SystemUsersProps) {
                       {t('common.delete')}
                     </>
                   )}
-                </Button>
+                </DeleteButton>
               </div>
             </div>
           </div>,

@@ -40,7 +40,7 @@ export function CategorySelector({
   const isSelected = (id: string) => selectedCategoryIds.includes(id);
 
   // Calculate items per row based on screen size
-    // Responsive: 1 item on small mobile, 2 on large mobile, 3 on tablet, 4 on desktop
+  // Responsive: 1 item on small mobile, 2 on large mobile, 3 on tablet, 4 on desktop
   const updateItemsPerRow = () => {
     if (typeof window !== 'undefined') {
       if (window.innerWidth < 480) {
@@ -84,16 +84,16 @@ export function CategorySelector({
           <Button
             size="sm"
             variant="back"
-            className={`${mounted ? 'w-full' : ''} border-2 pr-8 pl-3 py-2 text-xs sm:text-sm sm:pr-10 sm:pl-4 transition-colors ${
+            className={`${mounted ? 'w-full' : ''} border-2 py-2 pr-8 pl-3 text-xs transition-colors sm:pr-10 sm:pl-4 sm:text-sm ${
               isSelected(category.id)
                 ? 'bg-brand/40 border-brand/60 font-semibold'
                 : 'border-brand/20 hover:border-brand/40'
             }`}
             onClick={() => onCategoryToggle(category.id)}
           >
-            <div className="flex items-center min-w-0">
+            <div className="flex min-w-0 items-center">
               <div
-                className="mr-1.5 h-2 w-2 rounded-full flex-shrink-0 sm:mr-2"
+                className="mr-1.5 h-2 w-2 flex-shrink-0 rounded-full sm:mr-2"
                 style={{
                   backgroundColor: isSelected(category.id) ? 'white' : category.color,
                 }}
@@ -101,7 +101,7 @@ export function CategorySelector({
               <span className="truncate">{category.name}</span>
               {category._count && (
                 <span
-                  className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs font-semibold flex-shrink-0 sm:ml-2 sm:px-2 ${
+                  className={`ml-1.5 flex-shrink-0 rounded-full px-1.5 py-0.5 text-xs font-semibold sm:ml-2 sm:px-2 ${
                     isSelected(category.id) ? 'bg-brand/40 text-white' : 'bg-gray-100 text-gray-600'
                   }`}
                 >
@@ -168,19 +168,22 @@ export function CategorySelector({
         <Button
           size="sm"
           variant="back"
-          className={`${mounted ? 'w-full' : ''} border-2 px-3 py-2 text-xs sm:text-sm sm:px-4 transition-colors ${
+          className={`${mounted ? 'w-full' : ''} border-2 px-3 py-2 text-xs transition-colors sm:px-4 sm:text-sm ${
             isSelected(category.id)
               ? 'bg-brand/40 border-brand/60 font-semibold'
               : 'border-brand/20 hover:border-brand/40'
           }`}
           onClick={() => onCategoryToggle(category.id)}
         >
-          <div className="flex items-center gap-1.5 min-w-0 sm:gap-2">
-            <div className="h-2.5 w-2.5 rounded-full flex-shrink-0 sm:h-3 sm:w-3" style={{ backgroundColor: category.color }}></div>
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+            <div
+              className="h-2.5 w-2.5 flex-shrink-0 rounded-full sm:h-3 sm:w-3"
+              style={{ backgroundColor: category.color }}
+            ></div>
             <span className="text-brand truncate">{category.name}</span>
             {category._count && (
               <span
-                className={`ml-1 rounded-full px-1.5 py-0.5 text-xs font-semibold flex-shrink-0 sm:ml-2 sm:px-2 ${
+                className={`ml-1 flex-shrink-0 rounded-full px-1.5 py-0.5 text-xs font-semibold sm:ml-2 sm:px-2 ${
                   isSelected(category.id) ? 'bg-brand/40 text-white' : 'bg-gray-100 text-gray-600'
                 }`}
               >

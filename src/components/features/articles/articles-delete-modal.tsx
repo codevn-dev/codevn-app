@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { DeleteButton, CancelButton } from '@/components/ui/button/index';
 import { useI18n } from '@/components/providers';
 
 interface ArticlesDeleteModalProps {
@@ -29,17 +28,12 @@ export function ArticlesDeleteModal({
           and will also delete all comments and likes.
         </p>
         <div className="flex justify-end gap-2">
-          <Button variant="back" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
+          <CancelButton variant="back" onClick={onClose} />
+          <DeleteButton
             variant="back"
             onClick={onConfirm}
             className="border-red-600 text-red-600 hover:bg-red-50"
-          >
-            <Trash2 className="mr-1 h-4 w-4" />
-            Delete
-          </Button>
+          />
         </div>
       </div>
     </div>

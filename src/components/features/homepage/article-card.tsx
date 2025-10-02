@@ -14,11 +14,11 @@ interface ArticleCardProps {
   variant?: 'featured' | 'list';
 }
 
-export function ArticleCard({ 
-  article, 
-  index = 0, 
+export function ArticleCard({
+  article,
+  index = 0,
   onCategoryClick,
-  variant = 'list'
+  variant = 'list',
 }: ArticleCardProps) {
   return (
     <Link key={article.id} href={`/articles/${article.slug}`} className="block h-full">
@@ -114,10 +114,7 @@ export function ArticleCard({
           >
             <div className="mr-2 sm:mr-3">
               <Avatar className="h-6 w-6 transition-transform duration-300 group-hover:scale-110">
-                <AvatarImage
-                  src={article.author.avatar || undefined}
-                  alt={article.author.name}
-                />
+                <AvatarImage src={article.author.avatar || undefined} alt={article.author.name} />
                 <AvatarFallback className="text-[10px] font-bold">
                   {article.author.name?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
@@ -128,62 +125,88 @@ export function ArticleCard({
         </div>
 
         {/* Article Footer - Stats */}
-        <div className={`px-4 py-3 sm:px-6 sm:py-4 ${
-          variant === 'list' 
-            ? 'group-hover:from-brand/5 group-hover:to-brand-700/5 bg-gray-50/50 transition-all duration-300 ease-out group-hover:bg-gradient-to-r'
-            : 'bg-gray-50/50'
-        }`}>
+        <div
+          className={`px-4 py-3 sm:px-6 sm:py-4 ${
+            variant === 'list'
+              ? 'group-hover:from-brand/5 group-hover:to-brand-700/5 bg-gray-50/50 transition-all duration-300 ease-out group-hover:bg-gradient-to-r'
+              : 'bg-gray-50/50'
+          }`}
+        >
           <div className="grid grid-cols-3 text-xs text-gray-700 sm:text-sm">
             {/* Views */}
-            <div className={`flex items-center justify-center gap-1.5 sm:gap-2 ${
-              variant === 'list' ? 'transition-all duration-300 ease-out group-hover:scale-105' : ''
-            }`}>
-              <Eye className={`h-4 w-4 text-gray-600 ${
-                variant === 'list' 
-                  ? 'group-hover:text-brand transition-all duration-300 ease-out group-hover:scale-110'
+            <div
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 ${
+                variant === 'list'
+                  ? 'transition-all duration-300 ease-out group-hover:scale-105'
                   : ''
-              }`} />
-              <span className={`font-medium tabular-nums ${
-                variant === 'list' 
-                  ? 'group-hover:text-brand transition-colors duration-300 ease-out'
-                  : ''
-              }`}>
+              }`}
+            >
+              <Eye
+                className={`h-4 w-4 text-gray-600 ${
+                  variant === 'list'
+                    ? 'group-hover:text-brand transition-all duration-300 ease-out group-hover:scale-110'
+                    : ''
+                }`}
+              />
+              <span
+                className={`font-medium tabular-nums ${
+                  variant === 'list'
+                    ? 'group-hover:text-brand transition-colors duration-300 ease-out'
+                    : ''
+                }`}
+              >
                 {typeof article.views === 'number' ? article.views : 0}
               </span>
             </div>
 
             {/* Likes */}
-            <div className={`flex items-center justify-center gap-1.5 sm:gap-2 ${
-              variant === 'list' ? 'transition-all duration-300 ease-out group-hover:scale-105' : ''
-            }`}>
-              <ThumbsUp className={`h-4 w-4 text-gray-600 ${
-                variant === 'list' 
-                  ? 'group-hover:text-brand transition-all duration-300 ease-out group-hover:scale-110'
+            <div
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 ${
+                variant === 'list'
+                  ? 'transition-all duration-300 ease-out group-hover:scale-105'
                   : ''
-              }`} />
-              <span className={`font-medium tabular-nums ${
-                variant === 'list' 
-                  ? 'group-hover:text-brand transition-colors duration-300 ease-out'
-                  : ''
-              }`}>
+              }`}
+            >
+              <ThumbsUp
+                className={`h-4 w-4 text-gray-600 ${
+                  variant === 'list'
+                    ? 'group-hover:text-brand transition-all duration-300 ease-out group-hover:scale-110'
+                    : ''
+                }`}
+              />
+              <span
+                className={`font-medium tabular-nums ${
+                  variant === 'list'
+                    ? 'group-hover:text-brand transition-colors duration-300 ease-out'
+                    : ''
+                }`}
+              >
                 {article._count?.likes || 0}
               </span>
             </div>
 
             {/* Comments */}
-            <div className={`flex items-center justify-center gap-1.5 sm:gap-2 ${
-              variant === 'list' ? 'transition-all duration-300 ease-out group-hover:scale-105' : ''
-            }`}>
-              <MessageSquare className={`h-4 w-4 text-gray-600 ${
-                variant === 'list' 
-                  ? 'group-hover:text-brand transition-all duration-300 ease-out group-hover:scale-110'
+            <div
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 ${
+                variant === 'list'
+                  ? 'transition-all duration-300 ease-out group-hover:scale-105'
                   : ''
-              }`} />
-              <span className={`font-medium tabular-nums ${
-                variant === 'list' 
-                  ? 'group-hover:text-brand transition-colors duration-300 ease-out'
-                  : ''
-              }`}>
+              }`}
+            >
+              <MessageSquare
+                className={`h-4 w-4 text-gray-600 ${
+                  variant === 'list'
+                    ? 'group-hover:text-brand transition-all duration-300 ease-out group-hover:scale-110'
+                    : ''
+                }`}
+              />
+              <span
+                className={`font-medium tabular-nums ${
+                  variant === 'list'
+                    ? 'group-hover:text-brand transition-colors duration-300 ease-out'
+                    : ''
+                }`}
+              >
                 {article._count?.comments || 0}
               </span>
             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { CancelButton } from '@/components/ui/button/index';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2, Smile } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
@@ -319,15 +319,12 @@ export function CommentForm({
 
       <div className="flex justify-end space-x-2">
         {onCancel && (
-          <Button
+          <CancelButton
             type="button"
-            variant="ghost"
             onClick={onCancel}
             disabled={isSubmitting}
             className="text-gray-600 hover:text-gray-800"
-          >
-            {t('common.cancel')}
-          </Button>
+          />
         )}
         {/* Submit moved into the textarea corner; keep this area free */}
       </div>

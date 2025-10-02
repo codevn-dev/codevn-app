@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { SignUpButton } from '@/components/ui/button/index';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -206,18 +207,17 @@ export function Navigation() {
                       setAuthModalOpen(true);
                     }}
                   >
+                    <LogIn className="mr-2 h-4 w-4" />
                     {t('common.signIn')}
                   </Button>
-                  <Button
+                  <SignUpButton
                     variant="primary"
                     size="sm"
                     onClick={() => {
                       setAuthMode('signup');
                       setAuthModalOpen(true);
                     }}
-                  >
-                    {t('common.signUp')}
-                  </Button>
+                  />
                   <LanguageSwitcher />
                 </>
               )}

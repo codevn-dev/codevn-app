@@ -1,7 +1,7 @@
 'use client';
 
 import { Shield, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { LogoutAllButton } from '@/components/ui/button/index';
 import { useI18n } from '@/components/providers';
 
 interface SessionsHeaderProps {
@@ -43,14 +43,12 @@ export function SessionsHeader({
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
           {canLogoutAll && (
-            <Button
+            <LogoutAllButton
               variant="back"
               size="sm"
               onClick={onLogoutAll}
               className="flex items-center gap-2 text-red-600 hover:bg-red-50"
-            >
-              {t('sessions.terminateOtherSessions')}
-            </Button>
+            />
           )}
         </div>
       </div>
