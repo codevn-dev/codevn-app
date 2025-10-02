@@ -41,7 +41,7 @@ export function ArticlesFilters({
   const { t } = useI18n();
 
   return (
-    <div className="shadow-brand/30 z-40 mb-6 rounded-xl bg-white/80 p-4 shadow-2xl drop-shadow-2xl backdrop-blur-sm sm:mb-8">
+    <div className="shadow-brand/30 z-40 mb-4 rounded-xl bg-white/80 p-3 shadow-2xl drop-shadow-2xl backdrop-blur-sm sm:mb-8 sm:p-4">
       <CategorySelector
         categories={categories}
         selectedCategoryIds={selectedCategoryNames
@@ -95,33 +95,33 @@ export function ArticlesFilters({
         </div>
       </div>
       {selectedCategoryNames.length > 0 && (
-        <div className="mt-2 flex items-center gap-2 sm:gap-3">
-          <span className="text-xs font-medium text-gray-700 sm:text-sm">Filtered by:</span>
-          <div className="flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <span className="text-xs font-medium text-gray-700 flex-shrink-0 sm:text-sm">Filtered by:</span>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {selectedCategoryNames.map((name) => {
               const cat = getCategoryByName(name);
               if (!cat) return null;
               return (
                 <div
                   key={name}
-                  className="flex items-center rounded-full px-3 py-1.5 text-xs font-semibold shadow-md shadow-gray-200/50 sm:px-4 sm:py-2 sm:text-sm"
+                  className="flex items-center rounded-full px-2.5 py-1 text-xs font-semibold shadow-md shadow-gray-200/50 sm:px-4 sm:py-2 sm:text-sm"
                   style={{
                     backgroundColor: `${cat.color || '#3B82F6'}15`,
                     color: cat.color || '#3B82F6',
                   }}
                 >
                   <div
-                    className="mr-2 h-2 w-2 rounded-full"
+                    className="mr-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0 sm:mr-2 sm:h-2 sm:w-2"
                     style={{ backgroundColor: cat.color || '#3B82F6' }}
                   />
-                  {cat.name}
+                  <span className="truncate max-w-[120px] sm:max-w-none">{cat.name}</span>
                   <button
                     onClick={() => onCategoryClick(name)}
                     aria-label={`Remove ${cat.name}`}
                     title={`Remove ${cat.name}`}
-                    className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full text-current hover:bg-current/10"
+                    className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-current hover:bg-current/10 flex-shrink-0 sm:ml-2 sm:h-5 sm:w-5"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   </button>
                 </div>
               );

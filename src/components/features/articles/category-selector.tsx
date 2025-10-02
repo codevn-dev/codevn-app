@@ -18,7 +18,7 @@ interface CategorySelectorProps {
   onCategoryToggle: (categoryId: string) => void;
 }
 
-// Utility function để chia categories thành các hàng có độ dài bằng nhau
+// Utility function to divide categories into rows of equal length
 function chunkArrayIntoRows<T>(array: T[], itemsPerRow: number): T[][] {
   const result: T[][] = [];
   for (let i = 0; i < array.length; i += itemsPerRow) {
@@ -39,11 +39,13 @@ export function CategorySelector({
 
   const isSelected = (id: string) => selectedCategoryIds.includes(id);
 
-  // Tính toán số items per row dựa trên screen size
-  // Responsive: 2 items trên mobile, 3 trên tablet, 4 trên desktop
+  // Calculate items per row based on screen size
+    // Responsive: 1 item on small mobile, 2 on large mobile, 3 on tablet, 4 on desktop
   const updateItemsPerRow = () => {
     if (typeof window !== 'undefined') {
-      if (window.innerWidth < 640) {
+      if (window.innerWidth < 480) {
+        setItemsPerRow(1); // small mobile
+      } else if (window.innerWidth < 640) {
         setItemsPerRow(2); // mobile
       } else if (window.innerWidth < 1024) {
         setItemsPerRow(3); // tablet
@@ -60,7 +62,7 @@ export function CategorySelector({
     return () => window.removeEventListener('resize', updateItemsPerRow);
   }, []);
 
-  // Sử dụng layout cũ cho SSR, layout mới cho client
+  // Use old layout for SSR, new layout for client
   const categoryRows = mounted ? chunkArrayIntoRows(categories, itemsPerRow) : [categories];
 
   const renderCategory = (
@@ -82,24 +84,24 @@ export function CategorySelector({
           <Button
             size="sm"
             variant="back"
-            className={`${mounted ? 'w-full' : ''} border-2 pr-10 pl-4 transition-colors ${
+            className={`${mounted ? 'w-full' : ''} border-2 pr-8 pl-3 py-2 text-xs sm:text-sm sm:pr-10 sm:pl-4 transition-colors ${
               isSelected(category.id)
                 ? 'bg-brand/40 border-brand/60 font-semibold'
                 : 'border-brand/20 hover:border-brand/40'
             }`}
             onClick={() => onCategoryToggle(category.id)}
           >
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <div
-                className="mr-2 h-2 w-2 rounded-full"
+                className="mr-1.5 h-2 w-2 rounded-full flex-shrink-0 sm:mr-2"
                 style={{
                   backgroundColor: isSelected(category.id) ? 'white' : category.color,
                 }}
               />
-              <span>{category.name}</span>
+              <span className="truncate">{category.name}</span>
               {category._count && (
                 <span
-                  className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                  className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs font-semibold flex-shrink-0 sm:ml-2 sm:px-2 ${
                     isSelected(category.id) ? 'bg-brand/40 text-white' : 'bg-gray-100 text-gray-600'
                   }`}
                 >
@@ -166,19 +168,19 @@ export function CategorySelector({
         <Button
           size="sm"
           variant="back"
-          className={`${mounted ? 'w-full' : ''} border-2 px-4 transition-colors ${
+          className={`${mounted ? 'w-full' : ''} border-2 px-3 py-2 text-xs sm:text-sm sm:px-4 transition-colors ${
             isSelected(category.id)
               ? 'bg-brand/40 border-brand/60 font-semibold'
               : 'border-brand/20 hover:border-brand/40'
           }`}
           onClick={() => onCategoryToggle(category.id)}
         >
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.color }}></div>
-            <span className="text-brand">{category.name}</span>
+          <div className="flex items-center gap-1.5 min-w-0 sm:gap-2">
+            <div className="h-2.5 w-2.5 rounded-full flex-shrink-0 sm:h-3 sm:w-3" style={{ backgroundColor: category.color }}></div>
+            <span className="text-brand truncate">{category.name}</span>
             {category._count && (
               <span
-                className={`ml-2 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                className={`ml-1 rounded-full px-1.5 py-0.5 text-xs font-semibold flex-shrink-0 sm:ml-2 sm:px-2 ${
                   isSelected(category.id) ? 'bg-brand/40 text-white' : 'bg-gray-100 text-gray-600'
                 }`}
               >
@@ -195,14 +197,14 @@ export function CategorySelector({
     <div className="space-y-3 sm:space-y-4">
       {/* Root Categories - Multi-row Layout */}
       <div
-        className={`rounded-xl bg-white/80 px-3 py-4 shadow-lg shadow-gray-200/50 backdrop-blur-sm sm:px-4 sm:py-4 ${!mounted ? 'scrollbar-hide -mx-3 sm:mx-0 sm:px-0' : ''}`}
+        className={`rounded-xl bg-white/80 px-2 py-3 shadow-lg shadow-gray-200/50 backdrop-blur-sm sm:px-4 sm:py-4 ${!mounted ? 'scrollbar-hide -mx-2 sm:mx-0 sm:px-0' : ''}`}
       >
         {mounted ? (
-          <div className="space-y-2 sm:space-y-3" suppressHydrationWarning>
+          <div className="space-y-1.5 sm:space-y-3" suppressHydrationWarning>
             {categoryRows.map((row, rowIndex) => {
               const isLastRow = rowIndex === categoryRows.length - 1;
               return (
-                <div key={rowIndex} className="flex gap-2 sm:gap-3">
+                <div key={rowIndex} className="flex gap-1.5 sm:gap-3">
                   {row.map((category) => renderCategory(category, isLastRow, row.length))}
                 </div>
               );
@@ -210,7 +212,7 @@ export function CategorySelector({
           </div>
         ) : (
           // SSR fallback - horizontal layout
-          <div className="flex gap-2 overflow-x-auto sm:gap-3">
+          <div className="flex gap-1.5 overflow-x-auto sm:gap-3">
             {categories.map((category) => renderCategory(category, false, 0))}
           </div>
         )}

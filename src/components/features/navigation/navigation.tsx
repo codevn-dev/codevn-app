@@ -258,20 +258,20 @@ export function Navigation() {
                 className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
                 onClick={() => {
                   setIsMobileOpen(false);
-                  router.push('/articles');
-                }}
-              >
-                <FileText className="mr-2 h-4 w-4" /> {t('nav.articles')}
-              </button>
-              <button
-                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
-                onClick={() => {
-                  setIsMobileOpen(false);
                   router.push('/about');
                 }}
               >
                 <Info className="mr-2 h-4 w-4" />
                 {t('nav.about')}
+              </button>
+              <button
+                className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
+                onClick={() => {
+                  setIsMobileOpen(false);
+                  router.push('/articles');
+                }}
+              >
+                <FileText className="mr-2 h-4 w-4" /> {t('nav.articles')}
               </button>
               <button
                 className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"

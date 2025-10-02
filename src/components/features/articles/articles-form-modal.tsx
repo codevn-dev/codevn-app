@@ -69,7 +69,6 @@ export function ArticlesFormModal({
   // Debounced slug validation
   const validateSlug = useCallback(
     async (slug: string) => {
-      console.log('validateSlug called with:', slug);
       if (!slug.trim()) {
         setSlugValidation({ status: 'idle', message: '' });
         return;
@@ -111,7 +110,6 @@ export function ArticlesFormModal({
   // Debounce slug validation
   const debouncedValidateSlug = useCallback(
     (slug: string) => {
-      console.log('debouncedValidateSlug called with:', slug);
       if (slugCheckTimeoutRef.current) {
         clearTimeout(slugCheckTimeoutRef.current);
       }
@@ -183,14 +181,6 @@ export function ArticlesFormModal({
                   onChange={(e) => {
                     const title = e.target.value;
                     const newSlug = isEditing ? form.slug : generateSlug(title);
-                    console.log(
-                      'Title changed:',
-                      title,
-                      'Generated slug:',
-                      newSlug,
-                      'isEditing:',
-                      isEditing
-                    );
 
                     onChange({
                       ...form,
@@ -200,7 +190,6 @@ export function ArticlesFormModal({
 
                     // Validate auto-generated slug for new articles
                     if (!isEditing && newSlug !== form.slug) {
-                      console.log('Calling debouncedValidateSlug for auto-generated slug');
                       debouncedValidateSlug(newSlug);
                     }
                   }}
@@ -216,15 +205,11 @@ export function ArticlesFormModal({
                     value={form.slug}
                     onChange={(e) => {
                       const newSlug = e.target.value;
-                      console.log('Slug input changed:', newSlug, 'isEditing:', isEditing);
                       onChange({ ...form, slug: newSlug });
 
                       // Only validate for new articles, not when editing
                       if (!isEditing) {
-                        console.log('Calling debouncedValidateSlug');
                         debouncedValidateSlug(newSlug);
-                      } else {
-                        console.log('Skipping validation because isEditing is true');
                       }
                     }}
                     className={`pr-10 ${

@@ -46,7 +46,7 @@ const store: Dictionary = {
   'common.role.system': { en: 'System', vi: 'Hệ thống' },
 
   // Navigation
-  'nav.articles': { en: 'Articles', vi: 'Bài viết' },
+  'nav.articles': { en: 'My Articles', vi: 'Bài viết của tôi' },
   'nav.about': { en: 'About us', vi: 'Về chúng tôi' },
   'nav.admin': { en: 'Admin', vi: 'Quản trị viên' },
   'nav.editProfile': { en: 'Edit Profile', vi: 'Chỉnh sửa hồ sơ' },
@@ -284,7 +284,7 @@ const store: Dictionary = {
   },
   'home.myArticles': { en: 'My Articles', vi: 'Bài viết của tôi' },
   'home.clearFilters': { en: 'Clear Filters', vi: 'Xoá bộ lọc' },
-  'home.latestArticles': { en: 'Latest Articles', vi: 'Bài viết mới nhất' },
+  'home.latestArticles': { en: 'Latest', vi: 'Mới nhất' },
   'home.tagline': {
     en: "Latest updates and ideas from Vietnam's developer community",
     vi: 'Những cập nhật và ý tưởng mới nhất từ ​​cộng đồng lập trình viên Việt Nam',

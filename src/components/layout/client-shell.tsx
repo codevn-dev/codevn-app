@@ -48,7 +48,7 @@ function DesktopCustomCursor() {
   );
 }
 
-// ClientShell component chính
+// Main ClientShell component
 export function ClientShell({ children }: ClientShellProps) {
   return (
     <>
@@ -60,7 +60,7 @@ export function ClientShell({ children }: ClientShellProps) {
   );
 }
 
-// Export ClientShellWrapper để giữ tương thích với code hiện tại
+// Export ClientShellWrapper to maintain compatibility with existing code
 export function ClientShellWrapper({ children }: ClientShellProps) {
   return <ClientShell>{children}</ClientShell>;
 }

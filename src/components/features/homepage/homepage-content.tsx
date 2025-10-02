@@ -384,9 +384,9 @@ export function HomepageContent({
   };
 
   return (
-    <div className="py-6">
+    <div className="py-4 sm:py-6">
       {/* Main Content with Leaderboard */}
-      <div className="2xl:max-w-8xl relative mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
+      <div className="2xl:max-w-8xl relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* About (left) only render/load on xl+ to reduce mobile JS */}
         {isXL && (
           <div className="hidden xl:block">
@@ -402,9 +402,9 @@ export function HomepageContent({
         />
 
         {/* Articles Section - Structured exactly like Featured Articles */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-8">
           <MotionContainer>
-            <div className="rounded-2xl bg-white p-5 shadow-2xl sm:p-6 lg:p-6">
+            <div className="rounded-2xl bg-white p-3 shadow-2xl sm:p-6 lg:p-6">
               <ArticlesFilters
                 categories={categories}
                 selectedCategoryNames={selectedCategoryNames}
