@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { buildArticleSrcSet, ARTICLE_IMAGE_SIZES } from '@/lib/utils/images';
 import { Eye, ThumbsUp, MessageSquare } from 'lucide-react';
 import { useI18n } from '@/components/providers';
 import { apiGet } from '@/lib/utils/api-client';
@@ -69,6 +70,8 @@ export function RelatedArticlesSidebar({ articleId, initialArticles = [] }: Prop
                 {a.thumbnail ? (
                   <img
                     src={a.thumbnail}
+                    srcSet={buildArticleSrcSet(a.thumbnail)}
+                    sizes={ARTICLE_IMAGE_SIZES}
                     alt={a.title}
                     className="h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
                   />

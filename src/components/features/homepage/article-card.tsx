@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { nextCloudflareLoader, ARTICLE_IMAGE_SIZES } from '@/lib/utils/images';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, Calendar, Eye, ThumbsUp } from 'lucide-react';
 import { Article } from '@/types/shared';
@@ -30,10 +31,11 @@ export function ArticleCard({
               src={article.thumbnail}
               alt={article.title}
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              sizes={ARTICLE_IMAGE_SIZES}
               priority={index === 0}
               fetchPriority={index === 0 ? 'high' : undefined}
-              quality={70}
+              quality={75}
+              loader={nextCloudflareLoader}
               className="object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
             />
           ) : (
