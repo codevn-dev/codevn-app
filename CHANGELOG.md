@@ -2,6 +2,12 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.19]() (2025-10-03)
+
+### Fixed
+
+- Fixed the leaderboard to exclude deleted articles from the count.
+
 ## [v0.1.18]() (2025-10-03)
 
 ### Fixed

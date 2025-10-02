@@ -319,6 +319,7 @@ export class UserRepository {
           .where(
             and(
               eq(articles.published, true),
+              isNull(articles.deletedAt),
               ...dateConditions,
               inArray(articles.authorId, userIds)
             )
