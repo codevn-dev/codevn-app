@@ -2,6 +2,12 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.23]() (2025-10-03)
+
+### Fixed
+
+- Fixed dropdown menu in the article content page.
+
 ## [v0.1.22]() (2025-10-03)
 
 ### Optimized

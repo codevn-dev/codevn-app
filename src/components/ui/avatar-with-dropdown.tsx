@@ -53,17 +53,20 @@ export function AvatarWithDropdown({
     lg: 'text-base',
   };
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside (respect portal content)
+  const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
+      const target = event.target as Node;
+      const clickedInsideTrigger = dropdownRef.current?.contains(target);
+      const clickedInsideMenu = menuRef.current?.contains(target);
+      if (clickedInsideTrigger || clickedInsideMenu) return;
+      setIsOpen(false);
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside, true);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside, true);
     };
   }, []);
 
@@ -151,6 +154,7 @@ export function AvatarWithDropdown({
         {isOpen &&
           createPortal(
             <div
+              ref={menuRef}
               style={{
                 position: 'fixed',
                 top: dropdownPos.top,
@@ -202,6 +206,7 @@ export function AvatarWithDropdown({
       {isOpen &&
         createPortal(
           <div
+            ref={menuRef}
             style={{
               position: 'fixed',
               top: dropdownPos.top,

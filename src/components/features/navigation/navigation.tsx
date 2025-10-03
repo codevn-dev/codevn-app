@@ -16,8 +16,6 @@ import {
   Settings,
   LogOut,
   FileText,
-  LogIn,
-  UserPlus,
   Menu as MenuIcon,
   X as CloseIcon,
   Trophy,
@@ -207,7 +205,6 @@ export function Navigation() {
                       setAuthModalOpen(true);
                     }}
                   >
-                    <LogIn className="mr-2 h-4 w-4" />
                     {t('common.signIn')}
                   </Button>
                   <SignUpButton
@@ -382,7 +379,7 @@ export function Navigation() {
                   setIsMobileOpen(false);
                 }}
               >
-                <LogIn className="mr-2 h-4 w-4" /> {t('common.signIn')}
+                {t('common.signIn')}
               </button>
               <button
                 className="flex w-full items-center rounded-md px-3 py-2 text-left hover:bg-gray-100"
@@ -392,7 +389,7 @@ export function Navigation() {
                   setIsMobileOpen(false);
                 }}
               >
-                <UserPlus className="mr-2 h-4 w-4" /> {t('common.signUp')}
+                {t('common.signUp')}
               </button>
             </>
           )}
