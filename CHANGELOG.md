@@ -2,6 +2,12 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.24]() (2025-10-03)
+
+### Featured
+
+- Used publishedAt to filter articles.
+
 ## [v0.1.23]() (2025-10-03)
 
 ### Fixed
