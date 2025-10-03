@@ -4,7 +4,6 @@ import { Card, CardBody } from '@/components/ui/card';
 import { MotionContainer } from '@/components/layout';
 import { Calendar, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useI18n } from '@/components/providers';
 import ProfileStatsGrid from '@/components/features/profile/profile-stats-grid';
 
 interface ProfileStatistics {
@@ -33,7 +32,6 @@ export function ProfileInfoStats({
   statistics,
   className,
 }: ProfileInfoStatsProps) {
-  const { t } = useI18n();
   return (
     <div className={cn('space-y-6', className)}>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

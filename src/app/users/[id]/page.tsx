@@ -191,9 +191,7 @@ function UserProfileContent() {
             </div>
 
             {/* User Statistics (Shared Component) */}
-            {profile.statistics && (
-              <ProfileStatsGrid statistics={profile.statistics} />
-            )}
+            {profile.statistics && <ProfileStatsGrid statistics={profile.statistics} />}
 
             {!isOwnProfile && profile.role !== 'system' && (
               <div className="flex justify-end pt-6">

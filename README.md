@@ -497,6 +497,7 @@ For support, email support@codevn.dev or create an issue in the repository.
 - **Docker Setup**: Complete containerization with Nginx reverse proxy
 - **Redis Integration**: Caching, sessions, and real-time features
 - **Database Management**: Drizzle ORM with PostgreSQL and migration system
+
 ---
 
 Built with ❤️ for the developer community

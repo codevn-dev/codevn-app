@@ -2,6 +2,16 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.21]() (2025-10-03)
+
+### Featured
+
+- Add more user profile statistics.
+
+### Fixed
+
+- Fixed dropdown menu in the comment section
+
 ## [v0.1.20]() (2025-10-03)
 
 ### Featured
