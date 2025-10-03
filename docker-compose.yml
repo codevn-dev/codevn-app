@@ -73,7 +73,7 @@ services:
     restart: 'no'
 
   postgres:
-    image: postgres:18
+    image: postgres:17
     container_name: codevn-postgres
     env_file: .env
     ports:

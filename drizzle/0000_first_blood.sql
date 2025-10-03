@@ -98,8 +98,8 @@ CREATE TABLE "hidden_conversations" (
 	"user_id" text NOT NULL,
 	"conversation_id" text NOT NULL,
 	"hidden" boolean DEFAULT true NOT NULL,
-	"hidden_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "unique_hidden_conversation" UNIQUE ("user_id", "conversation_id")
+	"hidden_at" timestamp DEFAULT now() NOT NULL
+	-- CONSTRAINT "unique_hidden_conversation" UNIQUE ("user_id", "conversation_id")
 );
 
 -- Conversation messages table
