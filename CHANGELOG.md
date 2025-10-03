@@ -2,6 +2,19 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.20]() (2025-10-03)
+
+### Featured
+
+- Update category list on **My Articles** page
+- Upgrade PostgreSQL from version 17 to 18
+
+### Fixed
+
+- Ensure article content is displayed correctly when editing
+
+###
+
 ## [v0.1.19]() (2025-10-03)
 
 ### Fixed
