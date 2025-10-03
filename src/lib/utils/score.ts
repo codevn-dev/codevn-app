@@ -6,7 +6,7 @@ export interface ArticleScoreStats {
 }
 
 export interface FeaturedArticleScoreStats extends ArticleScoreStats {
-  createdAt: Date;
+  publishedAt: Date;
 }
 
 export interface RelatedArticleScoreStats extends ArticleScoreStats {
@@ -42,8 +42,8 @@ export function calculateFeaturedArticleScore(
   stats: FeaturedArticleScoreStats,
   windowHours: number
 ): number {
-  const { likes, dislikes, comments, views, createdAt } = stats;
-  const timeDiff = Date.now() - new Date(createdAt).getTime();
+  const { likes, dislikes, comments, views, publishedAt } = stats;
+  const timeDiff = Date.now() - new Date(publishedAt).getTime();
   const timeDiffInHours = timeDiff / (1000 * 60 * 60);
   return (
     calculateArticleScore({ likes, dislikes, comments, views }) *

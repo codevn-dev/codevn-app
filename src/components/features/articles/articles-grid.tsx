@@ -119,7 +119,7 @@ export function ArticlesGrid({
                 <div className="flex items-center gap-2">
                   <div className="flex items-center text-xs text-gray-600">
                     <Calendar className="mr-1 h-3 w-3" />
-                    {formatDateTime(article.createdAt)}
+                    {article.publishedAt ? formatDateTime(article.publishedAt) : '-'}
                   </div>
                   <div className="dropdown-container relative">
                     <Button

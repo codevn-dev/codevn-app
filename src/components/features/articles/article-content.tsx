@@ -652,7 +652,7 @@ export function ArticleContent({
                         suppressHydrationWarning
                       >
                         <Calendar className="mr-1 h-3 w-3" />
-                        {formatDateTime(article.createdAt)}
+                        {article.publishedAt ? formatDateTime(article.publishedAt) : '-'}
                       </div>
                     </div>
                   </div>

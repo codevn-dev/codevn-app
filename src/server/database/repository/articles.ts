@@ -197,6 +197,11 @@ export class ArticleRepository {
       whereConditions.push(gte(articles.createdAt, filters.createdAfter as Date));
     }
 
+    // Published window filter using publishedAt
+    if (filters.publishedAfter) {
+      whereConditions.push(gte(articles.publishedAt, filters.publishedAfter as Date));
+    }
+
     // If publishedOnly is true, only show published articles
     if (publishedOnly) {
       whereConditions.push(eq(articles.published, true));
@@ -364,6 +369,7 @@ export class ArticleRepository {
         thumbnail: articleData.thumbnail,
         authorId: articleData.authorId,
         published: articleData.published || false,
+        publishedAt: articleData.published ? new Date() : null,
       })
       .returning({
         id: articles.id,
@@ -373,6 +379,7 @@ export class ArticleRepository {
         thumbnail: articles.thumbnail,
         authorId: articles.authorId,
         published: articles.published,
+        publishedAt: articles.publishedAt,
         createdAt: articles.createdAt,
         updatedAt: articles.updatedAt,
       });
@@ -406,7 +413,16 @@ export class ArticleRepository {
 
     // Update article data if provided
     if (Object.keys(articleData).length > 0) {
-      const dataToUpdate = { ...articleData, updatedAt: new Date() };
+      const dataToUpdate: any = { ...articleData, updatedAt: new Date() };
+      // Do not overwrite publishedAt if it already has a value.
+      // Only set publishedAt when transitioning from null -> published=true
+      if (articleData.published !== undefined) {
+        const current = await this.findById(id);
+        if (!current?.publishedAt && articleData.published === true) {
+          dataToUpdate.publishedAt = new Date();
+        }
+        // If published=false or publishedAt already exists, keep publishedAt unchanged
+      }
       await db.update(articles).set(dataToUpdate).where(eq(articles.id, id));
     }
 

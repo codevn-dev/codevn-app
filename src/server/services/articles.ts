@@ -72,6 +72,7 @@ export class ArticlesService extends BaseService {
       slug: article.slug,
       thumbnail: article.thumbnail || undefined,
       published: article.published,
+      publishedAt: article.publishedAt ?? null,
       createdAt: article.createdAt,
       updatedAt: article.updatedAt ?? null,
       author: {
@@ -101,6 +102,7 @@ export class ArticlesService extends BaseService {
       slug: article.slug,
       thumbnail: article.thumbnail || undefined,
       published: article.published,
+      publishedAt: article.publishedAt ?? null,
       createdAt: article.createdAt,
       updatedAt: article.updatedAt ?? null,
       author: {
@@ -267,12 +269,12 @@ export class ArticlesService extends BaseService {
       // Fetch most recent published articles (cap to a sane number for scoring)
       const result = await articleRepository.findManyWithPagination({
         search: '',
-        sortBy: 'createdAt',
+        sortBy: 'publishedAt',
         sortOrder: 'desc',
         page: 1,
         status: 'published',
         publishedOnly: true,
-        createdAfter: new Date(Date.now() - windowHours * 60 * 60 * 1000),
+        publishedAfter: new Date(Date.now() - windowHours * 60 * 60 * 1000),
       });
 
       const recent = result.articles || [];
@@ -283,7 +285,13 @@ export class ArticlesService extends BaseService {
         const dislikes = a._count?.unlikes ?? 0;
         const views = typeof a.views === 'number' ? a.views : 0;
         const score = calculateFeaturedArticleScore(
-          { likes, dislikes, comments, views, createdAt: new Date(a.createdAt) },
+          {
+            likes,
+            dislikes,
+            comments,
+            views,
+            publishedAt: new Date(a.publishedAt ?? a.createdAt),
+          },
           windowHours
         );
         return { article: a, score };
@@ -357,6 +365,7 @@ export class ArticlesService extends BaseService {
         thumbnail: article.thumbnail || undefined,
         // categoryId removed from API response (UI uses category.id)
         published: article.published,
+        publishedAt: article.publishedAt ?? null,
         createdAt: article.createdAt as any,
         updatedAt: article.updatedAt as any,
         views,
@@ -448,6 +457,8 @@ export class ArticlesService extends BaseService {
         limit: 1000,
         status: 'published',
         publishedOnly: true,
+        sortBy: 'publishedAt',
+        sortOrder: 'desc',
         categoryIds: expandedCategoryIds,
       });
 
@@ -457,6 +468,8 @@ export class ArticlesService extends BaseService {
         limit: 1000,
         status: 'published',
         publishedOnly: true,
+        sortBy: 'publishedAt',
+        sortOrder: 'desc',
         authorId: (base as any).author?.id || (base as any).authorId,
       });
 

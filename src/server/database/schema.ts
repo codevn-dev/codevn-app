@@ -45,6 +45,7 @@ export const articles = pgTable('articles', {
     .notNull()
     .references(() => users.id),
   published: boolean('published').notNull().default(false),
+  publishedAt: timestamp('published_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at'),
   deletedAt: timestamp('deleted_at'),

@@ -5,6 +5,7 @@ export interface Article {
   slug: string;
   thumbnail?: string;
   published: boolean;
+  publishedAt?: Date | string | null;
   createdAt: Date | string;
   updatedAt: Date | string | null;
   author: {
@@ -105,6 +106,7 @@ export interface ArticleFilters {
   publishedOnly?: boolean;
   userId?: string; // For checking user like/unlike status
   createdAfter?: Date; // Filter by createdAt >= this date
+  publishedAfter?: Date; // Filter by publishedAt >= this date
 }
 
 export interface PaginatedArticles {
@@ -125,6 +127,7 @@ export interface ArticleInsertReturning {
   thumbnail: string | null;
   authorId: string;
   published: boolean;
+  publishedAt: Date | null;
   createdAt: Date;
   updatedAt: Date | null;
 }

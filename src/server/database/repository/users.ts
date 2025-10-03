@@ -356,7 +356,7 @@ export class UserRepository {
     const db = getDb();
 
     // Build date conditions
-    const dateConditions = startDate ? [gte(articles.createdAt, startDate)] : [];
+    const dateConditions = startDate ? [gte(articles.publishedAt, startDate)] : [];
     const viewDateConditions = startDate ? [gte(articleViews.createdAt, startDate)] : [];
 
     // Batch queries for all users at once
@@ -476,7 +476,7 @@ export class UserRepository {
     const conditions = [eq(articles.authorId, userId), eq(articles.published, true)];
 
     if (startDate) {
-      conditions.push(gte(articles.createdAt, startDate));
+      conditions.push(gte(articles.publishedAt, startDate));
     }
 
     const result = await db
@@ -501,7 +501,7 @@ export class UserRepository {
     ];
 
     if (startDate) {
-      conditions.push(gte(articles.createdAt, startDate));
+      conditions.push(gte(articles.publishedAt, startDate));
     }
 
     const result = await db
@@ -527,7 +527,7 @@ export class UserRepository {
     ];
 
     if (startDate) {
-      conditions.push(gte(articles.createdAt, startDate));
+      conditions.push(gte(articles.publishedAt, startDate));
     }
 
     const result = await db
@@ -551,7 +551,7 @@ export class UserRepository {
     ];
 
     if (startDate) {
-      conditions.push(gte(articles.createdAt, startDate));
+      conditions.push(gte(articles.publishedAt, startDate));
     }
 
     const result = await db
