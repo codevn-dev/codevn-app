@@ -32,7 +32,10 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy standalone output
-COPY --from=builder --chown=codevn:codevn /app/.next/standalone ./
+COPY --from=builder --chown=codevn:codevn /app/.next/standalone/server.js ./
+COPY --from=builder --chown=codevn:codevn /app/.next/standalone/.next ./.next
+COPY --from=builder --chown=codevn:codevn /app/.next/standalone/node_modules ./node_modules
+
 COPY --from=builder --chown=codevn:codevn /app/.next/static ./.next/static
 COPY --from=builder --chown=codevn:codevn /app/public ./public
 

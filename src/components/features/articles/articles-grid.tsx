@@ -218,7 +218,10 @@ export function ArticlesGrid({
               <div className="flex items-center text-xs text-gray-700 sm:text-sm">
                 <div className="mr-2 sm:mr-3">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src={article.author.avatar || undefined} alt={article.author.name} />
+                    <AvatarImage
+                      src={article.author.avatar || undefined}
+                      alt={article.author.name}
+                    />
                     <AvatarFallback className="text-[10px] font-bold">
                       {article.author.name?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>

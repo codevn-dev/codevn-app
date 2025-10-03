@@ -2,6 +2,16 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.25]() (2025-10-03)
+
+### Fixed
+
+- Fixed avatar in my articles page.
+
+### Optimized
+
+- Optimized Dockerfile api stage.
+
 ## [v0.1.24]() (2025-10-03)
 
 ### Featured
