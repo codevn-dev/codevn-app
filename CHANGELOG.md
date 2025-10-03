@@ -2,6 +2,16 @@
 
 This file contains a curated list of all notable changes made to the project.
 
+## [v0.1.22]() (2025-10-03)
+
+### Optimized
+
+- Optimized cursor size and transition.
+
+### Fixed
+
+- Reverted to PostgreSQL 17.
+
 ## [v0.1.21]() (2025-10-03)
 
 ### Featured
