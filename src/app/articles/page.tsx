@@ -190,25 +190,25 @@ function ArticlesContent() {
 
   // Open edit modal directly when coming from ArticleContent
   useEffect(() => {
-      try {
-        const id = localStorage.getItem('editArticleId');
-        if (id && Array.isArray(articles)) {
-          const target = articles.find((a) => String(a.id) === id);
-          if (target) {
-            setEditingArticle(target);
-            setArticleForm({
-              title: target.title,
-              content: (target as any).content || '',
-              slug: target.slug,
-              thumbnail: target.thumbnail || '',
-              categoryIds: target.categories.map((cat) => cat.id),
-              published: target.published,
-            });
-            setShowArticleForm(true);
-            localStorage.removeItem('editArticleId');
-          }
+    try {
+      const id = localStorage.getItem('editArticleId');
+      if (id && Array.isArray(articles)) {
+        const target = articles.find((a) => String(a.id) === id);
+        if (target) {
+          setEditingArticle(target);
+          setArticleForm({
+            title: target.title,
+            content: (target as any).content || '',
+            slug: target.slug,
+            thumbnail: target.thumbnail || '',
+            categoryIds: target.categories.map((cat) => cat.id),
+            published: target.published,
+          });
+          setShowArticleForm(true);
+          localStorage.removeItem('editArticleId');
         }
-      } catch {}
+      }
+    } catch {}
   }, [articles]);
 
   // IntersectionObserver for lazy loading
@@ -289,7 +289,7 @@ function ArticlesContent() {
     }
   };
 
-  const handleEditArticle = async (slug: String) => {
+  const handleEditArticle = async (slug: string) => {
     const article = await apiGet<Article>(`/api/articles/slug/${slug}`);
     setEditingArticle(article);
     setArticleForm({
@@ -300,7 +300,7 @@ function ArticlesContent() {
       categoryIds: article.categories.map((cat) => cat.id),
       published: article.published,
     });
-    
+
     setShowArticleForm(true);
   };
 

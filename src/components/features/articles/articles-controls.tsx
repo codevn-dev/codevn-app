@@ -2,6 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Fragment } from 'react';
 import {
   Select,
   SelectContent,
@@ -80,15 +81,28 @@ export function ArticlesControls({
           <SelectContent>
             <SelectItem value="all">{t('articles.allCategories')}</SelectItem>
             {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                <div className="flex items-center gap-2">
-                  <div
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: category.color }}
-                  />
-                  {category.name}
-                </div>
-              </SelectItem>
+              <Fragment key={category.id}>
+                <SelectItem key={category.id} value={category.id}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: category.color }}
+                    />
+                    {category.name}
+                  </div>
+                </SelectItem>
+                {(category.children || []).map((child) => (
+                  <SelectItem key={child.id} value={child.id}>
+                    <div className="flex items-center gap-2 pl-6">
+                      <div
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: child.color }}
+                      />
+                      <span className="text-gray-700">{child.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </Fragment>
             ))}
           </SelectContent>
         </Select>
