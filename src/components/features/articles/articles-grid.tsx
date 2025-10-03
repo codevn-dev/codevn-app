@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Calendar,
   MoreVertical,
@@ -215,8 +216,13 @@ export function ArticlesGrid({
               </div>
 
               <div className="flex items-center text-xs text-gray-700 sm:text-sm">
-                <div className="from-brand to-brand-700 mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-bold text-white sm:mr-3 sm:text-xs">
-                  {article.author.name?.charAt(0).toUpperCase() || '?'}
+                <div className="mr-2 sm:mr-3">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={article.author.avatar || undefined} alt={article.author.name} />
+                    <AvatarFallback className="text-[10px] font-bold">
+                      {article.author.name?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
                 <span className="font-medium">{article.author.name}</span>
               </div>
