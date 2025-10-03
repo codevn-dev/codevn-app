@@ -235,6 +235,7 @@ const store: Dictionary = {
   'profile.updated': { en: 'Profile updated successfully', vi: 'Cập nhật hồ sơ thành công' },
   'profile.totalArticles': { en: 'Total Articles', vi: 'Tổng số bài viết' },
   'profile.totalComments': { en: 'Total Comments', vi: 'Tổng bình luận' },
+  'profile.totalViews': { en: 'Total Views', vi: 'Tổng lượt xem' },
   'profile.totalLikes': { en: 'Total Likes', vi: 'Tổng lượt thích' },
   'profile.totalDislikes': { en: 'Total Dislikes', vi: 'Tổng lượt không thích' },
   'profile.accessLevel': { en: 'Access level', vi: 'Quyền truy cập' },

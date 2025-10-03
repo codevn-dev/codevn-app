@@ -9,9 +9,12 @@ export interface User {
   createdAt: string;
   statistics?: {
     totalArticles: number;
+    publishedArticles?: number;
+    draftArticles?: number;
     totalLikes: number;
     totalDislikes: number;
     totalComments: number;
+    totalViews?: number;
   };
 }
 

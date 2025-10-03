@@ -2,15 +2,18 @@
 
 import { Card, CardBody } from '@/components/ui/card';
 import { MotionContainer } from '@/components/layout';
-import { Calendar, FileText, MessageSquare, Shield, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Calendar, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/providers';
+import ProfileStatsGrid from '@/components/features/profile/profile-stats-grid';
 
 interface ProfileStatistics {
   totalArticles?: number;
+  publishedArticles?: number;
   totalComments?: number;
   totalLikes?: number;
   totalDislikes?: number;
+  totalViews?: number;
 }
 
 interface ProfileInfoStatsProps {
@@ -59,69 +62,7 @@ export function ProfileInfoStats({
         </MotionContainer>
       </div>
 
-      {statistics && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <MotionContainer>
-            <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
-              <CardBody className="flex flex-row items-center p-4">
-                <FileText className="text-brand mr-3 h-5 w-5" />
-                <div>
-                  <p className="text-brand-600 text-2xl font-bold">
-                    {statistics.totalArticles ?? 0}
-                  </p>
-                  <p className="text-brand-600 text-sm">{t('profile.totalArticles')}</p>
-                </div>
-              </CardBody>
-            </Card>
-          </MotionContainer>
-
-          <MotionContainer>
-            <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
-              <CardBody className="flex flex-row items-center p-4">
-                <MessageSquare className="text-brand mr-3 h-5 w-5" />
-                <div>
-                  <p className="text-brand-600 text-2xl font-bold">
-                    {statistics.totalComments ?? 0}
-                  </p>
-                  <p className="text-brand-600 text-sm">
-                    {t('profile.totalComments') || 'Total Comments'}
-                  </p>
-                </div>
-              </CardBody>
-            </Card>
-          </MotionContainer>
-
-          <MotionContainer>
-            <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
-              <CardBody className="flex flex-row items-center p-4">
-                <ThumbsUp className="text-brand mr-3 h-5 w-5" />
-                <div>
-                  <p className="text-brand-600 text-2xl font-bold">{statistics.totalLikes ?? 0}</p>
-                  <p className="text-brand-600 text-sm">
-                    {t('profile.totalLikes') || 'Total Likes'}
-                  </p>
-                </div>
-              </CardBody>
-            </Card>
-          </MotionContainer>
-
-          <MotionContainer>
-            <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
-              <CardBody className="flex flex-row items-center p-4">
-                <ThumbsDown className="text-brand mr-3 h-5 w-5" />
-                <div>
-                  <p className="text-brand-600 text-2xl font-bold">
-                    {statistics.totalDislikes ?? 0}
-                  </p>
-                  <p className="text-brand-600 text-sm">
-                    {t('profile.totalDislikes') || 'Total Dislikes'}
-                  </p>
-                </div>
-              </CardBody>
-            </Card>
-          </MotionContainer>
-        </div>
-      )}
+      {statistics && <ProfileStatsGrid statistics={statistics} />}
     </div>
   );
 }

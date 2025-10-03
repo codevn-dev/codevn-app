@@ -217,9 +217,36 @@ export class UserRepository {
   }
 
   async getUserStatistics(userId: string) {
-    const [articleCount, totalLikes, totalDislikes, totalComments] = await Promise.all([
+    const [
+      articleCount,
+      publishedArticleCount,
+      draftArticleCount,
+      totalLikes,
+      totalDislikes,
+      totalComments,
+      totalViews,
+    ] = await Promise.all([
       // Count total articles by user
-      getDb().select({ count: count() }).from(articles).where(eq(articles.authorId, userId)),
+      getDb().select({ count: count() }).from(articles).where(
+        and(eq(articles.authorId, userId),
+        isNull(articles.deletedAt))
+      ),
+
+      // Count published articles by user
+      getDb()
+        .select({ count: count() })
+        .from(articles)
+        .where(
+          and(eq(articles.authorId, userId), eq(articles.published, true), isNull(articles.deletedAt))
+        ),
+
+      // Count draft articles by user
+      getDb()
+        .select({ count: count() })
+        .from(articles)
+        .where(
+          and(eq(articles.authorId, userId), eq(articles.published, false), isNull(articles.deletedAt))
+        ),
 
       // Count total likes on user's articles (not comment likes)
       getDb()
@@ -230,7 +257,8 @@ export class UserRepository {
           and(
             eq(articles.authorId, userId),
             eq(reactions.type, 'like'),
-            isNull(reactions.commentId) // Only article likes, not comment likes
+            isNull(reactions.commentId),
+            isNull(articles.deletedAt)
           )
         ),
 
@@ -243,7 +271,8 @@ export class UserRepository {
           and(
             eq(articles.authorId, userId),
             eq(reactions.type, 'unlike'),
-            isNull(reactions.commentId) // Only article dislikes, not comment dislikes
+            isNull(reactions.commentId),
+            isNull(articles.deletedAt)
           )
         ),
 
@@ -251,15 +280,32 @@ export class UserRepository {
       getDb()
         .select({ count: count() })
         .from(comments)
-        .innerJoin(articles, eq(comments.articleId, articles.id))
-        .where(eq(articles.authorId, userId)),
+        .innerJoin(articles, and(eq(comments.articleId, articles.id), isNull(articles.deletedAt)))
+        .where(
+          and(
+            eq(articles.authorId, userId),
+            isNull(comments.deletedAt)
+          )
+        ),
+
+      // Count total views on user's published articles
+      getDb()
+        .select({ count: count() })
+        .from(articleViews)
+        .innerJoin(articles, and(eq(articleViews.articleId, articles.id), isNull(articles.deletedAt)))
+        .where(
+          and(eq(articles.authorId, userId), eq(articles.published, true))
+        ),
     ]);
 
     return {
       totalArticles: articleCount[0]?.count || 0,
+      publishedArticles: publishedArticleCount[0]?.count || 0,
+      draftArticles: draftArticleCount[0]?.count || 0,
       totalLikes: totalLikes[0]?.count || 0,
       totalDislikes: totalDislikes[0]?.count || 0,
       totalComments: totalComments[0]?.count || 0,
+      totalViews: totalViews[0]?.count || 0,
     };
   }
 
@@ -337,7 +383,8 @@ export class UserRepository {
               isNull(reactions.commentId),
               eq(articles.published, true),
               ...dateConditions,
-              inArray(articles.authorId, userIds)
+              inArray(articles.authorId, userIds),
+              isNull(articles.deletedAt)
             )
           )
           .groupBy(articles.authorId),
@@ -353,7 +400,8 @@ export class UserRepository {
               isNull(reactions.commentId),
               eq(articles.published, true),
               ...dateConditions,
-              inArray(articles.authorId, userIds)
+              inArray(articles.authorId, userIds),
+              isNull(articles.deletedAt)
             )
           )
           .groupBy(articles.authorId),
@@ -367,7 +415,8 @@ export class UserRepository {
             and(
               eq(articles.published, true),
               ...dateConditions,
-              inArray(articles.authorId, userIds)
+              inArray(articles.authorId, userIds),
+              isNull(articles.deletedAt)
             )
           )
           .groupBy(articles.authorId),
@@ -381,7 +430,8 @@ export class UserRepository {
             and(
               eq(articles.published, true),
               ...viewDateConditions,
-              inArray(articles.authorId, userIds)
+              inArray(articles.authorId, userIds),
+              isNull(articles.deletedAt)
             )
           )
           .groupBy(articles.authorId),
@@ -443,6 +493,7 @@ export class UserRepository {
       eq(reactions.type, 'like'),
       isNull(reactions.commentId),
       eq(articles.published, true),
+      isNull(articles.deletedAt)
     ];
 
     if (startDate) {
@@ -452,7 +503,7 @@ export class UserRepository {
     const result = await db
       .select({ count: count() })
       .from(reactions)
-      .innerJoin(articles, eq(reactions.articleId, articles.id))
+      .innerJoin(articles, and(eq(reactions.articleId, articles.id), isNull(articles.deletedAt)))
       .where(and(...conditions));
 
     return result[0]?.count || 0;
@@ -468,6 +519,7 @@ export class UserRepository {
       eq(reactions.type, 'unlike'),
       isNull(reactions.commentId),
       eq(articles.published, true),
+      isNull(articles.deletedAt)
     ];
 
     if (startDate) {
@@ -477,7 +529,7 @@ export class UserRepository {
     const result = await db
       .select({ count: count() })
       .from(reactions)
-      .innerJoin(articles, eq(reactions.articleId, articles.id))
+      .innerJoin(articles, and(eq(reactions.articleId, articles.id), isNull(articles.deletedAt)))
       .where(and(...conditions));
 
     return result[0]?.count || 0;
@@ -488,7 +540,11 @@ export class UserRepository {
    */
   async getUserCommentsCount(userId: string, startDate?: Date | null) {
     const db = getDb();
-    const conditions = [eq(articles.authorId, userId), eq(articles.published, true)];
+    const conditions = [
+      eq(articles.authorId, userId),
+      eq(articles.published, true),
+      isNull(articles.deletedAt)
+    ];
 
     if (startDate) {
       conditions.push(gte(articles.createdAt, startDate));
@@ -497,7 +553,7 @@ export class UserRepository {
     const result = await db
       .select({ count: count() })
       .from(comments)
-      .innerJoin(articles, eq(comments.articleId, articles.id))
+      .innerJoin(articles, and(eq(comments.articleId, articles.id), isNull(articles.deletedAt)))  
       .where(and(...conditions));
 
     return result[0]?.count || 0;
@@ -508,7 +564,11 @@ export class UserRepository {
    */
   async getUserViewsCount(userId: string, startDate?: Date | null) {
     const db = getDb();
-    const conditions = [eq(articles.authorId, userId), eq(articles.published, true)];
+    const conditions = [
+      eq(articles.authorId, userId),
+      eq(articles.published, true),
+      isNull(articles.deletedAt)
+    ];
 
     if (startDate) {
       conditions.push(gte(articleViews.createdAt, startDate));
@@ -517,7 +577,7 @@ export class UserRepository {
     const result = await db
       .select({ count: count() })
       .from(articleViews)
-      .innerJoin(articles, eq(articleViews.articleId, articles.id))
+      .innerJoin(articles, and(eq(articleViews.articleId, articles.id), isNull(articles.deletedAt)))
       .where(and(...conditions));
 
     return result[0]?.count || 0;

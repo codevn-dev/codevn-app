@@ -5,18 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardBody, CardHeader } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/ui/loading-screen';
-import {
-  User,
-  Mail,
-  Calendar,
-  Shield,
-  ArrowLeft,
-  MessageCircle,
-  FileText,
-  ThumbsUp,
-  ThumbsDown,
-  MessageSquare,
-} from 'lucide-react';
+import { User, Mail, Calendar, Shield, ArrowLeft, MessageCircle } from 'lucide-react';
 import { useAuthState } from '@/hooks/use-auth-state';
 import { ClientOnly } from '@/components/layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -28,6 +17,7 @@ import { User as UserProfile } from '@/types/shared/auth';
 import { UserResponse } from '@/types/shared/user';
 import { useI18n } from '@/components/providers';
 import { RoleLevel } from '@/types/shared';
+import ProfileStatsGrid from '@/components/features/profile/profile-stats-grid';
 
 function UserProfileContent() {
   const { t } = useI18n();
@@ -200,63 +190,9 @@ function UserProfileContent() {
               </Card>
             </div>
 
-            {/* User Statistics */}
+            {/* User Statistics (Shared Component) */}
             {profile.statistics && (
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
-                  <CardBody className="flex flex-row items-center p-4">
-                    <FileText className="mr-3 h-5 w-5 text-[#B8956A]" />
-                    <div>
-                      <p className="text-brand-600 text-2xl font-bold">
-                        {profile.statistics.totalArticles}
-                      </p>
-                      <p className="text-brand-600 text-sm">{t('profile.totalArticles')}</p>
-                    </div>
-                  </CardBody>
-                </Card>
-
-                <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
-                  <CardBody className="flex flex-row items-center p-4">
-                    <MessageSquare className="mr-3 h-5 w-5 text-[#B8956A]" />
-                    <div>
-                      <p className="text-brand-600 text-2xl font-bold">
-                        {profile.statistics.totalComments}
-                      </p>
-                      <p className="text-brand-600 text-sm">
-                        {t('profile.totalComments') || 'Total Comments'}
-                      </p>
-                    </div>
-                  </CardBody>
-                </Card>
-
-                <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
-                  <CardBody className="flex flex-row items-center p-4">
-                    <ThumbsUp className="mr-3 h-5 w-5 text-[#B8956A]" />
-                    <div>
-                      <p className="text-brand-600 text-2xl font-bold">
-                        {profile.statistics.totalLikes}
-                      </p>
-                      <p className="text-brand-600 text-sm">
-                        {t('profile.totalLikes') || 'Total Likes'}
-                      </p>
-                    </div>
-                  </CardBody>
-                </Card>
-
-                <Card className="border-brand/30 shadow-brand/20 rounded-2xl border bg-white shadow-md">
-                  <CardBody className="flex flex-row items-center p-4">
-                    <ThumbsDown className="mr-3 h-5 w-5 text-[#B8956A]" />
-                    <div>
-                      <p className="text-brand-600 text-2xl font-bold">
-                        {profile.statistics.totalDislikes}
-                      </p>
-                      <p className="text-brand-600 text-sm">
-                        {t('profile.totalDislikes') || 'Total Dislikes'}
-                      </p>
-                    </div>
-                  </CardBody>
-                </Card>
-              </div>
+              <ProfileStatsGrid statistics={profile.statistics} />
             )}
 
             {!isOwnProfile && profile.role !== 'system' && (
