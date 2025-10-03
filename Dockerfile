@@ -52,7 +52,11 @@ CMD ["node", "server.js"]
 FROM deps AS api
 WORKDIR /app
 
-COPY . .
+# Copy only backend-related source and configs (dependencies already in deps)
+COPY --chown=codevn:codevn tsconfig.json ./
+COPY --chown=codevn:codevn src ./src/
+COPY --chown=codevn:codevn drizzle.config.ts ./
+COPY --chown=codevn:codevn drizzle ./drizzle
 
 RUN mkdir -p /app/public/uploads && chown -R codevn:codevn /app/public/uploads
 
