@@ -190,25 +190,25 @@ function ArticlesContent() {
 
   // Open edit modal directly when coming from ArticleContent
   useEffect(() => {
-    try {
-      const id = localStorage.getItem('editArticleId');
-      if (id && Array.isArray(articles)) {
-        const target = articles.find((a) => String(a.id) === id);
-        if (target) {
-          setEditingArticle(target);
-          setArticleForm({
-            title: target.title,
-            content: (target as any).content || '',
-            slug: target.slug,
-            thumbnail: target.thumbnail || '',
-            categoryIds: target.categories.map((cat) => cat.id),
-            published: target.published,
-          });
-          setShowArticleForm(true);
-          localStorage.removeItem('editArticleId');
+      try {
+        const id = localStorage.getItem('editArticleId');
+        if (id && Array.isArray(articles)) {
+          const target = articles.find((a) => String(a.id) === id);
+          if (target) {
+            setEditingArticle(target);
+            setArticleForm({
+              title: target.title,
+              content: (target as any).content || '',
+              slug: target.slug,
+              thumbnail: target.thumbnail || '',
+              categoryIds: target.categories.map((cat) => cat.id),
+              published: target.published,
+            });
+            setShowArticleForm(true);
+            localStorage.removeItem('editArticleId');
+          }
         }
-      }
-    } catch {}
+      } catch {}
   }, [articles]);
 
   // IntersectionObserver for lazy loading
@@ -289,16 +289,18 @@ function ArticlesContent() {
     }
   };
 
-  const handleEditArticle = (article: Article) => {
+  const handleEditArticle = async (slug: String) => {
+    const article = await apiGet<Article>(`/api/articles/slug/${slug}`);
     setEditingArticle(article);
     setArticleForm({
       title: article.title,
-      content: (article as any).content || '',
+      content: article.content || '',
       slug: article.slug,
       thumbnail: article.thumbnail || '',
       categoryIds: article.categories.map((cat) => cat.id),
       published: article.published,
     });
+    
     setShowArticleForm(true);
   };
 
@@ -338,7 +340,7 @@ function ArticlesContent() {
     }
 
     try {
-      const _res = await apiDelete<DeleteArticleResponse>(`/api/articles?id=${article.id}`);
+      await apiDelete<DeleteArticleResponse>(`/api/articles?id=${article.id}`);
       setShowDeleteConfirm(null);
       fetchArticles();
     } catch {
@@ -446,7 +448,7 @@ function ArticlesContent() {
                 onCloseDropdown={() => setOpenDropdown(null)}
                 onTogglePublish={handleTogglePublish}
                 onPreview={handlePreviewArticle}
-                onEdit={handleEditArticle}
+                onEdit={(article) => handleEditArticle(article.slug)}
                 onDeleteRequest={(article) => setShowDeleteConfirm(article)}
               />
             )}
